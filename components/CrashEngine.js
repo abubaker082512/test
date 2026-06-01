@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { supabase } from '../../utils/supabase'
-import { useAuth } from '../../context/AuthContext'
+import { supabase } from '../utils/supabase'
+import { useAuth } from '../context/AuthContext'
 
 export default function CrashEngine() {
   const { user } = useAuth()
