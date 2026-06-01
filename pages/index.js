@@ -7,10 +7,13 @@ import AuthModal from '../components/AuthModal'
 const mockGames = [
   { id: '1', title: 'Gold Slots', subtitle: 'JILI', emoji: '🎰' },
   { id: '2', title: 'Crash', subtitle: 'Originals', emoji: '🚀' },
-  { id: '3', title: 'Minesweeper', subtitle: 'Originals', emoji: '💣' },
-  { id: '4', title: 'Fishing Joy', subtitle: 'JDB', emoji: '🐟' },
-  { id: '5', title: 'Super Ace', subtitle: 'JILI', emoji: '🂡' },
-  { id: '6', title: 'Fortune Gems', subtitle: 'PG', emoji: '💎' },
+  { id: '3', title: 'Coin Flip', subtitle: 'Originals', emoji: '🪙' },
+  { id: '4', title: 'Crypto Dice', subtitle: 'Originals', emoji: '🎲' },
+  { id: '5', title: 'Mini Roulette', subtitle: 'Originals', emoji: '🎡' },
+  { id: '6', title: 'Minesweeper', subtitle: 'Originals', emoji: '💣' },
+  { id: '7', title: 'Fishing Joy', subtitle: 'JDB', emoji: '🐟' },
+  { id: '8', title: 'Super Ace', subtitle: 'JILI', emoji: '🂡' },
+  { id: '9', title: 'Fortune Gems', subtitle: 'PG', emoji: '💎' },
 ]
 
 export default function Home() {
