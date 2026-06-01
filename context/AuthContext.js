@@ -7,24 +7,33 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  // Auto-create wallet for new users
+  const ensureWallet = async (userId) => {
+    if (!userId) return
+    await fetch('/api/wallet/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId })
+    })
+  }
+
   useEffect(() => {
-    // Check active session
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       setUser(session?.user ?? null)
+      if (session?.user) await ensureWallet(session.user.id)
       setLoading(false)
     }
-
     getSession()
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null)
+      if (_event === 'SIGNED_IN' && session?.user) {
+        await ensureWallet(session.user.id)
+      }
     })
 
-    return () => {
-      subscription.unsubscribe()
-    }
+    return () => subscription.unsubscribe()
   }, [])
 
   const signUp = async (email, password) => {

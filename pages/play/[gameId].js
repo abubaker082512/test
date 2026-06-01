@@ -4,65 +4,8 @@ import Link from 'next/link'
 import { supabase } from '../../utils/supabase'
 import { useAuth } from '../../context/AuthContext'
 import AuthModal from '../../components/AuthModal'
+import CrashEngine from '../../components/CrashEngine'
 
-function CrashEngine() {
-  const [multiplier, setMultiplier] = useState(1.0)
-  const [status, setStatus] = useState('waiting')
-  const [triggering, setTriggering] = useState(false)
-
-  useEffect(() => {
-    const fetchState = async () => {
-      const { data } = await supabase.from('crash_state').select('*').eq('id', 1).single()
-      if (data) {
-        setMultiplier(data.multiplier)
-        setStatus(data.status)
-      }
-    }
-    fetchState()
-
-    const channel = supabase.channel('public:crash_state')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'crash_state' }, (payload) => {
-        setMultiplier(payload.new.multiplier)
-        setStatus(payload.new.status)
-      })
-      .subscribe()
-
-    return () => supabase.removeChannel(channel)
-  }, [])
-
-  const triggerRound = async () => {
-    setTriggering(true)
-    await fetch('/api/crash/tick', { method: 'POST' })
-    setTimeout(() => setTriggering(false), 1000)
-  }
-
-  return (
-    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px' }}>
-      <div style={{ fontSize: '64px' }}>{status === 'crashed' ? '💥' : '🚀'}</div>
-      <h2>Crash Engine</h2>
-      <p style={{ color: '#aaa', textTransform: 'capitalize' }}>Status: {status}</p>
-      
-      <div style={{ padding: '24px', border: `2px dashed ${status === 'crashed' ? 'red' : '#333'}`, borderRadius: '12px', background: '#1a1a1a', width: '80%', maxWidth: '400px', textAlign: 'center' }}>
-        <div>Current Multiplier</div>
-        <div style={{ fontSize: '48px', fontWeight: 'bold', color: status === 'crashed' ? 'red' : '#00ff88', margin: '16px 0' }}>
-          {multiplier.toFixed(2)}x
-        </div>
-        <button 
-          className="btn primary" 
-          style={{ width: '100%', padding: '16px', fontSize: '20px' }}
-          disabled={status !== 'waiting'}
-        >
-          PLACE BET
-        </button>
-        {status === 'waiting' && (
-          <button className="btn" onClick={triggerRound} disabled={triggering} style={{ width: '100%', marginTop: '12px', borderColor: 'var(--accent)', color: 'var(--accent)' }}>
-            {triggering ? 'Starting...' : 'Host: Force Start Round'}
-          </button>
-        )}
-      </div>
-    </div>
-  )
-}
 
 function SlotsEngine({ title, icon, symbolsPool, borderCol }) {
   const [spinning, setSpinning] = useState(false)
