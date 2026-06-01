@@ -1,0 +1,11 @@
+node_modules/
+.next/
+.env.local
+.env
+dist/
+build/
+coverage/
+logs/
+*.log
+*.sqlite
+public/uploads/

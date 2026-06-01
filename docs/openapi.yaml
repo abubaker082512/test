@@ -1,0 +1,59 @@
+openapi: 3.0.0
+info:
+  title: BetPK Clone RapidAPI / Jili API
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+paths:
+  /api/rapid/getAllProviders:
+    get:
+      summary: Get all providers
+      responses:
+        '200':
+          description: OK
+  /api/rapid/getAllGamesByProvider:
+    get:
+      summary: Get games by provider
+      parameters:
+        - in: query
+          name: provider
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /api/rapid/getGameUrl:
+    post:
+      summary: Get game launcher URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                gameId:
+                  type: string
+                lang:
+                  type: string
+                money:
+                  type: number
+                home_url:
+                  type: string
+                platform:
+                  type: integer
+                currency:
+                  type: string
+      responses:
+        '200':
+          description: OK
+  /api/rapid/health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+  

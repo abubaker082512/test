@@ -1,0 +1,40 @@
+{
+  "info": {
+    "name": "BetPKClone RapidAPI / Jili API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Collection for BetPK Clone RapidAPI/Jili integration"
+  },
+  "item": [
+    {
+      "name": "Get All Providers",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/rapid/getAllProviders",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "rapid", "getAllProviders"]
+        }
+      }
+    },
+    {
+      "name": "Get All Games By Provider",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/rapid/getAllGamesByProvider?provider=SPRIBE",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "rapid", "getAllGamesByProvider"],
+          "query": [{"key": "provider", "value": "SPRIBE"}]
+        }
+      }
+    }
+  ],
+  "example": {
+    "Get All Providers": {
+      "status": "200 OK",
+      "body": "{\"ok\":true,\"data\":...}"
+    }
+  }
+}
