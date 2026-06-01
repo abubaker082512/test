@@ -166,6 +166,17 @@ body {
   display: flex; align-items: center; justify-content: center;
   z-index: 1000;
 }
+
+.spin-anim {
+  display: inline-block;
+  animation: spin 0.1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: translateY(-10px); opacity: 0.5; }
+  50% { transform: translateY(10px); opacity: 1; }
+  100% { transform: translateY(-10px); opacity: 0.5; }
+}
 .launcher-modal {
   width: 90%; max-width: 400px;
   background: var(--bg);

@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import NavBar from '../components/NavBar'
 import BottomNav from '../components/BottomNav'
+import { useAuth } from '../context/AuthContext'
+import AuthModal from '../components/AuthModal'
 const mockGames = [
   { id: '1', title: 'Gold Slots', subtitle: 'JILI', emoji: '🎰' },
   { id: '2', title: 'Crash', subtitle: 'Originals', emoji: '🚀' },
@@ -13,6 +15,8 @@ const mockGames = [
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState('Hot');
+  const { user } = useAuth();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   return (
     <div className="app">
@@ -22,11 +26,15 @@ export default function Home() {
         <h1>Welcome to BetPK Official</h1>
         <p>Refer a friend to receive ₱155.55</p>
         <div className="auth-buttons">
-          <button className="btn primary">Play Now</button>
+          {user ? (
+            <button className="btn primary" onClick={() => document.getElementById('games-section').scrollIntoView({ behavior: 'smooth' })}>Play Now</button>
+          ) : (
+            <button className="btn primary" onClick={() => setIsAuthModalOpen(true)}>Log In to Play</button>
+          )}
         </div>
       </header>
 
-      <section aria-label="Categories">
+      <section id="games-section" aria-label="Categories">
         <div className="category-bar">
           {['Hot', 'Slots', 'Live', 'Fishing', 'Cards', 'Blockchain'].map(cat => (
             <button 
@@ -66,6 +74,7 @@ export default function Home() {
         </div>
       </section>
 
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       <BottomNav />
     </div>
   )
