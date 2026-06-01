@@ -14,10 +14,13 @@ const io = new Server(server, {
   }
 });
 
+const RNG = require('./utils/RNG');
+
 // Mock Game State for Crash
 let crashState = {
   status: 'waiting', // waiting, running, crashed
   multiplier: 1.0,
+  targetCrashMultiplier: 1.00,
   players: []
 };
 
@@ -26,14 +29,19 @@ setInterval(() => {
   if (crashState.status === 'waiting') {
     crashState.status = 'running';
     crashState.multiplier = 1.0;
+    
+    // Predetermine the crash point at the start of the round using the 40% RNG logic
+    crashState.targetCrashMultiplier = RNG.generateCrashMultiplier();
+    
     io.emit('crashUpdate', crashState);
   } else if (crashState.status === 'running') {
-    crashState.multiplier += 0.05; // increase multiplier
+    crashState.multiplier = +(crashState.multiplier + 0.02).toFixed(2); // increase multiplier
     io.emit('crashUpdate', crashState);
     
-    // Random chance to crash
-    if (Math.random() < 0.05) {
+    // Check if we hit the predetermined crash point
+    if (crashState.multiplier >= crashState.targetCrashMultiplier) {
       crashState.status = 'crashed';
+      crashState.multiplier = crashState.targetCrashMultiplier; // exact point
       io.emit('crashUpdate', crashState);
       
       // Reset after 5 seconds
@@ -45,7 +53,7 @@ setInterval(() => {
       }, 5000);
     }
   }
-}, 500);
+}, 100);
 
 app.get('/', (req, res) => {
   res.send('BetPK Custom Game Engine Running');
