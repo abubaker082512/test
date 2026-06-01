@@ -10,17 +10,40 @@ export default function WalletPage() {
   const [transactions, setTransactions] = useState([])
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
 
+  // Exchange Rates State
+  const [rates, setRates] = useState({ pkr_rate: 1.0, usd_rate: 280.0 })
+  const [ratesLoading, setRatesLoading] = useState(true)
+
   // Deposit form
   const [depAmount, setDepAmount] = useState('')
+  const [depCurrency, setDepCurrency] = useState('pkr') // 'pkr' | 'usd'
   const [depMethod, setDepMethod] = useState('easypaisa')
   const [depTxId, setDepTxId] = useState('')
   const [depMsg, setDepMsg] = useState(null)
 
   // Withdraw form
-  const [witAmount, setWitAmount] = useState('')
+  const [witAmount, setWitAmount] = useState('') // In-game ₱ amount
+  const [witCurrency, setWitCurrency] = useState('pkr') // 'pkr' | 'usd'
   const [witMethod, setWitMethod] = useState('easypaisa')
   const [witAccount, setWitAccount] = useState('')
   const [witMsg, setWitMsg] = useState(null)
+
+  const fetchRates = async () => {
+    try {
+      const res = await fetch('/api/settings/get')
+      const data = await res.json()
+      if (data.success) {
+        setRates({
+          pkr_rate: data.pkr_rate,
+          usd_rate: data.usd_rate
+        })
+      }
+    } catch (e) {
+      console.error('Failed to load exchange rates', e)
+    } finally {
+      setRatesLoading(false)
+    }
+  }
 
   const fetchData = async () => {
     if (!user) return
@@ -30,32 +53,86 @@ export default function WalletPage() {
     setTransactions(t || [])
   }
 
-  useEffect(() => { fetchData() }, [user])
+  useEffect(() => {
+    fetchRates()
+    fetchData()
+  }, [user])
 
   const handleDeposit = async (e) => {
     e.preventDefault()
     setDepMsg(null)
+
+    const rawAmount = Number(depAmount)
+    const rate = depCurrency === 'pkr' ? rates.pkr_rate : rates.usd_rate
+    const inGameAmount = parseFloat((rawAmount * rate).toFixed(2))
+
+    // Minimum check: at least ₱100 worth in-game currency
+    if (inGameAmount < 100) {
+      return setDepMsg({ type: 'error', text: `Minimum deposit value must be at least ₱100.00 (You submitted ${inGameAmount.toFixed(2)} ₱ worth)` })
+    }
+
+    const notesStr = `Deposit of ${depCurrency === 'pkr' ? 'Rs' : '$'} ${rawAmount} ${depCurrency.toUpperCase()} via ${depMethod}. Rate: 1 ${depCurrency.toUpperCase()} = ${rate} ₱.`
+
     const res = await fetch('/api/wallet/deposit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: user.id, amount: Number(depAmount), method: depMethod, tx_id: depTxId })
+      body: JSON.stringify({
+        user_id: user.id,
+        amount: inGameAmount,
+        method: `${depMethod} (${depCurrency.toUpperCase()})`,
+        tx_id: depTxId,
+        notes: notesStr
+      })
     })
     const data = await res.json()
     setDepMsg({ type: data.success ? 'success' : 'error', text: data.message || data.error })
-    if (data.success) { setDepAmount(''); setDepTxId('') }
+    if (data.success) {
+      setDepAmount('')
+      setDepTxId('')
+      fetchData()
+    }
   }
 
   const handleWithdraw = async (e) => {
     e.preventDefault()
     setWitMsg(null)
+
+    const rawInGameAmount = Number(witAmount)
+
+    // Minimum check in in-game currency: ₱500
+    if (rawInGameAmount < 500) {
+      return setWitMsg({ type: 'error', text: 'Minimum withdrawal is ₱500' })
+    }
+
+    if (!wallet || wallet.balance < rawInGameAmount) {
+      return setWitMsg({ type: 'error', text: 'Insufficient balance' })
+    }
+
+    const rate = witCurrency === 'pkr' ? rates.pkr_rate : rates.usd_rate
+    const payoutAmount = parseFloat((rawInGameAmount / rate).toFixed(2))
+    const currencyLabel = witCurrency === 'pkr' ? 'PKR' : 'USD'
+    const symbolLabel = witCurrency === 'pkr' ? 'Rs' : '$'
+
+    const notesStr = `Withdrawal to ${witMethod} account ${witAccount}. Net Payout: ${symbolLabel} ${payoutAmount} ${currencyLabel} (Rate: 1 ${currencyLabel} = ${rate} ₱).`
+
     const res = await fetch('/api/wallet/withdraw', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: user.id, amount: Number(witAmount), method: witMethod, account_number: witAccount })
+      body: JSON.stringify({
+        user_id: user.id,
+        amount: rawInGameAmount,
+        method: `${witMethod} (${currencyLabel})`,
+        account_number: witAccount,
+        notes: notesStr
+      })
     })
     const data = await res.json()
     setWitMsg({ type: data.success ? 'success' : 'error', text: data.message || data.error })
-    if (data.success) { setWitAmount(''); setWitAccount(''); fetchData() }
+    if (data.success) {
+      setWitAmount('')
+      setWitAccount('')
+      fetchData()
+    }
   }
 
   if (loading) return <div style={{ color: '#fff', padding: '40px', textAlign: 'center' }}>Loading...</div>
@@ -72,6 +149,10 @@ export default function WalletPage() {
   const inputStyle = { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: '#fff', boxSizing: 'border-box', marginBottom: '12px' }
   const cardStyle = { background: '#111', border: '1px solid #222', borderRadius: '16px', padding: '24px', marginBottom: '24px' }
   const msgStyle = (type) => ({ padding: '10px 16px', borderRadius: '8px', fontSize: '14px', marginBottom: '12px', background: type === 'error' ? '#ff000022' : '#00ff8822', color: type === 'error' ? '#ff6666' : '#00ff88' })
+
+  // Calculated Preview Computations
+  const computedCreditedVal = depAmount ? (Number(depAmount) * (depCurrency === 'pkr' ? rates.pkr_rate : rates.usd_rate)).toFixed(2) : '0.00'
+  const computedWithdrawVal = witAmount ? (Number(witAmount) / (witCurrency === 'pkr' ? rates.pkr_rate : rates.usd_rate)).toFixed(2) : '0.00'
 
   return (
     <div style={{ minHeight: '100vh', background: '#000', color: '#fff', paddingBottom: '80px' }}>
@@ -95,20 +176,46 @@ export default function WalletPage() {
         {/* Deposit */}
         <div style={cardStyle}>
           <h2 style={{ marginTop: 0, color: '#00ff88' }}>💳 Deposit</h2>
-          <div style={{ background: '#0a1a0a', border: '1px solid #00ff8833', borderRadius: '8px', padding: '12px', marginBottom: '16px', fontSize: '13px', color: '#aaa' }}>
-            Send money to: <br />
-            <strong style={{ color: '#00ff88' }}>Easypaisa:</strong> 0300-0000000 (BetPK Official)<br />
-            <strong style={{ color: '#00ff88' }}>JazzCash:</strong> 0300-0000000 (BetPK Official)<br />
-            Then submit the Transaction ID below.
+          <div style={{ background: '#0a1a0a', border: '1px solid #00ff8833', borderRadius: '8px', padding: '12px', marginBottom: '16px', fontSize: '13px', color: '#aaa', lineHeight: '1.5' }}>
+            Send money to matching official account: <br />
+            <strong>Easypaisa (PKR):</strong> 0300-0000000 (BetPK Official)<br />
+            <strong>JazzCash (PKR):</strong> 0300-0000000 (BetPK Official)<br />
+            <strong>Binance / Crypto (USD):</strong> usd-official-wallet-address<br />
+            <div style={{ borderTop: '1px solid #00ff8822', marginTop: '8px', paddingTop: '8px', fontSize: '12px', color: 'var(--accent)' }}>
+              Current Exchange Rates: <strong style={{ color: '#fff' }}>1 PKR = {rates.pkr_rate} ₱</strong> | <strong style={{ color: '#fff' }}>1 USD = {rates.usd_rate} ₱</strong>
+            </div>
           </div>
           {depMsg && <div style={msgStyle(depMsg.type)}>{depMsg.text}</div>}
           <form onSubmit={handleDeposit}>
-            <select value={depMethod} onChange={e => setDepMethod(e.target.value)} style={inputStyle}>
-              <option value="easypaisa">Easypaisa</option>
-              <option value="jazzcash">JazzCash</option>
-            </select>
-            <input type="number" placeholder="Amount (min ₱100)" value={depAmount} onChange={e => setDepAmount(e.target.value)} style={inputStyle} required min={100} />
-            <input type="text" placeholder="Transaction ID (from Easypaisa/JazzCash)" value={depTxId} onChange={e => setDepTxId(e.target.value)} style={inputStyle} required />
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+              <select value={depCurrency} onChange={e => setDepCurrency(e.target.value)} style={{ ...inputStyle, marginBottom: 0, flex: 1 }}>
+                <option value="pkr">PKR (Rs)</option>
+                <option value="usd">USD ($)</option>
+              </select>
+              <select value={depMethod} onChange={e => { setDepMethod(e.target.value); if (e.target.value === 'binance') setDepCurrency('usd'); else setDepCurrency('pkr') }} style={{ ...inputStyle, marginBottom: 0, flex: 2 }}>
+                <option value="easypaisa">Easypaisa</option>
+                <option value="jazzcash">JazzCash</option>
+                <option value="binance">Binance Pay (Crypto)</option>
+              </select>
+            </div>
+            
+            <input 
+              type="number" 
+              placeholder={`Deposit Amount in ${depCurrency.toUpperCase()}`} 
+              value={depAmount} 
+              onChange={e => setDepAmount(e.target.value)} 
+              style={inputStyle} 
+              required 
+              min={1} 
+            />
+
+            {depAmount && (
+              <div style={{ background: '#00ff8811', border: '1px solid #00ff8822', borderRadius: '8px', padding: '12px', color: '#00ff88', fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', textAlign: 'center' }}>
+                🎉 You will receive: {computedCreditedVal} ₱ in-game currency
+              </div>
+            )}
+
+            <input type="text" placeholder="Transaction ID (from Provider Receipt)" value={depTxId} onChange={e => setDepTxId(e.target.value)} style={inputStyle} required />
             <button type="submit" className="btn primary" style={{ width: '100%', padding: '14px' }}>Submit Deposit Request</button>
           </form>
         </div>
@@ -116,17 +223,42 @@ export default function WalletPage() {
         {/* Withdraw */}
         <div style={cardStyle}>
           <h2 style={{ marginTop: 0, color: '#ff9900' }}>🏧 Withdraw</h2>
-          <div style={{ background: '#1a0f00', border: '1px solid #ff990033', borderRadius: '8px', padding: '12px', marginBottom: '16px', fontSize: '13px', color: '#aaa' }}>
-            Minimum withdrawal: ₱500. Processed within 24 hours.
+          <div style={{ background: '#1a0f00', border: '1px solid #ff990033', borderRadius: '8px', padding: '12px', marginBottom: '16px', fontSize: '13px', color: '#aaa', lineHeight: '1.5' }}>
+            Minimum withdrawal: 500 ₱. Processed within 24 hours.<br />
+            Select your preferred payout currency and method.
           </div>
           {witMsg && <div style={msgStyle(witMsg.type)}>{witMsg.text}</div>}
           <form onSubmit={handleWithdraw}>
-            <select value={witMethod} onChange={e => setWitMethod(e.target.value)} style={inputStyle}>
-              <option value="easypaisa">Easypaisa</option>
-              <option value="jazzcash">JazzCash</option>
-            </select>
-            <input type="text" placeholder="Your Account Number" value={witAccount} onChange={e => setWitAccount(e.target.value)} style={inputStyle} required />
-            <input type="number" placeholder="Amount (min ₱500)" value={witAmount} onChange={e => setWitAmount(e.target.value)} style={inputStyle} required min={500} />
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+              <select value={witCurrency} onChange={e => setWitCurrency(e.target.value)} style={{ ...inputStyle, marginBottom: 0, flex: 1 }}>
+                <option value="pkr">PKR (Rs)</option>
+                <option value="usd">USD ($)</option>
+              </select>
+              <select value={witMethod} onChange={e => setWitMethod(e.target.value)} style={{ ...inputStyle, marginBottom: 0, flex: 2 }}>
+                <option value="easypaisa">Easypaisa</option>
+                <option value="jazzcash">JazzCash</option>
+                <option value="binance">Binance Pay (Crypto)</option>
+              </select>
+            </div>
+            
+            <input type="text" placeholder="Your Payout Account Number / Address" value={witAccount} onChange={e => setWitAccount(e.target.value)} style={inputStyle} required />
+            
+            <input 
+              type="number" 
+              placeholder="Withdrawal Amount (in ₱, min 500)" 
+              value={witAmount} 
+              onChange={e => setWitAmount(e.target.value)} 
+              style={inputStyle} 
+              required 
+              min={500} 
+            />
+
+            {witAmount && (
+              <div style={{ background: '#ff990011', border: '1px solid #ff990022', borderRadius: '8px', padding: '12px', color: '#ff9900', fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', textAlign: 'center' }}>
+                💰 Net Payout: {witCurrency === 'pkr' ? 'Rs ' : '$'} {computedWithdrawVal} {witCurrency.toUpperCase()}
+              </div>
+            )}
+
             <button type="submit" className="btn primary" style={{ width: '100%', padding: '14px', background: '#ff9900', border: 'none' }}>Submit Withdrawal Request</button>
           </form>
         </div>
@@ -140,13 +272,13 @@ export default function WalletPage() {
               <div>
                 <div style={{ fontWeight: 'bold', textTransform: 'capitalize' }}>{tx.type}</div>
                 <div style={{ fontSize: '12px', color: '#555' }}>{new Date(tx.created_at).toLocaleString()}</div>
-                {tx.notes && <div style={{ fontSize: '12px', color: '#888' }}>{tx.notes}</div>}
+                {tx.notes && <div style={{ fontSize: '12px', color: '#888', marginTop: '4px', maxWidth: '350px', lineBreak: 'anywhere' }}>{tx.notes}</div>}
               </div>
-              <div style={{ textAlign: 'right' }}>
+              <div style={{ textAlign: 'right', minWidth: '100px' }}>
                 <div style={{ fontWeight: 'bold', color: ['payout', 'deposit'].includes(tx.type) ? '#00ff88' : '#ff4444' }}>
                   {['payout', 'deposit'].includes(tx.type) ? '+' : '-'}₱{parseFloat(tx.amount).toFixed(2)}
                 </div>
-                <div style={{ fontSize: '12px', padding: '2px 8px', borderRadius: '8px', background: tx.status === 'completed' ? '#00ff8822' : tx.status === 'pending' ? '#ff990022' : '#ff000022', color: tx.status === 'completed' ? '#00ff88' : tx.status === 'pending' ? '#ff9900' : '#ff4444' }}>
+                <div style={{ fontSize: '12px', padding: '2px 8px', borderRadius: '8px', display: 'inline-block', marginTop: '4px', background: tx.status === 'completed' ? '#00ff8822' : tx.status === 'pending' ? '#ff990022' : '#ff000022', color: tx.status === 'completed' ? '#00ff88' : tx.status === 'pending' ? '#ff9900' : '#ff4444' }}>
                   {tx.status}
                 </div>
               </div>
