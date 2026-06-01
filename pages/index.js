@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
+import Link from 'next/link'
 import NavBar from '../components/NavBar'
-
+import BottomNav from '../components/BottomNav'
 const mockGames = [
   { id: '1', title: 'Gold Slots', subtitle: 'JILI', emoji: '🎰' },
   { id: '2', title: 'Crash', subtitle: 'Originals', emoji: '🚀' },
@@ -43,11 +44,13 @@ export default function Home() {
         <div className="section-title">Hot Games</div>
         <div className="hot-strip">
           {mockGames.map(game => (
-            <div key={game.id} className="game-card">
-              <div className="thumb">{game.emoji}</div>
-              <div className="title">{game.title}</div>
-              <div className="subtitle">{game.subtitle}</div>
-            </div>
+            <Link href={`/play/${game.title.toLowerCase().replace(' ', '-')}`} key={game.id} style={{ textDecoration: 'none' }}>
+              <div className="game-card">
+                <div className="thumb">{game.emoji}</div>
+                <div className="title">{game.title}</div>
+                <div className="subtitle">{game.subtitle}</div>
+              </div>
+            </Link>
           ))}
         </div>
       </section>
@@ -63,28 +66,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="bottom-nav">
-        <div className="nav-item active">
-          <span className="nav-icon">🏠</span>
-          <span>Home</span>
-        </div>
-        <div className="nav-item">
-          <span className="nav-icon">🎁</span>
-          <span>Offers</span>
-        </div>
-        <div className="nav-item">
-          <span className="nav-icon">💸</span>
-          <span>Invite</span>
-        </div>
-        <div className="nav-item">
-          <span className="nav-icon">🎧</span>
-          <span>Support</span>
-        </div>
-        <div className="nav-item">
-          <span className="nav-icon">👤</span>
-          <span>Profile</span>
-        </div>
-      </footer>
+      <BottomNav />
     </div>
   )
 }
