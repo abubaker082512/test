@@ -18,8 +18,50 @@ export default async function handler(req, res) {
 
   if (existing) return res.status(200).json({ success: true, message: 'Wallet already exists' })
 
+  // Insert wallet
   const { error } = await supabase.from('wallets').insert({ user_id, balance: 0.00 })
   if (error) return res.status(500).json({ error: 'Failed to create wallet' })
+
+  // Try to process referral reward
+  try {
+    const { data: { user }, error: userErr } = await supabase.auth.admin.getUserById(user_id)
+    const referrerEmail = user?.user_metadata?.referrer_email
+
+    if (referrerEmail && !userErr && user?.email) {
+      // Find referrer user
+      const { data: usersData, error: listErr } = await supabase.auth.admin.listUsers()
+      if (!listErr && usersData?.users) {
+        const referrer = usersData.users.find(u => u.email?.toLowerCase() === referrerEmail.toLowerCase())
+        
+        // Ensure referrer exists and is not the registering user themselves
+        if (referrer && referrer.id !== user_id) {
+          // Check if referrer already has a wallet
+          const { data: refWallet } = await supabase
+            .from('wallets').select('*').eq('user_id', referrer.id).single()
+          
+          if (refWallet) {
+            // Credit referrer balance
+            const newBal = parseFloat(refWallet.balance) + 155.55
+            await supabase
+              .from('wallets')
+              .update({ balance: newBal })
+              .eq('user_id', referrer.id)
+
+            // Log referral transaction
+            await supabase.from('transactions').insert({
+              user_id: referrer.id,
+              type: 'payout',
+              amount: 155.55,
+              status: 'completed',
+              notes: `Referral Reward: Invited ${user.email}`
+            })
+          }
+        }
+      }
+    }
+  } catch (refErr) {
+    console.error('Referral processing error:', refErr)
+  }
 
   return res.status(200).json({ success: true, message: 'Wallet created' })
 }

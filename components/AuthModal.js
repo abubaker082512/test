@@ -6,6 +6,7 @@ export default function AuthModal({ isOpen, onClose }) {
   const [isLogin, setIsLogin] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [referrerEmail, setReferrerEmail] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
 
@@ -19,7 +20,7 @@ export default function AuthModal({ isOpen, onClose }) {
     try {
       const { error } = isLogin 
         ? await logIn(email, password)
-        : await signUp(email, password)
+        : await signUp(email, password, referrerEmail)
 
       if (error) {
         setError(error.message)
@@ -57,6 +58,15 @@ export default function AuthModal({ isOpen, onClose }) {
             style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: '#111', color: '#fff' }}
             required
           />
+          {!isLogin && (
+            <input 
+              type="email" 
+              placeholder="Referral Email (Optional)" 
+              value={referrerEmail}
+              onChange={(e) => setReferrerEmail(e.target.value)}
+              style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: '#111', color: '#fff' }}
+            />
+          )}
           <button type="submit" className="btn primary" disabled={loading}>
             {loading ? 'Processing...' : (isLogin ? 'Log In' : 'Sign Up')}
           </button>
