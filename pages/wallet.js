@@ -90,6 +90,7 @@ export default function WalletPage() {
       setDepAmount('')
       setDepTxId('')
       fetchData()
+      window.dispatchEvent(new Event('wallet-updated'))
     }
   }
 
@@ -132,6 +133,7 @@ export default function WalletPage() {
       setWitAmount('')
       setWitAccount('')
       fetchData()
+      window.dispatchEvent(new Event('wallet-updated'))
     }
   }
 

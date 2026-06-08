@@ -86,6 +86,7 @@ export default function Offers() {
       if (data.success) {
         setMessage({ type: 'success', text: `🎉 Daily Check-in claimed! +₱5.00 added to your wallet.` })
         setCheckedInToday(true)
+        window.dispatchEvent(new Event('wallet-updated'))
       } else {
         setMessage({ type: 'error', text: data.error })
       }
@@ -111,6 +112,7 @@ export default function Offers() {
       if (data.success) {
         setMessage({ type: 'success', text: `🎉 Match Bonus claimed! +₱${data.bonus_amount.toFixed(2)} added to your wallet.` })
         setClaimedDepositBonus(true)
+        window.dispatchEvent(new Event('wallet-updated'))
       } else {
         setMessage({ type: 'error', text: data.error })
       }

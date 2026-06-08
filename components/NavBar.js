@@ -33,8 +33,15 @@ export default function NavBar() {
       })
       .subscribe()
 
+    // Custom client-side event for instant updates without websocket dependency
+    const handleWalletUpdate = () => {
+      fetchBalance()
+    }
+    window.addEventListener('wallet-updated', handleWalletUpdate)
+
     return () => {
       supabase.removeChannel(channel)
+      window.removeEventListener('wallet-updated', handleWalletUpdate)
     }
   }, [user])
 

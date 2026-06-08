@@ -162,6 +162,7 @@ export default function Home() {
         setTimeout(() => {
           setWheelPrize(data.prizeText)
           setSpinningWheel(false)
+          window.dispatchEvent(new Event('wallet-updated'))
         }, 3000)
       } else {
         setSpinningWheel(false)

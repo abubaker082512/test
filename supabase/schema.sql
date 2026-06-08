@@ -52,8 +52,9 @@ CREATE TABLE public.crash_state (
 -- Insert the initial singleton row
 INSERT INTO public.crash_state (id, status, multiplier) VALUES (1, 'waiting', 1.00);
 
--- Enable realtime for Crash State
+-- Enable realtime for Crash State and Wallets
 ALTER PUBLICATION supabase_realtime ADD TABLE public.crash_state;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.wallets;
 
 -- 4. Create transactions table
 CREATE TABLE public.transactions (
