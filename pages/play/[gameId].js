@@ -26,11 +26,23 @@ export default function PlayGame() {
   const fetchWallet = async () => {
     if (!user) return
     const { data } = await supabase.from('wallets').select('*').eq('user_id', user.id).single()
-    setWallet(data)
+    if (data) setWallet(data)
   }
 
   useEffect(() => {
-    if (user) fetchWallet()
+    if (!user) return
+    fetchWallet()
+
+    // Real-time wallet subscription inside play game wrapper
+    const channel = supabase.channel('play-wallet')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'wallets', filter: `user_id=eq.${user.id}` }, (payload) => {
+        setWallet(payload.new)
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [user])
 
   if (loading) return <div style={{ color: 'white', padding: '40px', textAlign: 'center' }}>Loading Game...</div>

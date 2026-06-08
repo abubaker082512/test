@@ -95,6 +95,7 @@ export default function Home() {
   const [showWheelPopup, setShowWheelPopup] = useState(false)
   const [spinningWheel, setSpinningWheel] = useState(false)
   const [wheelPrize, setWheelPrize] = useState(null)
+  const [wheelError, setWheelError] = useState(null)
   
   // Grid expansion state
   const [expandedCats, setExpandedCats] = useState({})
@@ -137,18 +138,39 @@ export default function Home() {
   }
 
   // Interactive Spin Wheel trigger
-  const spinWheel = () => {
+  const spinWheel = async () => {
     if (spinningWheel) return
+    if (!user) {
+      setShowWheelPopup(false)
+      setIsAuthModalOpen(true)
+      return
+    }
+
     setSpinningWheel(true)
     setWheelPrize(null)
-    
-    // Simulate spin duration
-    setTimeout(() => {
-      const prizes = ['₱88.88 Free Bet', '₱155.55 Bonus', '₱8,888.00 JACKPOT!', 'Try Again', '10 Free Spins']
-      const rolled = prizes[Math.floor(Math.random() * prizes.length)]
-      setWheelPrize(rolled)
+    setWheelError(null)
+
+    try {
+      const res = await fetch('/api/wallet/claim-spin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id })
+      })
+      const data = await res.json()
+
+      if (data.success) {
+        setTimeout(() => {
+          setWheelPrize(data.prizeText)
+          setSpinningWheel(false)
+        }, 3000)
+      } else {
+        setSpinningWheel(false)
+        setWheelError(data.error || 'Failed to spin. Try again!')
+      }
+    } catch (err) {
       setSpinningWheel(false)
-    }, 3000)
+      setWheelError('Connection error. Failed to spin.')
+    }
   }
 
   // Categories list matching visual screenshots
@@ -430,6 +452,21 @@ export default function Home() {
                 border: '1px solid rgba(0, 230, 118, 0.3)'
               }}>
                 🎉 Won: {wheelPrize}
+              </div>
+            )}
+
+            {wheelError && (
+              <div style={{ 
+                background: 'rgba(255, 23, 68, 0.15)', 
+                color: 'var(--danger)', 
+                padding: '10px', 
+                borderRadius: '8px', 
+                fontWeight: 'bold', 
+                fontSize: '12px', 
+                marginBottom: '16px',
+                border: '1px solid rgba(255, 23, 68, 0.3)'
+              }}>
+                ⚠️ {wheelError}
               </div>
             )}
 

@@ -54,3 +54,30 @@ INSERT INTO public.crash_state (id, status, multiplier) VALUES (1, 'waiting', 1.
 
 -- Enable realtime for Crash State
 ALTER PUBLICATION supabase_realtime ADD TABLE public.crash_state;
+
+-- 4. Create transactions table
+CREATE TABLE public.transactions (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
+  type TEXT NOT NULL, -- 'bet', 'payout', 'deposit', 'withdraw', 'checkin', etc.
+  amount DECIMAL(12, 2) NOT NULL,
+  status TEXT NOT NULL, -- 'pending', 'completed', 'failed', 'rejected'
+  method TEXT, -- 'easypaisa', 'jazzcash', 'binance', etc.
+  tx_id TEXT, -- user-submitted payment reference number
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own transactions" ON public.transactions FOR SELECT USING (auth.uid() = user_id);
+
+-- 5. Create currency_rates table
+CREATE TABLE public.currency_rates (
+  id INT PRIMARY KEY,
+  pkr_rate DECIMAL(12, 4) DEFAULT 1.0000 NOT NULL,
+  usd_rate DECIMAL(12, 2) DEFAULT 280.00 NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Insert the default singleton row if not exists
+INSERT INTO public.currency_rates (id, pkr_rate, usd_rate) VALUES (1, 1.0000, 280.00) ON CONFLICT (id) DO NOTHING;
