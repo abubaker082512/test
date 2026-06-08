@@ -1,10 +1,481 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { supabase } from '../../utils/supabase'
 import { useAuth } from '../../context/AuthContext'
 import AuthModal from '../../components/AuthModal'
 import CrashEngine from '../../components/CrashEngine'
+
+// ==========================================
+// 🟢 PLINKO ENGINE
+// ==========================================
+function PlinkoEngine({ user, wallet, fetchWallet }) {
+  const canvasRef = useRef(null)
+  const [betAmount, setBetAmount] = useState(10)
+  const [dropping, setDropping] = useState(false)
+  const [message, setMessage] = useState(null)
+  
+  const multipliers = [10.0, 5.0, 2.0, 0.5, 0.2, 0.5, 2.0, 5.0, 10.0]
+  const colors = ['#FF1744', '#FF9100', '#FFEA00', '#00E676', '#00E5FF', '#00E676', '#FFEA00', '#FF9100', '#FF1744']
+
+  const pegRows = 8
+  const pegRadius = 4
+  const ballRadius = 6
+
+  // Canvas dimensions
+  const width = 360
+  const height = 400
+
+  // Draw board pegs
+  const drawBoard = (ctx) => {
+    ctx.clearRect(0, 0, width, height)
+
+    // Draw background grid glow
+    ctx.fillStyle = '#0f1118'
+    ctx.fillRect(0, 0, width, height)
+
+    // Draw slots at bottom
+    const slotWidth = width / multipliers.length
+    for (let i = 0; i < multipliers.length; i++) {
+      const x = i * slotWidth
+      ctx.fillStyle = colors[i] + '15' // translucent
+      ctx.fillRect(x, height - 40, slotWidth, 40)
+
+      // Border lines
+      ctx.strokeStyle = '#222736'
+      ctx.strokeRect(x, height - 40, slotWidth, 40)
+
+      // Draw text
+      ctx.fillStyle = colors[i]
+      ctx.font = 'bold 11px Courier New'
+      ctx.textAlign = 'center'
+      ctx.fillText(`${multipliers[i]}x`, x + slotWidth / 2, height - 15)
+    }
+
+    // Draw pegs (triangle structure)
+    ctx.fillStyle = '#7E8B9E'
+    for (let r = 0; r < pegRows; r++) {
+      const count = r + 3
+      const rowY = 50 + r * 35
+      const rowWidth = (count - 1) * 30
+      const startX = (width - rowWidth) / 2
+
+      for (let c = 0; c < count; c++) {
+        const x = startX + c * 30
+        ctx.beginPath()
+        ctx.arc(x, rowY, pegRadius, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+  }
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    drawBoard(ctx)
+  }, [])
+
+  const dropBall = async () => {
+    if (!wallet || wallet.balance < betAmount) {
+      return setMessage({ type: 'error', text: 'Insufficient balance! Please deposit first.' })
+    }
+
+    setMessage(null)
+    setDropping(true)
+
+    // Deduct bet
+    const res = await fetch('/api/wallet/bet', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: user.id, amount: betAmount })
+    })
+    const data = await res.json()
+
+    if (!data.success) {
+      setDropping(false)
+      return setMessage({ type: 'error', text: data.error })
+    }
+
+    fetchWallet()
+
+    // Precalculate ball path decisions (8 levels, left: -1, right: +1)
+    const decisions = []
+    let currentColumn = 1 // starts at index 1 of top row (which has 3 pegs: indices 0, 1, 2)
+    const pathPoints = [{ x: width / 2, y: 20 }]
+
+    for (let r = 0; r < pegRows; r++) {
+      const count = r + 3
+      const rowY = 50 + r * 35
+      const rowWidth = (count - 1) * 30
+      const startX = (width - rowWidth) / 2
+
+      const step = Math.random() < 0.5 ? 0 : 1 // choose left/right peg collision
+      currentColumn += step
+
+      const x = startX + currentColumn * 30
+      pathPoints.push({ x, y: rowY })
+    }
+
+    // Determine final landed slot index (0 to 8)
+    const finalSlot = currentColumn
+    const multiplier = multipliers[finalSlot]
+
+    // Animation physics loop
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext('2d')
+    let currentStep = 0
+    let progress = 0
+
+    const animate = () => {
+      if (currentStep >= pathPoints.length - 1) {
+        // Ball reached slot
+        finishDrop(multiplier)
+        return
+      }
+
+      const p0 = pathPoints[currentStep]
+      const p1 = pathPoints[currentStep + 1]
+
+      // Cosine interpolation for organic drop bounce curve
+      progress += 0.08
+      if (progress >= 1.0) {
+        progress = 0
+        currentStep++
+        // Animate peg flash if hit
+      }
+
+      const t = progress
+      // Interpolate coordinates
+      const tCosine = (1 - Math.cos(t * Math.PI)) / 2
+      const x = p0.x + (p1.x - p0.x) * tCosine
+      // Add a slight arc/bounce upwards in the middle of step
+      const y = p0.y + (p1.y - p0.y) * t + Math.sin(t * Math.PI) * -6
+
+      // Redraw board
+      drawBoard(ctx)
+
+      // Draw falling ball with neon glow
+      ctx.shadowBlur = 8
+      ctx.shadowColor = '#00ff88'
+      ctx.fillStyle = '#00ff88'
+      ctx.beginPath()
+      ctx.arc(x, y, ballRadius, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.shadowBlur = 0 // reset
+
+      requestAnimationFrame(animate)
+    }
+
+    animate()
+  }
+
+  const finishDrop = async (multiplier) => {
+    // Credit payout
+    const payRes = await fetch('/api/wallet/payout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: user.id, bet_amount: betAmount, multiplier })
+    })
+    const payData = await payRes.json()
+
+    if (payData.success) {
+      if (multiplier >= 1) {
+        setMessage({ type: 'success', text: `🎉 Landed! +₱${(betAmount * multiplier).toFixed(2)} (${multiplier}x Payout!)` })
+      } else {
+        setMessage({ type: 'error', text: `😭 Landed in ${multiplier}x slot.` })
+      }
+    }
+    setDropping(false)
+    fetchWallet()
+  }
+
+  return (
+    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px', padding: '16px' }}>
+      <h2>Plinko Peg Engine</h2>
+
+      <div style={{ position: 'relative', background: '#0a0b0f', padding: '10px', borderRadius: '16px', border: '1px solid var(--border)' }}>
+        <canvas ref={canvasRef} width={width} height={height} style={{ borderRadius: '12px', display: 'block' }} />
+      </div>
+
+      {message && (
+        <div style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '13px', background: message.type === 'error' ? '#ff000022' : '#00ff8822', color: message.type === 'error' ? '#ff6666' : '#00ff88', border: `1px solid ${message.type === 'error' ? '#ff000033' : '#00ff8833'}` }}>
+          {message.text}
+        </div>
+      )}
+
+      {/* Bet selector */}
+      <div style={{ display: 'flex', gap: '8px', width: '280px' }}>
+        {[10, 50, 100, 500].map(amt => (
+          <button key={amt} className="btn" onClick={() => setBetAmount(amt)} style={{ flex: 1, padding: '8px', fontSize: '12px', background: betAmount === amt ? 'var(--accent)' : '#000', color: betAmount === amt ? '#000' : '#fff', borderColor: betAmount === amt ? 'var(--accent)' : '#333' }} disabled={dropping}>
+            ₱{amt}
+          </button>
+        ))}
+      </div>
+
+      <button className="btn primary" onClick={dropBall} disabled={dropping} style={{ width: '80%', maxWidth: '300px', padding: '16px', background: 'var(--accent)', color: '#000', fontWeight: 'bold' }}>
+        {dropping ? '⚽ DROP ACTIVE...' : `Drop Ball - ₱${betAmount}`}
+      </button>
+    </div>
+  )
+}
+
+// ==========================================
+// 🃏 BLACKJACK ENGINE
+// ==========================================
+function BlackjackEngine({ user, wallet, fetchWallet }) {
+  const [deck, setDeck] = useState([])
+  const [playerHand, setPlayerHand] = useState([])
+  const [dealerHand, setDealerHand] = useState([])
+  const [gameStage, setGameStage] = useState('idle') // 'idle' | 'player-turn' | 'ended'
+  const [betAmount, setBetAmount] = useState(10)
+  const [message, setMessage] = useState(null)
+  const [loading, setLoading] = useState(false)
+
+  // Standard deck creation
+  const createDeck = () => {
+    const suits = ['♠', '♥', '♦', '♣']
+    const values = [
+      { name: '2', score: 2 }, { name: '3', score: 3 }, { name: '4', score: 4 },
+      { name: '5', score: 5 }, { name: '6', score: 6 }, { name: '7', score: 7 },
+      { name: '8', score: 8 }, { name: '9', score: 9 }, { name: '10', score: 10 },
+      { name: 'J', score: 10 }, { name: 'Q', score: 10 }, { name: 'K', score: 10 },
+      { name: 'A', score: 11 }
+    ]
+    let newDeck = []
+    suits.forEach(suit => {
+      values.forEach(val => {
+        newDeck.push({ suit, name: val.name, score: val.score })
+      })
+    })
+    
+    // Shuffle
+    for (let i = newDeck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]]
+    }
+    return newDeck
+  }
+
+  // Calculate hand score with aces adjustment
+  const calculateScore = (hand) => {
+    let score = hand.reduce((acc, curr) => acc + curr.score, 0)
+    let aces = hand.filter(c => c.name === 'A').length
+    while (score > 21 && aces > 0) {
+      score -= 10
+      aces--
+    }
+    return score
+  }
+
+  const startGame = async () => {
+    if (!wallet || wallet.balance < betAmount) {
+      return setMessage({ type: 'error', text: 'Insufficient balance! Please deposit first.' })
+    }
+    setLoading(true)
+    setMessage(null)
+
+    // Deduct bet
+    const res = await fetch('/api/wallet/bet', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: user.id, amount: betAmount })
+    })
+    const data = await res.json()
+
+    if (!data.success) {
+      setLoading(false)
+      return setMessage({ type: 'error', text: data.error })
+    }
+
+    fetchWallet()
+
+    // Deal cards
+    const shufDeck = createDeck()
+    const pHand = [shufDeck.pop(), shufDeck.pop()]
+    const dHand = [shufDeck.pop(), shufDeck.pop()]
+
+    setPlayerHand(pHand)
+    setDealerHand(dHand)
+    setDeck(shufDeck)
+    
+    const pScore = calculateScore(pHand)
+    if (pScore === 21) {
+      // Immediate blackjack win!
+      finishGame(pHand, dHand, 'blackjack')
+    } else {
+      setGameStage('player-turn')
+    }
+    setLoading(false)
+  }
+
+  const hit = () => {
+    if (gameStage !== 'player-turn') return
+    const newDeck = [...deck]
+    const nextCard = newDeck.pop()
+    const newHand = [...playerHand, nextCard]
+
+    setPlayerHand(newHand)
+    setDeck(newDeck)
+
+    const score = calculateScore(newHand)
+    if (score > 21) {
+      finishGame(newHand, dealerHand, 'bust')
+    }
+  }
+
+  const stand = () => {
+    if (gameStage !== 'player-turn') return
+    setGameStage('ended')
+    setLoading(true)
+
+    // Dealer turn loop (must hit until 17)
+    let dHand = [...dealerHand]
+    let newDeck = [...deck]
+
+    while (calculateScore(dHand) < 17) {
+      dHand.push(newDeck.pop())
+    }
+
+    setDealerHand(dHand)
+    setDeck(newDeck)
+
+    const pScore = calculateScore(playerHand)
+    const dScore = calculateScore(dHand)
+
+    if (dScore > 21) {
+      finishGame(playerHand, dHand, 'dealer-bust')
+    } else if (pScore > dScore) {
+      finishGame(playerHand, dHand, 'win')
+    } else if (pScore === dScore) {
+      finishGame(playerHand, dHand, 'push')
+    } else {
+      finishGame(playerHand, dHand, 'lose')
+    }
+    setLoading(false)
+  }
+
+  const finishGame = async (pHand, dHand, result) => {
+    setGameStage('ended')
+    
+    let multiplier = 0
+    let outcomeMsg = ''
+    let isWin = false
+
+    if (result === 'blackjack') {
+      multiplier = 2.5 // Blackjack pays 3:2 (2.5x total payout)
+      outcomeMsg = `🃏 Blackjack! +₱${(betAmount * 2.5).toFixed(2)}`
+      isWin = true
+    } else if (result === 'win' || result === 'dealer-bust') {
+      multiplier = 2.0 // Win pays 1:1 (2.0x total payout)
+      outcomeMsg = result === 'dealer-bust' ? `Dealer Busted! +₱${(betAmount * 2).toFixed(2)}` : `You Won! +₱${(betAmount * 2).toFixed(2)}`
+      isWin = true
+    } else if (result === 'push') {
+      multiplier = 1.0 // Return bet
+      outcomeMsg = 'Push! Bet refunded.'
+      isWin = true
+    } else if (result === 'bust') {
+      outcomeMsg = `Bust! You score ${calculateScore(pHand)}. Lost bet.`
+    } else if (result === 'lose') {
+      outcomeMsg = `Lost! Dealer scores ${calculateScore(dHand)}. Lost bet.`
+    }
+
+    if (multiplier > 0) {
+      const payRes = await fetch('/api/wallet/payout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id, bet_amount: betAmount, multiplier })
+      })
+      await payRes.json()
+    }
+
+    setMessage({ type: isWin ? 'success' : 'error', text: outcomeMsg })
+    fetchWallet()
+  }
+
+  const renderCard = (card, hidden = false) => {
+    if (hidden) return (
+      <div style={{ width: '60px', height: '90px', background: 'linear-gradient(135deg, #1f1200 0%, #3a2200 100%)', border: '2px solid var(--accent)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', color: 'var(--accent)' }}>
+        🎰
+      </div>
+    )
+
+    const isRed = ['♥', '♦'].includes(card.suit)
+    return (
+      <div style={{ width: '60px', height: '90px', background: '#fff', border: '1px solid #ddd', borderRadius: '8px', padding: '8px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: isRed ? 'red' : 'black', boxShadow: '0 4px 6px rgba(0,0,0,0.2)' }}>
+        <div style={{ fontWeight: 'bold', fontSize: '14px', lineHeight: 1 }}>{card.name}</div>
+        <div style={{ alignSelf: 'center', fontSize: '24px', lineHeight: 1 }}>{card.suit}</div>
+        <div style={{ alignSelf: 'flex-end', fontWeight: 'bold', fontSize: '14px', lineHeight: 1, transform: 'rotate(180deg)' }}>{card.name}</div>
+      </div>
+    )
+  }
+
+  const pScore = calculateScore(playerHand)
+  const dScore = calculateScore(dealerHand)
+
+  return (
+    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px', padding: '16px' }}>
+      <h2>Classic Blackjack</h2>
+
+      {gameStage !== 'idle' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: '360px', background: '#0a0b0f', padding: '24px', borderRadius: '16px', border: '1px solid var(--border)' }}>
+          {/* Dealer Hand */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--muted)', fontSize: '13px', marginBottom: '8px' }}>
+              <span>Dealer Score: {gameStage === 'player-turn' ? '?' : dScore}</span>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {dealerHand.map((c, i) => (
+                <div key={i}>
+                  {renderCard(c, gameStage === 'player-turn' && i === 1)}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Player Hand */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--muted)', fontSize: '13px', marginBottom: '8px' }}>
+              <span>Your Score: {pScore}</span>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {playerHand.map((c, i) => (
+                <div key={i}>{renderCard(c)}</div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {message && (
+        <div style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '13px', background: message.type === 'error' ? '#ff000022' : '#00ff8822', color: message.type === 'error' ? '#ff6666' : '#00ff88', border: `1px solid ${message.type === 'error' ? '#ff000033' : '#00ff8833'}` }}>
+          {message.text}
+        </div>
+      )}
+
+      {gameStage === 'idle' || gameStage === 'ended' ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', maxWidth: '280px' }}>
+          {/* Bet size */}
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {[10, 50, 100, 500].map(amt => (
+              <button key={amt} className="btn" onClick={() => setBetAmount(amt)} style={{ flex: 1, padding: '8px', fontSize: '12px', background: betAmount === amt ? 'var(--accent)' : '#000', color: betAmount === amt ? '#000' : '#fff', borderColor: betAmount === amt ? 'var(--accent)' : '#333' }} disabled={loading}>
+                ₱{amt}
+              </button>
+            ))}
+          </div>
+          <button className="btn primary" onClick={startGame} style={{ padding: '16px', fontSize: '16px', fontWeight: 'bold' }} disabled={loading}>
+            {loading ? 'Dealing...' : `BET ₱${betAmount} & DEAL`}
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', gap: '12px', width: '100%', maxWidth: '280px' }}>
+          <button className="btn primary" onClick={hit} style={{ flex: 1, padding: '14px', background: 'var(--accent)', color: '#000', fontWeight: 'bold' }}>Hit</button>
+          <button className="btn" onClick={stand} style={{ flex: 1, padding: '14px' }}>Stand</button>
+        </div>
+      )}
+    </div>
+  )
+}
 
 // ==========================================
 // 🎰 SLOTS ENGINE (Gold Slots, Super Ace, Fortune Gems)
@@ -638,13 +1109,10 @@ function RouletteEngine({ user, wallet, fetchWallet }) {
 
     fetchWallet()
 
-    // Spin delay
+    // Slide/Spin delay
     setTimeout(async () => {
       setSpinning(false)
       
-      // Determine roulette result
-      // Standard Mini-Roulette wheel probabilities:
-      // Red: 6 slots, Black: 6 slots, Green: 1 slot (Total 13 slots)
       const num = Math.floor(Math.random() * 13)
       let landed = 'red'
       if (num === 0) landed = 'green'
@@ -654,7 +1122,7 @@ function RouletteEngine({ user, wallet, fetchWallet }) {
 
       const isWin = landed === betChoice
       if (isWin) {
-        const multiplier = betChoice === 'green' ? 12.0 : 2.0 // Green pays 12x, Red/Black pays 2x
+        const multiplier = betChoice === 'green' ? 12.0 : 2.0 
         const payRes = await fetch('/api/wallet/payout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -752,6 +1220,8 @@ export default function PlayGame() {
     const props = { user, wallet, fetchWallet }
     switch (gameId) {
       case 'crash': return <CrashEngine />
+      case 'plinko': return <PlinkoEngine {...props} />
+      case 'blackjack': return <BlackjackEngine {...props} />
       case 'gold-slots': return <SlotsEngine title="Gold Slots" icon="🎰" symbolsPool={['🍒', '🍋', '🔔', '💎', '7️⃣']} borderCol="var(--accent)" {...props} />
       case 'super-ace': return <SlotsEngine title="Super Ace" icon="🂡" symbolsPool={['♠️', '♥️', '♣️', '♦️', '🃏']} borderCol="#ff4444" {...props} />
       case 'fortune-gems': return <SlotsEngine title="Fortune Gems" icon="💎" symbolsPool={['💎', '🟢', '🔴', '🔵', '🟣']} borderCol="#44ff44" {...props} />
