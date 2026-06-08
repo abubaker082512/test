@@ -110,6 +110,8 @@ export default function PlayGame() {
       case 'jili-cards':
       case 'kingmidas-cards':
       case 'wg-cards':
+      case 'mini-roulette':
+      case 'blackjack-live':
         return <BlackjackGame {...props} />
       
       // 🎰 Slots
