@@ -10,7 +10,8 @@ export default function GameCard({
   theme = 'linear-gradient(180deg, #202637 0%, #181d2a 100%)',
   icon = '🎮',
   slug = '',
-  imageType = '' // 'ronaldo', 'messi', etc. to draw simulated player canvas/portraits
+  imageType = '', // 'ronaldo', 'messi', etc. to draw simulated player canvas/portraits
+  imageUrl = ''
 }) {
   const [isFavorite, setIsFavorite] = useState(false)
 
@@ -123,11 +124,20 @@ export default function GameCard({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: '46px',
-        textShadow: '0 0 20px rgba(255,255,255,0.15)',
-        position: 'relative'
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        {icon}
+        {imageUrl ? (
+          <img 
+            src={imageUrl} 
+            alt={title} 
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+          />
+        ) : (
+          <span style={{ fontSize: '46px', textShadow: '0 0 20px rgba(255,255,255,0.15)' }}>
+            {icon}
+          </span>
+        )}
       </div>
     )
   }
