@@ -20,6 +20,21 @@ const GAME_MAP = {
   'blackjack-live': '58d7089aa20bce7f70e0e2ce81e888f4',     // Infinite Blackjack (Evolution Live)
   'blackjack': '58d7089aa20bce7f70e0e2ce81e888f4',          // Infinite Blackjack (Evolution Live)
   
+  // Custom unique game mappings to specific live providers
+  'slots-pg': 'bdfb23c974a2517198c5443adeea77a8',           // Super Ace (JILI)
+  'jili-slots': 'a990de177577a2e6a889aaac5f57b429',         // Fortune Gems (JILI)
+  'wg-slots': 'a990de177577a2e6a889aaac5f57b429',           // Fortune Gems (JILI)
+  'fc-slots': 'bdfb23c974a2517198c5443adeea77a8',           // Super Ace (JILI)
+  'jdb-slots': 'a990de177577a2e6a889aaac5f57b429',          // Fortune Gems (JILI)
+  'pp-slots': 'bdfb23c974a2517198c5443adeea77a8',           // Super Ace (JILI)
+  'mg-slots': 'a990de177577a2e6a889aaac5f57b429',           // Fortune Gems (JILI)
+  'cq9-slots': 'bdfb23c974a2517198c5443adeea77a8',          // Super Ace (JILI)
+  'bng-slots': 'a990de177577a2e6a889aaac5f57b429',          // Fortune Gems (JILI)
+
+  'sexy-live': '7b44393101abad7ac31e21fc1bdb3d56',          // Emperor Speed Baccarat B (Evolution Live)
+  'jili-cards': '7b44393101abad7ac31e21fc1bdb3d56',         // Emperor Speed Baccarat B (Evolution Live)
+  'kingmidas-cards': '58d7089aa20bce7f70e0e2ce81e888f4',    // Infinite Blackjack (Evolution Live)
+  
   // Fallbacks
   'gold-slots': 'bdfb23c974a2517198c5443adeea77a8',
   'crash': 'bdfb23c974a2517198c5443adeea77a8',

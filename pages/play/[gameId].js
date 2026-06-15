@@ -15,6 +15,17 @@ import MinesweeperGame from '../../components/games/MinesweeperGame'
 import FishingJoy from '../../components/games/FishingJoy'
 import CockfightGame from '../../components/games/CockfightGame'
 import SportsBook from '../../components/games/SportsBook'
+import RouletteGame from '../../components/games/RouletteGame'
+import BaccaratGame from '../../components/games/BaccaratGame'
+import HiloGame from '../../components/games/HiloGame'
+import KenoGame from '../../components/games/KenoGame'
+import LimboGame from '../../components/games/LimboGame'
+import DragonTigerGame from '../../components/games/DragonTigerGame'
+import SicBoGame from '../../components/games/SicBoGame'
+import VideoPokerGame from '../../components/games/VideoPokerGame'
+import ClassicSlots from '../../components/games/ClassicSlots'
+import PenaltyShootout from '../../components/games/PenaltyShootout'
+import FishHunterGame from '../../components/games/FishHunterGame'
 
 export default function PlayGame() {
   const router = useRouter()
@@ -95,38 +106,53 @@ export default function PlayGame() {
   const renderGame = () => {
     const props = { user, wallet, fetchWallet }
     switch (gameId) {
-      // 🚀 Blockchain / Crash
+      // 🚀 Blockchain / Crash / Limbo
       case 'crash': 
+        return <CrashGame {...props} />
+
       case 'xgame-blockchain':
       case 'wg-blockchain':
-        return <CrashGame {...props} />
+        return <LimboGame {...props} />
       
       // 🟢 Plinko
       case 'plinko': 
         return <PlinkoGame {...props} />
       
-      // 🃏 Cards & Table
+      // 🃏 Cards & Table / Sic Bo / Video Poker / Dragon Tiger
       case 'blackjack': 
-      case 'jili-cards':
-      case 'kingmidas-cards':
-      case 'wg-cards':
-      case 'mini-roulette':
       case 'blackjack-live':
         return <BlackjackGame {...props} />
+
+      case 'wg-cards':
+        return <SicBoGame {...props} />
+
+      case 'jili-cards':
+        return <VideoPokerGame {...props} />
+
+      case 'mini-roulette':
+      case 'pp-live':
+        return <RouletteGame {...props} />
+
+      case 'baccarat':
+        return <BaccaratGame {...props} />
+
+      case 'sexy-live':
+        return <DragonTigerGame {...props} />
+
+      case 'hilo':
+      case 'kingmidas-cards':
+        return <HiloGame {...props} />
+
+      case 'keno':
+      case 'bng-slots':
+        return <KenoGame {...props} />
       
-      // 🎰 Slots
+      // 🎰 Slots / Classic Slots
       case 'super-ace': 
       case 'super-ace-deluxe':
       case 'gold-slots':
       case 'slots-pg':
-      case 'jili-slots':
-      case 'wg-slots':
-      case 'fc-slots':
-      case 'jdb-slots':
       case 'pp-slots':
-      case 'mg-slots':
-      case 'cq9-slots':
-      case 'bng-slots':
       case 'fortune-garuda':
       case 'wild-bounty':
       case 'treasures-of-aztec':
@@ -136,38 +162,50 @@ export default function PlayGame() {
         return <SuperAce {...props} />
       
       case 'fortune-gems': 
+      case 'jili-slots':
+      case 'wg-slots':
+      case 'jdb-slots':
+      case 'mg-slots':
         return <FortuneGems {...props} />
+
+      case 'fc-slots':
+      case 'cq9-slots':
+        return <ClassicSlots {...props} />
       
       // 💣 Mines
       case 'minesweeper': 
       case 'minesweeper-orig':
         return <MinesweeperGame {...props} />
       
-      // 🦈 Fishing
+      // 🦈 Fishing / Fish Hunter
       case 'fishing-joy': 
-      case 'jdb-fishing':
       case 'jili-fishing':
       case 'fc-fishing':
-      case 'ka-fishing':
       case 'ky-fishing':
-      case 'baison-fishing':
       case 'wg-fishing':
-      case 'cq9-fishing':
       case 'yellowbat-fishing':
         return <FishingJoy {...props} />
+
+      case 'jdb-fishing':
+      case 'ka-fishing':
+      case 'baison-fishing':
+      case 'cq9-fishing':
+        return <FishHunterGame {...props} />
       
       // 🐓 Cockfight
       case 'ds88-cockfight':
         return <CockfightGame {...props} />
 
-      // ⚽ SportsBook
+      // ⚽ SportsBook / Penalty Shootout
       case 'crown-sports':
-      case 'wg-sports':
       case 'ug-sports':
       case 'poly-sports':
       case '3-sing-sports':
-      case 'fb-sports':
         return <SportsBook {...props} />
+
+      case 'wg-sports':
+      case 'fb-sports':
+        return <PenaltyShootout {...props} />
 
       default: 
         return <div style={{ padding: '40px', textAlign: 'center' }}>Game "{gameId}" not found.</div>

@@ -1,9 +1,7 @@
 import React, { useState } from 'react'
-import { useRouter } from 'next/router'
 import { useAuth } from '../context/AuthContext'
 
 export default function AuthModal({ isOpen, onClose }) {
-  const router = useRouter()
   const { signUp, logIn } = useAuth()
   const [isLogin, setIsLogin] = useState(true)
   const [email, setEmail] = useState('')
@@ -20,29 +18,14 @@ export default function AuthModal({ isOpen, onClose }) {
     setLoading(true)
 
     try {
-      if (isLogin) {
-        const { error } = await logIn(email, password)
-        if (error) {
-          setError(error.message)
-        } else {
-          onClose() // Close modal on success
-        }
-      } else {
-        // Sign Up Flow
-        const { error } = await signUp(email, password, referrerEmail)
-        if (error) {
-          setError(error.message)
-          return
-        }
+      const { error } = isLogin 
+        ? await logIn(email, password)
+        : await signUp(email, password, referrerEmail)
 
-        // Auto-login immediately after registration
-        const { error: loginErr } = await logIn(email, password)
-        if (loginErr) {
-          setError('Account created! Please check your email to verify your address.')
-        } else {
-          onClose()
-          router.push('/') // Redirect directly to the home screen
-        }
+      if (error) {
+        setError(error.message)
+      } else {
+        onClose() // Close modal on success
       }
     } catch (err) {
       setError('An unexpected error occurred.')
