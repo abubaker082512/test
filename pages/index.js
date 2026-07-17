@@ -196,9 +196,8 @@ export default function Home() {
 
   const filteredGames = getFilteredGames(activeCategory)
   
-  // Decide how many items to show based on expansion
-  const isExpanded = expandedCats[activeCategory]
-  const displayedGames = isExpanded ? filteredGames : filteredGames.slice(0, 6)
+  // Display all games in the horizontal scrolling row
+  const displayedGames = filteredGames
 
   return (
     <div className="app">
@@ -295,45 +294,26 @@ export default function Home() {
           <div className="title-left">
             <span>{activeCategory} Games</span>
           </div>
-          <div className="title-right" onClick={() => toggleExpand(activeCategory)}>
-            {isExpanded ? 'Collapse' : 'All'}
-          </div>
         </div>
 
         {filteredGames.length > 0 ? (
-          <>
-            <div className="games-grid">
-              {displayedGames.map(game => (
-                <GameCard 
-                  key={game.id}
-                  id={game.id}
-                  title={game.title}
-                  provider={game.provider}
-                  badge={game.badge}
-                  recommended={game.recommended}
-                  theme={game.theme}
-                  icon={game.icon}
-                  slug={game.slug}
-                  imageType={game.imageType}
-                  imageUrl={game.imageUrl}
-                />
-              ))}
-            </div>
-
-            {/* Expand / Collapse Button */}
-            {filteredGames.length > 6 && (
-              <button 
-                className="expand-btn"
-                onClick={() => toggleExpand(activeCategory)}
-              >
-                {isExpanded ? (
-                  <>▲ Collapse Catalog</>
-                ) : (
-                  <>{filteredGames.length - 6} more game(s) Expand ▼</>
-                )}
-              </button>
-            )}
-          </>
+          <div className="games-grid">
+            {displayedGames.map(game => (
+              <GameCard 
+                key={game.id}
+                id={game.id}
+                title={game.title}
+                provider={game.provider}
+                badge={game.badge}
+                recommended={game.recommended}
+                theme={game.theme}
+                icon={game.icon}
+                slug={game.slug}
+                imageType={game.imageType}
+                imageUrl={game.imageUrl}
+              />
+            ))}
+          </div>
         ) : (
           <div style={{ textAlign: 'center', padding: '40px 16px', color: 'var(--muted)', fontSize: '13px' }}>
             No games found in this category.
