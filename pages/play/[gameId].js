@@ -26,6 +26,10 @@ import VideoPokerGame from '../../components/games/VideoPokerGame'
 import ClassicSlots from '../../components/games/ClassicSlots'
 import PenaltyShootout from '../../components/games/PenaltyShootout'
 import FishHunterGame from '../../components/games/FishHunterGame'
+import MahjongWays from '../../components/games/MahjongWays'
+import WildBounty from '../../components/games/WildBounty'
+import CoinFlip from '../../components/games/CoinFlip'
+import DerbyGame from '../../components/games/DerbyGame'
 
 export default function PlayGame() {
   const router = useRouter()
@@ -106,13 +110,15 @@ export default function PlayGame() {
   const renderGame = () => {
     const props = { user, wallet, fetchWallet }
     switch (gameId) {
-      // 🚀 Blockchain / Crash / Limbo
+      // 🚀 Blockchain / Crash / Limbo / CoinFlip
       case 'crash': 
         return <CrashGame {...props} />
 
       case 'xgame-blockchain':
-      case 'wg-blockchain':
         return <LimboGame {...props} />
+
+      case 'wg-blockchain':
+        return <CoinFlip {...props} />
       
       // 🟢 Plinko
       case 'plinko': 
@@ -147,19 +153,23 @@ export default function PlayGame() {
       case 'bng-slots':
         return <KenoGame {...props} />
       
-      // 🎰 Slots / Classic Slots
+      // 🎰 Slots / Classic Slots / Mahjong Ways / Wild Bounty
       case 'super-ace': 
       case 'super-ace-deluxe':
       case 'gold-slots':
       case 'slots-pg':
       case 'pp-slots':
       case 'fortune-garuda':
-      case 'wild-bounty':
       case 'treasures-of-aztec':
       case 'pinata-wins':
-      case 'mahjong-ways-2':
       case 'boxing-king':
         return <SuperAce {...props} />
+
+      case 'mahjong-ways-2':
+        return <MahjongWays {...props} />
+
+      case 'wild-bounty':
+        return <WildBounty {...props} />
       
       case 'fortune-gems': 
       case 'jili-slots':
@@ -196,12 +206,14 @@ export default function PlayGame() {
       case 'ds88-cockfight':
         return <CockfightGame {...props} />
 
-      // ⚽ SportsBook / Penalty Shootout
+      // ⚽ SportsBook / Penalty Shootout / Derby Racing
       case 'crown-sports':
       case 'ug-sports':
+        return <SportsBook {...props} />
+
       case 'poly-sports':
       case '3-sing-sports':
-        return <SportsBook {...props} />
+        return <DerbyGame {...props} />
 
       case 'wg-sports':
       case 'fb-sports':
