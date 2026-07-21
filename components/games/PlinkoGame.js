@@ -228,141 +228,119 @@ export default function PlinkoGame({ user, wallet, fetchWallet }) {
   }
 
   return (
-    <div style={{
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '16px',
-      background: 'linear-gradient(180deg, #090c15 0%, #030407 100%)',
-      width: '100%',
-      minHeight: '100%',
-      overflowY: 'auto'
-    }}>
-      <h2 style={{
-        fontSize: '22px',
-        fontWeight: '900',
-        fontStyle: 'italic',
-        background: 'linear-gradient(to right, #f5c242, #ffaa00)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        marginBottom: '16px'
-      }}>
-        PLINKO PEGS
-      </h2>
-
-      {/* Physics Canvas Area */}
-      <div style={{
-        position: 'relative',
-        background: '#0a0b0f',
-        padding: '10px',
-        borderRadius: '20px',
-        border: '2px solid var(--border)',
-        boxShadow: '0 8px 30px rgba(0,0,0,0.6)'
-      }}>
-        <canvas ref={canvasRef} width={width} height={height} style={{ borderRadius: '14px', display: 'block' }} />
-      </div>
-
-      {/* Message feedback */}
-      {message && (
-        <div style={{
-          padding: '8px 16px',
-          borderRadius: '8px',
-          fontSize: '12px',
-          marginTop: '12px',
-          background: message.type === 'error' ? 'rgba(255, 23, 68, 0.15)' : 'rgba(0, 230, 118, 0.15)',
-          color: message.type === 'error' ? '#ff6666' : '#00ff88',
-          border: `1px solid ${message.type === 'error' ? '#ff174433' : '#00e67633'}`,
-          maxWidth: '360px',
-          textAlign: 'center'
+    <div className="game-screen-wrapper">
+      <div className="game-glass-panel" style={{ maxWidth: '440px', border: '1px solid rgba(245, 194, 66, 0.3)' }}>
+        <h2 className="game-title-neon" style={{
+          color: '#f5c242',
+          textShadow: '0 0 15px rgba(245, 194, 66, 0.6), 0 2px 4px #000'
         }}>
-          {message.text}
-        </div>
-      )}
+          🔵 PLINKO PEGS
+        </h2>
 
-      {/* Settings Panel */}
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '10px',
-        width: '100%',
-        maxWidth: '380px',
-        marginTop: '14px',
-        background: 'rgba(0,0,0,0.5)',
-        padding: '16px',
-        borderRadius: '12px',
-        border: '1px solid var(--border)'
-      }}>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {/* Rows count */}
-          <div style={{ flex: 1 }}>
-            <label style={{ fontSize: '10px', color: 'var(--muted)', display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>PEG ROWS</label>
-            <select 
-              value={rows} 
-              onChange={e => setRows(Number(e.target.value))} 
-              disabled={dropping}
-              style={{ padding: '8px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '12px', width: '100%' }}
-            >
-              <option value="8">8 Rows</option>
-              <option value="10">10 Rows</option>
-              <option value="12">12 Rows</option>
-            </select>
+        {/* Physics Canvas Area */}
+        <div style={{
+          position: 'relative',
+          background: 'rgba(0, 0, 0, 0.75)',
+          padding: '10px',
+          borderRadius: '20px',
+          border: '1.5px solid rgba(245, 194, 66, 0.15)',
+          boxShadow: 'inset 0 0 20px rgba(0,0,0,0.9), 0 8px 25px rgba(0,0,0,0.5)',
+          marginBottom: '16px'
+        }}>
+          <canvas ref={canvasRef} width={width} height={height} style={{ borderRadius: '14px', display: 'block', width: '100%' }} />
+        </div>
+
+        {/* Message feedback */}
+        {message && (
+          <div style={{
+            padding: '8px 16px',
+            borderRadius: '8px',
+            fontSize: '11px',
+            marginBottom: '12px',
+            background: message.type === 'error' ? 'rgba(255, 23, 68, 0.1)' : 'rgba(0, 230, 118, 0.1)',
+            color: message.type === 'error' ? '#ff1744' : '#00e676',
+            border: `1px solid ${message.type === 'error' ? 'rgba(255, 23, 68, 0.2)' : 'rgba(0, 230, 118, 0.2)'}`,
+            fontWeight: 'bold'
+          }}>
+            {message.text}
+          </div>
+        )}
+
+        {/* Settings Panel */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
+          width: '100%',
+          background: 'rgba(0, 0, 0, 0.5)',
+          padding: '16px',
+          borderRadius: '16px',
+          border: '1px solid rgba(255, 255, 255, 0.06)'
+        }}>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {/* Rows count */}
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', display: 'block', marginBottom: '4px', fontWeight: '900', textTransform: 'uppercase' }}>Peg Rows</label>
+              <select 
+                value={rows} 
+                onChange={e => setRows(Number(e.target.value))} 
+                disabled={dropping}
+                style={{ padding: '8px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: '#070b12', color: '#fff', fontSize: '12px', width: '100%', fontWeight: 'bold' }}
+              >
+                <option value="8">8 Rows</option>
+                <option value="10">10 Rows</option>
+                <option value="12">12 Rows</option>
+              </select>
+            </div>
+
+            {/* Risk settings */}
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', display: 'block', marginBottom: '4px', fontWeight: '900', textTransform: 'uppercase' }}>Risk Level</label>
+              <select 
+                value={risk} 
+                onChange={e => setRisk(e.target.value)} 
+                disabled={dropping}
+                style={{ padding: '8px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: '#070b12', color: '#fff', fontSize: '12px', width: '100%', fontWeight: 'bold' }}
+              >
+                <option value="Low">Low Risk</option>
+                <option value="Medium">Medium Risk</option>
+                <option value="High">High Risk</option>
+              </select>
+            </div>
           </div>
 
-          {/* Risk settings */}
-          <div style={{ flex: 1 }}>
-            <label style={{ fontSize: '10px', color: 'var(--muted)', display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>RISK LEVEL</label>
-            <select 
-              value={risk} 
-              onChange={e => setRisk(e.target.value)} 
-              disabled={dropping}
-              style={{ padding: '8px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '12px', width: '100%' }}
-            >
-              <option value="Low">Low Risk</option>
-              <option value="Medium">Medium Risk</option>
-              <option value="High">High Risk</option>
-            </select>
+          {/* Bet Chips */}
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', margin: '4px 0' }}>
+            {[10, 50, 100, 500].map(amt => (
+              <button 
+                key={amt} 
+                className={`premium-chip-btn ${betAmount === amt ? 'active' : ''}`}
+                onClick={() => setBetAmount(amt)}
+                disabled={dropping}
+                style={{
+                  background: betAmount === amt 
+                    ? 'linear-gradient(135deg, #ffea00 0%, #ff8f00 100%)' 
+                    : 'linear-gradient(135deg, #131b26 0%, #080c10 100%)',
+                  border: betAmount === amt ? '2px solid #ffea00' : '2.5px dashed rgba(255,255,255,0.2)'
+                }}
+              >
+                ₱{amt}
+              </button>
+            ))}
           </div>
-        </div>
 
-        {/* Bet Chips */}
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {[10, 50, 100, 500].map(amt => (
-            <button 
-              key={amt} 
-              className="btn" 
-              onClick={() => setBetAmount(amt)}
-              disabled={dropping}
-              style={{
-                flex: 1,
-                padding: '8px',
-                fontSize: '12px',
-                background: betAmount === amt ? 'var(--accent)' : '#000',
-                color: betAmount === amt ? '#000' : '#fff',
-                borderColor: betAmount === amt ? 'var(--accent)' : '#333'
-              }}
-            >
-              ₱{amt}
-            </button>
-          ))}
+          <button 
+            className="game-btn-primary" 
+            onClick={dropBall} 
+            disabled={dropping}
+            style={{
+              background: 'linear-gradient(90deg, #ffea00 0%, #ff8f00 100%)',
+              boxShadow: '0 4px 20px rgba(245, 194, 66, 0.4)'
+            }}
+          >
+            {dropping ? '⚽ BALL ACTIVE...' : `DROP BALL : ₱${betAmount}`}
+          </button>
         </div>
-
-        <button 
-          className="btn primary" 
-          onClick={dropBall} 
-          disabled={dropping}
-          style={{
-            width: '100%',
-            padding: '14px',
-            fontSize: '16px',
-            fontWeight: 'bold',
-            background: 'var(--accent)',
-            color: '#000'
-          }}
-        >
-          {dropping ? '⚽ BALL ACTIVE...' : `Drop Ball — ₱${betAmount}`}
-        </button>
       </div>
     </div>
   )

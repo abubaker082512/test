@@ -241,162 +241,212 @@ export default function BlackjackGame({ user, wallet, fetchWallet }) {
   const dScore = calculateScore(dealerHand)
 
   return (
-    <div style={{
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '16px',
-      background: 'radial-gradient(circle at center, #072e17 0%, #03150b 100%)',
-      width: '100%',
-      minHeight: '100%',
-      position: 'relative',
-      overflowY: 'auto'
-    }} className="felt-table">
-      <h2 style={{
-        fontSize: '22px',
-        fontWeight: '900',
-        fontStyle: 'italic',
-        color: '#fff',
-        textShadow: '0 2px 10px rgba(0,0,0,0.5)',
-        marginBottom: '20px'
-      }}>
-        BETPK BLACKJACK
-      </h2>
-
-      {/* Main Table Hands Grid */}
-      {(playerHand.length > 0 || dealerHand.length > 0) && (
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '30px',
-          width: '100%',
-          maxWidth: '360px',
-          background: 'rgba(0, 0, 0, 0.4)',
-          padding: '24px',
-          borderRadius: '16px',
-          border: '1px solid rgba(255,255,255,0.1)',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-          backdropFilter: 'blur(4px)',
-          position: 'relative'
+    <div className="game-screen-wrapper" style={{ background: 'radial-gradient(circle at center, #0a2517 0%, #030f09 100%) !important' }}>
+      <div className="game-glass-panel" style={{ maxWidth: '400px', border: '1px solid rgba(0, 230, 118, 0.25)', background: 'rgba(5, 17, 10, 0.7) !important' }}>
+        <h2 className="game-title-neon" style={{
+          color: '#00e676',
+          textShadow: '0 0 15px rgba(0, 230, 118, 0.6), 0 2px 4px #000'
         }}>
-          {/* Dealer Hand */}
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#fff', fontSize: '12px', marginBottom: '8px', fontWeight: 'bold' }}>
-              <span>DEALER {gameStage === 'player-turn' ? '(?)' : `(${dScore})`}</span>
+          🃏 BETPK BLACKJACK
+        </h2>
+
+        {/* Main Table Hands Grid */}
+        {(playerHand.length > 0 || dealerHand.length > 0) && (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '24px',
+            width: '100%',
+            background: 'rgba(0, 0, 0, 0.65)',
+            padding: '20px',
+            borderRadius: '16px',
+            border: '1px solid rgba(255,255,255,0.06)',
+            boxShadow: 'inset 0 0 15px rgba(0,0,0,0.8)',
+            marginBottom: '20px',
+            position: 'relative'
+          }}>
+            {/* Dealer Hand */}
+            <div>
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: '900', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>
+                Dealer Hand {gameStage !== 'player-turn' && dScore > 0 ? `(${dScore})` : ''}
+              </div>
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', minHeight: '84px', alignItems: 'center' }}>
+                {dealerHand.map((card, i) => (
+                  <div 
+                    key={i} 
+                    className="card-dealing"
+                    style={{
+                      width: '56px',
+                      height: '80px',
+                      background: card.hidden ? 'linear-gradient(135deg, #d84315 0%, #bf360c 100%)' : '#fff',
+                      borderRadius: '8px',
+                      border: card.hidden ? '2px solid #fff' : 'none',
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.4)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: card.hidden ? '24px' : '22px',
+                      color: card.hidden ? '#fff' : (card.suit === '♥' || card.suit === '♦' ? '#ff1744' : '#000'),
+                      position: 'relative'
+                    }}
+                  >
+                    {!card.hidden ? (
+                      <>
+                        <span style={{ position: 'absolute', top: '4px', left: '6px', fontSize: '11px', fontWeight: 'bold' }}>{card.name}</span>
+                        <span>{card.suit}</span>
+                      </>
+                    ) : '🃏'}
+                  </div>
+                ))}
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              {dealerHand.map((c, i) => renderCard(c, i, gameStage === 'player-turn' && i === 1))}
+
+            {/* Player Hand */}
+            <div>
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: '900', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>
+                Your Hand ({pScore})
+              </div>
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', minHeight: '84px', alignItems: 'center' }}>
+                {playerHand.map((card, i) => (
+                  <div 
+                    key={i} 
+                    className="card-dealing"
+                    style={{
+                      width: '56px',
+                      height: '80px',
+                      background: '#fff',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.4)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '22px',
+                      color: card.suit === '♥' || card.suit === '♦' ? '#ff1744' : '#000',
+                      position: 'relative'
+                    }}
+                  >
+                    <span style={{ position: 'absolute', top: '4px', left: '6px', fontSize: '11px', fontWeight: 'bold' }}>{card.name}</span>
+                    <span>{card.suit}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
+        )}
 
-          {/* Player Hand */}
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#fff', fontSize: '12px', marginBottom: '8px', fontWeight: 'bold' }}>
-              <span>YOUR HAND ({pScore})</span>
-            </div>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              {playerHand.map((c, i) => renderCard(c, i, false))}
-            </div>
+        {/* Message HUD */}
+        {message && (
+          <div style={{
+            padding: '10px 16px',
+            borderRadius: '8px',
+            fontSize: '12px',
+            marginBottom: '16px',
+            background: message.type === 'error' ? 'rgba(255, 23, 68, 0.1)' : 'rgba(0, 230, 118, 0.1)',
+            color: message.type === 'error' ? '#ff1744' : '#00e676',
+            border: `1px solid ${message.type === 'error' ? 'rgba(255, 23, 68, 0.2)' : 'rgba(0, 230, 118, 0.2)'}`,
+            fontWeight: 'bold'
+          }}>
+            {message.text}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Message feedback */}
-      {message && (
-        <div style={{
-          padding: '8px 16px',
-          borderRadius: '8px',
-          fontSize: '12px',
-          marginTop: '12px',
-          background: message.type === 'error' ? 'rgba(255, 23, 68, 0.2)' : 'rgba(0, 230, 118, 0.2)',
-          color: message.type === 'error' ? '#ff6666' : '#00ff88',
-          border: `1px solid ${message.type === 'error' ? '#ff174433' : '#00e67633'}`,
-          maxWidth: '360px',
-          textAlign: 'center',
-          boxShadow: '0 4px 10px rgba(0,0,0,0.4)',
-          zIndex: 5
-        }}>
-          {message.text}
-        </div>
-      )}
+        {/* Action controllers */}
+        {gameStage === 'idle' || gameStage === 'ended' ? (
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            gap: '12px',
+            width: '100%'
+          }}>
+            {/* Bet Chips Selector */}
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+              {[10, 50, 100, 500].map(amt => (
+                <button 
+                  key={amt} 
+                  className={`premium-chip-btn ${betAmount === amt ? 'active' : ''}`}
+                  onClick={() => setBetAmount(amt)}
+                  disabled={loading}
+                  style={{
+                    background: betAmount === amt 
+                      ? 'linear-gradient(135deg, #00e676 0%, #00a152 100%)' 
+                      : 'linear-gradient(135deg, #131b26 0%, #080c10 100%)',
+                    border: betAmount === amt ? '2px solid #ffea00' : '2.5px dashed rgba(255,255,255,0.2)',
+                    borderRadius: '50%',
+                    width: '50px',
+                    height: '50px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    color: '#fff',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ₱{amt}
+                </button>
+              ))}
+            </div>
 
-      {/* Bottom control panel */}
-      {gameStage === 'idle' || gameStage === 'ended' ? (
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '12px',
-          width: '100%',
-          maxWidth: '300px',
-          marginTop: '20px',
-          zIndex: 5
-        }}>
-          {/* Bet Chips Selector */}
-          <div style={{ display: 'flex', gap: '8px' }}>
-            {[10, 50, 100, 500].map(amt => (
-              <button 
-                key={amt} 
-                className="btn" 
-                onClick={() => setBetAmount(amt)}
-                disabled={loading}
-                style={{
-                  flex: 1,
-                  padding: '8px',
-                  fontSize: '12px',
-                  background: betAmount === amt ? 'var(--accent)' : '#000',
-                  color: betAmount === amt ? '#000' : '#fff',
-                  borderColor: betAmount === amt ? 'var(--accent)' : '#333',
-                  boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
-                }}
-              >
-                ₱{amt}
-              </button>
-            ))}
+            <button 
+              className="game-btn-primary" 
+              onClick={startGame} 
+              disabled={loading}
+              style={{
+                background: 'linear-gradient(90deg, #00e676 0%, #00a152 100%)',
+                boxShadow: '0 4px 20px rgba(0, 230, 118, 0.4)',
+                border: 'none',
+                padding: '12px',
+                borderRadius: '8px',
+                fontWeight: 'bold'
+              }}
+            >
+              {loading ? 'DEALING CARDS...' : `PLACE BET : ₱${betAmount}`}
+            </button>
           </div>
-
-          <button 
-            className="btn primary" 
-            onClick={startGame} 
-            disabled={loading}
-            style={{ 
-              padding: '16px', 
-              fontSize: '16px', 
-              fontWeight: 'bold',
-              boxShadow: '0 4px 15px rgba(245, 194, 66, 0.3)' 
-            }}
-          >
-            {loading ? 'DEALING CARDS...' : `BET ₱${betAmount} & DEAL`}
-          </button>
-        </div>
-      ) : (
-        <div style={{ 
-          display: 'flex', 
-          gap: '12px', 
-          width: '100%', 
-          maxWidth: '280px', 
-          marginTop: '20px',
-          zIndex: 5 
-        }}>
-          <button 
-            className="btn primary" 
-            onClick={hit} 
-            disabled={loading || gameStage !== 'player-turn'}
-            style={{ flex: 1, padding: '14px', background: 'var(--accent)', color: '#000', fontWeight: 'bold' }}
-          >
-            Hit
-          </button>
-          <button 
-            className="btn" 
-            onClick={stand} 
-            disabled={loading || gameStage !== 'player-turn'}
-            style={{ flex: 1, padding: '14px', background: '#000', border: '1px solid #333' }}
-          >
-            Stand
-          </button>
-        </div>
-      )}
+        ) : (
+          <div style={{ 
+            display: 'flex', 
+            gap: '12px', 
+            width: '100%'
+          }}>
+            <button 
+              className="game-btn-primary" 
+              onClick={hit} 
+              disabled={loading || gameStage !== 'player-turn'}
+              style={{ 
+                flex: 1, 
+                background: 'linear-gradient(90deg, #29b6f6 0%, #01579b 100%)', 
+                color: '#fff !important',
+                boxShadow: '0 4px 15px rgba(41, 182, 246, 0.4)',
+                padding: '12px',
+                borderRadius: '8px',
+                border: 'none',
+                fontWeight: 'bold'
+              }}
+            >
+              Hit
+            </button>
+            <button 
+              className="game-btn-primary" 
+              onClick={stand} 
+              disabled={loading || gameStage !== 'player-turn'}
+              style={{ 
+                flex: 1, 
+                background: 'linear-gradient(90deg, #ff9100 0%, #ff6d00 100%)', 
+                color: '#000 !important',
+                boxShadow: '0 4px 15px rgba(255, 145, 0, 0.4)',
+                padding: '12px',
+                borderRadius: '8px',
+                border: 'none',
+                fontWeight: 'bold'
+              }}
+            >
+              Stand
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

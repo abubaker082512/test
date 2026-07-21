@@ -279,190 +279,167 @@ export default function CrashGame({ user, wallet, fetchWallet }) {
   }
 
   return (
-    <div style={{
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '16px',
-      background: 'linear-gradient(180deg, #100b14 0%, #060408 100%)',
-      width: '100%',
-      minHeight: '100%',
-      overflowY: 'auto'
-    }}>
-      <h2 style={{
-        fontSize: '22px',
-        fontWeight: '900',
-        fontStyle: 'italic',
-        background: 'linear-gradient(to right, #ff4444, #ffbb00)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        marginBottom: '16px'
+    <div className="game-screen-wrapper">
+      <div className="game-glass-panel" style={{ 
+        maxWidth: '400px', 
+        border: `1.5px solid ${stage === 'crashed' ? '#ff1744' : stage === 'cashout' ? '#00e676' : 'rgba(255, 68, 68, 0.3)'}` 
       }}>
-        ROCKET CRASH
-      </h2>
-
-      {/* Physics Canvas Area */}
-      <div style={{
-        position: 'relative',
-        background: '#0a0b0f',
-        padding: '8px',
-        borderRadius: '20px',
-        border: `2px solid ${stage === 'crashed' ? '#ff1744' : stage === 'cashout' ? '#00e676' : 'var(--border)'}`,
-        boxShadow: '0 8px 30px rgba(0,0,0,0.6)',
-        width: '100%',
-        maxWidth: '340px'
-      }}>
-        <canvas 
-          ref={canvasRef} 
-          width={320} 
-          height={260} 
-          style={{ borderRadius: '14px', display: 'block' }} 
-        />
-        
-        {/* Floating multiplier state */}
-        {stage !== 'running' && stage !== 'crashed' && (
-          <div style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            color: '#fff',
-            fontSize: '38px',
-            fontWeight: '900',
-            fontFamily: 'Outfit',
-            textShadow: '0 4px 10px rgba(0,0,0,0.8)',
-            zIndex: 10
-          }}>
-            {stage === 'cashout' ? `${cashedOutMult.toFixed(2)}x` : '1.00x'}
-          </div>
-        )}
-      </div>
-
-      {/* Message feedback */}
-      {message && (
-        <div style={{
-          padding: '8px 16px',
-          borderRadius: '8px',
-          fontSize: '12px',
-          marginTop: '12px',
-          background: message.type === 'error' ? 'rgba(255, 23, 68, 0.15)' : 'rgba(0, 230, 118, 0.15)',
-          color: message.type === 'error' ? '#ff6666' : '#00ff88',
-          border: `1px solid ${message.type === 'error' ? '#ff174433' : '#00e67633'}`,
-          maxWidth: '320px',
-          textAlign: 'center'
+        <h2 className="game-title-neon" style={{
+          color: '#ff4444',
+          textShadow: '0 0 15px rgba(255, 68, 68, 0.6), 0 2px 4px #000'
         }}>
-          {message.text}
-        </div>
-      )}
+          🚀 ROCKET CRASH
+        </h2>
 
-      {/* Action controls */}
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '10px',
-        width: '100%',
-        maxWidth: '340px',
-        marginTop: '12px',
-        background: 'rgba(0,0,0,0.5)',
-        padding: '12px',
-        borderRadius: '12px',
-        border: '1px solid var(--border)'
-      }}>
-        {stage !== 'running' ? (
-          <>
-            {/* Bet chips */}
-            <div style={{ display: 'flex', gap: '8px' }}>
-              {[10, 50, 100, 500].map(amt => (
-                <button 
-                  key={amt} 
-                  className="btn" 
-                  onClick={() => setBetAmount(amt)}
-                  disabled={processing}
-                  style={{
-                    flex: 1,
-                    padding: '8px',
-                    fontSize: '12px',
-                    background: betAmount === amt ? 'var(--accent)' : '#000',
-                    color: betAmount === amt ? '#000' : '#fff',
-                    borderColor: betAmount === amt ? 'var(--accent)' : '#333'
-                  }}
-                >
-                  ₱{amt}
-                </button>
-              ))}
-            </div>
-            <button 
-              className="btn primary" 
-              onClick={triggerLaunch}
-              disabled={processing}
-              style={{
-                width: '100%',
-                padding: '14px',
-                fontSize: '16px',
-                fontWeight: 'bold'
-              }}
-            >
-              {processing ? 'CHARGING ENGINES...' : `BET ₱${betAmount} & LAUNCH`}
-            </button>
-          </>
-        ) : (
-          <button 
-            className="btn primary" 
-            onClick={triggerCashOut}
-            style={{
-              width: '100%',
-              padding: '14px',
-              fontSize: '18px',
+        {/* Physics Canvas Area */}
+        <div style={{
+          position: 'relative',
+          background: 'rgba(0, 0, 0, 0.75)',
+          padding: '10px',
+          borderRadius: '20px',
+          border: `2px solid ${stage === 'crashed' ? '#ff1744' : stage === 'cashout' ? '#00e676' : 'rgba(255,255,255,0.06)'}`,
+          boxShadow: 'inset 0 0 20px rgba(0,0,0,0.9), 0 8px 25px rgba(0,0,0,0.5)',
+          marginBottom: '16px',
+          overflow: 'hidden'
+        }}>
+          <canvas 
+            ref={canvasRef} 
+            width={320} 
+            height={260} 
+            style={{ borderRadius: '14px', display: 'block', width: '100%' }} 
+          />
+          
+          {/* Floating multiplier state */}
+          {stage !== 'running' && stage !== 'crashed' && (
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              color: '#fff',
+              fontSize: '38px',
               fontWeight: '900',
-              background: 'linear-gradient(135deg, #00e676 0%, #00c851 100%)',
-              color: '#000',
-              boxShadow: '0 4px 15px rgba(0, 230, 118, 0.4)'
-            }}
-          >
-            CASH OUT - ₱{(betAmount * multiplier).toFixed(2)}
-          </button>
-        )}
-      </div>
+              fontFamily: 'Outfit',
+              textShadow: '0 4px 10px rgba(0,0,0,0.8)',
+              zIndex: 10
+            }}>
+              {stage === 'cashout' ? `${cashedOutMult.toFixed(2)}x` : '1.00x'}
+            </div>
+          )}
+        </div>
 
-      {/* Simulated Live Players panel */}
-      {stage === 'running' && (
-        <div style={{
-          width: '100%',
-          maxWidth: '340px',
-          marginTop: '12px',
-          background: 'rgba(0,0,0,0.4)',
-          border: '1px solid var(--border)',
-          borderRadius: '12px',
-          padding: '12px'
-        }}>
-          <div style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>
-            Active Players in Flight
+        {/* Message feedback */}
+        {message && (
+          <div style={{
+            padding: '10px 16px',
+            borderRadius: '8px',
+            fontSize: '11px',
+            marginBottom: '12px',
+            background: message.type === 'error' ? 'rgba(255, 23, 68, 0.1)' : 'rgba(0, 230, 118, 0.1)',
+            color: message.type === 'error' ? '#ff1744' : '#00e676',
+            border: `1px solid ${message.type === 'error' ? 'rgba(255, 23, 68, 0.2)' : 'rgba(0, 230, 118, 0.2)'}`,
+            fontWeight: 'bold'
+          }}>
+            {message.text}
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', maxHeight: '72px', overflowY: 'auto' }}>
-            {players.map((p, idx) => (
-              <div 
-                key={idx} 
-                style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  fontSize: '11px',
-                  background: p.cashedOut ? 'rgba(0, 230, 118, 0.08)' : 'rgba(255,255,255,0.03)',
-                  padding: '4px 8px',
-                  borderRadius: '6px',
-                  border: `1px solid ${p.cashedOut ? 'rgba(0, 230, 118, 0.2)' : 'transparent'}`
+        )}
+
+        {/* Action controls */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
+          width: '100%',
+          background: 'rgba(0, 0, 0, 0.5)',
+          padding: '16px',
+          borderRadius: '16px',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
+          marginBottom: '12px'
+        }}>
+          {stage !== 'running' ? (
+            <>
+              {/* Bet chips */}
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                {[10, 50, 100, 500].map(amt => (
+                  <button 
+                    key={amt} 
+                    className={`premium-chip-btn ${betAmount === amt ? 'active' : ''}`}
+                    onClick={() => setBetAmount(amt)}
+                    disabled={processing}
+                    style={{
+                      background: betAmount === amt 
+                        ? 'linear-gradient(135deg, #ff4444 0%, #cc1111 100%)' 
+                        : 'linear-gradient(135deg, #131b26 0%, #080c10 100%)',
+                      border: betAmount === amt ? '2px solid #ffea00' : '2.5px dashed rgba(255,255,255,0.2)'
+                    }}
+                  >
+                    ₱{amt}
+                  </button>
+                ))}
+              </div>
+              <button 
+                className="game-btn-primary" 
+                onClick={triggerLaunch}
+                disabled={processing}
+                style={{
+                  background: 'linear-gradient(90deg, #ff5252 0%, #ff1744 100%)',
+                  boxShadow: '0 4px 20px rgba(255, 23, 68, 0.4)',
+                  color: '#fff !important'
                 }}
               >
-                <span style={{ color: p.cashedOut ? 'var(--success)' : '#fff' }}>{p.name}</span>
-                <span style={{ fontWeight: 'bold', color: p.cashedOut ? 'var(--success)' : 'var(--accent)' }}>
-                  {p.cashedOut ? `${p.cashOutMult.toFixed(2)}x` : `₱${p.bet}`}
-                </span>
-              </div>
-            ))}
-          </div>
+                {processing ? 'CHARGING ENGINES...' : `BET ₱${betAmount} & LAUNCH`}
+              </button>
+            </>
+          ) : (
+            <button 
+              className="game-btn-primary" 
+              onClick={triggerCashOut}
+              style={{
+                background: 'linear-gradient(90deg, #00e676 0%, #00b0ff 100%)',
+                boxShadow: '0 4px 20px rgba(0, 230, 118, 0.4)'
+              }}
+            >
+              CASH OUT : ₱{(betAmount * multiplier).toFixed(2)}
+            </button>
+          )}
         </div>
-      )}
+
+        {/* Simulated Live Players panel */}
+        {stage === 'running' && (
+          <div style={{
+            width: '100%',
+            background: 'rgba(0,0,0,0.55)',
+            border: '1px solid rgba(255,255,255,0.06)',
+            borderRadius: '16px',
+            padding: '12px'
+          }}>
+            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', fontWeight: '900', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>
+              Active Players in Flight
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', maxHeight: '72px', overflowY: 'auto' }}>
+              {players.map((p, idx) => (
+                <div 
+                  key={idx} 
+                  style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    fontSize: '11px',
+                    background: p.cashedOut ? 'rgba(0, 230, 118, 0.08)' : 'rgba(255,255,255,0.03)',
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    border: `1px solid ${p.cashedOut ? 'rgba(0, 230, 118, 0.2)' : 'transparent'}`
+                  }}
+                >
+                  <span style={{ color: p.cashedOut ? '#00e676' : '#fff' }}>{p.name}</span>
+                  <span style={{ fontWeight: 'bold', color: p.cashedOut ? '#00e676' : '#ffea00' }}>
+                    {p.cashedOut ? `${p.cashOutMult.toFixed(2)}x` : `₱${p.bet}`}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

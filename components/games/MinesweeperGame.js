@@ -111,157 +111,151 @@ export default function MinesweeperGame({ user, wallet, fetchWallet }) {
   }
 
   return (
-    <div style={{
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '16px',
-      background: 'linear-gradient(180deg, #09100d 0%, #030504 100%)',
-      width: '100%',
-      minHeight: '100%',
-      overflowY: 'auto'
-    }} className="matrix-bg">
-      <h2 style={{
-        fontSize: '22px',
-        fontWeight: '900',
-        fontStyle: 'italic',
-        background: 'linear-gradient(to right, #00e676, #00ff88)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        marginBottom: '16px',
-        textShadow: '0 2px 12px rgba(0, 230, 118, 0.25)'
-      }}>
-        CYBER MINES
-      </h2>
-
-      {active && (
-        <div style={{ 
-          fontSize: '16px', 
-          color: 'var(--success)', 
-          fontWeight: 'bold',
-          marginBottom: '12px',
-          fontFamily: 'monospace',
-          textShadow: '0 0 10px rgba(0,230,118,0.3)'
+    <div className="game-screen-wrapper">
+      <div className="game-glass-panel" style={{ border: '1px solid rgba(0, 230, 118, 0.3)' }}>
+        <h2 className="game-title-neon" style={{
+          color: '#00e676',
+          textShadow: '0 0 15px rgba(0, 230, 118, 0.6), 0 2px 4px #000'
         }}>
-          MULTIPLIER: {multiplier}x [₱{(betAmount * multiplier).toFixed(2)}]
-        </div>
-      )}
-      
-      {/* 5x5 Cyber Grid */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(5, 1fr)', 
-        gap: '8px', 
-        background: '#070a0e', 
-        padding: '14px', 
-        borderRadius: '16px', 
-        border: '1px solid rgba(0, 230, 118, 0.2)',
-        boxShadow: 'inset 0 0 15px rgba(0,0,0,0.8)'
-      }}>
-        {grid.map((cell, i) => {
-          const isExploded = explodingIndex === i
-          const isRevealed = cell === '💎'
-          
-          return (
-            <div 
-              key={i} 
-              onClick={() => reveal(i)} 
-              style={{ 
-                width: '52px', 
-                height: '52px', 
-                background: isExploded ? '#ff174415' : isRevealed ? '#00e67615' : '#0a0d14', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                fontSize: '24px', 
-                cursor: active ? 'pointer' : 'default', 
-                borderRadius: '10px', 
-                border: isExploded ? '2px solid #ff1744' : isRevealed ? '2px solid #00e676' : '1px solid var(--border)', 
-                transition: 'all 0.2s',
-                boxShadow: isExploded ? '0 0 15px rgba(255, 23, 68, 0.4)' : isRevealed ? '0 0 15px rgba(0, 230, 118, 0.4)' : 'none'
-              }}
-            >
-              {cell}
-            </div>
-          )
-        })}
-      </div>
+          💣 CYBER MINES
+        </h2>
 
-      {message && (
+        {active && (
+          <div style={{ 
+            fontSize: '14px', 
+            color: '#00e676', 
+            fontWeight: '900', 
+            background: 'rgba(0,230,118,0.1)', 
+            padding: '8px', 
+            borderRadius: '8px', 
+            marginBottom: '16px',
+            border: '1px solid rgba(0,230,118,0.2)'
+          }}>
+            Multiplier: {multiplier}x | Gems Found: {revealedCount}/21
+          </div>
+        )}
+        
+        {/* 5x5 Cyber Grid */}
         <div style={{ 
-          padding: '8px 16px', 
-          borderRadius: '8px', 
-          fontSize: '12px', 
-          marginTop: '16px',
-          background: message.type === 'error' ? 'rgba(255, 23, 68, 0.15)' : 'rgba(0, 230, 118, 0.15)', 
-          color: message.type === 'error' ? '#ff6666' : '#00ff88', 
-          border: `1px solid ${message.type === 'error' ? '#ff174433' : '#00e67633'}`,
-          maxWidth: '320px',
-          textAlign: 'center'
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(5, 1fr)', 
+          gap: '8px', 
+          background: 'rgba(0,0,0,0.6)', 
+          padding: '16px', 
+          borderRadius: '16px', 
+          border: '1px solid rgba(0, 230, 118, 0.15)',
+          boxShadow: 'inset 0 0 15px rgba(0,0,0,0.8)',
+          justifyItems: 'center',
+          marginBottom: '20px'
         }}>
-          {message.text}
+          {grid.map((cell, i) => {
+            const isExploded = explodingIndex === i
+            const isRevealed = cell === '💎'
+            
+            return (
+              <div 
+                key={i} 
+                onClick={() => reveal(i)} 
+                style={{ 
+                  width: '54px', 
+                  height: '54px', 
+                  background: isExploded 
+                    ? 'linear-gradient(135deg, #ff1744 0%, #b71c1c 100%)' 
+                    : isRevealed 
+                      ? 'linear-gradient(135deg, #00e676 0%, #00a152 100%)' 
+                      : 'linear-gradient(135deg, #131b26 0%, #080c10 100%)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  fontSize: '26px', 
+                  cursor: active ? 'pointer' : 'default', 
+                  borderRadius: '10px', 
+                  border: isExploded ? '2px solid #fff' : isRevealed ? '2px solid #fff' : '1px solid rgba(255,255,255,0.06)', 
+                  transition: 'all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                  boxShadow: isExploded 
+                    ? '0 0 15px #ff1744, 0 4px 6px rgba(0,0,0,0.4)' 
+                    : isRevealed 
+                      ? '0 0 15px #00e676, 0 4px 6px rgba(0,0,0,0.4)' 
+                      : '0 4px 6px rgba(0,0,0,0.3)',
+                  transform: (isExploded || isRevealed) ? 'scale(0.92)' : 'none',
+                  userSelect: 'none'
+                }}
+              >
+                {cell}
+              </div>
+            )
+          })}
         </div>
-      )}
 
-      {/* Action controls */}
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column',
-        gap: '10px', 
-        width: '100%', 
-        maxWidth: '300px',
-        marginTop: '16px' 
-      }}>
-        {!active ? (
-          <>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              {[10, 50, 100, 500].map(amt => (
-                <button 
-                  key={amt} 
-                  className="btn" 
-                  onClick={() => setBetAmount(amt)}
-                  disabled={processing}
-                  style={{
-                    flex: 1,
-                    padding: '8px',
-                    fontSize: '12px',
-                    background: betAmount === amt ? 'var(--accent)' : '#000',
-                    color: betAmount === amt ? '#000' : '#fff',
-                    borderColor: betAmount === amt ? 'var(--accent)' : '#333'
-                  }}
-                >
-                  ₱{amt}
-                </button>
-              ))}
-            </div>
+        {message && (
+          <div style={{ 
+            padding: '10px 16px', 
+            borderRadius: '8px', 
+            fontSize: '12px', 
+            marginBottom: '16px',
+            background: message.type === 'error' ? 'rgba(255, 23, 68, 0.1)' : 'rgba(0, 230, 118, 0.1)', 
+            color: message.type === 'error' ? '#ff1744' : '#00e676', 
+            border: `1px solid ${message.type === 'error' ? 'rgba(255, 23, 68, 0.2)' : 'rgba(0, 230, 118, 0.2)'}`,
+            fontWeight: 'bold'
+          }}>
+            {message.text}
+          </div>
+        )}
+
+        {/* Action controls */}
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          gap: '12px', 
+          width: '100%'
+        }}>
+          {!active ? (
+            <>
+              {/* Chip selectors */}
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '4px' }}>
+                {[10, 50, 100, 500].map(amt => (
+                  <button 
+                    key={amt} 
+                    className={`premium-chip-btn ${betAmount === amt ? 'active' : ''}`}
+                    onClick={() => setBetAmount(amt)}
+                    disabled={processing}
+                    style={{
+                      background: betAmount === amt 
+                        ? 'linear-gradient(135deg, #00e676 0%, #00a152 100%)' 
+                        : 'linear-gradient(135deg, #131b26 0%, #080c10 100%)',
+                      border: betAmount === amt ? '2px solid #ffea00' : '2.5px dashed rgba(255,255,255,0.2)'
+                    }}
+                  >
+                    ₱{amt}
+                  </button>
+                ))}
+              </div>
+              <button 
+                className="game-btn-primary" 
+                onClick={startGame} 
+                style={{
+                  background: 'linear-gradient(90deg, #00e676 0%, #00a152 100%)',
+                  boxShadow: '0 4px 20px rgba(0, 230, 118, 0.4)'
+                }}
+                disabled={processing}
+              >
+                {processing ? 'PREPARING GRID...' : `PLACE BET: ₱${betAmount}`}
+              </button>
+            </>
+          ) : (
             <button 
-              className="btn primary" 
-              onClick={startGame} 
-              style={{ padding: '14px', fontWeight: 'bold' }} 
+              className="game-btn-primary" 
+              onClick={cashOut} 
+              style={{ 
+                background: 'linear-gradient(90deg, #ffea00 0%, #ff8f00 100%)',
+                boxShadow: '0 4px 20px rgba(255, 234, 0, 0.4)'
+              }} 
               disabled={processing}
             >
-              {processing ? 'PREPARING GRID...' : `BET ₱${betAmount}`}
+              {processing ? 'COLLECTING...' : `SAFE CASH OUT — ₱${(betAmount * multiplier).toFixed(2)}`}
             </button>
-          </>
-        ) : (
-          <button 
-            className="btn primary" 
-            onClick={cashOut} 
-            style={{ 
-              width: '100%', 
-              padding: '14px', 
-              background: 'linear-gradient(135deg, #00e676 0%, #00c851 100%)', 
-              color: '#000', 
-              fontWeight: '900',
-              boxShadow: '0 4px 15px rgba(0, 230, 118, 0.3)'
-            }} 
-            disabled={processing}
-          >
-            {processing ? 'COLLECTING...' : `SAFE CASH OUT — ₱${(betAmount * multiplier).toFixed(2)}`}
-          </button>
-        )}
+          )}
+        </div>
       </div>
     </div>
   )
