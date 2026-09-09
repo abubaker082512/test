@@ -46,11 +46,16 @@ const mockGames = [
   { id: 'yellowbat-fishing', title: 'YellowBat Fishing', provider: 'YellowBat', badge: '', recommended: false, theme: 'linear-gradient(135deg, #3c0000 0%, #120000 100%)', icon: '🐋', slug: 'fishing-joy', category: 'Fishing', imageUrl: '/games/fishing.png' },
 
   // Cards
+  { id: 'hilo-orig', title: 'Hi-Lo Cards', provider: 'Originals', badge: 'Streak', recommended: true, theme: 'linear-gradient(135deg, #12003c 0%, #030012 100%)', icon: '🃏', slug: 'hilo', category: 'Cards', imageUrl: '/games/live.png' },
+  { id: 'baccarat-orig', title: 'Classic Baccarat', provider: 'Originals', badge: 'Table', recommended: true, theme: 'linear-gradient(135deg, #003c1e 0%, #001207 100%)', icon: '👑', slug: 'baccarat', category: 'Cards', imageUrl: '/games/live.png' },
   { id: 'jili-cards', title: 'JILI Cards', provider: 'JILI', badge: '', recommended: false, theme: 'linear-gradient(135deg, #4b3600 0%, #151000 100%)', icon: '🃏', slug: 'jili-cards', category: 'Cards', imageUrl: '/games/live.png' },
   { id: 'kingmidas-cards', title: 'KingMidas Cards', provider: 'KingMidas', badge: '', recommended: false, theme: 'linear-gradient(135deg, #4b2600 0%, #150a00 100%)', icon: '🃏', slug: 'kingmidas-cards', category: 'Cards', imageUrl: '/games/live.png' },
   { id: 'wg-cards', title: 'WG Cards', provider: 'WG', badge: '', recommended: false, theme: 'linear-gradient(135deg, #004b4b 0%, #001515 100%)', icon: '🃏', slug: 'wg-cards', category: 'Cards', imageUrl: '/games/live.png' },
 
   // Blockchain
+  { id: 'crypto-dice-orig', title: 'Crypto Dice', provider: 'Originals', badge: '98% RTP', recommended: true, theme: 'linear-gradient(135deg, #004b12 0%, #001f0a 100%)', icon: '🎲', slug: 'dice', category: 'Blockchain', imageUrl: '/games/crash.png' },
+  { id: 'wheel-orig', title: 'Lucky Wheel', provider: 'Originals', badge: '10x Mult', recommended: true, theme: 'linear-gradient(135deg, #4b3600 0%, #151000 100%)', icon: '🎡', slug: 'wheel', category: 'Blockchain', imageUrl: '/games/crash.png' },
+  { id: 'keno-orig', title: 'Keno Classic', provider: 'Originals', badge: '80 Balls', recommended: true, theme: 'linear-gradient(135deg, #2b0b30 0%, #0d0310 100%)', icon: '🎱', slug: 'keno', category: 'Blockchain', imageUrl: '/games/plinko.png' },
   { id: 'crash-blockchain', title: 'JILI Blockchain', provider: 'JILI', badge: 'Multi', recommended: true, theme: 'linear-gradient(135deg, #4b004b 0%, #150015 100%)', icon: '🚀', slug: 'crash', category: 'Blockchain', imageUrl: '/games/crash.png' },
   { id: 'xgame-blockchain', title: 'XGAME Blockchain', provider: 'XGAME', badge: '', recommended: false, theme: 'linear-gradient(135deg, #003c1e 0%, #001207 100%)', icon: '🚀', slug: 'xgame-blockchain', category: 'Blockchain', imageUrl: '/games/crash.png' },
   { id: 'wg-blockchain', title: 'WG Blockchain', provider: 'WG', badge: '', recommended: false, theme: 'linear-gradient(135deg, #00224b 0%, #000a15 100%)', icon: '🚀', slug: 'wg-blockchain', category: 'Blockchain', imageUrl: '/games/crash.png' },

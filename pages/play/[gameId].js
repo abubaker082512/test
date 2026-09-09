@@ -30,6 +30,8 @@ import MahjongWays from '../../components/games/MahjongWays'
 import WildBounty from '../../components/games/WildBounty'
 import CoinFlip from '../../components/games/CoinFlip'
 import DerbyGame from '../../components/games/DerbyGame'
+import DiceGame from '../../components/games/DiceGame'
+import WheelGame from '../../components/games/WheelGame'
 
 export default function PlayGame() {
   const router = useRouter()
@@ -113,6 +115,14 @@ export default function PlayGame() {
       // 🚀 Blockchain / Crash / Limbo / CoinFlip
       case 'crash': 
         return <CrashGame {...props} />
+
+      case 'dice':
+      case 'crypto-dice':
+        return <DiceGame {...props} />
+
+      case 'wheel':
+      case 'lucky-wheel':
+        return <WheelGame {...props} />
 
       case 'xgame-blockchain':
         return <LimboGame {...props} />
