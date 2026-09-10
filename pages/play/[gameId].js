@@ -67,6 +67,15 @@ const HASH_TO_SLUG = {
   'e1d2da140286507e851fde1cb2fdd4ba': 'super-ace'
 }
 
+// Set of games that are live dealer video rooms (Evolution Live, Pragmatic Live)
+const LIVE_DEALER_GAMES = new Set([
+  'mini-roulette', 'blackjack', 'blackjack-live', 'baccarat', 'sexy-live', 
+  'dragon-tiger', 'b4af506243cafae52908e8fa266f8ff6', '87a7f4550407f5ed73c3353a54a11187', 
+  '7b44393101abad7ac31e21fc1bdb3d56', '36b1e71c6f51827e24261d06a22b1e31', 
+  '5cb6aa4e2ce1c775c568561401ffdfca', 'pp-live', 'paddy-roulette-live', 
+  'paddy-blackjack-exclusive', 'paddy-mega-fire-blaze'
+])
+
 export default function PlayGame() {
   const router = useRouter()
   const { gameId } = router.query
@@ -74,9 +83,19 @@ export default function PlayGame() {
   const [wallet, setWallet] = useState(null)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [liveGameUrl, setLiveGameUrl] = useState(null)
+  const [rawLaunchUrl, setRawLaunchUrl] = useState(null)
   const [liveLoading, setLiveLoading] = useState(false)
   const [liveError, setLiveError] = useState(null)
   const [gameTitle, setGameTitle] = useState('')
+  const [playMode, setPlayMode] = useState('native') // 'native' | 'live'
+  const [streamTimedOut, setStreamTimedOut] = useState(false)
+
+  // Initialize preferred play mode
+  useEffect(() => {
+    if (!gameId) return
+    const isLiveDealer = LIVE_DEALER_GAMES.has(gameId)
+    setPlayMode(isLiveDealer ? 'live' : 'native')
+  }, [gameId])
 
   const fetchWallet = async () => {
     if (!user) return
@@ -106,6 +125,7 @@ export default function PlayGame() {
 
     setLiveLoading(true)
     setLiveError(null)
+    setStreamTimedOut(false)
     try {
       const res = await fetch('/api/rapid/getGameUrl', {
         method: 'POST',
@@ -119,6 +139,7 @@ export default function PlayGame() {
       const url = data.gameUrl || (data.data && data.data.url) || (data.payload && data.payload.game_launch_url) || data.game_launch_url
       if (url) {
         setLiveGameUrl(url)
+        setRawLaunchUrl(data.rawLaunchUrl || url)
         if (data.gameName) setGameTitle(data.gameName)
       } else if (data.error) {
         setLiveError(data.error)
@@ -134,6 +155,16 @@ export default function PlayGame() {
   useEffect(() => {
     fetchLiveUrl()
   }, [user, gameId])
+
+  // Timer to detect if live provider stream hangs on the logo
+  useEffect(() => {
+    if (playMode === 'live' && liveGameUrl) {
+      const timer = setTimeout(() => {
+        setStreamTimedOut(true)
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [playMode, liveGameUrl])
 
   if (loading) return <div style={{ color: 'white', padding: '40px', textAlign: 'center' }}>Loading Game...</div>
 
@@ -313,116 +344,231 @@ export default function PlayGame() {
     }
   }
 
-  if (liveLoading) {
-    return (
-      <div style={{ width: '100vw', height: '100vh', background: '#000', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ fontSize: '48px', animation: 'spin-slow 2s infinite' }}>🎡</div>
-        <h2 style={{ marginTop: '16px' }}>Connecting to Live Casino Room...</h2>
-        <p style={{ color: 'var(--muted)', fontSize: '13px', marginTop: '6px' }}>Securing official API session & PKR wallet bridge</p>
-      </div>
-    )
-  }
+  const launchUrl = rawLaunchUrl || liveGameUrl
 
-  if (liveGameUrl) {
-    return (
-      <div style={{ width: '100vw', height: '100vh', background: '#000', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        {/* Game navigation header with Live Wallet Indicator */}
-        <div style={{ 
-          padding: '10px 16px', 
-          background: '#0e1118', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          borderBottom: '1px solid var(--border)',
-          zIndex: 10
-        }}>
-          <div style={{ fontWeight: '900', color: 'var(--accent)', fontSize: '15px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            🎮 LIVE {gameTitle || gameId?.replace('-', ' ')}
+  return (
+    <div style={{ width: '100vw', height: '100vh', background: '#000', color: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      
+      {/* Universal Game Navigation Header */}
+      <div style={{ 
+        padding: '8px 14px', 
+        background: '#0e1118', 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        borderBottom: '1px solid var(--border)',
+        zIndex: 20,
+        gap: '8px',
+        flexWrap: 'wrap'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ fontWeight: '900', color: 'var(--accent)', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            🎮 {gameTitle || gameId?.replace('-', ' ')}
           </div>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {wallet && (
-              <div style={{ 
-                background: '#07080c', 
-                border: '1px solid var(--border)', 
-                padding: '6px 12px', 
-                borderRadius: '16px', 
-                fontSize: '13px', 
-                fontWeight: '800' 
-              }}>
-                💰 Balance: <span style={{ color: 'var(--accent)' }}>Rs {parseFloat(wallet.balance).toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              </div>
-            )}
+          <span style={{ 
+            fontSize: '10px', 
+            fontWeight: '800', 
+            padding: '2px 8px', 
+            borderRadius: '10px', 
+            background: playMode === 'live' ? '#1e3a8a' : '#065f46',
+            color: playMode === 'live' ? '#60a5fa' : '#34d399',
+            textTransform: 'uppercase'
+          }}>
+            {playMode === 'live' ? '🌐 Partner Stream' : '⚡ Instant Engine'}
+          </span>
+        </div>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Play Mode Switcher */}
+          <div style={{ 
+            display: 'flex', 
+            background: '#07080c', 
+            border: '1px solid #1e293b', 
+            borderRadius: '18px', 
+            padding: '2px' 
+          }}>
+            <button 
+              onClick={() => setPlayMode('native')}
+              style={{
+                background: playMode === 'native' ? 'var(--accent)' : 'transparent',
+                color: playMode === 'native' ? '#000' : 'var(--muted)',
+                fontWeight: '800',
+                fontSize: '11px',
+                padding: '4px 10px',
+                borderRadius: '16px',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              title="Instant loading 60fps game engine"
+            >
+              ⚡ Instant
+            </button>
+            <button 
+              onClick={() => {
+                setPlayMode('live')
+                if (!liveGameUrl && !liveLoading) fetchLiveUrl()
+              }}
+              style={{
+                background: playMode === 'live' ? '#2563eb' : 'transparent',
+                color: playMode === 'live' ? '#fff' : 'var(--muted)',
+                fontWeight: '800',
+                fontSize: '11px',
+                padding: '4px 10px',
+                borderRadius: '16px',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              title="Live partner video stream"
+            >
+              🌐 Stream
+            </button>
+          </div>
+
+          {wallet && (
+            <div style={{ 
+              background: '#07080c', 
+              border: '1px solid var(--border)', 
+              padding: '4px 10px', 
+              borderRadius: '14px', 
+              fontSize: '12px', 
+              fontWeight: '800' 
+            }}>
+              💰 <span style={{ color: 'var(--accent)' }}>Rs {parseFloat(wallet.balance).toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+          )}
+
+          {launchUrl && (
             <button 
               className="btn" 
               style={{ 
-                padding: '6px 14px', 
-                fontSize: '12px', 
+                padding: '5px 10px', 
+                fontSize: '11px', 
                 background: '#1e293b', 
                 color: '#38bdf8', 
                 border: '1px solid #334155',
                 cursor: 'pointer',
                 fontWeight: '700'
               }}
-              onClick={() => window.open(liveGameUrl, '_blank')}
-              title="Launch game in dedicated full window"
+              onClick={() => window.open(launchUrl, '_blank')}
+              title="Launch session in a dedicated new tab"
             >
-              ⛶ Open New Tab
+              ⛶ New Tab
             </button>
-            <Link href="/" style={{ textDecoration: 'none' }}>
-              <button className="btn" style={{ padding: '6px 14px', fontSize: '12px' }}>Exit</button>
-            </Link>
-          </div>
-        </div>
-        
-        <iframe 
-          src={liveGameUrl} 
-          style={{ width: '100%', height: 'calc(100vh - 55px)', border: 'none' }}
-          title={gameTitle || gameId} 
-          allow="autoplay; fullscreen; payment; microphone; camera; clipboard-read; clipboard-write; screen-wake-lock"
-          allowFullScreen={true}
-          loading="eager"
-        />
-      </div>
-    )
-  }
-
-  return (
-    <div style={{ width: '100vw', height: '100vh', background: '#000', color: '#fff', display: 'flex', flexDirection: 'column' }}>
-      
-      {/* Game navigation header with Live Wallet Indicator */}
-      <div style={{ 
-        padding: '10px 16px', 
-        background: '#0e1118', 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        borderBottom: '1px solid var(--border)' 
-      }}>
-        <div style={{ fontWeight: '900', color: 'var(--accent)', fontSize: '15px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-          🎮 {gameTitle || gameId?.replace('-', ' ')}
-        </div>
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {wallet && (
-            <div style={{ 
-              background: '#07080c', 
-              border: '1px solid var(--border)', 
-              padding: '6px 12px', 
-              borderRadius: '16px', 
-              fontSize: '13px', 
-              fontWeight: '800' 
-            }}>
-              💰 Balance: <span style={{ color: 'var(--accent)' }}>Rs {parseFloat(wallet.balance).toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </div>
           )}
+
           <Link href="/" style={{ textDecoration: 'none' }}>
-            <button className="btn" style={{ padding: '6px 14px', fontSize: '12px' }}>Exit</button>
+            <button className="btn" style={{ padding: '5px 12px', fontSize: '11px' }}>Exit</button>
           </Link>
         </div>
       </div>
-      
-      {renderGame()}
+
+      {/* Main Game Stage */}
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        {playMode === 'live' ? (
+          liveLoading ? (
+            <div style={{ 
+              flex: 1, 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              padding: '20px',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '48px', animation: 'spin-slow 2s infinite' }}>🎡</div>
+              <h3 style={{ marginTop: '16px', fontSize: '18px' }}>Connecting to Live Partner Room...</h3>
+              <p style={{ color: 'var(--muted)', fontSize: '12px', marginTop: '6px' }}>Securing official API session & PKR bridge</p>
+              <button 
+                className="btn primary" 
+                style={{ marginTop: '20px', fontSize: '12px', padding: '8px 18px' }}
+                onClick={() => setPlayMode('native')}
+              >
+                ⚡ Switch to Instant Play Mode
+              </button>
+            </div>
+          ) : liveGameUrl ? (
+            <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+              <iframe 
+                src={liveGameUrl} 
+                style={{ width: '100%', height: '100%', border: 'none' }}
+                title={gameTitle || gameId} 
+                allow="autoplay; fullscreen; payment; microphone; camera; clipboard-read; clipboard-write; screen-wake-lock"
+                allowFullScreen={true}
+                loading="eager"
+              />
+
+              {/* Floating Helper Banner if stream takes long to load */}
+              {streamTimedOut && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: '16px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: 'rgba(15, 23, 42, 0.95)',
+                  border: '1px solid #3b82f6',
+                  borderRadius: '12px',
+                  padding: '10px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  boxShadow: '0 8px 30px rgba(0,0,0,0.8)',
+                  zIndex: 30,
+                  maxWidth: '90%',
+                  backdropFilter: 'blur(8px)'
+                }}>
+                  <div style={{ fontSize: '20px' }}>💡</div>
+                  <div style={{ fontSize: '12px', color: '#cbd5e1' }}>
+                    Stream taking long or showing a logo?
+                  </div>
+                  <button 
+                    className="btn primary" 
+                    style={{ padding: '6px 12px', fontSize: '11px', fontWeight: '800' }}
+                    onClick={() => setPlayMode('native')}
+                  >
+                    ⚡ Play Instant Engine
+                  </button>
+                  {launchUrl && (
+                    <button 
+                      className="btn" 
+                      style={{ padding: '6px 10px', fontSize: '11px', background: '#334155' }}
+                      onClick={() => window.open(launchUrl, '_blank')}
+                    >
+                      ⛶ Open New Tab
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => setStreamTimedOut(false)}
+                    style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '14px', marginLeft: '4px' }}
+                    title="Dismiss"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', textAlign: 'center' }}>
+              <div style={{ fontSize: '48px', marginBottom: '12px' }}>🎰</div>
+              <h3 style={{ fontSize: '18px', color: 'var(--accent)' }}>Partner Stream Connecting...</h3>
+              <p style={{ color: 'var(--muted)', fontSize: '13px', margin: '8px 0 20px', maxWidth: '380px' }}>
+                {liveError || 'Loading partner stream. You can switch to Instant Engine anytime without waiting.'}
+              </p>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button className="btn primary" onClick={() => setPlayMode('native')}>
+                  ⚡ Play Instant Engine
+                </button>
+                <button className="btn" onClick={fetchLiveUrl}>
+                  🔄 Retry Stream
+                </button>
+              </div>
+            </div>
+          )
+        ) : (
+          renderGame()
+        )}
+      </div>
     </div>
   )
 }
