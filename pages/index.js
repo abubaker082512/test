@@ -7,16 +7,16 @@ import AuthModal from '../components/AuthModal'
 import GameCard from '../components/GameCard'
 
 const mockGames = [
-  // Hot
-  { id: 'super-ace', title: 'Super Ace', provider: 'JILI', badge: '1500x', recommended: true, theme: 'linear-gradient(135deg, #4b0000 0%, #150000 100%)', icon: '🂡', slug: 'super-ace', category: 'Hot', imageUrl: '/games/super_ace.png' },
-  { id: 'super-ace-deluxe', title: 'Super Ace Deluxe', provider: 'JILI', badge: 'Deluxe', recommended: true, theme: 'linear-gradient(135deg, #12003c 0%, #030012 100%)', icon: '👑', slug: 'super-ace-deluxe', category: 'Hot', imageUrl: '/games/super_ace.png' },
-  { id: 'fortune-gems', title: 'Fortune Gems', provider: 'JILI', badge: '375x', recommended: true, theme: 'linear-gradient(135deg, #004b12 0%, #001203 100%)', icon: '💎', slug: 'fortune-gems', category: 'Hot', imageUrl: '/games/fortune_gems.png' },
-  { id: 'fortune-garuda', title: 'Fortune Garuda 500', provider: 'JILI', badge: '500x', recommended: true, theme: 'linear-gradient(135deg, #4b3600 0%, #151000 100%)', icon: '🦅', slug: 'fortune-garuda', category: 'Hot', imageUrl: '/games/fortune_gems.png' },
-  { id: 'wild-bounty', title: 'Wild Bounty Showdown', provider: 'PG', badge: 'Wild', recommended: true, theme: 'linear-gradient(135deg, #4b2600 0%, #150a00 100%)', icon: '🤠', slug: 'wild-bounty', category: 'Hot', imageUrl: '/games/super_ace.png' },
-  { id: 'treasures-of-aztec', title: 'Treasures of Aztec', provider: 'PG', badge: 'Treasures', recommended: true, theme: 'linear-gradient(135deg, #004b4b 0%, #001515 100%)', icon: '🗿', slug: 'treasures-of-aztec', category: 'Hot', imageUrl: '/games/super_ace.png' },
-  { id: 'pinata-wins', title: 'Pinata Wins', provider: 'PG', badge: 'Wins', recommended: true, theme: 'linear-gradient(135deg, #4b004b 0%, #150015 100%)', icon: '🪅', slug: 'pinata-wins', category: 'Hot', imageUrl: '/games/super_ace.png' },
-  { id: 'mahjong-ways-2', title: 'Mahjong Ways 2', provider: 'WG', badge: 'Ways 2', recommended: true, theme: 'linear-gradient(135deg, #003c1e 0%, #001207 100%)', icon: '🀄', slug: 'mahjong-ways-2', category: 'Hot', imageUrl: '/games/super_ace.png' },
-  { id: 'boxing-king', title: 'Boxing King', provider: 'JILI', badge: '2000x', recommended: true, theme: 'linear-gradient(135deg, #00224b 0%, #000a15 100%)', icon: '🥊', slug: 'boxing-king', category: 'Hot', imageUrl: '/games/super_ace.png' },
+  // Hot / Real JILI Games
+  { id: 'e794bf5717aca371152df192341fe68b', title: 'Royal Fishing', provider: 'JILI', badge: 'Live API', recommended: true, theme: 'linear-gradient(135deg, #004b9b 0%, #001f40 100%)', icon: '🦈', slug: 'e794bf5717aca371152df192341fe68b', category: 'Hot', imageUrl: 'https://cdn.betnex.co/images/jiligaming/0.webp' },
+  { id: 'bdfb23c974a2517198c5443adeea77a8', title: 'Super Ace', provider: 'JILI', badge: '1500x', recommended: true, theme: 'linear-gradient(135deg, #4b0000 0%, #150000 100%)', icon: '🂡', slug: 'super-ace', category: 'Hot', imageUrl: '/games/super_ace.png' },
+  { id: 'a990de177577a2e6a889aaac5f57b429', title: 'Fortune Gems', provider: 'JILI', badge: '375x', recommended: true, theme: 'linear-gradient(135deg, #004b12 0%, #001203 100%)', icon: '💎', slug: 'fortune-gems', category: 'Hot', imageUrl: '/games/fortune_gems.png' },
+  { id: '3cf4a85cb6dcf4d8836c982c359cd72d', title: 'Jackpot Fishing', provider: 'JILI', badge: 'Popular', recommended: true, theme: 'linear-gradient(135deg, #006699 0%, #002b40 100%)', icon: '🐠', slug: '3cf4a85cb6dcf4d8836c982c359cd72d', category: 'Hot', imageUrl: 'https://cdn.betnex.co/images/jiligaming/3.webp' },
+  { id: '981f5f9675002fbeaaf24c4128b938d7', title: 'Boxing King', provider: 'JILI', badge: '2000x', recommended: true, theme: 'linear-gradient(135deg, #00224b 0%, #000a15 100%)', icon: '🥊', slug: 'boxing-king', category: 'Hot', imageUrl: '/games/super_ace.png' },
+  { id: 'e333695bcff28acdbecc641ae6ee2b23', title: 'Bombing Fishing', provider: 'JILI', badge: 'Live API', recommended: true, theme: 'linear-gradient(135deg, #1b263b 0%, #0d131f 100%)', icon: '🦈', slug: 'e333695bcff28acdbecc641ae6ee2b23', category: 'Hot', imageUrl: 'https://cdn.betnex.co/images/jiligaming/1.webp' },
+  { id: 'b4af506243cafae52908e8fa266f8ff6', title: 'Speed Roulette', provider: 'Evolution', badge: 'Live Stream', recommended: true, theme: 'linear-gradient(135deg, #311b92 0%, #12005e 100%)', icon: '🎡', slug: 'b4af506243cafae52908e8fa266f8ff6', category: 'Hot', imageUrl: 'https://cdn.betnex.co/images/evolutionlive/3.png' },
+  { id: '87a7f4550407f5ed73c3353a54a11187', title: 'Blackjack VIP 12', provider: 'Evolution', badge: 'Live HD', recommended: true, theme: 'linear-gradient(135deg, #004d40 0%, #00251a 100%)', icon: '🃏', slug: '87a7f4550407f5ed73c3353a54a11187', category: 'Hot', imageUrl: 'https://cdn.betnex.co/images/evolutionlive/4.webp' },
+  { id: 'ba2adf72179e1ead9e3dae8f0a7d4c07', title: 'Mahjong Ways 2', provider: 'PG', badge: 'Ways 2', recommended: true, theme: 'linear-gradient(135deg, #003c1e 0%, #001207 100%)', icon: '🀄', slug: 'mahjong-ways-2', category: 'Hot', imageUrl: '/games/super_ace.png' },
 
   // PaddyPower (RapidAPI Integration)
   { id: 'paddy-rainbow-riches', title: 'Rainbow Riches', provider: 'PaddyPower', badge: 'Jackpot', recommended: true, theme: 'linear-gradient(135deg, #1b5e20 0%, #003300 100%)', icon: '🌈', slug: 'super-ace', category: 'PaddyPower', imageUrl: '/games/fortune_gems.png' },
@@ -190,9 +190,11 @@ export default function Home() {
   // Categories list matching visual screenshots
   const categoriesList = [
     { name: 'Hot', icon: '🔥' },
+    { name: 'JILI', icon: '🎰' },
+    { name: 'Evolution', icon: '💃' },
     { name: 'PaddyPower', icon: '☘️' },
-    { name: 'Slots', icon: '🎰' },
-    { name: 'Live', icon: '💃' },
+    { name: 'Slots', icon: '🍒' },
+    { name: 'Live', icon: '💎' },
     { name: 'Fishing', icon: '🦈' },
     { name: 'Cards', icon: '🃏' },
     { name: 'Blockchain', icon: '🧊' },
@@ -204,6 +206,15 @@ export default function Home() {
   const getFilteredGames = (category) => {
     if (category === 'Hot') {
       return mockGames.filter(g => g.category === 'Hot')
+    }
+    if (category === 'JILI') {
+      return mockGames.filter(g => g.provider === 'JILI')
+    }
+    if (category === 'Evolution') {
+      return mockGames.filter(g => g.provider === 'Evolution')
+    }
+    if (category === 'PaddyPower') {
+      return mockGames.filter(g => g.provider === 'PaddyPower')
     }
     return mockGames.filter(g => g.category === category)
   }
@@ -304,10 +315,29 @@ export default function Home() {
 
       {/* Games List Grid Section */}
       <section aria-label="Casino Catalog">
-        <div className="section-title">
+        <div className="section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div className="title-left">
             <span>{activeCategory} Games</span>
           </div>
+          <Link href="/casino" style={{ textDecoration: 'none' }}>
+            <button style={{
+              background: 'linear-gradient(135deg, #00e676 0%, #00897b 100%)',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '6px 14px',
+              color: '#000',
+              fontWeight: '900',
+              fontSize: '11px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 2px 8px rgba(0,230,118,0.3)'
+            }}>
+              <span>🎰</span>
+              <span>127+ LIVE PROVIDERS LOBBY →</span>
+            </button>
+          </Link>
         </div>
 
         {filteredGames.length > 0 ? (
