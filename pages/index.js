@@ -18,6 +18,14 @@ const mockGames = [
   { id: 'mahjong-ways-2', title: 'Mahjong Ways 2', provider: 'WG', badge: 'Ways 2', recommended: true, theme: 'linear-gradient(135deg, #003c1e 0%, #001207 100%)', icon: '🀄', slug: 'mahjong-ways-2', category: 'Hot', imageUrl: '/games/super_ace.png' },
   { id: 'boxing-king', title: 'Boxing King', provider: 'JILI', badge: '2000x', recommended: true, theme: 'linear-gradient(135deg, #00224b 0%, #000a15 100%)', icon: '🥊', slug: 'boxing-king', category: 'Hot', imageUrl: '/games/super_ace.png' },
 
+  // PaddyPower (RapidAPI Integration)
+  { id: 'paddy-rainbow-riches', title: 'Rainbow Riches', provider: 'PaddyPower', badge: 'Jackpot', recommended: true, theme: 'linear-gradient(135deg, #1b5e20 0%, #003300 100%)', icon: '🌈', slug: 'super-ace', category: 'PaddyPower', imageUrl: '/games/fortune_gems.png' },
+  { id: 'paddy-fishin-frenzy', title: 'Fishin\' Frenzy', provider: 'PaddyPower', badge: 'Popular', recommended: true, theme: 'linear-gradient(135deg, #01579b 0%, #002f6c 100%)', icon: '🎣', slug: 'fortune-gems', category: 'PaddyPower', imageUrl: '/games/fishing.png' },
+  { id: 'paddy-roulette-live', title: 'Paddy Roulette Live', provider: 'PaddyPower', badge: 'Live HD', recommended: true, theme: 'linear-gradient(135deg, #311b92 0%, #12005e 100%)', icon: '🎡', slug: 'mini-roulette', category: 'PaddyPower', imageUrl: '/games/live.png' },
+  { id: 'paddy-blackjack-exclusive', title: 'Exclusive Blackjack', provider: 'PaddyPower', badge: 'VIP Table', recommended: true, theme: 'linear-gradient(135deg, #004d40 0%, #00251a 100%)', icon: '🃏', slug: 'blackjack-live', category: 'PaddyPower', imageUrl: '/games/live.png' },
+  { id: 'paddy-age-of-gods', title: 'Age of the Gods', provider: 'PaddyPower', badge: '4 Jackpots', recommended: true, theme: 'linear-gradient(135deg, #4a148c 0%, #12005e 100%)', icon: '⚡', slug: 'super-ace-deluxe', category: 'PaddyPower', imageUrl: '/games/super_ace.png' },
+  { id: 'paddy-mega-fire-blaze', title: 'Mega Fire Blaze', provider: 'PaddyPower', badge: '10,000x', recommended: true, theme: 'linear-gradient(135deg, #bf360c 0%, #3e2723 100%)', icon: '🔥', slug: 'mini-roulette', category: 'PaddyPower', imageUrl: '/games/live.png' },
+
   // Slots
   { id: 'slots-pg', title: 'Slots', provider: 'PG', badge: '', recommended: false, theme: 'linear-gradient(135deg, #2b3040 0%, #0f1118 100%)', icon: '🎰', slug: 'slots-pg', category: 'Slots', imageUrl: '/games/super_ace.png' },
   { id: 'jili-slots', title: 'JILI Slots', provider: 'JILI', badge: '', recommended: false, theme: 'linear-gradient(135deg, #302610 0%, #120e05 100%)', icon: '🎰', slug: 'jili-slots', category: 'Slots', imageUrl: '/games/fortune_gems.png' },
@@ -182,6 +190,7 @@ export default function Home() {
   // Categories list matching visual screenshots
   const categoriesList = [
     { name: 'Hot', icon: '🔥' },
+    { name: 'PaddyPower', icon: '☘️' },
     { name: 'Slots', icon: '🎰' },
     { name: 'Live', icon: '💃' },
     { name: 'Fishing', icon: '🦈' },
@@ -330,6 +339,7 @@ export default function Home() {
       <section style={{ padding: '24px 16px', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
         <div className="partners-title">Verified Platform Partners</div>
         <div className="partners-row">
+          <span className="partner-logo" style={{ color: '#00e676', borderColor: '#00e676', textShadow: '0 0 10px rgba(0,230,118,0.4)' }}>PADDY POWER</span>
           <span className="partner-logo" style={{ textShadow: '0 0 10px rgba(255,255,255,0.3)' }}>PG SOFT</span>
           <span className="partner-logo" style={{ color: 'var(--accent)', borderColor: 'var(--accent)' }}>JILI</span>
           <span className="partner-logo">EVOLUTION</span>
