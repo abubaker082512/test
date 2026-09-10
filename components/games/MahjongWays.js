@@ -185,13 +185,13 @@ export default function MahjongWays({ user, wallet, fetchWallet }) {
           })
           const data = await res.json()
           if (data.success) {
-            setWinAmountText(`₱${accumulatedWin.toFixed(2)} (${totalMultiplier}x)`)
+            setWinAmountText(`Rs ${accumulatedWin.toFixed(2)} (${totalMultiplier}x)`)
             if (totalMultiplier >= 10) {
               setShowBigWin(true)
             } else {
               setMessage({
                 type: 'success',
-                text: `🎉 WIN! Total Cascade payout: +₱${accumulatedWin.toFixed(2)}`
+                text: `🎉 WIN! Total Cascade payout: +Rs ${accumulatedWin.toFixed(2)}`
               })
             }
           }
@@ -396,7 +396,7 @@ export default function MahjongWays({ user, wallet, fetchWallet }) {
               fontWeight: 'bold',
               fontSize: '13px'
             }}>
-              ₱{betAmount}
+              Rs {betAmount}
             </div>
             <button
               disabled={spinning}

@@ -104,7 +104,7 @@ export default function MinesweeperGame({ user, wallet, fetchWallet }) {
 
     if (data.success) {
       setActive(false)
-      setMessage({ type: 'success', text: `💰 Cashed Out Safely! +₱${(betAmount * multiplier).toFixed(2)} (${multiplier}x)` })
+      setMessage({ type: 'success', text: `💰 Cashed Out Safely! +Rs ${(betAmount * multiplier).toFixed(2)} (${multiplier}x)` })
     }
     setProcessing(false)
     fetchWallet()
@@ -226,7 +226,7 @@ export default function MinesweeperGame({ user, wallet, fetchWallet }) {
                       border: betAmount === amt ? '2px solid #ffea00' : '2.5px dashed rgba(255,255,255,0.2)'
                     }}
                   >
-                    ₱{amt}
+                    Rs {amt}
                   </button>
                 ))}
               </div>
@@ -239,7 +239,7 @@ export default function MinesweeperGame({ user, wallet, fetchWallet }) {
                 }}
                 disabled={processing}
               >
-                {processing ? 'PREPARING GRID...' : `PLACE BET: ₱${betAmount}`}
+                {processing ? 'PREPARING GRID...' : `PLACE BET: Rs ${betAmount}`}
               </button>
             </>
           ) : (
@@ -252,7 +252,7 @@ export default function MinesweeperGame({ user, wallet, fetchWallet }) {
               }} 
               disabled={processing}
             >
-              {processing ? 'COLLECTING...' : `SAFE CASH OUT — ₱${(betAmount * multiplier).toFixed(2)}`}
+              {processing ? 'COLLECTING...' : `SAFE CASH OUT — Rs ${(betAmount * multiplier).toFixed(2)}`}
             </button>
           )}
         </div>

@@ -366,7 +366,7 @@ export default function SportsBook({ user, wallet, fetchWallet }) {
 
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px' }}>
               <div style={{ flex: 1 }}>
-                <span style={{ fontSize: '9px', color: 'var(--muted)', display: 'block', marginBottom: '2px' }}>STAKE (₱)</span>
+                <span style={{ fontSize: '9px', color: 'var(--muted)', display: 'block', marginBottom: '2px' }}>STAKE (Rs )</span>
                 <input 
                   type="number" 
                   value={stake} 
@@ -385,7 +385,7 @@ export default function SportsBook({ user, wallet, fetchWallet }) {
               <div style={{ flex: 1, textAlign: 'right' }}>
                 <span style={{ fontSize: '9px', color: 'var(--muted)', display: 'block', marginBottom: '2px' }}>POTENTIAL PAYOUT</span>
                 <span style={{ fontSize: '16px', fontWeight: '900', color: 'var(--success)', fontFamily: 'monospace' }}>
-                  ₱{potentialPayout}
+                  Rs {potentialPayout}
                 </span>
               </div>
             </div>
@@ -396,7 +396,7 @@ export default function SportsBook({ user, wallet, fetchWallet }) {
               disabled={processing}
               style={{ width: '100%', padding: '12px', fontWeight: 'bold' }}
             >
-              {processing ? 'SUBMITTING...' : `PLACE SLIP BET — ₱${stake}`}
+              {processing ? 'SUBMITTING...' : `PLACE SLIP BET — Rs ${stake}`}
             </button>
           </div>
         )}
@@ -433,7 +433,7 @@ export default function SportsBook({ user, wallet, fetchWallet }) {
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontWeight: 'bold', color: t.status === 'Won' ? 'var(--success)' : t.status === 'Lost' ? 'var(--danger)' : 'var(--accent)' }}>
-                      {t.status === 'Won' ? `+₱${t.payout}` : t.status === 'Lost' ? `₱${t.stake} Lost` : `₱${t.stake}`}
+                      {t.status === 'Won' ? `+Rs ${t.payout}` : t.status === 'Lost' ? `Rs ${t.stake} Lost` : `Rs ${t.stake}`}
                     </div>
                     <div style={{ fontSize: '9px', color: t.status === 'Won' ? 'var(--success)' : t.status === 'Lost' ? 'var(--danger)' : '#aaa', fontWeight: 'bold', marginTop: '2px' }}>
                       {t.status}

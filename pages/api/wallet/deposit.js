@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
   const { user_id, amount, method, tx_id } = req.body
-  if (!user_id || !amount || amount < 100) return res.status(400).json({ error: 'Minimum deposit is ₱100' })
+  if (!user_id || !amount || amount < 100) return res.status(400).json({ error: 'Minimum deposit is Rs 100' })
   if (!method || !tx_id) return res.status(400).json({ error: 'Payment method and transaction ID required' })
 
   // Log pending deposit

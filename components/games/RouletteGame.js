@@ -132,7 +132,7 @@ export default function RouletteGame({ user, wallet, fetchWallet }) {
 
         if (isWin) {
           totalPayout += chip.amount * payoutMult
-          details.push(`₱${(chip.amount * payoutMult).toFixed(2)} on ${chip.value.toString().toUpperCase()}`)
+          details.push(`Rs ${(chip.amount * payoutMult).toFixed(2)} on ${chip.value.toString().toUpperCase()}`)
         }
       })
 
@@ -152,7 +152,7 @@ export default function RouletteGame({ user, wallet, fetchWallet }) {
           if (payData.success) {
             setPayoutMsg({
               type: 'success',
-              text: `🎉 WINNER! Landed ${targetObj.color.toUpperCase()} ${targetObj.n}! Payout: +₱${totalPayout.toFixed(2)} (${details.join(', ')})`
+              text: `🎉 WINNER! Landed ${targetObj.color.toUpperCase()} ${targetObj.n}! Payout: +Rs ${totalPayout.toFixed(2)} (${details.join(', ')})`
             })
             // Dispatch client event for real-time NavBar balance sync
             window.dispatchEvent(new Event('wallet-updated'))
@@ -349,7 +349,7 @@ export default function RouletteGame({ user, wallet, fetchWallet }) {
               transition: 'all 0.2s'
             }}
           >
-            ₱{amt}
+            Rs {amt}
           </button>
         ))}
       </div>
@@ -386,7 +386,7 @@ export default function RouletteGame({ user, wallet, fetchWallet }) {
             🔴 RED (2x)
             {getBetOnZone('color', 'red') > 0 && (
               <span style={{ position: 'absolute', top: '-6px', right: '-6px', background: 'var(--accent)', color: '#000', borderRadius: '50%', padding: '2px 6px', fontSize: '9px', fontWeight: '900', boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-                ₱{getBetOnZone('color', 'red')}
+                Rs {getBetOnZone('color', 'red')}
               </span>
             )}
           </button>
@@ -411,7 +411,7 @@ export default function RouletteGame({ user, wallet, fetchWallet }) {
             ⚫ BLACK (2x)
             {getBetOnZone('color', 'black') > 0 && (
               <span style={{ position: 'absolute', top: '-6px', right: '-6px', background: 'var(--accent)', color: '#000', borderRadius: '50%', padding: '2px 6px', fontSize: '9px', fontWeight: '900', boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-                ₱{getBetOnZone('color', 'black')}
+                Rs {getBetOnZone('color', 'black')}
               </span>
             )}
           </button>
@@ -437,7 +437,7 @@ export default function RouletteGame({ user, wallet, fetchWallet }) {
             EVEN (2x)
             {getBetOnZone('parity', 'even') > 0 && (
               <span style={{ position: 'absolute', top: '-6px', right: '-6px', background: 'var(--accent)', color: '#000', borderRadius: '50%', padding: '2px 6px', fontSize: '8px', fontWeight: '900' }}>
-                ₱{getBetOnZone('parity', 'even')}
+                Rs {getBetOnZone('parity', 'even')}
               </span>
             )}
           </button>
@@ -461,7 +461,7 @@ export default function RouletteGame({ user, wallet, fetchWallet }) {
             ODD (2x)
             {getBetOnZone('parity', 'odd') > 0 && (
               <span style={{ position: 'absolute', top: '-6px', right: '-6px', background: 'var(--accent)', color: '#000', borderRadius: '50%', padding: '2px 6px', fontSize: '8px', fontWeight: '900' }}>
-                ₱{getBetOnZone('parity', 'odd')}
+                Rs {getBetOnZone('parity', 'odd')}
               </span>
             )}
           </button>
@@ -498,7 +498,7 @@ export default function RouletteGame({ user, wallet, fetchWallet }) {
               0
               {getBetOnZone('number', 0) > 0 && (
                 <span style={{ position: 'absolute', top: '-4px', right: '4px', background: '#fff', color: '#000', borderRadius: '50%', padding: '1px 5px', fontSize: '8px', fontWeight: '900' }}>
-                  ₱{getBetOnZone('number', 0)}
+                  Rs {getBetOnZone('number', 0)}
                 </span>
               )}
             </button>
@@ -617,7 +617,7 @@ export default function RouletteGame({ user, wallet, fetchWallet }) {
             boxShadow: '0 4px 15px rgba(245, 194, 66, 0.25)'
           }}
         >
-          {spinning ? 'SPINNING...' : `SPIN WHEEL — ₱${totalCurrentBet}`}
+          {spinning ? 'SPINNING...' : `SPIN WHEEL — Rs ${totalCurrentBet}`}
         </button>
       </div>
     </div>

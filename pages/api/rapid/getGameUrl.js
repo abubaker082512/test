@@ -71,9 +71,12 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing required fields: username, gameId' });
   }
 
-  // Ensure username is alphanumeric between 4 and 32 chars as required by provider
-  const rawUser = payload.username.replace(/[^a-zA-Z0-9]/g, '');
-  const cleanUsername = (rawUser.length >= 4 ? rawUser : `user${rawUser}`).substring(0, 30);
+  // Resolve game ID through mapping if user provided a slug
+  const finalGameId = GAME_MAP[payload.gameId] || payload.gameId;
+
+  // Ensure username is strictly alphanumeric between 4 and 32 chars, prefixed with "akw" to prevent provider collisions
+  const rawUser = (payload.username || 'player').replace(/[^a-zA-Z0-9]/g, '');
+  const cleanUsername = `akw${rawUser}`.substring(0, 30);
 
   try {
     const data = await RAPID.getGameUrl({
@@ -85,7 +88,34 @@ export default async function handler(req, res) {
       platform: payload.platform || 1,
       currency: 'PKR'
     });
-    res.status(200).json(data);
+
+    const gameUrl = data?.payload?.game_launch_url || data?.game_launch_url || data?.gameUrl || (data?.data && data?.data?.url);
+
+    if (data?.code === 0 && gameUrl) {
+      return res.status(200).json({
+        success: true,
+        gameUrl,
+        gameName: data.payload?.game_name || payload.gameId,
+        provider: data.payload?.provider,
+        payload: data.payload,
+        raw: data
+      });
+    }
+
+    if (gameUrl) {
+      return res.status(200).json({
+        success: true,
+        gameUrl,
+        raw: data
+      });
+    }
+
+    // Upstream returned an error or unavailable status
+    return res.status(200).json({
+      success: false,
+      error: data?.msg || data?.message || 'Game session unavailable',
+      raw: data
+    });
   } catch (err) {
     console.error('RapidAPI GetGameURL error:', err);
     res.status(500).json({ error: err.message });

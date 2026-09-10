@@ -97,7 +97,7 @@ export default function DiceGame({ user, wallet, fetchWallet }) {
               fetchWallet()
               setMessage({
                 type: 'success',
-                text: `🎉 WIN! Rolled ${finalRoll}. Won +₱${payoutAmount.toLocaleString()}!`
+                text: `🎉 WIN! Rolled ${finalRoll}. Won +Rs ${payoutAmount.toLocaleString()}!`
               })
             }
           } catch (e) {
@@ -324,7 +324,7 @@ export default function DiceGame({ user, wallet, fetchWallet }) {
             cursor: rolling ? 'not-allowed' : 'pointer'
           }}
         >
-          {rolling ? 'ROLLING DICE...' : `BET ₱${betAmount} (PROFIT +₱${potentialProfit})`}
+          {rolling ? 'ROLLING DICE...' : `BET Rs ${betAmount} (PROFIT +Rs ${potentialProfit})`}
         </button>
 
       </div>

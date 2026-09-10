@@ -99,7 +99,7 @@ export default function CrashEngine() {
     if (data.success) {
       setActiveBet({ amount: betAmount })
       setWallet(w => ({ ...w, balance: data.new_balance }))
-      setMessage({ type: 'success', text: `Bet ₱${betAmount} placed! Cash out before it crashes!` })
+      setMessage({ type: 'success', text: `Bet Rs ${betAmount} placed! Cash out before it crashes!` })
     } else {
       setMessage({ type: 'error', text: data.error })
     }
@@ -116,7 +116,7 @@ export default function CrashEngine() {
     if (data.success) {
       setActiveBet(null)
       setWallet(w => ({ ...w, balance: data.new_balance }))
-      setMessage({ type: 'success', text: `Cashed out! +₱${data.payout.toFixed(2)} at ${displayMultiplier}x` })
+      setMessage({ type: 'success', text: `Cashed out! +Rs ${data.payout.toFixed(2)} at ${displayMultiplier}x` })
     }
   }
 
@@ -129,7 +129,7 @@ export default function CrashEngine() {
       {/* Wallet Balance */}
       {wallet && (
         <div style={{ background: '#1a1a1a', padding: '8px 24px', borderRadius: '24px', border: '1px solid #333', fontSize: '14px' }}>
-          💰 Wallet: <strong style={{ color: 'var(--accent)' }}>₱{parseFloat(wallet.balance).toFixed(2)}</strong>
+          💰 Wallet: <strong style={{ color: 'var(--accent)' }}>Rs {parseFloat(wallet.balance).toFixed(2)}</strong>
         </div>
       )}
 
@@ -178,7 +178,7 @@ export default function CrashEngine() {
           />
           {!activeBet ? (
             <button className="btn primary" onClick={placeBet} disabled={status !== 'waiting'} style={{ flex: 1, padding: '12px', fontSize: '16px' }}>
-              BET ₱{betAmount}
+              BET Rs {betAmount}
             </button>
           ) : (
             <button
@@ -187,7 +187,7 @@ export default function CrashEngine() {
               style={{ flex: 1, padding: '12px', fontSize: '16px', borderRadius: '8px', background: '#00ff88', color: '#000', fontWeight: 'bold', border: 'none', cursor: isRunning ? 'pointer' : 'not-allowed', opacity: isRunning ? 1 : 0.5 }}
             >
               CASH OUT<br />
-              <small>₱{(activeBet.amount * displayMultiplier).toFixed(2)}</small>
+              <small>Rs {(activeBet.amount * displayMultiplier).toFixed(2)}</small>
             </button>
           )}
         </div>
@@ -196,7 +196,7 @@ export default function CrashEngine() {
         <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
           {[10, 50, 100, 500].map(amt => (
             <button key={amt} className="btn" onClick={() => setBetAmount(amt)} style={{ flex: 1, padding: '6px', fontSize: '12px' }}>
-              ₱{amt}
+              Rs {amt}
             </button>
           ))}
         </div>

@@ -137,7 +137,7 @@ export default function HiloGame({ user, wallet, fetchWallet }) {
       const data = await res.json()
       if (data.success) {
         setActive(false)
-        setMessage({ type: 'success', text: `💰 Cashed Out Safely! +₱${(betAmount * roundMultiplier).toFixed(2)} (${roundMultiplier}x)` })
+        setMessage({ type: 'success', text: `💰 Cashed Out Safely! +Rs ${(betAmount * roundMultiplier).toFixed(2)} (${roundMultiplier}x)` })
         window.dispatchEvent(new Event('wallet-updated'))
       }
     } catch (err) {
@@ -194,7 +194,7 @@ export default function HiloGame({ user, wallet, fetchWallet }) {
           fontFamily: 'monospace',
           textShadow: '0 0 10px rgba(0,255,136,0.3)'
         }}>
-          ROUND MULTIPLIER: {roundMultiplier}x [₱{(betAmount * roundMultiplier).toFixed(2)}]
+          ROUND MULTIPLIER: {roundMultiplier}x [Rs {(betAmount * roundMultiplier).toFixed(2)}]
         </div>
       )}
 
@@ -342,7 +342,7 @@ export default function HiloGame({ user, wallet, fetchWallet }) {
                     borderColor: betAmount === amt ? 'var(--accent)' : '#333'
                   }}
                 >
-                  ₱{amt}
+                  Rs {amt}
                 </button>
               ))}
             </div>
@@ -352,7 +352,7 @@ export default function HiloGame({ user, wallet, fetchWallet }) {
               disabled={processing}
               style={{ padding: '14px', fontWeight: 'bold' }}
             >
-              {processing ? 'DEALING CARD...' : `START GAME — ₱${betAmount}`}
+              {processing ? 'DEALING CARD...' : `START GAME — Rs ${betAmount}`}
             </button>
           </>
         ) : (
@@ -428,7 +428,7 @@ export default function HiloGame({ user, wallet, fetchWallet }) {
                 marginTop: '10px'
               }}
             >
-              {processing ? 'COLLECTING...' : `SAFE CASH OUT — ₱${(betAmount * roundMultiplier).toFixed(2)}`}
+              {processing ? 'COLLECTING...' : `SAFE CASH OUT — Rs ${(betAmount * roundMultiplier).toFixed(2)}`}
             </button>
           </>
         )}

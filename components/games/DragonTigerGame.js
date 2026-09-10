@@ -176,7 +176,7 @@ export default function DragonTigerGame({ user, wallet, fetchWallet }) {
             if (payData.success) {
               setMessage({
                 type: 'success',
-                text: `🎉 Round Over! ${winner} Wins! Payout: ₱${payoutMultiplier.toFixed(2)}`
+                text: `🎉 Round Over! ${winner} Wins! Payout: Rs ${payoutMultiplier.toFixed(2)}`
               })
             }
           } catch (e) {
@@ -379,7 +379,7 @@ export default function DragonTigerGame({ user, wallet, fetchWallet }) {
             <div style={{ fontSize: '11px', color: '#ccc', marginTop: '2px' }}>Pays 1:1</div>
             {bets.Dragon > 0 && (
               <div style={{ position: 'absolute', top: '-10px', right: '-6px', background: '#00e676', color: '#000', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold', border: '2px solid #fff' }}>
-                ₱{bets.Dragon}
+                Rs {bets.Dragon}
               </div>
             )}
           </button>
@@ -403,7 +403,7 @@ export default function DragonTigerGame({ user, wallet, fetchWallet }) {
             <div style={{ fontSize: '11px', color: '#ccc', marginTop: '2px' }}>Pays 8:1</div>
             {bets.Tie > 0 && (
               <div style={{ position: 'absolute', top: '-10px', right: '-6px', background: '#ffea00', color: '#000', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold', border: '2px solid #fff' }}>
-                ₱{bets.Tie}
+                Rs {bets.Tie}
               </div>
             )}
           </button>
@@ -427,7 +427,7 @@ export default function DragonTigerGame({ user, wallet, fetchWallet }) {
             <div style={{ fontSize: '11px', color: '#ccc', marginTop: '2px' }}>Pays 1:1</div>
             {bets.Tiger > 0 && (
               <div style={{ position: 'absolute', top: '-10px', right: '-6px', background: '#ff1744', color: '#000', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold', border: '2px solid #fff' }}>
-                ₱{bets.Tiger}
+                Rs {bets.Tiger}
               </div>
             )}
           </button>

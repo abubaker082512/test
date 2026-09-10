@@ -220,7 +220,7 @@ export default function DerbyGame({ user, wallet, fetchWallet }) {
         if (data.success) {
           setMessage({
             type: 'success',
-            text: `🎉 WINNER! Horse #${winningId} (${winConfig.name}) won the race! Payout: ₱${(betAmount * payoutMultiplier).toFixed(2)}`
+            text: `🎉 WINNER! Horse #${winningId} (${winConfig.name}) won the race! Payout: Rs ${(betAmount * payoutMultiplier).toFixed(2)}`
           })
         }
       } catch (e) {
@@ -407,7 +407,7 @@ export default function DerbyGame({ user, wallet, fetchWallet }) {
               fontWeight: 'bold',
               fontSize: '13px'
             }}>
-              ₱{betAmount}
+              Rs {betAmount}
             </div>
             <button
               disabled={racing}

@@ -60,7 +60,7 @@ export default function Profile() {
           }
         })
 
-        // VIP curve: ₱0-100: VIP 1, ₱100-1000: VIP 2, ₱1000-5000: VIP 3, ₱5000-20000: VIP 4, ₱20000+: VIP 5
+        // VIP curve: Rs 0-100: VIP 1, Rs 100-1000: VIP 2, Rs 1000-5000: VIP 3, Rs 5000-20000: VIP 4, Rs 20000+: VIP 5
         let level = 1
         if (wager >= 20000) level = 5
         else if (wager >= 5000) level = 4
@@ -118,7 +118,7 @@ export default function Profile() {
             <div style={{ background: 'linear-gradient(135deg, #1c1c1c 0%, #111 100%)', padding: '24px', borderRadius: '16px', border: '1px solid var(--border)', marginBottom: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }}>
               <div style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>Available Balance</div>
               <div style={{ fontSize: '36px', fontWeight: 'bold', color: 'var(--accent)' }}>
-                ₱{balance.toFixed(2)}
+                Rs {balance.toFixed(2)}
               </div>
               
               <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
@@ -137,13 +137,13 @@ export default function Profile() {
               <div style={{ background: 'var(--card)', border: '1px solid var(--border)', padding: '16px', borderRadius: '12px' }}>
                 <div style={{ color: 'var(--muted)', fontSize: '11px', textTransform: 'uppercase' }}>Total Wagered</div>
                 <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#fff', marginTop: '4px' }}>
-                  ₱{loadingStats ? '...' : stats.wagerVolume.toFixed(2)}
+                  Rs {loadingStats ? '...' : stats.wagerVolume.toFixed(2)}
                 </div>
               </div>
               <div style={{ background: 'var(--card)', border: '1px solid var(--border)', padding: '16px', borderRadius: '12px' }}>
                 <div style={{ color: 'var(--muted)', fontSize: '11px', textTransform: 'uppercase' }}>Total Payouts</div>
                 <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#00ff88', marginTop: '4px' }}>
-                  ₱{loadingStats ? '...' : stats.payoutVolume.toFixed(2)}
+                  Rs {loadingStats ? '...' : stats.payoutVolume.toFixed(2)}
                 </div>
               </div>
               <div style={{ background: 'var(--card)', border: '1px solid var(--border)', padding: '16px', borderRadius: '12px' }}>

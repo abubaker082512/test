@@ -22,7 +22,7 @@ export default function WalletPage() {
   const [depMsg, setDepMsg] = useState(null)
 
   // Withdraw form
-  const [witAmount, setWitAmount] = useState('') // In-game ₱ amount
+  const [witAmount, setWitAmount] = useState('') // In-game Rs amount
   const [witCurrency, setWitCurrency] = useState('pkr') // 'pkr' | 'usd'
   const [witMethod, setWitMethod] = useState('easypaisa')
   const [witAccount, setWitAccount] = useState('')
@@ -66,12 +66,12 @@ export default function WalletPage() {
     const rate = depCurrency === 'pkr' ? rates.pkr_rate : rates.usd_rate
     const inGameAmount = parseFloat((rawAmount * rate).toFixed(2))
 
-    // Minimum check: at least ₱100 worth in-game currency
+    // Minimum check: at least Rs 100 worth in-game currency
     if (inGameAmount < 100) {
-      return setDepMsg({ type: 'error', text: `Minimum deposit value must be at least ₱100.00 (You submitted ${inGameAmount.toFixed(2)} ₱ worth)` })
+      return setDepMsg({ type: 'error', text: `Minimum deposit value must be at least Rs 100.00 (You submitted Rs ${inGameAmount.toFixed(2)} worth)` })
     }
 
-    const notesStr = `Deposit of ${depCurrency === 'pkr' ? 'Rs' : '$'} ${rawAmount} ${depCurrency.toUpperCase()} via ${depMethod}. Rate: 1 ${depCurrency.toUpperCase()} = ${rate} ₱.`
+    const notesStr = `Deposit of ${depCurrency === 'pkr' ? 'Rs' : '$'} ${rawAmount} ${depCurrency.toUpperCase()} via ${depMethod}. Rate: 1 ${depCurrency.toUpperCase()} = ${rate} Rs.`
 
     const res = await fetch('/api/wallet/deposit', {
       method: 'POST',
@@ -100,9 +100,9 @@ export default function WalletPage() {
 
     const rawInGameAmount = Number(witAmount)
 
-    // Minimum check in in-game currency: ₱500
+    // Minimum check in in-game currency: Rs 500
     if (rawInGameAmount < 500) {
-      return setWitMsg({ type: 'error', text: 'Minimum withdrawal is ₱500' })
+      return setWitMsg({ type: 'error', text: 'Minimum withdrawal is Rs 500' })
     }
 
     if (!wallet || wallet.balance < rawInGameAmount) {
@@ -114,7 +114,7 @@ export default function WalletPage() {
     const currencyLabel = witCurrency === 'pkr' ? 'PKR' : 'USD'
     const symbolLabel = witCurrency === 'pkr' ? 'Rs' : '$'
 
-    const notesStr = `Withdrawal to ${witMethod} account ${witAccount}. Net Payout: ${symbolLabel} ${payoutAmount} ${currencyLabel} (Rate: 1 ${currencyLabel} = ${rate} ₱).`
+    const notesStr = `Withdrawal to ${witMethod} account ${witAccount}. Net Payout: ${symbolLabel} ${payoutAmount} ${currencyLabel} (Rate: 1 ${currencyLabel} = ${rate} Rs).`
 
     const res = await fetch('/api/wallet/withdraw', {
       method: 'POST',
@@ -171,7 +171,7 @@ export default function WalletPage() {
         <div style={{ ...cardStyle, background: 'linear-gradient(135deg, #1a1a00, #111)', border: '1px solid var(--accent)33', textAlign: 'center' }}>
           <div style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>AVAILABLE BALANCE</div>
           <div style={{ fontSize: '56px', fontWeight: 900, color: 'var(--accent)' }}>
-            ₱{wallet ? parseFloat(wallet.balance).toFixed(2) : '0.00'}
+            Rs {wallet ? parseFloat(wallet.balance).toFixed(2) : '0.00'}
           </div>
         </div>
 
@@ -184,7 +184,7 @@ export default function WalletPage() {
             <strong>JazzCash (PKR):</strong> 0300-0000000 (BetPK Official)<br />
             <strong>Binance / Crypto (USD):</strong> usd-official-wallet-address<br />
             <div style={{ borderTop: '1px solid #00ff8822', marginTop: '8px', paddingTop: '8px', fontSize: '12px', color: 'var(--accent)' }}>
-              Current Exchange Rates: <strong style={{ color: '#fff' }}>1 PKR = {rates.pkr_rate} ₱</strong> | <strong style={{ color: '#fff' }}>1 USD = {rates.usd_rate} ₱</strong>
+              Current Exchange Rates: <strong style={{ color: '#fff' }}>1 PKR = {rates.pkr_rate} Rs</strong> | <strong style={{ color: '#fff' }}>1 USD = {rates.usd_rate} Rs</strong>
             </div>
           </div>
           {depMsg && <div style={msgStyle(depMsg.type)}>{depMsg.text}</div>}
@@ -213,7 +213,7 @@ export default function WalletPage() {
 
             {depAmount && (
               <div style={{ background: '#00ff8811', border: '1px solid #00ff8822', borderRadius: '8px', padding: '12px', color: '#00ff88', fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', textAlign: 'center' }}>
-                🎉 You will receive: {computedCreditedVal} ₱ in-game currency
+                🎉 You will receive: Rs {computedCreditedVal} in-game currency
               </div>
             )}
 
@@ -226,7 +226,7 @@ export default function WalletPage() {
         <div style={cardStyle}>
           <h2 style={{ marginTop: 0, color: '#ff9900' }}>🏧 Withdraw</h2>
           <div style={{ background: '#1a0f00', border: '1px solid #ff990033', borderRadius: '8px', padding: '12px', marginBottom: '16px', fontSize: '13px', color: '#aaa', lineHeight: '1.5' }}>
-            Minimum withdrawal: 500 ₱. Processed within 24 hours.<br />
+            Minimum withdrawal: 500 Rs. Processed within 24 hours.<br />
             Select your preferred payout currency and method.
           </div>
           {witMsg && <div style={msgStyle(witMsg.type)}>{witMsg.text}</div>}
@@ -247,7 +247,7 @@ export default function WalletPage() {
             
             <input 
               type="number" 
-              placeholder="Withdrawal Amount (in ₱, min 500)" 
+              placeholder="Withdrawal Amount (in Rs, min 500)" 
               value={witAmount} 
               onChange={e => setWitAmount(e.target.value)} 
               style={inputStyle} 
@@ -278,7 +278,7 @@ export default function WalletPage() {
               </div>
               <div style={{ textAlign: 'right', minWidth: '100px' }}>
                 <div style={{ fontWeight: 'bold', color: ['payout', 'deposit'].includes(tx.type) ? '#00ff88' : '#ff4444' }}>
-                  {['payout', 'deposit'].includes(tx.type) ? '+' : '-'}₱{parseFloat(tx.amount).toFixed(2)}
+                  {['payout', 'deposit'].includes(tx.type) ? '+' : '-'}Rs {parseFloat(tx.amount).toFixed(2)}
                 </div>
                 <div style={{ fontSize: '12px', padding: '2px 8px', borderRadius: '8px', display: 'inline-block', marginTop: '4px', background: tx.status === 'completed' ? '#00ff8822' : tx.status === 'pending' ? '#ff990022' : '#ff000022', color: tx.status === 'completed' ? '#00ff88' : tx.status === 'pending' ? '#ff9900' : '#ff4444' }}>
                   {tx.status}

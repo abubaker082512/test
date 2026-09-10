@@ -248,7 +248,7 @@ export default function WildBounty({ user, wallet, fetchWallet }) {
           }}>
             <h2 style={{ color: '#ffd700', margin: '0 0 10px', fontSize: '28px', fontStyle: 'italic', fontWeight: '950', textShadow: '0 2px 5px #000' }}>🤠 BOUNTY WON!</h2>
             <div style={{ fontSize: '28px', color: '#fff', fontWeight: '900', textShadow: '0 2px 5px #000', marginBottom: '20px' }}>
-              +₱{payoutVal.toFixed(2)}
+              +Rs {payoutVal.toFixed(2)}
             </div>
             <button className="btn primary" onClick={() => setShowPayoutOverlay(false)} style={{ width: '80%' }}>COLLECT GOLD</button>
           </div>
@@ -406,7 +406,7 @@ export default function WildBounty({ user, wallet, fetchWallet }) {
               fontWeight: 'bold',
               fontSize: '13px'
             }}>
-              ₱{betAmount}
+              Rs {betAmount}
             </div>
             <button
               disabled={spinning}

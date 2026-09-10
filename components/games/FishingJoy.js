@@ -4,7 +4,7 @@ export default function FishingJoy({ user, wallet, fetchWallet }) {
   const canvasRef = useRef(null)
   const [ammo, setAmmo] = useState(0)
   const [sessionWin, setSessionWin] = useState(0)
-  const [betAmount, setBetAmount] = useState(10) // ₱10 to buy 20 ammo shots
+  const [betAmount, setBetAmount] = useState(10) // Rs 10 to buy 20 ammo shots
   const [multiplier, setMultiplier] = useState(1) // Weapon multiplier: 1x, 2x, 5x, 10x
   const [message, setMessage] = useState(null)
   const [processing, setProcessing] = useState(false)
@@ -124,7 +124,7 @@ export default function FishingJoy({ user, wallet, fetchWallet }) {
         ctx.fillStyle = '#fff'
         ctx.font = 'bold 9px Outfit'
         ctx.textAlign = 'center'
-        ctx.fillText(`+₱${coin.val}`, coin.x, coin.y - 12)
+        ctx.fillText(`+Rs ${coin.val}`, coin.x, coin.y - 12)
 
         return true
       })
@@ -255,7 +255,7 @@ export default function FishingJoy({ user, wallet, fetchWallet }) {
     const data = await res.json()
 
     if (data.success) {
-      setMessage({ type: 'success', text: `🎉 Coins gathered! +₱${sessionWin.toFixed(2)} added to wallet.` })
+      setMessage({ type: 'success', text: `🎉 Coins gathered! +Rs ${sessionWin.toFixed(2)} added to wallet.` })
       setSessionWin(0)
       setAmmo(0)
     }
@@ -297,7 +297,7 @@ export default function FishingJoy({ user, wallet, fetchWallet }) {
 
       <div style={{ display: 'flex', gap: '20px', color: 'var(--accent)', fontWeight: 'bold', fontSize: '14px', marginBottom: '8px' }}>
         <span>🔋 Ammo: {ammo} Nets</span>
-        <span>💵 Coins: ₱{sessionWin.toFixed(2)}</span>
+        <span>💵 Coins: Rs {sessionWin.toFixed(2)}</span>
       </div>
 
       {message && (
@@ -404,7 +404,7 @@ export default function FishingJoy({ user, wallet, fetchWallet }) {
             style={{ padding: '14px', background: 'var(--accent)', color: '#000', fontWeight: 'bold' }} 
             disabled={processing}
           >
-            {processing ? 'CHARGING...' : `BUY 20 AMMO — ₱${betAmount}`}
+            {processing ? 'CHARGING...' : `BUY 20 AMMO — Rs ${betAmount}`}
           </button>
         ) : (
           <button 
@@ -413,7 +413,7 @@ export default function FishingJoy({ user, wallet, fetchWallet }) {
             style={{ padding: '14px', borderColor: 'var(--success)', color: 'var(--success)', fontWeight: 'bold' }} 
             disabled={processing || sessionWin <= 0}
           >
-            {processing ? 'COLLECTING...' : `📥 Cash Out ₱${sessionWin.toFixed(2)}`}
+            {processing ? 'COLLECTING...' : `📥 Cash Out Rs ${sessionWin.toFixed(2)}`}
           </button>
         )}
       </div>

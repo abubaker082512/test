@@ -7,79 +7,72 @@ import AuthModal from '../components/AuthModal'
 import GameCard from '../components/GameCard'
 
 const mockGames = [
-  // Hot / Real JILI Games
-  { id: 'e794bf5717aca371152df192341fe68b', title: 'Royal Fishing', provider: 'JILI', badge: 'Live API', recommended: true, theme: 'linear-gradient(135deg, #004b9b 0%, #001f40 100%)', icon: '🦈', slug: 'e794bf5717aca371152df192341fe68b', category: 'Hot', imageUrl: 'https://cdn.betnex.co/images/jiligaming/0.webp' },
-  { id: 'bdfb23c974a2517198c5443adeea77a8', title: 'Super Ace', provider: 'JILI', badge: '1500x', recommended: true, theme: 'linear-gradient(135deg, #4b0000 0%, #150000 100%)', icon: '🂡', slug: 'super-ace', category: 'Hot', imageUrl: '/games/super_ace.png' },
-  { id: 'a990de177577a2e6a889aaac5f57b429', title: 'Fortune Gems', provider: 'JILI', badge: '375x', recommended: true, theme: 'linear-gradient(135deg, #004b12 0%, #001203 100%)', icon: '💎', slug: 'fortune-gems', category: 'Hot', imageUrl: '/games/fortune_gems.png' },
-  { id: '3cf4a85cb6dcf4d8836c982c359cd72d', title: 'Jackpot Fishing', provider: 'JILI', badge: 'Popular', recommended: true, theme: 'linear-gradient(135deg, #006699 0%, #002b40 100%)', icon: '🐠', slug: '3cf4a85cb6dcf4d8836c982c359cd72d', category: 'Hot', imageUrl: 'https://cdn.betnex.co/images/jiligaming/3.webp' },
-  { id: '981f5f9675002fbeaaf24c4128b938d7', title: 'Boxing King', provider: 'JILI', badge: '2000x', recommended: true, theme: 'linear-gradient(135deg, #00224b 0%, #000a15 100%)', icon: '🥊', slug: 'boxing-king', category: 'Hot', imageUrl: '/games/super_ace.png' },
-  { id: 'e333695bcff28acdbecc641ae6ee2b23', title: 'Bombing Fishing', provider: 'JILI', badge: 'Live API', recommended: true, theme: 'linear-gradient(135deg, #1b263b 0%, #0d131f 100%)', icon: '🦈', slug: 'e333695bcff28acdbecc641ae6ee2b23', category: 'Hot', imageUrl: 'https://cdn.betnex.co/images/jiligaming/1.webp' },
-  { id: 'b4af506243cafae52908e8fa266f8ff6', title: 'Speed Roulette', provider: 'Evolution', badge: 'Live Stream', recommended: true, theme: 'linear-gradient(135deg, #311b92 0%, #12005e 100%)', icon: '🎡', slug: 'b4af506243cafae52908e8fa266f8ff6', category: 'Hot', imageUrl: 'https://cdn.betnex.co/images/evolutionlive/3.png' },
-  { id: '87a7f4550407f5ed73c3353a54a11187', title: 'Blackjack VIP 12', provider: 'Evolution', badge: 'Live HD', recommended: true, theme: 'linear-gradient(135deg, #004d40 0%, #00251a 100%)', icon: '🃏', slug: '87a7f4550407f5ed73c3353a54a11187', category: 'Hot', imageUrl: 'https://cdn.betnex.co/images/evolutionlive/4.webp' },
-  { id: 'ba2adf72179e1ead9e3dae8f0a7d4c07', title: 'Mahjong Ways 2', provider: 'PG', badge: 'Ways 2', recommended: true, theme: 'linear-gradient(135deg, #003c1e 0%, #001207 100%)', icon: '🀄', slug: 'mahjong-ways-2', category: 'Hot', imageUrl: '/games/super_ace.png' },
+  // --- JILI Flagship API Games ---
+  { id: 'bdfb23c974a2517198c5443adeea77a8', title: 'Super Ace', provider: 'JILI', badge: '1500x', recommended: true, theme: 'linear-gradient(135deg, #4b0000 0%, #150000 100%)', icon: '🂡', slug: 'bdfb23c974a2517198c5443adeea77a8', category: 'Hot', imageUrl: 'https://cdn.betnex.co/images/jiligaming/37.png' },
+  { id: 'a990de177577a2e6a889aaac5f57b429', title: 'Fortune Gems', provider: 'JILI', badge: '375x', recommended: true, theme: 'linear-gradient(135deg, #004b12 0%, #001203 100%)', icon: '💎', slug: 'a990de177577a2e6a889aaac5f57b429', category: 'Hot', imageUrl: 'https://cdn.betnex.co/images/jiligaming/48.webp' },
+  { id: '664fba4da609ee82b78820b1f570f4ad', title: 'Fortune Gems 2', provider: 'JILI', badge: 'Jackpot', recommended: true, theme: 'linear-gradient(135deg, #004b12 0%, #001203 100%)', icon: '💎', slug: '664fba4da609ee82b78820b1f570f4ad', category: 'Hot', imageUrl: 'https://cdn.betnex.co/images/jiligaming/74.webp' },
+  { id: 'db249defce63610fccabfa829a405232', title: 'Money Coming', provider: 'JILI', badge: '10,000x', recommended: true, theme: 'linear-gradient(135deg, #4b3600 0%, #151000 100%)', icon: '💰', slug: 'db249defce63610fccabfa829a405232', category: 'Hot', imageUrl: 'https://cdn.betnex.co/images/jiligaming/38.webp' },
+  { id: '981f5f9675002fbeaaf24c4128b938d7', title: 'Boxing King', provider: 'JILI', badge: '2000x', recommended: true, theme: 'linear-gradient(135deg, #00224b 0%, #000a15 100%)', icon: '🥊', slug: '981f5f9675002fbeaaf24c4128b938d7', category: 'Hot', imageUrl: 'https://cdn.betnex.co/images/jiligaming/41.webp' },
+  { id: '490096198e28f770a3f85adb6ee49e0f', title: 'Golden Empire', provider: 'JILI', badge: 'Megaways', recommended: true, theme: 'linear-gradient(135deg, #302610 0%, #120e05 100%)', icon: '👑', slug: '490096198e28f770a3f85adb6ee49e0f', category: 'Hot', imageUrl: 'https://cdn.betnex.co/images/jiligaming/47.webp' },
+  { id: '80aad2a10ae6a95068b50160d6c78897', title: 'Super Ace Deluxe', provider: 'JILI', badge: 'Deluxe', recommended: false, theme: 'linear-gradient(135deg, #4b0000 0%, #150000 100%)', icon: '🂡', slug: '80aad2a10ae6a95068b50160d6c78897', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/143.png' },
+  { id: '63927e939636f45e9d6d0b3717b3b1c1', title: 'Fortune Gems 3', provider: 'JILI', badge: 'NEW', recommended: false, theme: 'linear-gradient(135deg, #004b12 0%, #001203 100%)', icon: '💎', slug: '63927e939636f45e9d6d0b3717b3b1c1', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/142.png' },
+  { id: '8cbb88bc0bc1f7be4379cf75abc6095f', title: 'Golden Empire 2', provider: 'JILI', badge: 'Hot', recommended: false, theme: 'linear-gradient(135deg, #302610 0%, #120e05 100%)', icon: '👑', slug: '8cbb88bc0bc1f7be4379cf75abc6095f', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/205.webp' },
+  { id: '083a2fbb35612d3f7925acedece5904f', title: 'Super Ace II', provider: 'JILI', badge: 'NEW', recommended: false, theme: 'linear-gradient(135deg, #4b0000 0%, #150000 100%)', icon: '🂡', slug: '083a2fbb35612d3f7925acedece5904f', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/206.png' },
+  { id: 'b4a3e54cabeecd94ebbd1cc217a5b069', title: 'Money Coming 2', provider: 'JILI', badge: 'Popular', recommended: false, theme: 'linear-gradient(135deg, #4b3600 0%, #151000 100%)', icon: '💰', slug: 'b4a3e54cabeecd94ebbd1cc217a5b069', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/207.webp' },
+  { id: '2d91fb4cdd53d47367369ad85b271500', title: 'Boxing King Match', provider: 'JILI', badge: 'VIP', recommended: false, theme: 'linear-gradient(135deg, #00224b 0%, #000a15 100%)', icon: '🥊', slug: '2d91fb4cdd53d47367369ad85b271500', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/223.webp' },
 
-  // PaddyPower (RapidAPI Integration)
-  { id: 'paddy-rainbow-riches', title: 'Rainbow Riches', provider: 'PaddyPower', badge: 'Jackpot', recommended: true, theme: 'linear-gradient(135deg, #1b5e20 0%, #003300 100%)', icon: '🌈', slug: 'super-ace', category: 'PaddyPower', imageUrl: '/games/fortune_gems.png' },
-  { id: 'paddy-fishin-frenzy', title: 'Fishin\' Frenzy', provider: 'PaddyPower', badge: 'Popular', recommended: true, theme: 'linear-gradient(135deg, #01579b 0%, #002f6c 100%)', icon: '🎣', slug: 'fortune-gems', category: 'PaddyPower', imageUrl: '/games/fishing.png' },
-  { id: 'paddy-roulette-live', title: 'Paddy Roulette Live', provider: 'PaddyPower', badge: 'Live HD', recommended: true, theme: 'linear-gradient(135deg, #311b92 0%, #12005e 100%)', icon: '🎡', slug: 'mini-roulette', category: 'PaddyPower', imageUrl: '/games/live.png' },
-  { id: 'paddy-blackjack-exclusive', title: 'Exclusive Blackjack', provider: 'PaddyPower', badge: 'VIP Table', recommended: true, theme: 'linear-gradient(135deg, #004d40 0%, #00251a 100%)', icon: '🃏', slug: 'blackjack-live', category: 'PaddyPower', imageUrl: '/games/live.png' },
-  { id: 'paddy-age-of-gods', title: 'Age of the Gods', provider: 'PaddyPower', badge: '4 Jackpots', recommended: true, theme: 'linear-gradient(135deg, #4a148c 0%, #12005e 100%)', icon: '⚡', slug: 'super-ace-deluxe', category: 'PaddyPower', imageUrl: '/games/super_ace.png' },
-  { id: 'paddy-mega-fire-blaze', title: 'Mega Fire Blaze', provider: 'PaddyPower', badge: '10,000x', recommended: true, theme: 'linear-gradient(135deg, #bf360c 0%, #3e2723 100%)', icon: '🔥', slug: 'mini-roulette', category: 'PaddyPower', imageUrl: '/games/live.png' },
+  // --- JILI Fishing Arcade ---
+  { id: 'e794bf5717aca371152df192341fe68b', title: 'Royal Fishing', provider: 'JILI', badge: 'Live API', recommended: true, theme: 'linear-gradient(135deg, #004b9b 0%, #001f40 100%)', icon: '🦈', slug: 'e794bf5717aca371152df192341fe68b', category: 'Fishing', imageUrl: 'https://cdn.betnex.co/images/jiligaming/0.webp' },
+  { id: 'e333695bcff28acdbecc641ae6ee2b23', title: 'Bombing Fishing', provider: 'JILI', badge: 'Live API', recommended: true, theme: 'linear-gradient(135deg, #1b263b 0%, #0d131f 100%)', icon: '🦈', slug: 'e333695bcff28acdbecc641ae6ee2b23', category: 'Fishing', imageUrl: 'https://cdn.betnex.co/images/jiligaming/1.webp' },
+  { id: 'eef3e28f0e3e7b72cbca61e7924d00f1', title: 'Dinosaur Tycoon', provider: 'JILI', badge: 'Boss Hunt', recommended: true, theme: 'linear-gradient(135deg, #004b12 0%, #001203 100%)', icon: '🦖', slug: 'eef3e28f0e3e7b72cbca61e7924d00f1', category: 'Fishing', imageUrl: 'https://cdn.betnex.co/images/jiligaming/2.png' },
+  { id: '3cf4a85cb6dcf4d8836c982c359cd72d', title: 'Jackpot Fishing', provider: 'JILI', badge: 'Popular', recommended: true, theme: 'linear-gradient(135deg, #006699 0%, #002b40 100%)', icon: '🐠', slug: '3cf4a85cb6dcf4d8836c982c359cd72d', category: 'Fishing', imageUrl: 'https://cdn.betnex.co/images/jiligaming/3.webp' },
 
-  // Slots
-  { id: 'slots-pg', title: 'Slots', provider: 'PG', badge: '', recommended: false, theme: 'linear-gradient(135deg, #2b3040 0%, #0f1118 100%)', icon: '🎰', slug: 'slots-pg', category: 'Slots', imageUrl: '/games/super_ace.png' },
-  { id: 'jili-slots', title: 'JILI Slots', provider: 'JILI', badge: '', recommended: false, theme: 'linear-gradient(135deg, #302610 0%, #120e05 100%)', icon: '🎰', slug: 'jili-slots', category: 'Slots', imageUrl: '/games/fortune_gems.png' },
-  { id: 'wg-slots', title: 'WG Slots', provider: 'WG', badge: '', recommended: false, theme: 'linear-gradient(135deg, #0d361b 0%, #031207 100%)', icon: '🎰', slug: 'wg-slots', category: 'Slots', imageUrl: '/games/fortune_gems.png' },
-  { id: 'fc-slots', title: 'FC Slots', provider: 'FC', badge: '', recommended: false, theme: 'linear-gradient(135deg, #2b0b30 0%, #0d0310 100%)', icon: '🎰', slug: 'fc-slots', category: 'Slots', imageUrl: '/games/super_ace.png' },
-  { id: 'jdb-slots', title: 'JDB Slots', provider: 'JDB', badge: '', recommended: false, theme: 'linear-gradient(135deg, #101c3c 0%, #050a17 100%)', icon: '🎰', slug: 'jdb-slots', category: 'Slots', imageUrl: '/games/fortune_gems.png' },
-  { id: 'pp-slots', title: 'PP Slots', provider: 'PP', badge: '', recommended: false, theme: 'linear-gradient(135deg, #22361b 0%, #0b1509 100%)', icon: '🎰', slug: 'pp-slots', category: 'Slots', imageUrl: '/games/super_ace.png' },
-  { id: 'mg-slots', title: 'MG Slots', provider: 'MG', badge: '', recommended: false, theme: 'linear-gradient(135deg, #3c0000 0%, #120000 100%)', icon: '🎰', slug: 'mg-slots', category: 'Slots', imageUrl: '/games/fortune_gems.png' },
-  { id: 'cq9-slots', title: 'CQ9 Slots', provider: 'CQ9', badge: '', recommended: false, theme: 'linear-gradient(135deg, #4b004b 0%, #150015 100%)', icon: '🎰', slug: 'cq9-slots', category: 'Slots', imageUrl: '/games/super_ace.png' },
-  { id: 'bng-slots', title: 'BNG Slots', provider: 'BNG', badge: '', recommended: false, theme: 'linear-gradient(135deg, #00224b 0%, #000a15 100%)', icon: '🎱', slug: 'bng-slots', category: 'Slots', imageUrl: '/games/plinko.png' },
+  // --- Evolution Live Dealers ---
+  { id: 'b4af506243cafae52908e8fa266f8ff6', title: 'Speed Roulette', provider: 'Evolution', badge: 'Live Stream', recommended: true, theme: 'linear-gradient(135deg, #311b92 0%, #12005e 100%)', icon: '🎡', slug: 'b4af506243cafae52908e8fa266f8ff6', category: 'Live', imageUrl: 'https://cdn.betnex.co/images/evolutionlive/3.png' },
+  { id: '87a7f4550407f5ed73c3353a54a11187', title: 'Blackjack VIP 12', provider: 'Evolution', badge: 'Live HD', recommended: true, theme: 'linear-gradient(135deg, #004d40 0%, #00251a 100%)', icon: '🃏', slug: '87a7f4550407f5ed73c3353a54a11187', category: 'Live', imageUrl: 'https://cdn.betnex.co/images/evolutionlive/4.webp' },
+  { id: '7b44393101abad7ac31e21fc1bdb3d56', title: 'Emperor Speed Baccarat', provider: 'Evolution', badge: 'Speed B', recommended: true, theme: 'linear-gradient(135deg, #4b0d2d 0%, #17030e 100%)', icon: '👑', slug: '7b44393101abad7ac31e21fc1bdb3d56', category: 'Live', imageUrl: 'https://cdn.betnex.co/images/evolutionlive/1.webp' },
+  { id: '36b1e71c6f51827e24261d06a22b1e31', title: 'French Roulette Gold', provider: 'Evolution', badge: 'VIP Gold', recommended: true, theme: 'linear-gradient(135deg, #302610 0%, #120e05 100%)', icon: '🎡', slug: '36b1e71c6f51827e24261d06a22b1e31', category: 'Live', imageUrl: 'https://cdn.betnex.co/images/evolutionlive/0.webp' },
+  { id: '5cb6aa4e2ce1c775c568561401ffdfca', title: 'Fan Tan Live', provider: 'Evolution', badge: 'Live Classic', recommended: false, theme: 'linear-gradient(135deg, #0d361b 0%, #031207 100%)', icon: '🎲', slug: '5cb6aa4e2ce1c775c568561401ffdfca', category: 'Live', imageUrl: 'https://cdn.betnex.co/images/evolutionlive/2.png' },
 
-  // Live
-  { id: 'pp-live', title: 'PP Live', provider: 'PP', badge: '', recommended: false, theme: 'linear-gradient(135deg, #1a2e3b 0%, #070e14 100%)', icon: '💃', slug: 'mini-roulette', category: 'Live', imageUrl: '/games/live.png' },
-  { id: 'sexy-live', title: 'SEXY Live', provider: 'SEXY', badge: 'Hot', recommended: true, theme: 'linear-gradient(135deg, #4b0d2d 0%, #17030e 100%)', icon: '💃', slug: 'sexy-live', category: 'Live', imageUrl: '/games/live.png' },
-  { id: 'blackjack-live', title: 'Blackjack Live', provider: 'Evolution', badge: 'Classic', recommended: true, theme: 'linear-gradient(135deg, #0d361b 0%, #031207 100%)', icon: '🃏', slug: 'blackjack-live', category: 'Live', imageUrl: '/games/live.png' },
+  // --- PG Soft Slots ---
+  { id: 'ba2adf72179e1ead9e3dae8f0a7d4c07', title: 'Mahjong Ways 2', provider: 'PG Soft', badge: 'Ways 2', recommended: true, theme: 'linear-gradient(135deg, #003c1e 0%, #001207 100%)', icon: '🀄', slug: 'ba2adf72179e1ead9e3dae8f0a7d4c07', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/pgsoft/1.webp' },
+  { id: '1189baca156e1bbbecc3b26651a63565', title: 'Mahjong Ways', provider: 'PG Soft', badge: 'Original', recommended: true, theme: 'linear-gradient(135deg, #003c1e 0%, #001207 100%)', icon: '🀄', slug: '1189baca156e1bbbecc3b26651a63565', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/pgsoft/0.webp' },
+  { id: '2fa9a84d096d6ff0bab53f81b79876c8', title: 'Treasures of Aztec', provider: 'PG Soft', badge: '100,000x', recommended: true, theme: 'linear-gradient(135deg, #302610 0%, #120e05 100%)', icon: '🗿', slug: '2fa9a84d096d6ff0bab53f81b79876c8', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/pgsoft/2.webp' },
 
-  // Fishing
-  { id: 'jdb-fishing', title: 'JDB Fishing', provider: 'JDB', badge: '', recommended: false, theme: 'linear-gradient(135deg, #004b9b 0%, #001f40 100%)', icon: '🦈', slug: 'jdb-fishing', category: 'Fishing', imageUrl: '/games/fishing.png' },
-  { id: 'jili-fishing', title: 'JILI Fishing', provider: 'JILI', badge: 'Hot', recommended: true, theme: 'linear-gradient(135deg, #006699 0%, #002b40 100%)', icon: '🐠', slug: 'fishing-joy', category: 'Fishing', imageUrl: '/games/fishing.png' },
-  { id: 'fc-fishing', title: 'FC Fishing', provider: 'FC', badge: '', recommended: false, theme: 'linear-gradient(135deg, #002b40 0%, #001017 100%)', icon: '🐟', slug: 'fishing-joy', category: 'Fishing', imageUrl: '/games/fishing.png' },
-  { id: 'ka-fishing', title: 'KA Fishing', provider: 'KA', badge: '', recommended: false, theme: 'linear-gradient(135deg, #1a2e3b 0%, #070e14 100%)', icon: '🐙', slug: 'ka-fishing', category: 'Fishing', imageUrl: '/games/fishing.png' },
-  { id: 'ky-fishing', title: 'KY Fishing', provider: 'KY', badge: '', recommended: false, theme: 'linear-gradient(135deg, #0d361b 0%, #031207 100%)', icon: '🦀', slug: 'fishing-joy', category: 'Fishing', imageUrl: '/games/fishing.png' },
-  { id: 'baison-fishing', title: 'Baison Fishing', provider: 'Baison', badge: '', recommended: false, theme: 'linear-gradient(135deg, #2b0b30 0%, #0d0310 100%)', icon: '🐳', slug: 'baison-fishing', category: 'Fishing', imageUrl: '/games/fishing.png' },
-  { id: 'wg-fishing', title: 'WG Fishing', provider: 'WG', badge: '', recommended: false, theme: 'linear-gradient(135deg, #101c3c 0%, #050a17 100%)', icon: '🦈', slug: 'fishing-joy', category: 'Fishing', imageUrl: '/games/fishing.png' },
-  { id: 'cq9-fishing', title: 'CQ9 Fishing', provider: 'CQ9', badge: '', recommended: false, theme: 'linear-gradient(135deg, #22361b 0%, #0b1509 100%)', icon: '🐡', slug: 'cq9-fishing', category: 'Fishing', imageUrl: '/games/fishing.png' },
-  { id: 'yellowbat-fishing', title: 'YellowBat Fishing', provider: 'YellowBat', badge: '', recommended: false, theme: 'linear-gradient(135deg, #3c0000 0%, #120000 100%)', icon: '🐋', slug: 'fishing-joy', category: 'Fishing', imageUrl: '/games/fishing.png' },
+  // --- Pragmatic Play Slots ---
+  { id: 'e30cd08c54817096e863975e309bb457', title: 'Waves of Poseidon', provider: 'Pragmatic', badge: 'Megaways', recommended: true, theme: 'linear-gradient(135deg, #004b9b 0%, #001f40 100%)', icon: '🔱', slug: 'e30cd08c54817096e863975e309bb457', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/pragmaticslots/0.webp' },
+  { id: '8a0b30eb466a8a07027cbddc19369d0f', title: 'Gem Fire Fortune', provider: 'Pragmatic', badge: 'Fire Gem', recommended: false, theme: 'linear-gradient(135deg, #4b0000 0%, #150000 100%)', icon: '🔥', slug: '8a0b30eb466a8a07027cbddc19369d0f', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/pragmaticslots/1.png' },
+  { id: 'e1d2da140286507e851fde1cb2fdd4ba', title: 'Gold Party 2', provider: 'Pragmatic', badge: 'Popular', recommended: false, theme: 'linear-gradient(135deg, #302610 0%, #120e05 100%)', icon: '💰', slug: 'e1d2da140286507e851fde1cb2fdd4ba', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/pragmaticslots/2.png' },
 
-  // Cards
-  { id: 'hilo-orig', title: 'Hi-Lo Cards', provider: 'Originals', badge: 'Streak', recommended: true, theme: 'linear-gradient(135deg, #12003c 0%, #030012 100%)', icon: '🃏', slug: 'hilo', category: 'Cards', imageUrl: '/games/live.png' },
-  { id: 'baccarat-orig', title: 'Classic Baccarat', provider: 'Originals', badge: 'Table', recommended: true, theme: 'linear-gradient(135deg, #003c1e 0%, #001207 100%)', icon: '👑', slug: 'baccarat', category: 'Cards', imageUrl: '/games/live.png' },
-  { id: 'jili-cards', title: 'JILI Cards', provider: 'JILI', badge: '', recommended: false, theme: 'linear-gradient(135deg, #4b3600 0%, #151000 100%)', icon: '🃏', slug: 'jili-cards', category: 'Cards', imageUrl: '/games/live.png' },
-  { id: 'kingmidas-cards', title: 'KingMidas Cards', provider: 'KingMidas', badge: '', recommended: false, theme: 'linear-gradient(135deg, #4b2600 0%, #150a00 100%)', icon: '🃏', slug: 'kingmidas-cards', category: 'Cards', imageUrl: '/games/live.png' },
-  { id: 'wg-cards', title: 'WG Cards', provider: 'WG', badge: '', recommended: false, theme: 'linear-gradient(135deg, #004b4b 0%, #001515 100%)', icon: '🃏', slug: 'wg-cards', category: 'Cards', imageUrl: '/games/live.png' },
+  // --- PaddyPower Exclusives ---
+  { id: 'paddy-rainbow-riches', title: 'Rainbow Riches', provider: 'PaddyPower', badge: 'Jackpot', recommended: true, theme: 'linear-gradient(135deg, #1b5e20 0%, #003300 100%)', icon: '🌈', slug: 'paddy-rainbow-riches', category: 'PaddyPower', imageUrl: '/games/fortune_gems.png' },
+  { id: 'paddy-fishin-frenzy', title: 'Fishin\' Frenzy', provider: 'PaddyPower', badge: 'Popular', recommended: true, theme: 'linear-gradient(135deg, #01579b 0%, #002f6c 100%)', icon: '🎣', slug: 'paddy-fishin-frenzy', category: 'PaddyPower', imageUrl: '/games/fishing.png' },
+  { id: 'paddy-roulette-live', title: 'Paddy Roulette Live', provider: 'PaddyPower', badge: 'Live HD', recommended: true, theme: 'linear-gradient(135deg, #311b92 0%, #12005e 100%)', icon: '🎡', slug: 'paddy-roulette-live', category: 'PaddyPower', imageUrl: '/games/live.png' },
+  { id: 'paddy-blackjack-exclusive', title: 'Exclusive Blackjack', provider: 'PaddyPower', badge: 'VIP Table', recommended: true, theme: 'linear-gradient(135deg, #004d40 0%, #00251a 100%)', icon: '🃏', slug: 'paddy-blackjack-exclusive', category: 'PaddyPower', imageUrl: '/games/live.png' },
+  { id: 'paddy-age-of-gods', title: 'Age of the Gods', provider: 'PaddyPower', badge: '4 Jackpots', recommended: true, theme: 'linear-gradient(135deg, #4a148c 0%, #12005e 100%)', icon: '⚡', slug: 'paddy-age-of-gods', category: 'PaddyPower', imageUrl: '/games/super_ace.png' },
+  { id: 'paddy-mega-fire-blaze', title: 'Mega Fire Blaze', provider: 'PaddyPower', badge: '10,000x', recommended: true, theme: 'linear-gradient(135deg, #bf360c 0%, #3e2723 100%)', icon: '🔥', slug: 'paddy-mega-fire-blaze', category: 'PaddyPower', imageUrl: '/games/live.png' },
 
-  // Blockchain
+  // --- Original Casino Games ---
+  { id: 'crash-orig', title: 'Crash Multiplier', provider: 'Originals', badge: '100x', recommended: true, theme: 'linear-gradient(135deg, #4b004b 0%, #150015 100%)', icon: '🚀', slug: 'crash', category: 'Blockchain', imageUrl: '/games/crash.png' },
+  { id: 'plinko-orig', title: 'Plinko Physics', provider: 'Originals', badge: 'Physics', recommended: true, theme: 'linear-gradient(135deg, #12003c 0%, #030012 100%)', icon: '🟢', slug: 'plinko', category: 'Blockchain', imageUrl: '/games/plinko.png' },
+  { id: 'minesweeper-orig', title: 'Minesweeper Gems', provider: 'Originals', badge: 'Gems', recommended: true, theme: 'linear-gradient(135deg, #004b12 0%, #001203 100%)', icon: '💣', slug: 'minesweeper', category: 'Blockchain', imageUrl: '/games/plinko.png' },
   { id: 'crypto-dice-orig', title: 'Crypto Dice', provider: 'Originals', badge: '98% RTP', recommended: true, theme: 'linear-gradient(135deg, #004b12 0%, #001f0a 100%)', icon: '🎲', slug: 'dice', category: 'Blockchain', imageUrl: '/games/crash.png' },
   { id: 'wheel-orig', title: 'Lucky Wheel', provider: 'Originals', badge: '10x Mult', recommended: true, theme: 'linear-gradient(135deg, #4b3600 0%, #151000 100%)', icon: '🎡', slug: 'wheel', category: 'Blockchain', imageUrl: '/games/crash.png' },
-  { id: 'keno-orig', title: 'Keno Classic', provider: 'Originals', badge: '80 Balls', recommended: true, theme: 'linear-gradient(135deg, #2b0b30 0%, #0d0310 100%)', icon: '🎱', slug: 'keno', category: 'Blockchain', imageUrl: '/games/plinko.png' },
-  { id: 'crash-blockchain', title: 'JILI Blockchain', provider: 'JILI', badge: 'Multi', recommended: true, theme: 'linear-gradient(135deg, #4b004b 0%, #150015 100%)', icon: '🚀', slug: 'crash', category: 'Blockchain', imageUrl: '/games/crash.png' },
-  { id: 'xgame-blockchain', title: 'XGAME Blockchain', provider: 'XGAME', badge: '', recommended: false, theme: 'linear-gradient(135deg, #003c1e 0%, #001207 100%)', icon: '🚀', slug: 'xgame-blockchain', category: 'Blockchain', imageUrl: '/games/crash.png' },
-  { id: 'wg-blockchain', title: 'WG Blockchain', provider: 'WG', badge: '', recommended: false, theme: 'linear-gradient(135deg, #00224b 0%, #000a15 100%)', icon: '🚀', slug: 'wg-blockchain', category: 'Blockchain', imageUrl: '/games/crash.png' },
-  { id: 'plinko-orig', title: 'Plinko', provider: 'Originals', badge: 'Physics', recommended: true, theme: 'linear-gradient(135deg, #12003c 0%, #030012 100%)', icon: '🟢', slug: 'plinko', category: 'Blockchain', imageUrl: '/games/plinko.png' },
-  { id: 'minesweeper-orig', title: 'Minesweeper', provider: 'Originals', badge: 'Gems', recommended: true, theme: 'linear-gradient(135deg, #004b12 0%, #001203 100%)', icon: '💣', slug: 'minesweeper', category: 'Blockchain', imageUrl: '/games/plinko.png' },
+  { id: 'keno-orig', title: 'Keno Classic', provider: 'Originals', badge: '80 Balls', recommended: false, theme: 'linear-gradient(135deg, #2b0b30 0%, #0d0310 100%)', icon: '🎱', slug: 'keno', category: 'Blockchain', imageUrl: '/games/plinko.png' },
 
-  // Cockfight
+  // --- Cards & Table ---
+  { id: 'hilo-orig', title: 'Hi-Lo Cards', provider: 'Originals', badge: 'Streak', recommended: true, theme: 'linear-gradient(135deg, #12003c 0%, #030012 100%)', icon: '🃏', slug: 'hilo', category: 'Cards', imageUrl: '/games/live.png' },
+  { id: 'baccarat-orig', title: 'Classic Baccarat', provider: 'Originals', badge: 'Table', recommended: true, theme: 'linear-gradient(135deg, #003c1e 0%, #001207 100%)', icon: '👑', slug: 'baccarat', category: 'Cards', imageUrl: '/games/live.png' },
+  { id: 'blackjack-orig', title: 'Blackjack 21', provider: 'Originals', badge: 'Classic', recommended: true, theme: 'linear-gradient(135deg, #0d361b 0%, #031207 100%)', icon: '🃏', slug: 'blackjack', category: 'Cards', imageUrl: '/games/live.png' },
+  { id: 'sexy-live', title: 'SEXY Live Baccarat', provider: 'SEXY', badge: 'Hot', recommended: true, theme: 'linear-gradient(135deg, #4b0d2d 0%, #17030e 100%)', icon: '💃', slug: 'sexy-live', category: 'Live', imageUrl: '/games/live.png' },
+
+  // --- Cockfight ---
   { id: 'ds88-cockfight', title: 'DS88 Cockfight', provider: 'DS88', badge: 'Live Fight', recommended: true, theme: 'linear-gradient(135deg, #3c0000 0%, #120000 100%)', icon: '🐓', slug: 'ds88-cockfight', category: 'Cockfight', imageUrl: '/games/live.png' },
 
-  // Sports
+  // --- Sports ---
   { id: 'crown-sports', title: 'Crown Sports', provider: 'Crown', badge: 'CR7 Live', recommended: true, theme: 'linear-gradient(135deg, #0d361b 0%, #031207 100%)', icon: '⚽', slug: 'crown-sports', category: 'Sports', imageType: 'ronaldo' },
   { id: 'wg-sports', title: 'WG Sports', provider: 'WG', badge: 'Messi Live', recommended: true, theme: 'linear-gradient(135deg, #2b0b30 0%, #0d0310 100%)', icon: '⚽', slug: 'wg-sports', category: 'Sports', imageType: 'messi' },
-  { id: 'ug-sports', title: 'UG Sports', provider: 'UG', badge: 'Live Odds', recommended: false, theme: 'linear-gradient(135deg, #101c3c 0%, #050a17 100%)', icon: '⚽', slug: 'ug-sports', category: 'Sports' },
-  { id: 'poly-sports', title: 'Poly Sports', provider: 'Poly', badge: '', recommended: false, theme: 'linear-gradient(135deg, #22361b 0%, #0b1509 100%)', icon: '⚽', slug: 'poly-sports', category: 'Sports' },
-  { id: '3sing-sports', title: '3 SING Sports', provider: '3 SING', badge: '', recommended: false, theme: 'linear-gradient(135deg, #302610 0%, #120e05 100%)', icon: '⚽', slug: '3-sing-sports', category: 'Sports' },
-  { id: 'fb-sports', title: 'FB Sports', provider: 'FB', badge: '', recommended: false, theme: 'linear-gradient(135deg, #122240 0%, #050d1a 100%)', icon: '⚽', slug: 'fb-sports', category: 'Sports' },
+  { id: 'ug-sports', title: 'UG Sports', provider: 'UG', badge: 'Live Odds', recommended: false, theme: 'linear-gradient(135deg, #101c3c 0%, #050a17 100%)', icon: '⚽', slug: 'ug-sports', category: 'Sports' }
 ]
 
 // Scrolling live winner events
@@ -205,7 +198,7 @@ export default function Home() {
   // Filter games based on selected tab
   const getFilteredGames = (category) => {
     if (category === 'Hot') {
-      return mockGames.filter(g => g.category === 'Hot')
+      return mockGames.filter(g => g.category === 'Hot' || g.recommended)
     }
     if (category === 'JILI') {
       return mockGames.filter(g => g.provider === 'JILI')
@@ -215,6 +208,15 @@ export default function Home() {
     }
     if (category === 'PaddyPower') {
       return mockGames.filter(g => g.provider === 'PaddyPower')
+    }
+    if (category === 'Slots') {
+      return mockGames.filter(g => g.category === 'Slots' || ['JILI', 'PG Soft', 'Pragmatic'].includes(g.provider))
+    }
+    if (category === 'Live') {
+      return mockGames.filter(g => g.category === 'Live' || g.provider === 'Evolution' || g.provider === 'SEXY')
+    }
+    if (category === 'Fishing') {
+      return mockGames.filter(g => g.category === 'Fishing')
     }
     return mockGames.filter(g => g.category === category)
   }

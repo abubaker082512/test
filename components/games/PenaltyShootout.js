@@ -118,7 +118,7 @@ export default function PenaltyShootout({ user, wallet, fetchWallet }) {
       if (data.success) {
         setMessage({
           type: 'success',
-          text: `🏆 STREAK COMPLETED! 5/5 Goals Scored. Cashed Out ₱${(betAmount * mult).toFixed(2)}!`
+          text: `🏆 STREAK COMPLETED! 5/5 Goals Scored. Cashed Out Rs ${(betAmount * mult).toFixed(2)}!`
         })
       }
     } catch (e) {
@@ -150,7 +150,7 @@ export default function PenaltyShootout({ user, wallet, fetchWallet }) {
       if (data.success) {
         setMessage({
           type: 'success',
-          text: `💰 Cashed Out Safely! Won ₱${(betAmount * mult).toFixed(2)} (${mult}x)`
+          text: `💰 Cashed Out Safely! Won Rs ${(betAmount * mult).toFixed(2)} (${mult}x)`
         })
       }
     } catch (e) {
@@ -366,7 +366,7 @@ export default function PenaltyShootout({ user, wallet, fetchWallet }) {
                   fontWeight: 'bold',
                   fontSize: '12px'
                 }}>
-                  ₱{betAmount}
+                  Rs {betAmount}
                 </div>
                 <button
                   disabled={processing}
@@ -415,7 +415,7 @@ export default function PenaltyShootout({ user, wallet, fetchWallet }) {
                   textTransform: 'uppercase'
                 }}
               >
-                CASH OUT [₱{(betAmount * (goalsCount > 0 ? MULTIPLIERS[goalsCount - 1] : 0)).toFixed(2)}]
+                CASH OUT [Rs {(betAmount * (goalsCount > 0 ? MULTIPLIERS[goalsCount - 1] : 0)).toFixed(2)}]
               </button>
             </>
           )}

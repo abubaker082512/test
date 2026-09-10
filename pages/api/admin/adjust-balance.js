@@ -43,7 +43,7 @@ export default async function handler(req, res) {
     if (wallet) {
       newBalance = parseFloat(wallet.balance) + adjAmount
       if (newBalance < 0) {
-        return res.status(400).json({ error: `Adjustment would result in negative balance (₱${newBalance.toFixed(2)}). Operation aborted.` })
+        return res.status(400).json({ error: `Adjustment would result in negative balance (Rs ${newBalance.toFixed(2)}). Operation aborted.` })
       }
 
       // Update wallet balance
@@ -79,7 +79,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
-      message: `Balance adjusted successfully! New balance is ₱${newBalance.toFixed(2)}`,
+      message: `Balance adjusted successfully! New balance is Rs ${newBalance.toFixed(2)}`,
       new_balance: newBalance
     })
 

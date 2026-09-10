@@ -84,7 +84,7 @@ export default function Offers() {
       })
       const data = await res.json()
       if (data.success) {
-        setMessage({ type: 'success', text: `🎉 Daily Check-in claimed! +₱5.00 added to your wallet.` })
+        setMessage({ type: 'success', text: `🎉 Daily Check-in claimed! +Rs 5.00 added to your wallet.` })
         setCheckedInToday(true)
         window.dispatchEvent(new Event('wallet-updated'))
       } else {
@@ -110,7 +110,7 @@ export default function Offers() {
       })
       const data = await res.json()
       if (data.success) {
-        setMessage({ type: 'success', text: `🎉 Match Bonus claimed! +₱${data.bonus_amount.toFixed(2)} added to your wallet.` })
+        setMessage({ type: 'success', text: `🎉 Match Bonus claimed! +Rs ${data.bonus_amount.toFixed(2)} added to your wallet.` })
         setClaimedDepositBonus(true)
         window.dispatchEvent(new Event('wallet-updated'))
       } else {
@@ -128,40 +128,40 @@ export default function Offers() {
       <NavBar />
       <div style={{ padding: '24px 16px', maxWidth: '600px', margin: '0 auto' }}>
         <h1 style={{ color: 'var(--accent)', marginTop: 0, fontSize: '28px' }}>🎁 Special Promotions</h1>
-        <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '24px' }}>
-          Boost your balance with our exclusive rewards and daily incentives.
-        </p>
-
+        
         {message && (
           <div style={{ 
-            padding: '12px 16px', 
+            padding: '14px', 
             borderRadius: '10px', 
             marginBottom: '20px', 
             fontSize: '14px', 
-            background: message.type === 'error' ? '#ff000022' : '#00ff8822', 
-            color: message.type === 'error' ? '#ff6666' : '#00ff88',
-            border: `1px solid ${message.type === 'error' ? '#ff000033' : '#00ff8833'}`,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
+            background: message.type === 'success' ? '#00ff8822' : '#ff444422',
+            color: message.type === 'success' ? '#00ff88' : '#ff6666',
+            border: `1px solid ${message.type === 'success' ? '#00ff8844' : '#ff444444'}`
           }}>
-            <span>{message.text}</span>
-            <button onClick={() => setMessage(null)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
+            {message.text}
           </div>
         )}
 
-        {/* Check-In Card */}
+        {/* Daily Check-in Card */}
         <div style={{ background: 'var(--card)', padding: '24px', borderRadius: '16px', border: '1px solid var(--border)', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ fontSize: '32px' }}>📅</div>
-            <div style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', background: checkedInToday ? '#00ff8822' : '#ff990022', color: checkedInToday ? '#00ff88' : '#ff9900' }}>
-              {checkedInToday ? 'CLAIMED TODAY' : 'AVAILABLE'}
+            <div style={{ 
+              padding: '4px 10px', 
+              borderRadius: '12px', 
+              fontSize: '12px', 
+              fontWeight: 'bold', 
+              background: checkedInToday ? '#222' : '#00ff8822', 
+              color: checkedInToday ? '#555' : '#00ff88' 
+            }}>
+              {checkedInToday ? 'CLAIMED TODAY' : 'AVAILABLE NOW'}
             </div>
           </div>
           <div>
             <h2 style={{ margin: '0 0 6px 0', fontSize: '18px', color: '#fff' }}>Daily Loyalty Check-in</h2>
             <p style={{ margin: 0, color: 'var(--muted)', fontSize: '14px', lineHeight: '1.5' }}>
-              Check-in once every day to receive <strong>₱5.00</strong> absolutely free. Keep playing to earn more rewards.
+              Check-in once every day to receive <strong>Rs 5.00</strong> absolutely free. Keep playing to earn more rewards.
             </p>
           </div>
           <button 
@@ -170,7 +170,7 @@ export default function Offers() {
             disabled={loadingCheckin || checkedInToday || (user && statusLoading)}
             style={{ width: '100%', padding: '14px', fontSize: '15px', marginTop: '10px', background: checkedInToday ? '#222' : 'var(--accent)', color: checkedInToday ? '#555' : '#000', borderColor: checkedInToday ? '#333' : 'var(--accent)', cursor: checkedInToday ? 'not-allowed' : 'pointer' }}
           >
-            {loadingCheckin ? '⏳ Processing check-in...' : checkedInToday ? '✅ Checked In Today' : '📅 Check In Now & Claim ₱5'}
+            {loadingCheckin ? '⏳ Processing check-in...' : checkedInToday ? '✅ Checked In Today' : '📅 Check In Now & Claim Rs 5'}
           </button>
         </div>
 
@@ -192,7 +192,7 @@ export default function Offers() {
           <div>
             <h2 style={{ margin: '0 0 6px 0', fontSize: '18px', color: '#fff' }}>First Deposit 100% Match</h2>
             <p style={{ margin: 0, color: 'var(--muted)', fontSize: '14px', lineHeight: '1.5' }}>
-              Get a **100% matched deposit bonus** on your first completed deposit up to **₱5,000.00**. 
+              Get a **100% matched deposit bonus** on your first completed deposit up to **Rs 5,000.00**. 
               Double your funds to start playing with double the power!
             </p>
           </div>

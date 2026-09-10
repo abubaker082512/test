@@ -172,7 +172,7 @@ export default function BaccaratGame({ user, wallet, fetchWallet }) {
         if (payData.success) {
           setMessage({
             type: 'success',
-            text: `🎉 WINNER! Handed ${winner.toUpperCase()} (${pScore} vs ${bScore}). Payout: +₱${(betAmount * payoutMult).toFixed(2)}`
+            text: `🎉 WINNER! Handed ${winner.toUpperCase()} (${pScore} vs ${bScore}). Payout: +Rs ${(betAmount * payoutMult).toFixed(2)}`
           })
           window.dispatchEvent(new Event('wallet-updated'))
         }
@@ -375,7 +375,7 @@ export default function BaccaratGame({ user, wallet, fetchWallet }) {
             <span style={{ fontSize: '14px', color: '#fff', fontWeight: '900', marginTop: '4px' }}>2.0x</span>
             {betSide === 'player' && (
               <div style={{ position: 'absolute', bottom: '-8px', background: 'var(--accent)', color: '#000', borderRadius: '50%', padding: '2px 8px', fontSize: '9px', fontWeight: '950', border: '1px solid #fff' }}>
-                ₱{betAmount}
+                Rs {betAmount}
               </div>
             )}
           </div>
@@ -402,7 +402,7 @@ export default function BaccaratGame({ user, wallet, fetchWallet }) {
             <span style={{ fontSize: '14px', color: '#fff', fontWeight: '900', marginTop: '4px' }}>9.0x</span>
             {betSide === 'tie' && (
               <div style={{ position: 'absolute', bottom: '-8px', background: 'var(--accent)', color: '#000', borderRadius: '50%', padding: '2px 8px', fontSize: '9px', fontWeight: '950', border: '1px solid #fff' }}>
-                ₱{betAmount}
+                Rs {betAmount}
               </div>
             )}
           </div>
@@ -429,7 +429,7 @@ export default function BaccaratGame({ user, wallet, fetchWallet }) {
             <span style={{ fontSize: '14px', color: '#fff', fontWeight: '900', marginTop: '4px' }}>1.95x</span>
             {betSide === 'banker' && (
               <div style={{ position: 'absolute', bottom: '-8px', background: 'var(--accent)', color: '#000', borderRadius: '50%', padding: '2px 8px', fontSize: '9px', fontWeight: '950', border: '1px solid #fff' }}>
-                ₱{betAmount}
+                Rs {betAmount}
               </div>
             )}
           </div>
@@ -483,7 +483,7 @@ export default function BaccaratGame({ user, wallet, fetchWallet }) {
                 borderColor: betAmount === amt ? 'var(--accent)' : '#333'
               }}
             >
-              ₱{amt}
+              Rs {amt}
             </button>
           ))}
         </div>
@@ -503,7 +503,7 @@ export default function BaccaratGame({ user, wallet, fetchWallet }) {
             color: '#000'
           }}
         >
-          {dealing ? 'DEALING...' : `DEAL ROUND — ₱${betAmount}`}
+          {dealing ? 'DEALING...' : `DEAL ROUND — Rs ${betAmount}`}
         </button>
       </div>
     </div>

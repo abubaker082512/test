@@ -46,7 +46,7 @@ export default async function handler(req, res) {
     const firstDeposit = deposits[0]
     const depositAmt = parseFloat(firstDeposit.amount)
     
-    // Match 100% up to a maximum of ₱5,000
+    // Match 100% up to a maximum of Rs 5,000
     const matchedAmount = parseFloat(Math.min(depositAmt, 5000.00).toFixed(2))
 
     // 3. Get user's wallet

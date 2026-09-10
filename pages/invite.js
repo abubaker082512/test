@@ -68,7 +68,7 @@ export default function Invite() {
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <h1 style={{ color: 'var(--accent)', marginTop: 0, fontSize: '28px' }}>💸 Invite & Earn</h1>
           <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.5' }}>
-            Invite your friends to register. Receive a massive reward of <strong style={{ color: 'var(--accent)' }}>₱155.55</strong> instantly in your wallet for every friend who joins!
+            Invite your friends to register. Receive a massive reward of <strong style={{ color: 'var(--accent)' }}>Rs 155.55</strong> instantly in your wallet for every friend who joins!
           </p>
         </div>
 
@@ -101,7 +101,7 @@ export default function Invite() {
               <div style={{ background: 'var(--card)', border: '1px solid var(--border)', padding: '16px', borderRadius: '12px', textAlign: 'center' }}>
                 <div style={{ color: 'var(--muted)', fontSize: '12px', marginBottom: '4px' }}>TOTAL REWARDS EARNED</div>
                 <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#00ff88' }}>
-                  ₱{loadingStats ? '...' : totalEarnings.toFixed(2)}
+                  Rs {loadingStats ? '...' : totalEarnings.toFixed(2)}
                 </div>
               </div>
             </div>
@@ -126,7 +126,7 @@ export default function Invite() {
                         <div style={{ fontSize: '11px', color: '#555', marginTop: '2px' }}>Joined {new Date(item.created_at).toLocaleDateString()}</div>
                       </div>
                       <div style={{ color: '#00ff88', fontWeight: 'bold', fontSize: '14px' }}>
-                        +₱{parseFloat(item.amount).toFixed(2)}
+                        +Rs {parseFloat(item.amount).toFixed(2)}
                       </div>
                     </div>
                   )

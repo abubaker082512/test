@@ -122,7 +122,7 @@ export default function FishHunterGame({ user, wallet, fetchWallet }) {
           if (payData.success) {
             setMessage({
               type: 'success',
-              text: `🎯 CAPTURED! Defeated ${currentFish.name}. Won ₱${winAmount.toFixed(2)} (${currentFish.multiplier}x)`
+              text: `🎯 CAPTURED! Defeated ${currentFish.name}. Won Rs ${winAmount.toFixed(2)} (${currentFish.multiplier}x)`
             })
           }
         } catch (e) {
@@ -384,7 +384,7 @@ export default function FishHunterGame({ user, wallet, fetchWallet }) {
               fontWeight: 'bold',
               fontSize: '13px'
             }}>
-              ₱{weaponPower}
+              Rs {weaponPower}
             </div>
             <button
               disabled={firing}

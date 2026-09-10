@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
   const { user_id, amount, method, account_number } = req.body
-  if (!user_id || !amount || amount < 500) return res.status(400).json({ error: 'Minimum withdrawal is ₱500' })
+  if (!user_id || !amount || amount < 500) return res.status(400).json({ error: 'Minimum withdrawal is Rs 500' })
 
   // Check balance
   const { data: wallet } = await supabase

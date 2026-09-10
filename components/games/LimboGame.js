@@ -98,7 +98,7 @@ export default function LimboGame({ user, wallet, fetchWallet }) {
             if (payData.success) {
               setMessage({
                 type: 'success',
-                text: `🎉 WIN! Crashed at ${finalRoll}x (Target: ${targetMultiplier}x). Won ₱${(betAmount * targetMultiplier).toFixed(2)}!`
+                text: `🎉 WIN! Crashed at ${finalRoll}x (Target: ${targetMultiplier}x). Won Rs ${(betAmount * targetMultiplier).toFixed(2)}!`
               })
             } else {
               setMessage({ type: 'error', text: 'Payout credit error. Contact support.' })
@@ -230,7 +230,7 @@ export default function LimboGame({ user, wallet, fetchWallet }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'left' }}>
           <div>
             <label style={{ fontSize: '11px', color: '#65789b', fontWeight: 'bold', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
-              Bet Amount (₱)
+              Bet Amount (Rs )
             </label>
             <div style={{ display: 'flex', gap: '8px' }}>
               <input
@@ -333,7 +333,7 @@ export default function LimboGame({ user, wallet, fetchWallet }) {
               marginTop: '8px'
             }}
           >
-            {spinning ? 'SPINNING ROCKET...' : `BET & LAUNCH [₱${betAmount}]`}
+            {spinning ? 'SPINNING ROCKET...' : `BET & LAUNCH [Rs ${betAmount}]`}
           </button>
         </div>
       </div>

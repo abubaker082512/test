@@ -239,7 +239,7 @@ export default function SuperAce({ user, wallet, fetchWallet }) {
           setBigWinAmount(finalWin)
           setShowBigWin(true)
         } else {
-          setMessage({ type: 'success', text: `Cascade win! +₱${finalWin.toFixed(2)} (${activeMult}x Mult)` })
+          setMessage({ type: 'success', text: `Cascade win! +Rs ${finalWin.toFixed(2)} (${activeMult}x Mult)` })
         }
       }
 
@@ -572,7 +572,7 @@ export default function SuperAce({ user, wallet, fetchWallet }) {
                 borderColor: betAmount === amt ? 'var(--accent)' : '#333'
               }}
             >
-              ₱{amt}
+              Rs {amt}
             </button>
           ))}
         </div>
@@ -592,7 +592,7 @@ export default function SuperAce({ user, wallet, fetchWallet }) {
             color: isFreeSpins ? '#fff' : 'var(--text-primary)'
           }}
         >
-          {spinning ? 'SPINNING...' : isFreeSpins ? `FREE SPIN MODE (${freeSpinsLeft})` : `SPIN - ₱${betAmount}`}
+          {spinning ? 'SPINNING...' : isFreeSpins ? `FREE SPIN MODE (${freeSpinsLeft})` : `SPIN - Rs ${betAmount}`}
         </button>
       </div>
 
@@ -643,7 +643,7 @@ export default function SuperAce({ user, wallet, fetchWallet }) {
               textShadow: '0 0 10px rgba(255,255,255,0.4)',
               margin: '20px 0'
             }}>
-              +₱{bigWinAmount.toFixed(2)}
+              +Rs {bigWinAmount.toFixed(2)}
             </div>
             <button 
               className="btn primary"

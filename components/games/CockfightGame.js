@@ -155,7 +155,7 @@ export default function CockfightGame({ user, wallet, fetchWallet }) {
     fetchWallet()
 
     setStage('fighting')
-    addLog(`📢 Fight Started! Stake ₱${betAmount} placed on ${betChoice}.`)
+    addLog(`📢 Fight Started! Stake Rs ${betAmount} placed on ${betChoice}.`)
 
     // Fight simulation commentary script
     const actionPhrases = [
@@ -215,7 +215,7 @@ export default function CockfightGame({ user, wallet, fetchWallet }) {
       })
       const payData = await payRes.json()
       if (payData.success) {
-        setMessage({ type: 'success', text: `🎉 WINNER! ${winner} won the fight! +₱${(betAmount * multiplier).toFixed(2)}` })
+        setMessage({ type: 'success', text: `🎉 WINNER! ${winner} won the fight! +Rs ${(betAmount * multiplier).toFixed(2)}` })
       }
     } else {
       setMessage({ type: 'error', text: `😭 Lost! ${winner} won the fight. Bet lost.` })
@@ -408,7 +408,7 @@ export default function CockfightGame({ user, wallet, fetchWallet }) {
                 borderColor: betAmount === amt ? 'var(--accent)' : '#333'
               }}
             >
-              ₱{amt}
+              Rs {amt}
             </button>
           ))}
         </div>
@@ -424,7 +424,7 @@ export default function CockfightGame({ user, wallet, fetchWallet }) {
             fontWeight: 'bold'
           }}
         >
-          {stage === 'fighting' ? 'COMBAT UNDERWAY...' : `MATCH FIGHT — ₱${betAmount}`}
+          {stage === 'fighting' ? 'COMBAT UNDERWAY...' : `MATCH FIGHT — Rs ${betAmount}`}
         </button>
       </div>
 

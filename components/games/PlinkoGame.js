@@ -218,7 +218,7 @@ export default function PlinkoGame({ user, wallet, fetchWallet }) {
 
     if (payData.success) {
       if (multiplier >= 1) {
-        setMessage({ type: 'success', text: `🎉 WINNER! Landed in ${multiplier}x slot! +₱${(betAmount * multiplier).toFixed(2)}` })
+        setMessage({ type: 'success', text: `🎉 WINNER! Landed in ${multiplier}x slot! +Rs ${(betAmount * multiplier).toFixed(2)}` })
       } else {
         setMessage({ type: 'error', text: `😭 Lost bet in ${multiplier}x slot.` })
       }
@@ -324,7 +324,7 @@ export default function PlinkoGame({ user, wallet, fetchWallet }) {
                   border: betAmount === amt ? '2px solid #ffea00' : '2.5px dashed rgba(255,255,255,0.2)'
                 }}
               >
-                ₱{amt}
+                Rs {amt}
               </button>
             ))}
           </div>
@@ -338,7 +338,7 @@ export default function PlinkoGame({ user, wallet, fetchWallet }) {
               boxShadow: '0 4px 20px rgba(245, 194, 66, 0.4)'
             }}
           >
-            {dropping ? '⚽ BALL ACTIVE...' : `DROP BALL : ₱${betAmount}`}
+            {dropping ? '⚽ BALL ACTIVE...' : `DROP BALL : Rs ${betAmount}`}
           </button>
         </div>
       </div>

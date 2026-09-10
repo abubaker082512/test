@@ -157,7 +157,7 @@ export default function SicBoGame({ user, wallet, fetchWallet }) {
               if (payData.success) {
                 setMessage({
                   type: 'success',
-                  text: `🎉 Dice Result: [${finalDice.join(', ')}] Sum: ${sum}. Won ₱${payoutAmount.toFixed(2)}!`
+                  text: `🎉 Dice Result: [${finalDice.join(', ')}] Sum: ${sum}. Won Rs ${payoutAmount.toFixed(2)}!`
                 })
               }
             } catch (e) {
@@ -370,7 +370,7 @@ export default function SicBoGame({ user, wallet, fetchWallet }) {
             >
               <div style={{ fontWeight: 'bold', color: '#00e676', fontSize: '13px' }}>SMALL</div>
               <div style={{ fontSize: '9px', color: '#aaa' }}>4 - 10 (1:1)</div>
-              {bets.Small > 0 && <span style={{ position: 'absolute', top: '-6px', right: '-4px', background: '#00e676', color: '#000', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 'bold' }}>₱{bets.Small}</span>}
+              {bets.Small > 0 && <span style={{ position: 'absolute', top: '-6px', right: '-4px', background: '#00e676', color: '#000', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 'bold' }}>Rs {bets.Small}</span>}
             </button>
 
             <button
@@ -389,7 +389,7 @@ export default function SicBoGame({ user, wallet, fetchWallet }) {
             >
               <div style={{ fontWeight: 'bold', color: '#ab47bc', fontSize: '13px' }}>ODD</div>
               <div style={{ fontSize: '9px', color: '#aaa' }}>Single (1:1)</div>
-              {bets.Odd > 0 && <span style={{ position: 'absolute', top: '-6px', right: '-4px', background: '#ab47bc', color: '#fff', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 'bold' }}>₱{bets.Odd}</span>}
+              {bets.Odd > 0 && <span style={{ position: 'absolute', top: '-6px', right: '-4px', background: '#ab47bc', color: '#fff', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 'bold' }}>Rs {bets.Odd}</span>}
             </button>
 
             <button
@@ -408,7 +408,7 @@ export default function SicBoGame({ user, wallet, fetchWallet }) {
             >
               <div style={{ fontWeight: 'bold', color: '#ab47bc', fontSize: '13px' }}>EVEN</div>
               <div style={{ fontSize: '9px', color: '#aaa' }}>Double (1:1)</div>
-              {bets.Even > 0 && <span style={{ position: 'absolute', top: '-6px', right: '-4px', background: '#ab47bc', color: '#fff', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 'bold' }}>₱{bets.Even}</span>}
+              {bets.Even > 0 && <span style={{ position: 'absolute', top: '-6px', right: '-4px', background: '#ab47bc', color: '#fff', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 'bold' }}>Rs {bets.Even}</span>}
             </button>
 
             <button
@@ -427,7 +427,7 @@ export default function SicBoGame({ user, wallet, fetchWallet }) {
             >
               <div style={{ fontWeight: 'bold', color: '#ff1744', fontSize: '13px' }}>BIG</div>
               <div style={{ fontSize: '9px', color: '#aaa' }}>11 - 17 (1:1)</div>
-              {bets.Big > 0 && <span style={{ position: 'absolute', top: '-6px', right: '-4px', background: '#ff1744', color: '#fff', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 'bold' }}>₱{bets.Big}</span>}
+              {bets.Big > 0 && <span style={{ position: 'absolute', top: '-6px', right: '-4px', background: '#ff1744', color: '#fff', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 'bold' }}>Rs {bets.Big}</span>}
             </button>
           </div>
 
@@ -447,7 +447,7 @@ export default function SicBoGame({ user, wallet, fetchWallet }) {
             }}
           >
             🎰 ANY TRIPLE (PAYS 30:1)
-            {bets.AnyTriple > 0 && <span style={{ position: 'absolute', top: '-6px', right: '10px', background: '#ffea00', color: '#000', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 'bold', border: '1px solid #fff' }}>₱{bets.AnyTriple}</span>}
+            {bets.AnyTriple > 0 && <span style={{ position: 'absolute', top: '-6px', right: '10px', background: '#ffea00', color: '#000', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 'bold', border: '1px solid #fff' }}>Rs {bets.AnyTriple}</span>}
           </button>
 
           {/* Single numbers 1 to 6 */}
@@ -472,7 +472,7 @@ export default function SicBoGame({ user, wallet, fetchWallet }) {
                   }}
                 >
                   {num}
-                  {bets[`Num${num}`] > 0 && <span style={{ position: 'absolute', top: '-10px', right: '-4px', background: '#2e7d32', color: '#fff', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 'bold' }}>₱{bets[`Num${num}`]}</span>}
+                  {bets[`Num${num}`] > 0 && <span style={{ position: 'absolute', top: '-10px', right: '-4px', background: '#2e7d32', color: '#fff', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 'bold' }}>Rs {bets[`Num${num}`]}</span>}
                 </button>
               ))}
             </div>

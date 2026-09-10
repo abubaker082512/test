@@ -162,7 +162,7 @@ export default function VideoPokerGame({ user, wallet, fetchWallet }) {
         if (payData.success) {
           setMessage({
             type: 'success',
-            text: `🎉 WIN! Hand: ${rankResult.name}. Won ₱${(betAmount * payoutMultiplier).toFixed(2)}!`
+            text: `🎉 WIN! Hand: ${rankResult.name}. Won Rs ${(betAmount * payoutMultiplier).toFixed(2)}!`
           })
         }
       } catch (e) {
@@ -467,7 +467,7 @@ export default function VideoPokerGame({ user, wallet, fetchWallet }) {
                   fontWeight: 'bold',
                   fontSize: '12px'
                 }}>
-                  ₱{betAmount}
+                  Rs {betAmount}
                 </div>
                 <button
                   disabled={processing}

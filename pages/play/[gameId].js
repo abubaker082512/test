@@ -33,6 +33,40 @@ import DerbyGame from '../../components/games/DerbyGame'
 import DiceGame from '../../components/games/DiceGame'
 import WheelGame from '../../components/games/WheelGame'
 
+// Reverse map from 32-char provider API hashes to fallback built-in engine components
+const HASH_TO_SLUG = {
+  // JILI Flagships
+  'bdfb23c974a2517198c5443adeea77a8': 'super-ace',
+  '80aad2a10ae6a95068b50160d6c78897': 'super-ace-deluxe',
+  'a990de177577a2e6a889aaac5f57b429': 'fortune-gems',
+  '664fba4da609ee82b78820b1f570f4ad': 'fortune-gems',
+  '981f5f9675002fbeaaf24c4128b938d7': 'super-ace', // Boxing King
+  'db249defce63610fccabfa829a405232': 'fortune-gems', // Money Coming
+  '490096198e28f770a3f85adb6ee49e0f': 'super-ace', // Golden Empire
+  '3cf4a85cb6dcf4d8836c982c359cd72d': 'fishing-joy', // Jackpot Fishing
+  'e794bf5717aca371152df192341fe68b': 'fishing-joy', // Royal Fishing
+  'e333695bcff28acdbecc641ae6ee2b23': 'fishing-joy', // Bombing Fishing
+  'eef3e28f0e3e7b72cbca61e7924d00f1': 'fishing-joy', // Dinosaur Tycoon
+
+  // Evolution Live Dealers
+  'b4af506243cafae52908e8fa266f8ff6': 'mini-roulette', // Speed Roulette
+  '87a7f4550407f5ed73c3353a54a11187': 'blackjack-live', // Blackjack VIP 12
+  '7b44393101abad7ac31e21fc1bdb3d56': 'baccarat', // Emperor Speed Baccarat B
+  '36b1e71c6f51827e24261d06a22b1e31': 'mini-roulette', // French Roulette Gold
+  '5cb6aa4e2ce1c775c568561401ffdfca': 'dragon-tiger', // Fan Tan
+
+  // PG Soft
+  '1189baca156e1bbbecc3b26651a63565': 'mahjong-ways-2',
+  'ba2adf72179e1ead9e3dae8f0a7d4c07': 'mahjong-ways-2',
+  '2fa9a84d096d6ff0bab53f81b79876c8': 'wild-bounty',
+  'fb2a2ac51303c0a0801dbe6a72d936f7': 'wild-bounty',
+
+  // Pragmatic Play
+  'e30cd08c54817096e863975e309bb457': 'super-ace',
+  '8a0b30eb466a8a07027cbddc19369d0f': 'fortune-gems',
+  'e1d2da140286507e851fde1cb2fdd4ba': 'super-ace'
+}
+
 export default function PlayGame() {
   const router = useRouter()
   const { gameId } = router.query
@@ -41,6 +75,8 @@ export default function PlayGame() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [liveGameUrl, setLiveGameUrl] = useState(null)
   const [liveLoading, setLiveLoading] = useState(false)
+  const [liveError, setLiveError] = useState(null)
+  const [gameTitle, setGameTitle] = useState('')
 
   const fetchWallet = async () => {
     if (!user) return
@@ -64,32 +100,38 @@ export default function PlayGame() {
     }
   }, [user])
 
-  useEffect(() => {
+  const fetchLiveUrl = async () => {
     if (!user || !gameId) return
+    if (process.env.NEXT_PUBLIC_USE_MOCK === 'true') return
 
-    const fetchLiveUrl = async () => {
-      // Check if mock mode is active
-      if (process.env.NEXT_PUBLIC_USE_MOCK === 'true') return
-
-      setLiveLoading(true)
-      try {
-        const res = await fetch('/api/rapid/getGameUrl', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ gameId, username: user.email })
+    setLiveLoading(true)
+    setLiveError(null)
+    try {
+      const res = await fetch('/api/rapid/getGameUrl', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          gameId, 
+          username: user.id || user.email || 'player'
         })
-        const data = await res.json()
-        const url = data.gameUrl || (data.data && data.data.url) || (data.payload && data.payload.game_launch_url) || data.game_launch_url
-        if (url) {
-          setLiveGameUrl(url)
-        }
-      } catch (err) {
-        console.error('Failed to fetch live game url:', err)
-      } finally {
-        setLiveLoading(false)
+      })
+      const data = await res.json()
+      const url = data.gameUrl || (data.data && data.data.url) || (data.payload && data.payload.game_launch_url) || data.game_launch_url
+      if (url) {
+        setLiveGameUrl(url)
+        if (data.gameName) setGameTitle(data.gameName)
+      } else if (data.error) {
+        setLiveError(data.error)
       }
+    } catch (err) {
+      console.error('Failed to fetch live game url:', err)
+      setLiveError('Network error connecting to live game provider.')
+    } finally {
+      setLiveLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchLiveUrl()
   }, [user, gameId])
 
@@ -112,7 +154,8 @@ export default function PlayGame() {
 
   const renderGame = () => {
     const props = { user, wallet, fetchWallet }
-    switch (gameId) {
+    const resolvedId = HASH_TO_SLUG[gameId] || gameId
+    switch (resolvedId) {
       // 🚀 Blockchain / Crash / Limbo / CoinFlip
       case 'crash': 
         return <CrashGame {...props} />
@@ -231,7 +274,42 @@ export default function PlayGame() {
         return <PenaltyShootout {...props} />
 
       default: 
-        return <div style={{ padding: '40px', textAlign: 'center' }}>Game "{gameId}" not found.</div>
+        return (
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            flex: 1, 
+            padding: '40px 20px', 
+            textAlign: 'center' 
+          }}>
+            <div style={{ fontSize: '56px', marginBottom: '16px' }}>🎰</div>
+            <h2 style={{ color: 'var(--accent)', marginBottom: '8px', fontSize: '22px' }}>
+              Live Game Session Offline
+            </h2>
+            <p style={{ color: 'var(--muted)', fontSize: '13px', maxWidth: '440px', lineHeight: '1.6', marginBottom: '24px' }}>
+              {liveError 
+                ? `Connection note: ${liveError}. The game provider may currently be updating server tables.` 
+                : `We could not establish an active partner session for table "${gameId}". Please retry or choose another live game.`}
+            </p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button className="btn primary" onClick={fetchLiveUrl}>
+                🔄 Retry Connection
+              </button>
+              <Link href="/casino" style={{ textDecoration: 'none' }}>
+                <button className="btn" style={{ background: '#1c2438' }}>
+                  🎲 127+ Providers Lobby
+                </button>
+              </Link>
+              <Link href="/" style={{ textDecoration: 'none' }}>
+                <button className="btn">
+                  🏠 Back to Home
+                </button>
+              </Link>
+            </div>
+          </div>
+        )
     }
   }
 
@@ -239,8 +317,8 @@ export default function PlayGame() {
     return (
       <div style={{ width: '100vw', height: '100vh', background: '#000', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ fontSize: '48px', animation: 'spin-slow 2s infinite' }}>🎡</div>
-        <h2 style={{ marginTop: '16px' }}>Loading Live Game Room...</h2>
-        <p style={{ color: 'var(--muted)', fontSize: '13px', marginTop: '6px' }}>Securing partner casino session connection</p>
+        <h2 style={{ marginTop: '16px' }}>Connecting to Live Casino Room...</h2>
+        <p style={{ color: 'var(--muted)', fontSize: '13px', marginTop: '6px' }}>Securing official API session & PKR wallet bridge</p>
       </div>
     )
   }
@@ -258,7 +336,7 @@ export default function PlayGame() {
           borderBottom: '1px solid var(--border)' 
         }}>
           <div style={{ fontWeight: '900', color: 'var(--accent)', fontSize: '15px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            🎮 LIVE {gameId?.replace('-', ' ')}
+            🎮 LIVE {gameTitle || gameId?.replace('-', ' ')}
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -271,7 +349,7 @@ export default function PlayGame() {
                 fontSize: '13px', 
                 fontWeight: '800' 
               }}>
-                💰 Balance: <span style={{ color: 'var(--accent)' }}>₱{parseFloat(wallet.balance).toFixed(2)}</span>
+                💰 Balance: <span style={{ color: 'var(--accent)' }}>Rs {parseFloat(wallet.balance).toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             )}
             <Link href="/" style={{ textDecoration: 'none' }}>
@@ -283,7 +361,7 @@ export default function PlayGame() {
         <iframe 
           src={liveGameUrl} 
           style={{ width: '100%', height: 'calc(100vh - 55px)', border: 'none' }}
-          title={gameId} 
+          title={gameTitle || gameId} 
           allowFullScreen
         />
       </div>
@@ -303,7 +381,7 @@ export default function PlayGame() {
         borderBottom: '1px solid var(--border)' 
       }}>
         <div style={{ fontWeight: '900', color: 'var(--accent)', fontSize: '15px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-          🎮 {gameId?.replace('-', ' ')}
+          🎮 {gameTitle || gameId?.replace('-', ' ')}
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -316,7 +394,7 @@ export default function PlayGame() {
               fontSize: '13px', 
               fontWeight: '800' 
             }}>
-              💰 Balance: <span style={{ color: 'var(--accent)' }}>₱{parseFloat(wallet.balance).toFixed(2)}</span>
+              💰 Balance: <span style={{ color: 'var(--accent)' }}>Rs {parseFloat(wallet.balance).toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
           )}
           <Link href="/" style={{ textDecoration: 'none' }}>

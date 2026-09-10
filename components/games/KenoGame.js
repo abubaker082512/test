@@ -149,7 +149,7 @@ export default function KenoGame({ user, wallet, fetchWallet }) {
         if (payData.success) {
           setMessage({
             type: 'success',
-            text: `🎉 WINNER! Matched ${hitCount} of ${selectedNumbers.length} numbers! Payout: +₱${payout.toFixed(2)} (${mult}x)`
+            text: `🎉 WINNER! Matched ${hitCount} of ${selectedNumbers.length} numbers! Payout: +Rs ${payout.toFixed(2)} (${mult}x)`
           })
           window.dispatchEvent(new Event('wallet-updated'))
         }
@@ -332,7 +332,7 @@ export default function KenoGame({ user, wallet, fetchWallet }) {
                 borderColor: betAmount === amt ? 'var(--accent)' : '#333'
               }}
             >
-              ₱{amt}
+              Rs {amt}
             </button>
           ))}
         </div>
@@ -352,7 +352,7 @@ export default function KenoGame({ user, wallet, fetchWallet }) {
             boxShadow: '0 4px 15px rgba(224, 64, 251, 0.2)'
           }}
         >
-          {playing ? 'DRAWING...' : `DRAW 20 BALLS — ₱${betAmount}`}
+          {playing ? 'DRAWING...' : `DRAW 20 BALLS — Rs ${betAmount}`}
         </button>
       </div>
     </div>

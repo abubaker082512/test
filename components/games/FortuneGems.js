@@ -166,7 +166,7 @@ export default function FortuneGems({ user, wallet, fetchWallet }) {
           body: JSON.stringify({ user_id: user.id, bet_amount: betAmount, multiplier: (finalWin / betAmount) })
         })
         fetchWallet()
-        setMessage({ type: 'success', text: `🎉 WINNER! Landed ${winningLines.length} payline(s) x${centerMult} Multiplier! +₱${finalWin.toFixed(2)}` })
+        setMessage({ type: 'success', text: `🎉 WINNER! Landed ${winningLines.length} payline(s) x${centerMult} Multiplier! +Rs ${finalWin.toFixed(2)}` })
       }
     } else {
       setMessage({ type: 'error', text: '😭 No match. Try again!' })
@@ -383,7 +383,7 @@ export default function FortuneGems({ user, wallet, fetchWallet }) {
                 borderColor: betAmount === amt ? 'var(--accent)' : '#333'
               }}
             >
-              ₱{amt}
+              Rs {amt}
             </button>
           ))}
         </div>
@@ -401,7 +401,7 @@ export default function FortuneGems({ user, wallet, fetchWallet }) {
             letterSpacing: '1px'
           }}
         >
-          {spinning ? 'SPINNING...' : `SPIN - ₱${betAmount}`}
+          {spinning ? 'SPINNING...' : `SPIN - Rs ${betAmount}`}
         </button>
       </div>
     </div>
