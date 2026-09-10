@@ -325,7 +325,7 @@ export default function PlayGame() {
 
   if (liveGameUrl) {
     return (
-      <div style={{ width: '100vw', height: '100vh', background: '#000', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ width: '100vw', height: '100vh', background: '#000', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* Game navigation header with Live Wallet Indicator */}
         <div style={{ 
           padding: '10px 16px', 
@@ -333,13 +333,14 @@ export default function PlayGame() {
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center', 
-          borderBottom: '1px solid var(--border)' 
+          borderBottom: '1px solid var(--border)',
+          zIndex: 10
         }}>
           <div style={{ fontWeight: '900', color: 'var(--accent)', fontSize: '15px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             🎮 LIVE {gameTitle || gameId?.replace('-', ' ')}
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             {wallet && (
               <div style={{ 
                 background: '#07080c', 
@@ -352,6 +353,22 @@ export default function PlayGame() {
                 💰 Balance: <span style={{ color: 'var(--accent)' }}>Rs {parseFloat(wallet.balance).toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             )}
+            <button 
+              className="btn" 
+              style={{ 
+                padding: '6px 14px', 
+                fontSize: '12px', 
+                background: '#1e293b', 
+                color: '#38bdf8', 
+                border: '1px solid #334155',
+                cursor: 'pointer',
+                fontWeight: '700'
+              }}
+              onClick={() => window.open(liveGameUrl, '_blank')}
+              title="Launch game in dedicated full window"
+            >
+              ⛶ Open New Tab
+            </button>
             <Link href="/" style={{ textDecoration: 'none' }}>
               <button className="btn" style={{ padding: '6px 14px', fontSize: '12px' }}>Exit</button>
             </Link>
@@ -362,7 +379,9 @@ export default function PlayGame() {
           src={liveGameUrl} 
           style={{ width: '100%', height: 'calc(100vh - 55px)', border: 'none' }}
           title={gameTitle || gameId} 
-          allowFullScreen
+          allow="autoplay; fullscreen; payment; microphone; camera; clipboard-read; clipboard-write; screen-wake-lock"
+          allowFullScreen={true}
+          loading="eager"
         />
       </div>
     )

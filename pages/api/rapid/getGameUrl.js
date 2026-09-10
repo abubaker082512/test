@@ -57,6 +57,53 @@ const GAME_MAP = {
   'plinko': 'bdfb23c974a2517198c5443adeea77a8'
 };
 
+// Automatically unrolls BetNex intermediary wrapper to get the clean direct provider session URL (JILI, Evolution, PG Soft, etc.)
+// This bypasses BetNex's restrictive frame-ancestors CSP so the game embeds cleanly without browser block
+async function unrollDirectGameUrl(betnexUrl) {
+  if (!betnexUrl || typeof betnexUrl !== 'string') return betnexUrl;
+  if (!betnexUrl.includes('betnex.co')) return betnexUrl;
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6000);
+
+    const r1 = await fetch(betnexUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+      },
+      signal: controller.signal
+    });
+    const html1 = await r1.text();
+    const match1 = html1.match(/src="([^"]+wrappedgame[^"]+)"/);
+    if (!match1) {
+      clearTimeout(timeout);
+      return betnexUrl;
+    }
+
+    const wrappedUrl = match1[1];
+    const r2 = await fetch(wrappedUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'Referer': betnexUrl,
+        'Sec-Fetch-Dest': 'iframe'
+      },
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+
+    const html2 = await r2.text();
+    const match2 = html2.match(/src="([^"]+)"/);
+    if (match2) {
+      const directUrl = match2[1].replaceAll('&amp;', '&');
+      return directUrl;
+    }
+  } catch (err) {
+    console.warn('Failed to unroll BetNex wrapper, falling back to launch url:', err.message);
+  }
+
+  return betnexUrl;
+}
+
 export default async function handler(req, res) {
   if (!isAllowed(req, 60, 60000)) {
     return res.status(429).json({ error: 'Rate limit exceeded' });
@@ -89,23 +136,19 @@ export default async function handler(req, res) {
       currency: 'PKR'
     });
 
-    const gameUrl = data?.payload?.game_launch_url || data?.game_launch_url || data?.gameUrl || (data?.data && data?.data?.url);
+    const rawGameUrl = data?.payload?.game_launch_url || data?.game_launch_url || data?.gameUrl || (data?.data && data?.data?.url);
 
-    if (data?.code === 0 && gameUrl) {
+    if (rawGameUrl) {
+      // Resolve direct provider URL to avoid iframe blocking
+      const directUrl = await unrollDirectGameUrl(rawGameUrl);
+
       return res.status(200).json({
         success: true,
-        gameUrl,
-        gameName: data.payload?.game_name || payload.gameId,
-        provider: data.payload?.provider,
-        payload: data.payload,
-        raw: data
-      });
-    }
-
-    if (gameUrl) {
-      return res.status(200).json({
-        success: true,
-        gameUrl,
+        gameUrl: directUrl || rawGameUrl,
+        rawLaunchUrl: rawGameUrl,
+        gameName: data?.payload?.game_name || payload.gameId,
+        provider: data?.payload?.provider,
+        payload: data?.payload,
         raw: data
       });
     }
