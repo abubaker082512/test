@@ -64,7 +64,7 @@ export class RapidApiClient {
     const cacheKey = 'providers';
     const cached = globalCache.get(cacheKey);
     if (cached) return cached;
-    const url = this._buildUrl('/getallproviders');
+    const url = this._buildUrl('/casino/getallproviders');
     const data = await this._retry(url, {
       method: 'GET',
       headers: {
@@ -77,11 +77,11 @@ export class RapidApiClient {
     return data;
   }
 
-  async getAllGamesByProvider(provider = 'SPRIBE') {
+  async getAllGamesByProvider(provider = 'JILIGAMING') {
     const cacheKey = `games_${provider}`;
     const cached = globalCache.get(cacheKey);
     if (cached) return cached;
-    const url = this._buildUrl(`/getallgamesandprovider?provider=${encodeURIComponent(provider)}`);
+    const url = this._buildUrl(`/casino/getallgamesandprovider?provider=${encodeURIComponent(provider)}`);
     const data = await this._retry(url, {
       method: 'GET',
       headers: {
@@ -95,7 +95,7 @@ export class RapidApiClient {
   }
 
   async getGameUrl(payload) {
-    const url = this._buildUrl('/getgameurl');
+    const url = this._buildUrl('/casino/getgameurl');
     const data = await this._retry(url, {
       method: 'POST',
       headers: {

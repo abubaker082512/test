@@ -70,14 +70,14 @@ export default function NavBar() {
         <div className="header-right">
           {/* Wallet Balance Display with Flag and Refresh */}
           <div className="wallet-display">
-            <span className="wallet-flag">🇵🇭</span>
+            <span className="wallet-flag">🇵🇰</span>
             <span className="wallet-amount">
-              {user ? balance.toFixed(2) : '0.00'}
+              Rs {user ? balance.toFixed(2) : '0.00'}
             </span>
             <button 
               className={`wallet-refresh ${refreshing ? 'coin-spin' : ''}`} 
               onClick={handleRefresh}
-              title="Refresh Balance"
+              title="Refresh Balance (PKR)"
             >
               🔄
             </button>

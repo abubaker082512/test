@@ -11,29 +11,45 @@ const RAPID = new RapidApiClient({
 
 // Translation map from user-friendly slugs to actual RapidAPI provider hashes
 const GAME_MAP = {
+  // JILI Flagships
   'super-ace': 'bdfb23c974a2517198c5443adeea77a8',          // Super Ace (JILI)
   'super-ace-deluxe': '80aad2a10ae6a95068b50160d6c78897',   // Super Ace Deluxe (JILI)
   'fortune-gems': 'a990de177577a2e6a889aaac5f57b429',       // Fortune Gems (JILI)
-  'fortune-garuda': 'ddfbe3b51c60ab9166310916a43cb17f',     // Fortune Garuda 500 (JILI)
+  'fortune-garuda': '664fba4da609ee82b78820b1f570f4ad',     // Fortune Gems 2 (JILI)
+  'boxing-king': '981f5f9675002fbeaaf24c4128b938d7',        // Boxing King (JILI)
   'fishing-joy': '3cf4a85cb6dcf4d8836c982c359cd72d',        // Jackpot Fishing (JILI)
+
+  // Evolution Live Dealers
   'mini-roulette': 'b4af506243cafae52908e8fa266f8ff6',      // Speed Roulette (Evolution Live)
-  'blackjack-live': '58d7089aa20bce7f70e0e2ce81e888f4',     // Infinite Blackjack (Evolution Live)
-  'blackjack': '58d7089aa20bce7f70e0e2ce81e888f4',          // Infinite Blackjack (Evolution Live)
+  'blackjack-live': '87a7f4550407f5ed73c3353a54a11187',     // Blackjack VIP 12 (Evolution Live)
+  'blackjack': '87a7f4550407f5ed73c3353a54a11187',          // Blackjack VIP 12 (Evolution Live)
+  'sexy-live': '7b44393101abad7ac31e21fc1bdb3d56',          // Emperor Speed Baccarat B (Evolution Live)
+  'jili-cards': '7b44393101abad7ac31e21fc1bdb3d56',         // Emperor Speed Baccarat B (Evolution Live)
+  'kingmidas-cards': '87a7f4550407f5ed73c3353a54a11187',    // Blackjack VIP (Evolution Live)
+
+  // PG Soft
+  'mahjong-ways-2': 'ba2adf72179e1ead9e3dae8f0a7d4c07',     // Mahjong Ways 2 (PG Soft)
+  'treasures-of-aztec': '2fa9a84d096d6ff0bab53f81b79876c8', // Treasures of Aztec (PG Soft)
+  'wild-bounty': 'fb2a2ac51303c0a0801dbe6a72d936f7',        // Leprechaun Riches / Wilds (PG Soft)
   
-  // Custom unique game mappings to specific live providers
+  // Pragmatic & Provider Slots
   'slots-pg': 'bdfb23c974a2517198c5443adeea77a8',           // Super Ace (JILI)
   'jili-slots': 'a990de177577a2e6a889aaac5f57b429',         // Fortune Gems (JILI)
-  'wg-slots': 'a990de177577a2e6a889aaac5f57b429',           // Fortune Gems (JILI)
-  'fc-slots': 'bdfb23c974a2517198c5443adeea77a8',           // Super Ace (JILI)
-  'jdb-slots': 'a990de177577a2e6a889aaac5f57b429',          // Fortune Gems (JILI)
-  'pp-slots': 'bdfb23c974a2517198c5443adeea77a8',           // Super Ace (JILI)
+  'wg-slots': '1189baca156e1bbbecc3b26651a63565',           // Mahjong Ways (PG Soft)
+  'fc-slots': 'e30cd08c54817096e863975e309bb457',           // Waves of Poseidon (Pragmatic)
+  'jdb-slots': '8a0b30eb466a8a07027cbddc19369d0f',          // Gem Fire Fortune (Pragmatic)
+  'pp-slots': 'e1d2da140286507e851fde1cb2fdd4ba',           // Gold Party 2 (Pragmatic)
   'mg-slots': 'a990de177577a2e6a889aaac5f57b429',           // Fortune Gems (JILI)
   'cq9-slots': 'bdfb23c974a2517198c5443adeea77a8',          // Super Ace (JILI)
   'bng-slots': 'a990de177577a2e6a889aaac5f57b429',          // Fortune Gems (JILI)
 
-  'sexy-live': '7b44393101abad7ac31e21fc1bdb3d56',          // Emperor Speed Baccarat B (Evolution Live)
-  'jili-cards': '7b44393101abad7ac31e21fc1bdb3d56',         // Emperor Speed Baccarat B (Evolution Live)
-  'kingmidas-cards': '58d7089aa20bce7f70e0e2ce81e888f4',    // Infinite Blackjack (Evolution Live)
+  // PaddyPower Mappings
+  'paddy-rainbow-riches': 'fb2a2ac51303c0a0801dbe6a72d936f7',
+  'paddy-fishin-frenzy': '3cf4a85cb6dcf4d8836c982c359cd72d',
+  'paddy-roulette-live': 'b4af506243cafae52908e8fa266f8ff6',
+  'paddy-blackjack-exclusive': '87a7f4550407f5ed73c3353a54a11187',
+  'paddy-age-of-gods': '80aad2a10ae6a95068b50160d6c78897',
+  'paddy-mega-fire-blaze': '36b1e71c6f51827e24261d06a22b1e31',
   
   // Fallbacks
   'gold-slots': 'bdfb23c974a2517198c5443adeea77a8',
@@ -55,13 +71,19 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing required fields: username, gameId' });
   }
 
-  // Translate slug to RapidAPI hash ID if mapped, otherwise use directly
-  const finalGameId = GAME_MAP[payload.gameId] || payload.gameId;
+  // Ensure username is alphanumeric between 4 and 32 chars as required by provider
+  const rawUser = payload.username.replace(/[^a-zA-Z0-9]/g, '');
+  const cleanUsername = (rawUser.length >= 4 ? rawUser : `user${rawUser}`).substring(0, 30);
 
   try {
     const data = await RAPID.getGameUrl({
+      username: cleanUsername,
       gameId: finalGameId,
-      username: payload.username
+      lang: payload.lang || 'en',
+      money: payload.money !== undefined ? payload.money : 0,
+      home_url: payload.home_url || 'https://betnex.co',
+      platform: payload.platform || 1,
+      currency: 'PKR'
     });
     res.status(200).json(data);
   } catch (err) {

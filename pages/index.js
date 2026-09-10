@@ -84,14 +84,14 @@ const mockGames = [
 
 // Scrolling live winner events
 const winEvents = [
-  { name: 'ali***77', game: 'Super Ace', amount: '₱4,150.00', provider: 'JILI', avatar: '👨‍💻' },
-  { name: 'zain***88', game: 'Mahjong Ways 2', amount: '₱2,850.00', provider: 'WG', avatar: '👩‍⚕️' },
-  { name: 'pak***01', game: 'Pinata Wins', amount: '₱1,279.20', provider: 'PG', avatar: '🦁' },
-  { name: 'jill***00', game: 'Super Ace', amount: '₱1,033.00', provider: 'JILI', avatar: '🐱' },
-  { name: 'asif***99', game: 'DS88 Cockfight', amount: '₱8,900.00', provider: 'DS88', avatar: '🦅' },
-  { name: 'messi***10', game: 'WG Sports', amount: '₱12,500.00', provider: 'Sports', avatar: '⚽' },
-  { name: 'cr7***77', game: 'Crown Sports', amount: '₱18,200.00', provider: 'Sports', avatar: '🏃' },
-  { name: 'user***82', game: 'Plinko', amount: '₱670.00', provider: 'Originals', avatar: '🐸' },
+  { name: 'ali***77', game: 'Super Ace', amount: 'Rs 4,150.00', provider: 'JILI', avatar: '👨‍💻' },
+  { name: 'zain***88', game: 'Mahjong Ways 2', amount: 'Rs 2,850.00', provider: 'WG', avatar: '👩‍⚕️' },
+  { name: 'pak***01', game: 'Pinata Wins', amount: 'Rs 1,279.20', provider: 'PG', avatar: '🦁' },
+  { name: 'jill***00', game: 'Super Ace', amount: 'Rs 1,033.00', provider: 'JILI', avatar: '🐱' },
+  { name: 'asif***99', game: 'DS88 Cockfight', amount: 'Rs 8,900.00', provider: 'DS88', avatar: '🦅' },
+  { name: 'messi***10', game: 'WG Sports', amount: 'Rs 12,500.00', provider: 'Sports', avatar: '⚽' },
+  { name: 'cr7***77', game: 'Crown Sports', amount: 'Rs 18,200.00', provider: 'Sports', avatar: '🏃' },
+  { name: 'user***82', game: 'Plinko', amount: 'Rs 670.00', provider: 'Originals', avatar: '🐸' },
 ]
 
 export default function Home() {
@@ -123,12 +123,12 @@ export default function Home() {
     },
     {
       title: 'Double Your First Deposit',
-      desc: 'Get 100% matched bonus up to ₱5,000.00 on your first completed transaction. Instant verification!',
+      desc: 'Get 100% matched bonus up to Rs 5,000.00 on your first completed transaction. Instant verification!',
       image: '/banners/deposit.png',
       emoji: '🎁'
     },
     {
-      title: 'Refer & Earn ₱155.55 Cash',
+      title: 'Refer & Earn Rs 155.55 Cash',
       desc: 'Invite friends using your unique referral code. Get paid immediately upon their sign up!',
       image: '/banners/invite.png',
       emoji: '💸'
@@ -259,7 +259,7 @@ export default function Home() {
         <span className="announcement-icon">🔊</span>
         <div className="announcement-marquee">
           <span className="announcement-text">
-            🌟 Welcome to BETPK Official! Earn ₱155.55 instantly for every friend you refer. Double your first deposit with a 100% Match Bonus up to ₱5,000.00! Withdrawals are completed in under 2 minutes via Easypaisa and JazzCash! Play JILI slots, Cockfight, and Sportsbook now!
+            🌟 Welcome to BETPK Official! Earn Rs 155.55 instantly for every friend you refer. Double your first deposit with a 100% Match Bonus up to Rs 5,000.00! Withdrawals are completed in under 2 minutes via Easypaisa and JazzCash! Play JILI slots, Cockfight, and Sportsbook now!
           </span>
         </div>
         <div className="announcement-mail" onClick={() => alert("Inbox: 2 new promotional messages loaded.")}>
@@ -375,7 +375,7 @@ export default function Home() {
           <button className="widget-close-btn" onClick={() => setShowLeftWidget(false)}>✕</button>
           <div className="widget-wheel-container" onClick={() => setShowWheelPopup(true)}>
             <span className="widget-wheel-graphic">🎡</span>
-            <span className="widget-wheel-text">₱8,888.00</span>
+            <span className="widget-wheel-text">Rs 8,888.00</span>
           </div>
         </div>
       )}
@@ -384,9 +384,9 @@ export default function Home() {
       {showRightWidget && (
         <div className="floating-widget-right">
           <button className="widget-close-btn" onClick={() => setShowRightWidget(false)}>✕</button>
-          <div className="widget-wheel-container" style={{ borderColor: 'var(--success)', boxShadow: '0 0 15px rgba(0, 230, 118, 0.4)' }} onClick={() => alert("Invite Friends: Copy your unique referral code from the Invite tab in the footer menu to earn ₱155.55 instantly per sign-up!")}>
+          <div className="widget-wheel-container" style={{ borderColor: 'var(--success)', boxShadow: '0 0 15px rgba(0, 230, 118, 0.4)' }} onClick={() => alert("Invite Friends: Copy your unique referral code from the Invite tab in the footer menu to earn Rs 155.55 instantly per sign-up!")}>
             <span className="widget-wheel-graphic" style={{ animationDelay: '-5s' }}>🤝</span>
-            <span className="widget-wheel-text" style={{ background: 'var(--success)' }}>₱155.55</span>
+            <span className="widget-wheel-text" style={{ background: 'var(--success)' }}>Rs 155.55</span>
           </div>
         </div>
       )}
@@ -417,7 +417,7 @@ export default function Home() {
             </button>
             <h3 style={{ color: 'var(--accent)', marginBottom: '12px', fontSize: '20px' }}>👑 BETPK Lucky Wheel</h3>
             <p style={{ color: 'var(--muted)', fontSize: '12px', marginBottom: '20px' }}>
-              Spin the lucky wheel once every day for free to claim massive rewards up to ₱8,888.00!
+              Spin the lucky wheel once every day for free to claim massive rewards up to Rs 8,888.00!
             </p>
 
             <div style={{ 

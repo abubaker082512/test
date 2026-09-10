@@ -79,8 +79,9 @@ export default function PlayGame() {
           body: JSON.stringify({ gameId, username: user.email })
         })
         const data = await res.json()
-        if (data.gameUrl || (data.data && data.data.url)) {
-          setLiveGameUrl(data.gameUrl || data.data.url)
+        const url = data.gameUrl || (data.data && data.data.url) || (data.payload && data.payload.game_launch_url) || data.game_launch_url
+        if (url) {
+          setLiveGameUrl(url)
         }
       } catch (err) {
         console.error('Failed to fetch live game url:', err)
