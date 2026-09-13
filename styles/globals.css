@@ -1,19 +1,19 @@
 :root {
-  --bg: #0b0d14;
-  --bg-secondary: #131722;
-  --bg-tertiary: #07080c;
-  --card: #181d2a;
+  --bg: #1a0933; /* Deep Royal Purple */
+  --bg-secondary: #2d1155; /* Lighter Purple */
+  --bg-tertiary: #120424; /* Very Dark Purple */
+  --card: #2a0f4c; /* Card Purple */
   --text: #ffffff;
-  --text-primary: #120a00;
-  --muted: #8a99ad;
-  --accent: #f5c242;
-  --accent-glow: #ff9900;
-  --border: #232a3f;
-  --border-glow: rgba(245, 194, 66, 0.25);
-  --success: #00e676;
-  --success-glow: rgba(0, 230, 118, 0.25);
-  --danger: #ff1744;
-  --danger-glow: rgba(255, 23, 68, 0.25);
+  --text-primary: #1a0933;
+  --muted: #c9b3e6;
+  --accent: #ffd700; /* Vibrant Royal Gold */
+  --accent-glow: #ffaa00;
+  --border: #4d248f;
+  --border-glow: rgba(255, 215, 0, 0.35);
+  --success: #00ff7f;
+  --success-glow: rgba(0, 255, 127, 0.25);
+  --danger: #ff0055;
+  --danger-glow: rgba(255, 0, 85, 0.25);
   
   /* Branded Social Colors */
   --facebook: #1877f2;
@@ -64,8 +64,8 @@ body {
   min-height: 100vh;
   padding-bottom: 75px;
   background-image: 
-    radial-gradient(circle at 50% 0%, rgba(26, 28, 44, 0.8) 0%, var(--bg) 60%),
-    radial-gradient(circle at 100% 50%, rgba(245, 194, 66, 0.03) 0%, transparent 40%);
+    radial-gradient(circle at 50% 0%, rgba(45, 17, 85, 0.8) 0%, var(--bg) 60%),
+    radial-gradient(circle at 100% 50%, rgba(255, 215, 0, 0.05) 0%, transparent 40%);
   position: relative;
 }
 
@@ -75,7 +75,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background: rgba(7, 8, 12, 0.85);
+  background: rgba(18, 4, 36, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   position: sticky;
@@ -112,10 +112,10 @@ body {
   font-weight: 950;
   font-style: italic;
   letter-spacing: -1px;
-  background: linear-gradient(135deg, #fff 30%, var(--accent) 70%, #d49a15 100%);
+  background: linear-gradient(135deg, #ffffff 10%, #ffd700 50%, #ffaa00 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 2px 10px rgba(245, 194, 66, 0.2);
+  text-shadow: 0 2px 12px rgba(255, 215, 0, 0.4);
 }
 
 .header-right {
@@ -128,7 +128,7 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(19, 23, 34, 0.8);
+  background: rgba(36, 16, 74, 0.8);
   border: 1px solid var(--border);
   padding: 6px 10px;
   border-radius: 20px;
@@ -176,7 +176,7 @@ body {
   position: relative;
 }
 .btn-deposit {
-  background: linear-gradient(135deg, var(--accent) 0%, #d49a15 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, #cc8800 100%);
   color: var(--text-primary);
   border: none;
   font-weight: 900;
@@ -187,13 +187,13 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
-  box-shadow: 0 4px 12px rgba(245, 194, 66, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
 .btn-deposit:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(245, 194, 66, 0.45);
+  box-shadow: 0 6px 18px rgba(255, 215, 0, 0.45);
 }
 .deposit-badge {
   position: absolute;
@@ -231,17 +231,17 @@ body {
 .btn:hover {
   border-color: var(--accent);
   color: #fff;
-  background: rgba(245, 194, 66, 0.05);
+  background: rgba(255, 215, 0, 0.05);
 }
 .btn.primary {
-  background: linear-gradient(135deg, var(--accent) 0%, #e6a100 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, #cc8800 100%);
   color: var(--text-primary);
   border: none;
-  box-shadow: 0 4px 15px rgba(245, 194, 66, 0.2);
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
 }
 .btn.primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(245, 194, 66, 0.4);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
 }
 
 /* Banner Carousel */
@@ -273,7 +273,7 @@ body {
 .carousel-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, rgba(11,13,20,0.9) 0%, rgba(11,13,20,0.4) 50%, transparent 100%);
+  background: linear-gradient(to right, rgba(24, 7, 50,0.9) 0%, rgba(24, 7, 50,0.4) 50%, transparent 100%);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -321,7 +321,7 @@ body {
 .announcement-bar {
   display: flex;
   align-items: center;
-  background: rgba(19, 23, 34, 0.7);
+  background: rgba(36, 16, 74, 0.7);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   padding: 8px 16px;
@@ -382,7 +382,7 @@ body {
 
 /* Top Winners Horizontal Ticker */
 .winners-ticker-container {
-  background: rgba(7, 8, 12, 0.5);
+  background: rgba(18, 4, 36, 0.5);
   padding: 12px 16px;
   overflow: hidden;
   position: relative;
@@ -414,7 +414,7 @@ body {
 }
 
 .winner-card {
-  background: rgba(24, 29, 42, 0.9);
+  background: rgba(42, 15, 76, 0.9);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 8px 12px;
@@ -485,13 +485,13 @@ body {
 .category-chip:hover {
   border-color: var(--accent);
   color: #fff;
-  background: rgba(245, 194, 66, 0.05);
+  background: rgba(255, 215, 0, 0.05);
 }
 .category-chip.active {
-  background: linear-gradient(135deg, var(--accent) 0%, #e6a100 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, #cc8800 100%);
   color: var(--text-primary);
   border-color: var(--accent);
-  box-shadow: 0 4px 12px rgba(245, 194, 66, 0.35);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.35);
   transform: scale(1.02);
 }
 
@@ -531,20 +531,15 @@ body {
 }
 
 .games-grid {
-  display: flex;
-  overflow-x: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 12px;
   padding: 4px 16px 16px;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
 }
 .games-grid::-webkit-scrollbar {
   display: none;
 }
 .games-grid > a {
-  flex: 0 0 130px;
-  width: 130px;
   text-decoration: none;
 }
 
@@ -564,7 +559,7 @@ body {
 .game-card:hover {
   transform: translateY(-4px);
   border-color: var(--accent);
-  box-shadow: 0 8px 24px rgba(245, 194, 66, 0.25);
+  box-shadow: 0 8px 24px rgba(255, 215, 0, 0.25);
 }
 
 .game-card-img-container {
@@ -687,7 +682,7 @@ body {
   position: relative;
   width: 76px;
   height: 76px;
-  background: linear-gradient(135deg, rgba(20,25,38,0.95) 0%, rgba(7,8,12,0.95) 100%);
+  background: linear-gradient(135deg, rgba(20,25,38,0.95) 0%, rgba(18, 4, 36,0.95) 100%);
   border: 2px solid var(--accent);
   border-radius: 50%;
   display: flex;
@@ -695,8 +690,8 @@ body {
   align-items: center;
   justify-content: center;
   box-shadow: 
-    0 0 15px rgba(245, 194, 66, 0.4),
-    inset 0 0 10px rgba(245, 194, 66, 0.2);
+    0 0 15px rgba(255, 215, 0, 0.4),
+    inset 0 0 10px rgba(255, 215, 0, 0.2);
   cursor: pointer;
 }
 .widget-wheel-graphic {
@@ -749,7 +744,7 @@ body {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(7,8,12,0.85);
+  background: rgba(18, 4, 36,0.85);
   border: 1px solid var(--border);
   color: var(--muted);
   display: flex;
@@ -862,7 +857,7 @@ body {
   left: 0;
   right: 0;
   height: 65px;
-  background: rgba(7, 8, 12, 0.92);
+  background: rgba(18, 4, 36, 0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   display: flex;
@@ -938,7 +933,7 @@ body {
 /* Cyber Matrix for Minesweeper */
 .matrix-bg {
   background: 
-    linear-gradient(rgba(18, 20, 29, 0.95), rgba(7, 8, 12, 0.98)),
+    linear-gradient(rgba(18, 20, 29, 0.95), rgba(18, 4, 36, 0.98)),
     repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 230, 118, 0.05) 2px, rgba(0, 230, 118, 0.05) 4px);
   border: 1px solid #00e67633;
   box-shadow: 0 0 30px rgba(0, 230, 118, 0.05);
@@ -999,7 +994,7 @@ body {
 .multiplier-step.active {
   background: linear-gradient(180deg, var(--accent) 0%, #cc8e00 100%);
   color: var(--text-primary);
-  box-shadow: 0 0 15px rgba(245, 194, 66, 0.5);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
   text-shadow: 0 1px 2px rgba(255,255,255,0.4);
 }
 .multiplier-step:last-child {

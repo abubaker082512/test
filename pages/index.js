@@ -53,17 +53,8 @@ const mockGames = [
   { id: 'paddy-mega-fire-blaze', title: 'Mega Fire Blaze', provider: 'PaddyPower', badge: '10,000x', recommended: true, theme: 'linear-gradient(135deg, #bf360c 0%, #3e2723 100%)', icon: '🔥', slug: 'paddy-mega-fire-blaze', category: 'PaddyPower', imageUrl: '/games/live.png' },
 
   // --- Original Casino Games ---
-  { id: 'crash-orig', title: 'Crash Multiplier', provider: 'Originals', badge: '100x', recommended: true, theme: 'linear-gradient(135deg, #4b004b 0%, #150015 100%)', icon: '🚀', slug: 'crash', category: 'Blockchain', imageUrl: '/games/crash.png' },
-  { id: 'plinko-orig', title: 'Plinko Physics', provider: 'Originals', badge: 'Physics', recommended: true, theme: 'linear-gradient(135deg, #12003c 0%, #030012 100%)', icon: '🟢', slug: 'plinko', category: 'Blockchain', imageUrl: '/games/plinko.png' },
-  { id: 'minesweeper-orig', title: 'Minesweeper Gems', provider: 'Originals', badge: 'Gems', recommended: true, theme: 'linear-gradient(135deg, #004b12 0%, #001203 100%)', icon: '💣', slug: 'minesweeper', category: 'Blockchain', imageUrl: '/games/plinko.png' },
-  { id: 'crypto-dice-orig', title: 'Crypto Dice', provider: 'Originals', badge: '98% RTP', recommended: true, theme: 'linear-gradient(135deg, #004b12 0%, #001f0a 100%)', icon: '🎲', slug: 'dice', category: 'Blockchain', imageUrl: '/games/crash.png' },
-  { id: 'wheel-orig', title: 'Lucky Wheel', provider: 'Originals', badge: '10x Mult', recommended: true, theme: 'linear-gradient(135deg, #4b3600 0%, #151000 100%)', icon: '🎡', slug: 'wheel', category: 'Blockchain', imageUrl: '/games/crash.png' },
-  { id: 'keno-orig', title: 'Keno Classic', provider: 'Originals', badge: '80 Balls', recommended: false, theme: 'linear-gradient(135deg, #2b0b30 0%, #0d0310 100%)', icon: '🎱', slug: 'keno', category: 'Blockchain', imageUrl: '/games/plinko.png' },
 
   // --- Cards & Table ---
-  { id: 'hilo-orig', title: 'Hi-Lo Cards', provider: 'Originals', badge: 'Streak', recommended: true, theme: 'linear-gradient(135deg, #12003c 0%, #030012 100%)', icon: '🃏', slug: 'hilo', category: 'Cards', imageUrl: '/games/live.png' },
-  { id: 'baccarat-orig', title: 'Classic Baccarat', provider: 'Originals', badge: 'Table', recommended: true, theme: 'linear-gradient(135deg, #003c1e 0%, #001207 100%)', icon: '👑', slug: 'baccarat', category: 'Cards', imageUrl: '/games/live.png' },
-  { id: 'blackjack-orig', title: 'Blackjack 21', provider: 'Originals', badge: 'Classic', recommended: true, theme: 'linear-gradient(135deg, #0d361b 0%, #031207 100%)', icon: '🃏', slug: 'blackjack', category: 'Cards', imageUrl: '/games/live.png' },
   { id: 'sexy-live', title: 'SEXY Live Baccarat', provider: 'SEXY', badge: 'Hot', recommended: true, theme: 'linear-gradient(135deg, #4b0d2d 0%, #17030e 100%)', icon: '💃', slug: 'sexy-live', category: 'Live', imageUrl: '/games/live.png' },
 
   // --- Cockfight ---
@@ -84,8 +75,7 @@ const winEvents = [
   { name: 'asif***99', game: 'DS88 Cockfight', amount: 'Rs 8,900.00', provider: 'DS88', avatar: '🦅' },
   { name: 'messi***10', game: 'WG Sports', amount: 'Rs 12,500.00', provider: 'Sports', avatar: '⚽' },
   { name: 'cr7***77', game: 'Crown Sports', amount: 'Rs 18,200.00', provider: 'Sports', avatar: '🏃' },
-  { name: 'user***82', game: 'Plinko', amount: 'Rs 670.00', provider: 'Originals', avatar: '🐸' },
-]
+  ]
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState('Hot')
@@ -105,6 +95,45 @@ export default function Home() {
   
   // Grid expansion state
   const [expandedCats, setExpandedCats] = useState({})
+
+  const [apiGames, setApiGames] = useState([])
+  const [apiLoaded, setApiLoaded] = useState(false)
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchAllProviders = async () => {
+      try {
+        const providers = ['JILIGAMING', 'EVOLUTIONLIVE', 'PGSOFT', 'PRAGMATICPLAY', 'PADDYPOWER'];
+        const allFetched = [];
+        for (const p of providers) {
+          const res = await fetch(`/api/rapid/getAllGamesByProvider?provider=${p}`);
+          if(res.ok) {
+            const data = await res.json();
+            const gamesList = data.games || data.data; if (gamesList && Array.isArray(gamesList)) {
+              const mapped = gamesList.map(g => ({
+                id: g.id,
+                title: g.name,
+                provider: p === 'JILIGAMING' ? 'JILI' : p === 'EVOLUTIONLIVE' ? 'Evolution' : p === 'PGSOFT' ? 'PG Soft' : p === 'PRAGMATICPLAY' ? 'Pragmatic' : 'PaddyPower',
+                category: p === 'JILIGAMING' ? 'JILI' : p === 'EVOLUTIONLIVE' ? 'Evolution' : p === 'PGSOFT' ? 'PG Soft' : p === 'PRAGMATICPLAY' ? 'Pragmatic' : 'PaddyPower',
+                imageUrl: g.img,
+                slug: g.id
+              }));
+              allFetched.push(...mapped);
+            }
+          }
+        }
+        if (isMounted) {
+          setApiGames(allFetched);
+          setApiLoaded(true);
+        }
+      } catch (err) {
+        console.error('Failed to fetch API games for home', err);
+      }
+    };
+    fetchAllProviders();
+    return () => { isMounted = false; }
+  }, []);
+
 
   // Auto-scrolling promo banners
   const promoBanners = [
@@ -185,40 +214,27 @@ export default function Home() {
     { name: 'Hot', icon: '🔥' },
     { name: 'JILI', icon: '🎰' },
     { name: 'Evolution', icon: '💃' },
+    { name: 'PG Soft', icon: '🎮' },
+    { name: 'Pragmatic', icon: '💎' },
     { name: 'PaddyPower', icon: '☘️' },
-    { name: 'Slots', icon: '🍒' },
-    { name: 'Live', icon: '💎' },
-    { name: 'Fishing', icon: '🦈' },
-    { name: 'Cards', icon: '🃏' },
-    { name: 'Blockchain', icon: '🧊' },
-    { name: 'Cockfight', icon: '🐓' },
     { name: 'Sports', icon: '⚽' },
+    { name: 'Cockfight', icon: '🐓' },
   ]
 
   // Filter games based on selected tab
   const getFilteredGames = (category) => {
+    const combined = [...mockGames, ...apiGames];
     if (category === 'Hot') {
-      return mockGames.filter(g => g.category === 'Hot' || g.recommended)
+      return combined.filter(g => g.category === 'Hot' || g.recommended).slice(0, 24); // Cap hot games so it's not huge
     }
-    if (category === 'JILI') {
-      return mockGames.filter(g => g.provider === 'JILI')
-    }
-    if (category === 'Evolution') {
-      return mockGames.filter(g => g.provider === 'Evolution')
-    }
-    if (category === 'PaddyPower') {
-      return mockGames.filter(g => g.provider === 'PaddyPower')
-    }
-    if (category === 'Slots') {
-      return mockGames.filter(g => g.category === 'Slots' || ['JILI', 'PG Soft', 'Pragmatic'].includes(g.provider))
-    }
-    if (category === 'Live') {
-      return mockGames.filter(g => g.category === 'Live' || g.provider === 'Evolution' || g.provider === 'SEXY')
-    }
-    if (category === 'Fishing') {
-      return mockGames.filter(g => g.category === 'Fishing')
-    }
-    return mockGames.filter(g => g.category === category)
+    if (category === 'JILI') return combined.filter(g => g.provider === 'JILI')
+    if (category === 'Evolution') return combined.filter(g => g.provider === 'Evolution' || g.provider === 'SEXY')
+    if (category === 'PG Soft') return combined.filter(g => g.provider === 'PG Soft')
+    if (category === 'Pragmatic') return combined.filter(g => g.provider === 'Pragmatic')
+    if (category === 'PaddyPower') return combined.filter(g => g.provider === 'PaddyPower')
+    if (category === 'Sports') return combined.filter(g => g.category === 'Sports')
+    if (category === 'Cockfight') return combined.filter(g => g.category === 'Cockfight')
+    return combined.filter(g => g.category === category)
   }
 
   const filteredGames = getFilteredGames(activeCategory)
@@ -301,13 +317,21 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Category Tabs chip navigation */}
-      <div className="category-bar">
+      
+      {/* Category Tabs chip navigation (Anchor Links) */}
+      <div className="category-bar" style={{ position: 'sticky', top: '60px', zIndex: 40, background: 'var(--bg-tertiary)', paddingBottom: '10px' }}>
         {categoriesList.map(cat => (
           <button 
             key={cat.name}
             className={`category-chip ${activeCategory === cat.name ? 'active' : ''}`}
-            onClick={() => setActiveCategory(cat.name)}
+            onClick={() => {
+              setActiveCategory(cat.name);
+              const el = document.getElementById('section-' + cat.name);
+              if (el) {
+                const y = el.getBoundingClientRect().top + window.scrollY - 120;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+              }
+            }}
           >
             <span>{cat.icon}</span>
             <span>{cat.name}</span>
@@ -315,59 +339,44 @@ export default function Home() {
         ))}
       </div>
 
-      {/* Games List Grid Section */}
-      <section aria-label="Casino Catalog">
-        <div className="section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div className="title-left">
-            <span>{activeCategory} Games</span>
-          </div>
-          <Link href="/casino" style={{ textDecoration: 'none' }}>
-            <button style={{
-              background: 'linear-gradient(135deg, #00e676 0%, #00897b 100%)',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '6px 14px',
-              color: '#000',
-              fontWeight: '900',
-              fontSize: '11px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              boxShadow: '0 2px 8px rgba(0,230,118,0.3)'
-            }}>
-              <span>🎰</span>
-              <span>127+ LIVE PROVIDERS LOBBY →</span>
-            </button>
-          </Link>
-        </div>
+      {/* Games List Vertical Sections */}
+      <div className="all-games-container" style={{ paddingBottom: '24px' }}>
+        {categoriesList.map(cat => {
+          const catGames = getFilteredGames(cat.name);
+          if (catGames.length === 0) return null;
 
-        {filteredGames.length > 0 ? (
-          <div className="games-grid">
-            {displayedGames.map(game => (
-              <GameCard 
-                key={game.id}
-                id={game.id}
-                title={game.title}
-                provider={game.provider}
-                badge={game.badge}
-                recommended={game.recommended}
-                theme={game.theme}
-                icon={game.icon}
-                slug={game.slug}
-                imageType={game.imageType}
-                imageUrl={game.imageUrl}
-              />
-            ))}
-          </div>
-        ) : (
-          <div style={{ textAlign: 'center', padding: '40px 16px', color: 'var(--muted)', fontSize: '13px' }}>
-            No games found in this category.
-          </div>
-        )}
-      </section>
+          return (
+            <section key={cat.name} id={'section-' + cat.name} style={{ padding: '24px 16px 0' }} aria-label={`${cat.name} Catalog`}>
+              <div className="section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div className="title-left" style={{ fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontWeight: '900' }}>
+                  <span>{cat.icon}</span> {cat.name} Games
+                </div>
+                
+              </div>
 
-      {/* Partners section */}
+              <div className="games-grid">
+                {catGames.map(game => (
+                  <GameCard 
+                    key={game.id}
+                    id={game.id}
+                    title={game.title}
+                    provider={game.provider}
+                    badge={game.badge}
+                    recommended={game.recommended}
+                    theme={game.theme}
+                    icon={game.icon}
+                    slug={game.slug}
+                    imageType={game.imageType}
+                    imageUrl={game.imageUrl}
+                  />
+                ))}
+              </div>
+            </section>
+          )
+        })}
+      </div>
+      
+{/* Partners section */}
       <section style={{ padding: '24px 16px', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
         <div className="partners-title">Verified Platform Partners</div>
         <div className="partners-row">
@@ -432,7 +441,7 @@ export default function Home() {
       {showWheelPopup && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ 
-            background: 'linear-gradient(135deg, #1b1602 0%, #07080c 100%)', 
+            background: 'linear-gradient(135deg, #2d1155 0%, #07080c 100%)', 
             border: '2px solid var(--accent)', 
             padding: '24px', 
             borderRadius: '16px', 
@@ -462,7 +471,7 @@ export default function Home() {
               alignItems: 'center', 
               justifyContent: 'center',
               fontSize: '64px',
-              background: '#131722',
+              background: 'var(--bg-secondary)',
               animation: spinningWheel ? 'spin 0.2s linear infinite' : 'none',
               boxShadow: '0 0 20px rgba(245,194,66,0.3)'
             }}>
