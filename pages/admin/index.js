@@ -271,7 +271,7 @@ export default function AdminPanel() {
                         {tx.type === 'deposit' ? '💳 DEPOSIT' : '🏧 WITHDRAWAL'}
                       </span>
                       <span style={{ background: '#222', padding: '3px 8px', borderRadius: '6px', fontSize: '12px', color: '#aaa' }}>
-                        Rs {parseFloat(tx.amount).toFixed(2)}
+                        Pi {parseFloat(tx.amount).toFixed(2)}
                       </span>
                     </div>
 
@@ -297,7 +297,7 @@ export default function AdminPanel() {
                         <div style={{ color: 'var(--accent)', fontWeight: 'bold', marginBottom: '4px' }}>📥 Payout Dispatch Info:</div>
                         <div style={{ color: '#fff', fontStyle: 'normal', whiteSpace: 'pre-wrap' }}>{tx.notes}</div>
                         <div style={{ marginTop: '8px', fontSize: '11px', color: '#888' }}>
-                          👉 Open your Easypaisa/JazzCash/Binance app, send the matching net payout amount, then click <strong>Approve</strong> below.
+                          👉 Open your Mobile Money A/Mobile Money B/Binance app, send the matching net payout amount, then click <strong>Approve</strong> below.
                         </div>
                       </div>
                     )}
@@ -356,7 +356,7 @@ export default function AdminPanel() {
                   💰 Adjust Wallet Balance for <span style={{ color: 'var(--accent)' }}>{selectedUser.email}</span>
                 </h3>
                 <div style={{ fontSize: '13px', color: '#888', marginBottom: '14px' }}>
-                  Current Balance: <strong style={{ color: '#fff' }}>Rs {getBalance(selectedUser.id)}</strong>
+                  Current Balance: <strong style={{ color: '#fff' }}>Pi {getBalance(selectedUser.id)}</strong>
                 </div>
 
                 {adjustMsg && (
@@ -418,7 +418,7 @@ export default function AdminPanel() {
                         <div style={{ fontSize: '11px', color: '#555', marginTop: '2px', fontFamily: 'monospace' }}>ID: {u.id}</div>
                       </div>
                       <div style={{ flex: 1, textAlign: 'right', fontWeight: 'bold', color: 'var(--accent)', fontSize: '14px' }}>
-                        Rs {bal}
+                        Pi {bal}
                       </div>
                       <div style={{ flex: 1, textAlign: 'right' }}>
                         <button 
@@ -443,7 +443,7 @@ export default function AdminPanel() {
           <div style={{ background: '#111', borderRadius: '16px', border: '1px solid #222', padding: '24px' }}>
             <h2 style={{ color: 'var(--accent)', marginTop: 0 }}>💵 Manage Currency Conversion Rates</h2>
             <p style={{ color: '#aaa', fontSize: '14px', marginBottom: '24px', lineHeight: '1.6' }}>
-              Define how much in-game currency (Rs) users receive when they deposit PKR (Rs) or USD ($). 
+              Define how much in-game currency (Pi) users receive when they deposit Fiat (Pi) or USD ($). 
               These values are calculated instantly in dynamic previews during their deposit/withdrawal submission.
             </p>
 
@@ -465,10 +465,10 @@ export default function AdminPanel() {
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <label style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>
-                  🇵🇰 PKR (Rs) Conversion Rate:
+                  🌍 Fiat (Pi) Conversion Rate:
                 </label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '16px', color: '#888' }}>1 PKR =</span>
+                  <span style={{ fontSize: '16px', color: '#888' }}>1 Fiat =</span>
                   <input
                     type="number"
                     step="0.0001"
@@ -478,9 +478,9 @@ export default function AdminPanel() {
                     style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#000', color: '#fff', fontSize: '16px' }}
                     required
                   />
-                  <span style={{ fontSize: '16px', color: 'var(--accent)', fontWeight: 'bold' }}>Rs (In-game)</span>
+                  <span style={{ fontSize: '16px', color: 'var(--accent)', fontWeight: 'bold' }}>Pi (In-game)</span>
                 </div>
-                <small style={{ color: '#666' }}>Example: If set to 1.0, depositing 100 PKR gives the user 100 Rs.</small>
+                <small style={{ color: '#666' }}>Example: If set to 1.0, depositing 100 Fiat gives the user 100 Pi.</small>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -498,9 +498,9 @@ export default function AdminPanel() {
                     style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#000', color: '#fff', fontSize: '16px' }}
                     required
                   />
-                  <span style={{ fontSize: '16px', color: 'var(--accent)', fontWeight: 'bold' }}>Rs (In-game)</span>
+                  <span style={{ fontSize: '16px', color: 'var(--accent)', fontWeight: 'bold' }}>Pi (In-game)</span>
                 </div>
-                <small style={{ color: '#666' }}>Example: If set to 280, depositing $10 gives the user 2,800 Rs.</small>
+                <small style={{ color: '#666' }}>Example: If set to 280, depositing $10 gives the user 2,800 Pi.</small>
               </div>
 
               <button 

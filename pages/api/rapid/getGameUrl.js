@@ -133,7 +133,7 @@ export default async function handler(req, res) {
       money: payload.money !== undefined ? payload.money : 0,
       home_url: payload.home_url || 'https://betnex.co',
       platform: payload.platform || 1,
-      currency: 'PKR'
+      currency: 'Fiat'
     });
 
     const rawGameUrl = data?.payload?.game_launch_url || data?.game_launch_url || data?.gameUrl || (data?.data && data?.data?.url);

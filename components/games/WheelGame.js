@@ -173,7 +173,7 @@ export default function WheelGame({ user, wallet, fetchWallet }) {
               fetchWallet()
               setMessage({
                 type: 'success',
-                text: `🎉 WINNER! Hit ${winningSegment.label} - Credited +Rs ${payoutAmount.toLocaleString()}!`
+                text: `🎉 WINNER! Hit ${winningSegment.label} - Credited +Pi ${payoutAmount.toLocaleString()}!`
               })
             }
           })
@@ -318,7 +318,7 @@ export default function WheelGame({ user, wallet, fetchWallet }) {
             cursor: spinning ? 'not-allowed' : 'pointer'
           }}
         >
-          {spinning ? 'SPINNING WHEEL...' : `SPIN WHEEL FOR Rs ${betAmount}`}
+          {spinning ? 'SPINNING WHEEL...' : `SPIN WHEEL FOR Pi ${betAmount}`}
         </button>
 
       </div>

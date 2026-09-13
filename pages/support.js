@@ -35,10 +35,10 @@ export default function Support() {
       let reply = "I understand your query. Let me look into that for you. Could you please provide your registered email or Transaction ID (if relating to a deposit/withdrawal)?"
       
       const textLower = userText.toLowerCase()
-      if (textLower.includes('deposit') || textLower.includes('recharge') || textLower.includes('jazzcash') || textLower.includes('easypaisa') || textLower.includes('payment')) {
+      if (textLower.includes('deposit') || textLower.includes('recharge') || textLower.includes('Mobile Money B') || textLower.includes('Mobile Money A') || textLower.includes('payment')) {
         reply = "💳 For deposit inquiries: Please verify that you sent the exact funds to the official accounts listed in your Wallet page, and then entered the correct Transaction ID. Our admin team manually reviews and approves all deposits within 10 to 30 minutes! Please share your Transaction ID if you'd like me to double-check its status."
       } else if (textLower.includes('withdraw') || textLower.includes('withdrawal') || textLower.includes('cashout') || textLower.includes('refund')) {
-        reply = "🏧 For withdrawal inquiries: Minimum withdrawal is Rs 500. Requests are processed manually within 24 hours. If your withdrawal request is rejected, the funds are instantly refunded back to your in-game balance. Please check your account details and try again."
+        reply = "🏧 For withdrawal inquiries: Minimum withdrawal is Pi 500. Requests are processed manually within 24 hours. If your withdrawal request is rejected, the funds are instantly refunded back to your in-game balance. Please check your account details and try again."
       } else if (textLower.includes('game') || textLower.includes('crash') || textLower.includes('slots') || textLower.includes('dice') || textLower.includes('cheat') || textLower.includes('win')) {
         reply = "🎮 For game inquiries: All games on BetPK are built on verified, cryptographically secure Random Number Generators (RNG). Multipliers and spins are fully transparent and provably fair. Good luck with your bets!"
       } else if (textLower.includes('pkr') || textLower.includes('usd') || textLower.includes('exchange') || textLower.includes('dollar') || textLower.includes('rupee') || textLower.includes('rate')) {
@@ -96,7 +96,7 @@ export default function Support() {
                 </div>
                 <div style={{ borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
                   <strong style={{ color: 'var(--accent)' }}>Q: What is the minimum withdrawal?</strong>
-                  <p style={{ margin: '4px 0 0 0', color: 'var(--muted)' }}>The minimum withdrawal is Rs 500.00. Withdrawal requests are processed to your Easypaisa, JazzCash, or Binance account within 24 hours.</p>
+                  <p style={{ margin: '4px 0 0 0', color: 'var(--muted)' }}>The minimum withdrawal is Pi 500.00. Withdrawal requests are processed to your Mobile Money A, Mobile Money B, or Binance account within 24 hours.</p>
                 </div>
               </div>
             </div>

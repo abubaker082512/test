@@ -17,14 +17,14 @@ export default function WalletPage() {
   // Deposit form
   const [depAmount, setDepAmount] = useState('')
   const [depCurrency, setDepCurrency] = useState('pkr') // 'pkr' | 'usd'
-  const [depMethod, setDepMethod] = useState('easypaisa')
+  const [depMethod, setDepMethod] = useState('Mobile Money A')
   const [depTxId, setDepTxId] = useState('')
   const [depMsg, setDepMsg] = useState(null)
 
   // Withdraw form
-  const [witAmount, setWitAmount] = useState('') // In-game Rs amount
+  const [witAmount, setWitAmount] = useState('') // In-game Pi amount
   const [witCurrency, setWitCurrency] = useState('pkr') // 'pkr' | 'usd'
-  const [witMethod, setWitMethod] = useState('easypaisa')
+  const [witMethod, setWitMethod] = useState('Mobile Money A')
   const [witAccount, setWitAccount] = useState('')
   const [witMsg, setWitMsg] = useState(null)
 
@@ -66,12 +66,12 @@ export default function WalletPage() {
     const rate = depCurrency === 'pkr' ? rates.pkr_rate : rates.usd_rate
     const inGameAmount = parseFloat((rawAmount * rate).toFixed(2))
 
-    // Minimum check: at least Rs 100 worth in-game currency
+    // Minimum check: at least Pi 100 worth in-game currency
     if (inGameAmount < 100) {
-      return setDepMsg({ type: 'error', text: `Minimum deposit value must be at least Rs 100.00 (You submitted Rs ${inGameAmount.toFixed(2)} worth)` })
+      return setDepMsg({ type: 'error', text: `Minimum deposit value must be at least Pi 100.00 (You submitted Pi ${inGameAmount.toFixed(2)} worth)` })
     }
 
-    const notesStr = `Deposit of ${depCurrency === 'pkr' ? 'Rs' : '$'} ${rawAmount} ${depCurrency.toUpperCase()} via ${depMethod}. Rate: 1 ${depCurrency.toUpperCase()} = ${rate} Rs.`
+    const notesStr = `Deposit of ${depCurrency === 'pkr' ? 'Pi' : '$'} ${rawAmount} ${depCurrency.toUpperCase()} via ${depMethod}. Rate: 1 ${depCurrency.toUpperCase()} = ${rate} Pi.`
 
     const res = await fetch('/api/wallet/deposit', {
       method: 'POST',
@@ -100,9 +100,9 @@ export default function WalletPage() {
 
     const rawInGameAmount = Number(witAmount)
 
-    // Minimum check in in-game currency: Rs 500
+    // Minimum check in in-game currency: Pi 500
     if (rawInGameAmount < 500) {
-      return setWitMsg({ type: 'error', text: 'Minimum withdrawal is Rs 500' })
+      return setWitMsg({ type: 'error', text: 'Minimum withdrawal is Pi 500' })
     }
 
     if (!wallet || wallet.balance < rawInGameAmount) {
@@ -111,10 +111,10 @@ export default function WalletPage() {
 
     const rate = witCurrency === 'pkr' ? rates.pkr_rate : rates.usd_rate
     const payoutAmount = parseFloat((rawInGameAmount / rate).toFixed(2))
-    const currencyLabel = witCurrency === 'pkr' ? 'PKR' : 'USD'
-    const symbolLabel = witCurrency === 'pkr' ? 'Rs' : '$'
+    const currencyLabel = witCurrency === 'pkr' ? 'Fiat' : 'USD'
+    const symbolLabel = witCurrency === 'pkr' ? 'Pi' : '$'
 
-    const notesStr = `Withdrawal to ${witMethod} account ${witAccount}. Net Payout: ${symbolLabel} ${payoutAmount} ${currencyLabel} (Rate: 1 ${currencyLabel} = ${rate} Rs).`
+    const notesStr = `Withdrawal to ${witMethod} account ${witAccount}. Net Payout: ${symbolLabel} ${payoutAmount} ${currencyLabel} (Rate: 1 ${currencyLabel} = ${rate} Pi).`
 
     const res = await fetch('/api/wallet/withdraw', {
       method: 'POST',
@@ -171,7 +171,7 @@ export default function WalletPage() {
         <div style={{ ...cardStyle, background: 'linear-gradient(135deg, #1a1a00, #111)', border: '1px solid var(--accent)33', textAlign: 'center' }}>
           <div style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>AVAILABLE BALANCE</div>
           <div style={{ fontSize: '56px', fontWeight: 900, color: 'var(--accent)' }}>
-            Rs {wallet ? parseFloat(wallet.balance).toFixed(2) : '0.00'}
+            Pi {wallet ? parseFloat(wallet.balance).toFixed(2) : '0.00'}
           </div>
         </div>
 
@@ -180,23 +180,23 @@ export default function WalletPage() {
           <h2 style={{ marginTop: 0, color: '#00ff88' }}>💳 Deposit</h2>
           <div style={{ background: '#0a1a0a', border: '1px solid #00ff8833', borderRadius: '8px', padding: '12px', marginBottom: '16px', fontSize: '13px', color: '#aaa', lineHeight: '1.5' }}>
             Send money to matching official account: <br />
-            <strong>Easypaisa (PKR):</strong> 0300-0000000 (BetPK Official)<br />
-            <strong>JazzCash (PKR):</strong> 0300-0000000 (BetPK Official)<br />
+            <strong>Mobile Money A (Fiat):</strong> 0300-0000000 (BetPK Official)<br />
+            <strong>Mobile Money B (Fiat):</strong> 0300-0000000 (BetPK Official)<br />
             <strong>Binance / Crypto (USD):</strong> usd-official-wallet-address<br />
             <div style={{ borderTop: '1px solid #00ff8822', marginTop: '8px', paddingTop: '8px', fontSize: '12px', color: 'var(--accent)' }}>
-              Current Exchange Rates: <strong style={{ color: '#fff' }}>1 PKR = {rates.pkr_rate} Rs</strong> | <strong style={{ color: '#fff' }}>1 USD = {rates.usd_rate} Rs</strong>
+              Current Exchange Rates: <strong style={{ color: '#fff' }}>1 Fiat = {rates.pkr_rate} Pi</strong> | <strong style={{ color: '#fff' }}>1 USD = {rates.usd_rate} Pi</strong>
             </div>
           </div>
           {depMsg && <div style={msgStyle(depMsg.type)}>{depMsg.text}</div>}
           <form onSubmit={handleDeposit}>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
               <select value={depCurrency} onChange={e => setDepCurrency(e.target.value)} style={{ ...inputStyle, marginBottom: 0, flex: 1 }}>
-                <option value="pkr">PKR (Rs)</option>
+                <option value="pkr">Fiat (Pi)</option>
                 <option value="usd">USD ($)</option>
               </select>
               <select value={depMethod} onChange={e => { setDepMethod(e.target.value); if (e.target.value === 'binance') setDepCurrency('usd'); else setDepCurrency('pkr') }} style={{ ...inputStyle, marginBottom: 0, flex: 2 }}>
-                <option value="easypaisa">Easypaisa</option>
-                <option value="jazzcash">JazzCash</option>
+                <option value="Mobile Money A">Mobile Money A</option>
+                <option value="Mobile Money B">Mobile Money B</option>
                 <option value="binance">Binance Pay (Crypto)</option>
               </select>
             </div>
@@ -213,7 +213,7 @@ export default function WalletPage() {
 
             {depAmount && (
               <div style={{ background: '#00ff8811', border: '1px solid #00ff8822', borderRadius: '8px', padding: '12px', color: '#00ff88', fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', textAlign: 'center' }}>
-                🎉 You will receive: Rs {computedCreditedVal} in-game currency
+                🎉 You will receive: Pi {computedCreditedVal} in-game currency
               </div>
             )}
 
@@ -226,19 +226,19 @@ export default function WalletPage() {
         <div style={cardStyle}>
           <h2 style={{ marginTop: 0, color: '#ff9900' }}>🏧 Withdraw</h2>
           <div style={{ background: '#1a0f00', border: '1px solid #ff990033', borderRadius: '8px', padding: '12px', marginBottom: '16px', fontSize: '13px', color: '#aaa', lineHeight: '1.5' }}>
-            Minimum withdrawal: 500 Rs. Processed within 24 hours.<br />
+            Minimum withdrawal: 500 Pi. Processed within 24 hours.<br />
             Select your preferred payout currency and method.
           </div>
           {witMsg && <div style={msgStyle(witMsg.type)}>{witMsg.text}</div>}
           <form onSubmit={handleWithdraw}>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
               <select value={witCurrency} onChange={e => setWitCurrency(e.target.value)} style={{ ...inputStyle, marginBottom: 0, flex: 1 }}>
-                <option value="pkr">PKR (Rs)</option>
+                <option value="pkr">Fiat (Pi)</option>
                 <option value="usd">USD ($)</option>
               </select>
               <select value={witMethod} onChange={e => setWitMethod(e.target.value)} style={{ ...inputStyle, marginBottom: 0, flex: 2 }}>
-                <option value="easypaisa">Easypaisa</option>
-                <option value="jazzcash">JazzCash</option>
+                <option value="Mobile Money A">Mobile Money A</option>
+                <option value="Mobile Money B">Mobile Money B</option>
                 <option value="binance">Binance Pay (Crypto)</option>
               </select>
             </div>
@@ -247,7 +247,7 @@ export default function WalletPage() {
             
             <input 
               type="number" 
-              placeholder="Withdrawal Amount (in Rs, min 500)" 
+              placeholder="Withdrawal Amount (in Pi, min 500)" 
               value={witAmount} 
               onChange={e => setWitAmount(e.target.value)} 
               style={inputStyle} 
@@ -257,7 +257,7 @@ export default function WalletPage() {
 
             {witAmount && (
               <div style={{ background: '#ff990011', border: '1px solid #ff990022', borderRadius: '8px', padding: '12px', color: '#ff9900', fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', textAlign: 'center' }}>
-                💰 Net Payout: {witCurrency === 'pkr' ? 'Rs ' : '$'} {computedWithdrawVal} {witCurrency.toUpperCase()}
+                💰 Net Payout: {witCurrency === 'pkr' ? 'Pi ' : '$'} {computedWithdrawVal} {witCurrency.toUpperCase()}
               </div>
             )}
 
@@ -278,7 +278,7 @@ export default function WalletPage() {
               </div>
               <div style={{ textAlign: 'right', minWidth: '100px' }}>
                 <div style={{ fontWeight: 'bold', color: ['payout', 'deposit'].includes(tx.type) ? '#00ff88' : '#ff4444' }}>
-                  {['payout', 'deposit'].includes(tx.type) ? '+' : '-'}Rs {parseFloat(tx.amount).toFixed(2)}
+                  {['payout', 'deposit'].includes(tx.type) ? '+' : '-'}Pi {parseFloat(tx.amount).toFixed(2)}
                 </div>
                 <div style={{ fontSize: '12px', padding: '2px 8px', borderRadius: '8px', display: 'inline-block', marginTop: '4px', background: tx.status === 'completed' ? '#00ff8822' : tx.status === 'pending' ? '#ff990022' : '#ff000022', color: tx.status === 'completed' ? '#00ff88' : tx.status === 'pending' ? '#ff9900' : '#ff4444' }}>
                   {tx.status}

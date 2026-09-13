@@ -84,7 +84,7 @@ export default function Offers() {
       })
       const data = await res.json()
       if (data.success) {
-        setMessage({ type: 'success', text: `🎉 Daily Check-in claimed! +Rs 5.00 added to your wallet.` })
+        setMessage({ type: 'success', text: `🎉 Daily Check-in claimed! +Pi 5.00 added to your wallet.` })
         setCheckedInToday(true)
         window.dispatchEvent(new Event('wallet-updated'))
       } else {
@@ -110,7 +110,7 @@ export default function Offers() {
       })
       const data = await res.json()
       if (data.success) {
-        setMessage({ type: 'success', text: `🎉 Match Bonus claimed! +Rs ${data.bonus_amount.toFixed(2)} added to your wallet.` })
+        setMessage({ type: 'success', text: `🎉 Match Bonus claimed! +Pi ${data.bonus_amount.toFixed(2)} added to your wallet.` })
         setClaimedDepositBonus(true)
         window.dispatchEvent(new Event('wallet-updated'))
       } else {
@@ -161,7 +161,7 @@ export default function Offers() {
           <div>
             <h2 style={{ margin: '0 0 6px 0', fontSize: '18px', color: '#fff' }}>Daily Loyalty Check-in</h2>
             <p style={{ margin: 0, color: 'var(--muted)', fontSize: '14px', lineHeight: '1.5' }}>
-              Check-in once every day to receive <strong>Rs 5.00</strong> absolutely free. Keep playing to earn more rewards.
+              Check-in once every day to receive <strong>Pi 5.00</strong> absolutely free. Keep playing to earn more rewards.
             </p>
           </div>
           <button 
@@ -170,7 +170,7 @@ export default function Offers() {
             disabled={loadingCheckin || checkedInToday || (user && statusLoading)}
             style={{ width: '100%', padding: '14px', fontSize: '15px', marginTop: '10px', background: checkedInToday ? '#222' : 'var(--accent)', color: checkedInToday ? '#555' : '#000', borderColor: checkedInToday ? '#333' : 'var(--accent)', cursor: checkedInToday ? 'not-allowed' : 'pointer' }}
           >
-            {loadingCheckin ? '⏳ Processing check-in...' : checkedInToday ? '✅ Checked In Today' : '📅 Check In Now & Claim Rs 5'}
+            {loadingCheckin ? '⏳ Processing check-in...' : checkedInToday ? '✅ Checked In Today' : '📅 Check In Now & Claim Pi 5'}
           </button>
         </div>
 
@@ -192,7 +192,7 @@ export default function Offers() {
           <div>
             <h2 style={{ margin: '0 0 6px 0', fontSize: '18px', color: '#fff' }}>First Deposit 100% Match</h2>
             <p style={{ margin: 0, color: 'var(--muted)', fontSize: '14px', lineHeight: '1.5' }}>
-              Get a **100% matched deposit bonus** on your first completed deposit up to **Rs 5,000.00**. 
+              Get a **100% matched deposit bonus** on your first completed deposit up to **Pi 5,000.00**. 
               Double your funds to start playing with double the power!
             </p>
           </div>

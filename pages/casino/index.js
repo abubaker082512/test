@@ -99,7 +99,7 @@ export default function CasinoLobby() {
             LIVE CASINO & OFFICIAL PROVIDERS
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '13px', maxWidth: '500px', margin: '0 auto' }}>
-            Play authentic slots, live dealer streams, and arcade games from JILI, Evolution, PG Soft, and Paddy Power. Real-time PKR balances enabled.
+            Play authentic slots, live dealer streams, and arcade games from JILI, Evolution, PG Soft, and Paddy Power. Real-time Fiat balances enabled.
           </p>
         </div>
 
@@ -250,7 +250,7 @@ export default function CasinoLobby() {
                         cursor: 'pointer'
                       }}
                     >
-                      PLAY (PKR)
+                      PLAY (Fiat)
                     </button>
                   </Link>
                 </div>

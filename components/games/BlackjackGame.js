@@ -157,11 +157,11 @@ export default function BlackjackGame({ user, wallet, fetchWallet }) {
 
     if (result === 'blackjack') {
       multiplier = 2.5
-      outcomeMsg = `🃏 Blackjack! Double Cash! +Rs ${(betAmount * 2.5).toFixed(2)}`
+      outcomeMsg = `🃏 Blackjack! Double Cash! +Pi ${(betAmount * 2.5).toFixed(2)}`
       isWin = true
     } else if (result === 'win' || result === 'dealer-bust') {
       multiplier = 2.0
-      outcomeMsg = result === 'dealer-bust' ? `Dealer Busted! You Won! +Rs ${(betAmount * 2).toFixed(2)}` : `You Won! +Rs ${(betAmount * 2).toFixed(2)}`
+      outcomeMsg = result === 'dealer-bust' ? `Dealer Busted! You Won! +Pi ${(betAmount * 2).toFixed(2)}` : `You Won! +Pi ${(betAmount * 2).toFixed(2)}`
       isWin = true
     } else if (result === 'push') {
       multiplier = 1.0
@@ -383,7 +383,7 @@ export default function BlackjackGame({ user, wallet, fetchWallet }) {
                     cursor: 'pointer'
                   }}
                 >
-                  Rs {amt}
+                  Pi {amt}
                 </button>
               ))}
             </div>
@@ -401,7 +401,7 @@ export default function BlackjackGame({ user, wallet, fetchWallet }) {
                 fontWeight: 'bold'
               }}
             >
-              {loading ? 'DEALING CARDS...' : `PLACE BET : Rs ${betAmount}`}
+              {loading ? 'DEALING CARDS...' : `PLACE BET : Pi ${betAmount}`}
             </button>
           </div>
         ) : (

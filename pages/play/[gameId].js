@@ -139,7 +139,7 @@ export default function PlayGame() {
               fontSize: '12px', 
               fontWeight: '800' 
             }}>
-              💰 <span style={{ color: 'var(--accent)' }}>Rs {parseFloat(wallet.balance).toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              💰 <span style={{ color: 'var(--accent)' }}>Pi {parseFloat(wallet.balance).toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
           )}
 
@@ -163,7 +163,7 @@ export default function PlayGame() {
           }}>
             <div style={{ fontSize: '48px', animation: 'spin-slow 2s infinite' }}>🎡</div>
             <h3 style={{ marginTop: '16px', fontSize: '18px' }}>Connecting to Official Provider...</h3>
-            <p style={{ color: 'var(--muted)', fontSize: '12px', marginTop: '6px' }}>Establishing secure API session & PKR Bridge</p>
+            <p style={{ color: 'var(--muted)', fontSize: '12px', marginTop: '6px' }}>Establishing secure API session & Fiat Bridge</p>
           </div>
         ) : liveError ? (
           <div style={{ 
