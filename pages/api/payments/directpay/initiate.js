@@ -6,8 +6,8 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
-const DEFAULT_CLIENT_ID = process.env.DIRECTPAY_CLIENT_ID || 'ci_y6454gjwluue5awj1jzd';
-const DEFAULT_CLIENT_SECRET = process.env.DIRECTPAY_CLIENT_SECRET || 'cs_am52my1jpoidwoa6myabixsejos1ajb36flxpegs1l35wo5rkujn6t0u4ut9vmkk';
+const DEFAULT_CLIENT_ID = process.env.DIRECTPAY_CLIENT_ID || 'pwa_ci_k1qlq54hv4gw5pr0khux';
+const DEFAULT_CLIENT_SECRET = process.env.DIRECTPAY_CLIENT_SECRET || 'pwa_secret_zp5rai8z02zr3o5sebm1co6uxci58uca';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
