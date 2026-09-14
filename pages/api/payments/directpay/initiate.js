@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { user_id, amountInPKR, payer_name, email, msisdn, currency = 'PKR' } = req.body;
+  const { user_id, amountInPKR, payer_name, email, msisdn, currency = 'PKR', payment_method = 'Easypaisa' } = req.body;
 
   if (!user_id) {
     return res.status(400).json({ error: 'User authentication required' });
@@ -55,7 +55,7 @@ export default async function handler(req, res) {
       clientSecret,
       clientTransactionId,
       amountInPKR: numAmount,
-      description: `BetPK Wallet Deposit: Pi ${inGameAmount}`,
+      description: `BetPK Deposit via ${payment_method}: Pi ${inGameAmount}`,
       payerName: payer_name || 'Player',
       email: email || 'player@betpk.com',
       msisdn,
@@ -70,9 +70,9 @@ export default async function handler(req, res) {
       type: 'deposit',
       amount: inGameAmount,
       status: 'pending',
-      method: 'DirectPay (Easypaisa/JazzCash/Card)',
+      method: `DirectPay (${payment_method})`,
       tx_id: clientTransactionId,
-      notes: `DirectPay Auto-Pay: ${currency} ${numAmount.toFixed(2)} (Converted to Pi ${inGameAmount} at rate 1:${pkrRate}) | Phone: ${msisdn}`
+      notes: `DirectPay ${payment_method} Deposit: ${currency} ${numAmount.toFixed(2)} (Converted to Pi ${inGameAmount} at rate 1:${pkrRate}) | Phone: ${msisdn}`
     });
 
     if (dbError) {

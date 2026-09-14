@@ -20,6 +20,7 @@ export default function WalletPage() {
   const [ratesLoading, setRatesLoading] = useState(true)
 
   // DirectPay Auto Deposit form
+  const [dpMethod, setDpMethod] = useState('Easypaisa') // 'Easypaisa' | 'JazzCash' | 'Card'
   const [dpAmount, setDpAmount] = useState('')
   const [dpPhone, setDpPhone] = useState('')
   const [dpName, setDpName] = useState('')
@@ -29,7 +30,7 @@ export default function WalletPage() {
   // Manual Deposit form
   const [depAmount, setDepAmount] = useState('')
   const [depCurrency, setDepCurrency] = useState('pkr') // 'pkr' | 'usd'
-  const [depMethod, setDepMethod] = useState('Mobile Money A (Easypaisa)')
+  const [depMethod, setDepMethod] = useState('Easypaisa')
   const [depTxId, setDepTxId] = useState('')
   const [depMsg, setDepMsg] = useState(null)
 
@@ -119,7 +120,8 @@ export default function WalletPage() {
           payer_name: dpName || user.email?.split('@')[0] || 'Player',
           email: user.email || 'player@betpk.com',
           msisdn: dpPhone,
-          currency: 'PKR'
+          currency: 'PKR',
+          payment_method: dpMethod
         })
       })
 
@@ -235,6 +237,34 @@ export default function WalletPage() {
   const computedCreditedVal = depAmount ? (Number(depAmount) * (depCurrency === 'pkr' ? rates.pkr_rate : rates.usd_rate)).toFixed(2) : '0.00'
   const computedWithdrawVal = witAmount ? (Number(witAmount) / (witCurrency === 'pkr' ? rates.pkr_rate : rates.usd_rate)).toFixed(2) : '0.00'
 
+  // Payment Methods List for DirectPay
+  const directPayMethods = [
+    {
+      id: 'Easypaisa',
+      name: 'Easypaisa',
+      icon: '🟢',
+      badge: 'Auto Wallet',
+      bgColor: 'linear-gradient(135deg, rgba(0, 200, 83, 0.15) 0%, rgba(0, 0, 0, 0.4) 100%)',
+      borderColor: '#00c853'
+    },
+    {
+      id: 'JazzCash',
+      name: 'JazzCash',
+      icon: '🔴',
+      badge: 'Auto Wallet',
+      bgColor: 'linear-gradient(135deg, rgba(213, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.4) 100%)',
+      borderColor: '#d50000'
+    },
+    {
+      id: 'Card',
+      name: 'Debit / Card',
+      icon: '💳',
+      badge: 'Visa / MC',
+      bgColor: 'linear-gradient(135deg, rgba(41, 121, 255, 0.15) 0%, rgba(0, 0, 0, 0.4) 100%)',
+      borderColor: '#2979ff'
+    }
+  ]
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', color: '#fff', paddingBottom: '80px' }}>
       {/* Header */}
@@ -299,15 +329,66 @@ export default function WalletPage() {
           {/* Mode A: DirectPay (Easypaisa, JazzCash, Card Auto Gateway) */}
           {depositMode === 'directpay' && (
             <div>
-              <div style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '18px' }}>⚡</span>
-                  <span style={{ fontWeight: 'bold', color: 'var(--accent)' }}>DirectPay Instant Checkout</span>
+              {/* Payment Method Selector Grid */}
+              <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '10px' }}>
+                Select Payment Method:
+              </label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '18px' }}>
+                {directPayMethods.map(m => {
+                  const isSelected = dpMethod === m.id
+                  return (
+                    <div
+                      key={m.id}
+                      onClick={() => setDpMethod(m.id)}
+                      style={{
+                        background: m.bgColor,
+                        border: isSelected ? '2px solid var(--accent)' : '1px solid var(--border)',
+                        borderRadius: '12px',
+                        padding: '12px 8px',
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        position: 'relative',
+                        boxShadow: isSelected ? '0 0 16px rgba(255, 215, 0, 0.35)' : 'none',
+                        transform: isSelected ? 'translateY(-2px)' : 'none'
+                      }}
+                    >
+                      <div style={{ fontSize: '24px', marginBottom: '4px' }}>{m.icon}</div>
+                      <div style={{ fontSize: '12px', fontWeight: '900', color: isSelected ? 'var(--accent)' : '#fff' }}>
+                        {m.name}
+                      </div>
+                      <div style={{ 
+                        fontSize: '9px', 
+                        marginTop: '4px',
+                        padding: '2px 4px', 
+                        borderRadius: '4px', 
+                        background: isSelected ? 'var(--accent)' : 'rgba(255,255,255,0.1)', 
+                        color: isSelected ? '#000' : 'var(--muted)',
+                        fontWeight: 'bold',
+                        display: 'inline-block'
+                      }}>
+                        {m.badge}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <span style={{ fontWeight: 'bold', color: 'var(--accent)', fontSize: '13px' }}>
+                    ⚡ {dpMethod} Instant Checkout
+                  </span>
+                  <span style={{ fontSize: '11px', color: '#00e676', fontWeight: 'bold' }}>
+                    ● Online 24/7
+                  </span>
                 </div>
-                <p style={{ color: 'var(--muted)', fontSize: '12px', margin: 0, lineHeight: '1.5' }}>
-                  Instant, automatic deposit via <strong>Easypaisa</strong>, <strong>JazzCash</strong>, and <strong>Debit/Credit Cards</strong>. You will be redirected to the secure DirectPay payment page.
+                <p style={{ color: 'var(--muted)', fontSize: '11px', margin: 0, lineHeight: '1.4' }}>
+                  {dpMethod === 'Easypaisa' && 'Direct deposit using your Easypaisa Mobile Account with OTP confirmation.'}
+                  {dpMethod === 'JazzCash' && 'Direct deposit using your JazzCash Mobile Account with MPIN confirmation.'}
+                  {dpMethod === 'Card' && 'Direct payment using your Visa or Mastercard Debit/Credit Card (3D Secure).'}
                 </p>
-                <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--accent)' }}>
+                <div style={{ marginTop: '6px', fontSize: '11px', color: 'var(--accent)' }}>
                   Exchange Rate: <strong>1 Fiat = {rates.pkr_rate} Pi</strong> (Instant Credit)
                 </div>
               </div>
@@ -330,7 +411,9 @@ export default function WalletPage() {
                 />
 
                 <label style={{ fontSize: '12px', color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>
-                  Mobile Number (Easypaisa / JazzCash Account):
+                  {dpMethod === 'Easypaisa' && 'Easypaisa Mobile Account Number:'}
+                  {dpMethod === 'JazzCash' && 'JazzCash Mobile Account Number:'}
+                  {dpMethod === 'Card' && 'Billing / Contact Mobile Number:'}
                 </label>
                 <input 
                   type="text" 
@@ -344,11 +427,11 @@ export default function WalletPage() {
                 />
 
                 <label style={{ fontSize: '12px', color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>
-                  Payer Full Name:
+                  {dpMethod === 'Card' ? 'Cardholder Full Name:' : 'Payer Full Name on Account:'}
                 </label>
                 <input 
                   type="text" 
-                  placeholder="Your Full Name on Account" 
+                  placeholder="Full Name as registered on account" 
                   value={dpName} 
                   onChange={e => setDpName(e.target.value)} 
                   style={inputStyle} 
@@ -365,9 +448,28 @@ export default function WalletPage() {
                   type="submit" 
                   className="btn primary" 
                   disabled={dpLoading}
-                  style={{ width: '100%', padding: '14px', fontSize: '15px', fontWeight: '900', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  style={{ 
+                    width: '100%', 
+                    padding: '14px', 
+                    fontSize: '15px', 
+                    fontWeight: '900', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    gap: '8px',
+                    background: dpMethod === 'Easypaisa' 
+                      ? 'linear-gradient(135deg, #00c853 0%, #008435 100%)' 
+                      : dpMethod === 'JazzCash' 
+                      ? 'linear-gradient(135deg, #d50000 0%, #8b0000 100%)' 
+                      : 'linear-gradient(135deg, var(--accent) 0%, #cc8800 100%)',
+                    color: dpMethod === 'Card' ? '#000' : '#fff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
+                  }}
                 >
-                  {dpLoading ? 'Connecting to DirectPay...' : '🚀 Pay Now via DirectPay (Instant)'}
+                  {dpLoading ? 'Connecting to Gateway...' : `🚀 Pay with ${dpMethod} (Instant)`}
                 </button>
               </form>
             </div>
