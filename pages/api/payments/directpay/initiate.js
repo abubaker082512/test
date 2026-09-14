@@ -6,6 +6,9 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
+const DEFAULT_CLIENT_ID = process.env.DIRECTPAY_CLIENT_ID || 'ci_y6454gjwluue5awj1jzd';
+const DEFAULT_CLIENT_SECRET = process.env.DIRECTPAY_CLIENT_SECRET || 'cs_am52my1jpoidwoa6myabixsejos1ajb36flxpegs1l35wo5rkujn6t0u4ut9vmkk';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -35,8 +38,8 @@ export default async function handler(req, res) {
       .single();
 
     const pkrRate = settings?.pkr_rate ? parseFloat(settings.pkr_rate) : 1.0;
-    const clientId = settings?.directpay_client_id || process.env.DIRECTPAY_CLIENT_ID || 'pwa_ci_test123';
-    const clientSecret = settings?.directpay_client_secret || process.env.DIRECTPAY_CLIENT_SECRET || 'your_secret_key';
+    const clientId = settings?.directpay_client_id || DEFAULT_CLIENT_ID;
+    const clientSecret = settings?.directpay_client_secret || DEFAULT_CLIENT_SECRET;
 
     // Calculate in-game Pi points
     const inGameAmount = parseFloat((numAmount * pkrRate).toFixed(2));

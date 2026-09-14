@@ -5,6 +5,9 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
 
+const DEFAULT_CLIENT_ID = process.env.DIRECTPAY_CLIENT_ID || 'ci_y6454gjwluue5awj1jzd'
+const DEFAULT_CLIENT_SECRET = process.env.DIRECTPAY_CLIENT_SECRET || 'cs_am52my1jpoidwoa6myabixsejos1ajb36flxpegs1l35wo5rkujn6t0u4ut9vmkk'
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })
 
@@ -22,8 +25,8 @@ export default async function handler(req, res) {
         usd_rate: 280.00,
         payin_pkr_rate: 1.00,
         payout_pkr_rate: 1.00,
-        directpay_client_id: process.env.DIRECTPAY_CLIENT_ID || 'pwa_ci_test123',
-        directpay_client_secret: process.env.DIRECTPAY_CLIENT_SECRET || 'your_secret_key',
+        directpay_client_id: DEFAULT_CLIENT_ID,
+        directpay_client_secret: DEFAULT_CLIENT_SECRET,
         directpay_enabled: true,
         is_fallback: true
       })
@@ -35,8 +38,8 @@ export default async function handler(req, res) {
       usd_rate: parseFloat(data.usd_rate || 280.0),
       payin_pkr_rate: parseFloat(data.payin_pkr_rate || data.pkr_rate || 1.0),
       payout_pkr_rate: parseFloat(data.payout_pkr_rate || data.pkr_rate || 1.0),
-      directpay_client_id: data.directpay_client_id || process.env.DIRECTPAY_CLIENT_ID || 'pwa_ci_test123',
-      directpay_client_secret: data.directpay_client_secret || process.env.DIRECTPAY_CLIENT_SECRET || 'your_secret_key',
+      directpay_client_id: data.directpay_client_id || DEFAULT_CLIENT_ID,
+      directpay_client_secret: data.directpay_client_secret || DEFAULT_CLIENT_SECRET,
       directpay_enabled: data.directpay_enabled !== false,
       is_fallback: false
     })
@@ -47,8 +50,8 @@ export default async function handler(req, res) {
       usd_rate: 280.00,
       payin_pkr_rate: 1.00,
       payout_pkr_rate: 1.00,
-      directpay_client_id: process.env.DIRECTPAY_CLIENT_ID || 'pwa_ci_test123',
-      directpay_client_secret: process.env.DIRECTPAY_CLIENT_SECRET || 'your_secret_key',
+      directpay_client_id: DEFAULT_CLIENT_ID,
+      directpay_client_secret: DEFAULT_CLIENT_SECRET,
       directpay_enabled: true,
       is_fallback: true,
       error: err.message
