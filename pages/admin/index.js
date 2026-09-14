@@ -20,6 +20,11 @@ export default function AdminPanel() {
   // Exchange rates state
   const [pkrRate, setPkrRate] = useState('1.00')
   const [usdRate, setUsdRate] = useState('280.00')
+  const [payinPkrRate, setPayinPkrRate] = useState('1.00')
+  const [payoutPkrRate, setPayoutPkrRate] = useState('1.00')
+  const [directpayClientId, setDirectpayClientId] = useState('pwa_ci_test123')
+  const [directpayClientSecret, setDirectpayClientSecret] = useState('your_secret_key')
+  const [directpayEnabled, setDirectpayEnabled] = useState(true)
   const [ratesLoading, setRatesLoading] = useState(false)
   const [ratesMsg, setRatesMsg] = useState(null)
 
@@ -66,6 +71,11 @@ export default function AdminPanel() {
       if (data.success) {
         setPkrRate(data.pkr_rate.toString())
         setUsdRate(data.usd_rate.toString())
+        setPayinPkrRate((data.payin_pkr_rate || data.pkr_rate || 1.0).toString())
+        setPayoutPkrRate((data.payout_pkr_rate || data.pkr_rate || 1.0).toString())
+        if (data.directpay_client_id) setDirectpayClientId(data.directpay_client_id)
+        if (data.directpay_client_secret) setDirectpayClientSecret(data.directpay_client_secret)
+        if (data.directpay_enabled !== undefined) setDirectpayEnabled(data.directpay_enabled)
       }
     } catch (err) {
       console.error('Error fetching rates:', err)
@@ -101,12 +111,17 @@ export default function AdminPanel() {
         body: JSON.stringify({
           password: ADMIN_PASSWORD,
           pkr_rate: Number(pkrRate),
-          usd_rate: Number(usdRate)
+          usd_rate: Number(usdRate),
+          payin_pkr_rate: Number(payinPkrRate),
+          payout_pkr_rate: Number(payoutPkrRate),
+          directpay_client_id: directpayClientId,
+          directpay_client_secret: directpayClientSecret,
+          directpay_enabled: directpayEnabled
         })
       })
       const data = await res.json()
       if (data.success) {
-        setRatesMsg({ type: 'success', text: 'Exchange rates updated successfully!' })
+        setRatesMsg({ type: 'success', text: 'Exchange rates & DirectPay credentials updated successfully!' })
       } else {
         setRatesMsg({ type: 'error', text: data.error })
       }
@@ -168,8 +183,8 @@ export default function AdminPanel() {
   )
 
   if (!authed) return (
-    <div style={{ minHeight: '100vh', background: '#000', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ background: '#111', border: '1px solid var(--accent)', borderRadius: '16px', padding: '40px', width: '90%', maxWidth: '360px', textAlign: 'center' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ background: 'var(--card)', border: '2px solid var(--accent)', borderRadius: '16px', padding: '40px', width: '90%', maxWidth: '360px', textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔐</div>
         <h2 style={{ color: 'var(--accent)', marginTop: 0 }}>BetPK Admin Panel</h2>
         {msg && <div style={{ color: '#ff4444', marginBottom: '12px', fontSize: '14px' }}>{msg}</div>}
@@ -179,10 +194,10 @@ export default function AdminPanel() {
             placeholder="Admin Password"
             value={password}
             onChange={e => setPassword(e.target.value)}
-            style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#000', color: '#fff', fontSize: '16px' }}
+            style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-tertiary)', color: '#fff', fontSize: '16px' }}
             required
           />
-          <button type="submit" className="btn primary" style={{ padding: '14px', fontSize: '16px' }}>Login</button>
+          <button type="submit" className="btn primary" style={{ padding: '14px', fontSize: '16px', fontWeight: 'bold' }}>Login</button>
         </form>
       </div>
     </div>
@@ -190,9 +205,9 @@ export default function AdminPanel() {
 
   const tabStyle = (active) => ({
     padding: '12px 20px',
-    background: active ? 'var(--accent)' : '#111',
+    background: active ? 'var(--accent)' : 'var(--card)',
     color: active ? '#000' : '#fff',
-    border: 'none',
+    border: '1px solid var(--border)',
     borderRadius: '8px',
     fontWeight: 'bold',
     cursor: 'pointer',
@@ -201,250 +216,134 @@ export default function AdminPanel() {
   })
 
   return (
-    <div style={{ minHeight: '100vh', background: '#08090c', color: '#fff', padding: '24px' }}>
-      <div style={{ maxWidth: '850px', margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: '#fff', padding: '24px 16px', boxSizing: 'border-box' }}>
+      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
         
-        {/* Title Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid #222', paddingBottom: '16px' }}>
-          <h1 style={{ color: 'var(--accent)', margin: 0, fontSize: '24px', fontWeight: '900' }}>🛡️ BetPK Admin Panel</h1>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="btn" onClick={fetchAdminData} disabled={loading}>
-              {loading ? '⏳ Loading...' : '🔄 Refresh Data'}
-            </button>
-            <button className="btn" style={{ borderColor: '#ff4444', color: '#ff4444', background: 'none' }} onClick={() => setAuthed(false)}>Logout</button>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <div>
+            <h1 style={{ color: 'var(--accent)', margin: 0, fontSize: '24px' }}>🛡️ BetPK Management Console</h1>
+            <p style={{ margin: '4px 0 0', color: 'var(--muted)', fontSize: '13px' }}>Manage transactions, DirectPay gateway, exchange rates, and user balances</p>
           </div>
+          <button 
+            onClick={() => { setAuthed(false); setPassword('') }}
+            style={{ background: '#331111', color: '#ff6666', border: '1px solid #ff444444', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            Logout
+          </button>
         </div>
 
         {/* Global Notifications */}
         {msg && (
-          <div style={{ background: '#00ff8822', border: '1px solid #00ff8844', borderRadius: '8px', padding: '12px 16px', marginBottom: '16px', color: '#00ff88', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>✅ {msg}</span>
+          <div style={{ padding: '12px 16px', background: '#00ff8822', border: '1px solid #00ff8844', color: '#00ff88', borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>{msg}</span>
             <button onClick={() => setMsg(null)} style={{ background: 'none', border: 'none', color: '#00ff88', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
           </div>
         )}
 
-        {/* Tab Selection */}
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', background: '#111', padding: '6px', borderRadius: '12px', width: 'fit-content' }}>
+        {/* Tabs Bar */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
           <button style={tabStyle(activeTab === 'transactions')} onClick={() => setActiveTab('transactions')}>
-            ⏳ Pending Requests ({pending.length})
-          </button>
-          <button style={tabStyle(activeTab === 'users')} onClick={() => setActiveTab('users')}>
-            👥 User Accounts ({users.length})
+            ⏳ Pending Transactions ({pending.length})
           </button>
           <button style={tabStyle(activeTab === 'rates')} onClick={() => setActiveTab('rates')}>
-            💵 Exchange Rates
+            💵 Rates & Payment Gateway
+          </button>
+          <button style={tabStyle(activeTab === 'users')} onClick={() => setActiveTab('users')}>
+            👥 User Accounts & Balances ({users.length})
           </button>
         </div>
 
         {/* ==========================================
-            TAB 1: PENDING TRANSACTIONS (DEPOSITS/WITHDRAWALS)
+            TAB 1: PENDING TRANSACTIONS
             ========================================== */}
         {activeTab === 'transactions' && (
           <div>
-            <h2 style={{ color: '#ff9900', marginTop: 0, fontSize: '18px' }}>⏳ Pending Deposits & Withdrawals</h2>
-            
-            {pending.length === 0 && !loading && (
-              <div style={{ background: '#111', borderRadius: '12px', padding: '48px', textAlign: 'center', color: '#555', border: '1px solid #1c1c1c' }}>
-                <div style={{ fontSize: '48px', marginBottom: '12px' }}>✅</div>
-                No pending requests. All caught up!
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h2 style={{ margin: 0, fontSize: '18px' }}>Pending Approvals</h2>
+              <button onClick={fetchAdminData} style={{ background: 'var(--card)', border: '1px solid var(--border)', color: '#fff', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>
+                🔄 Refresh
+              </button>
+            </div>
+
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '40px', color: 'var(--muted)' }}>Loading approvals...</div>
+            ) : pending.length === 0 ? (
+              <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '40px', textAlign: 'center', color: 'var(--muted)' }}>
+                ✅ All caught up! No pending deposit or withdrawal requests.
               </div>
-            )}
-
-            {pending.map(tx => {
-              const userEmail = getEmail(tx.user_id)
-              return (
-                <div key={tx.id} style={{
-                  background: '#111',
-                  border: `1px solid ${tx.type === 'deposit' ? '#00ff8833' : '#ff990033'}`,
-                  borderRadius: '12px',
-                  padding: '20px',
-                  marginBottom: '16px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: '16px'
-                }}>
-                  <div style={{ flex: '1', minWidth: '280px' }}>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '6px' }}>
-                      <span style={{ fontWeight: 'bold', fontSize: '18px', color: tx.type === 'deposit' ? '#00ff88' : '#ff9900' }}>
-                        {tx.type === 'deposit' ? '💳 DEPOSIT' : '🏧 WITHDRAWAL'}
-                      </span>
-                      <span style={{ background: '#222', padding: '3px 8px', borderRadius: '6px', fontSize: '12px', color: '#aaa' }}>
-                        Pi {parseFloat(tx.amount).toFixed(2)}
-                      </span>
-                    </div>
-
-                    <div style={{ fontSize: '13px', color: '#ccc', marginBottom: '4px' }}>
-                      Player: <strong style={{ color: '#fff' }}>{userEmail}</strong>
-                    </div>
-
-                    {tx.method && (
-                      <div style={{ fontSize: '13px', color: '#ccc', marginBottom: '4px' }}>
-                        Method: <strong style={{ color: 'var(--accent)' }}>{tx.method.toUpperCase()}</strong>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {pending.map(tx => (
+                  <div key={tx.id} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ 
+                          padding: '3px 8px', 
+                          borderRadius: '4px', 
+                          fontSize: '11px', 
+                          fontWeight: 'bold', 
+                          textTransform: 'uppercase',
+                          background: tx.type === 'deposit' ? '#00ff8822' : '#ff990022',
+                          color: tx.type === 'deposit' ? '#00ff88' : '#ff9900',
+                          border: `1px solid ${tx.type === 'deposit' ? '#00ff8844' : '#ff990044'}`
+                        }}>
+                          {tx.type}
+                        </span>
+                        <strong style={{ fontSize: '16px', color: 'var(--accent)' }}>Pi {parseFloat(tx.amount).toFixed(2)}</strong>
+                        <span style={{ fontSize: '13px', color: 'var(--muted)' }}>via {tx.method}</span>
                       </div>
-                    )}
 
-                    {tx.tx_id && (
-                      <div style={{ fontSize: '13px', color: '#ccc', marginBottom: '4px' }}>
-                        Transaction ID: <span style={{ color: '#fff', background: '#000', padding: '2px 6px', borderRadius: '4px', border: '1px solid #333', fontFamily: 'monospace' }}>{tx.tx_id}</span>
+                      <div style={{ fontSize: '13px', color: '#ccc', marginTop: '6px' }}>
+                        <strong>User:</strong> {getEmail(tx.user_id)}
                       </div>
-                    )}
 
-                    {/* Copier badge details for quick admin payouts */}
-                    {tx.type === 'withdraw' && tx.notes && (
-                      <div style={{ marginTop: '10px', background: 'rgba(255, 153, 0, 0.05)', border: '1px dashed rgba(255, 153, 0, 0.2)', padding: '12px', borderRadius: '8px', fontSize: '13px' }}>
-                        <div style={{ color: 'var(--accent)', fontWeight: 'bold', marginBottom: '4px' }}>📥 Payout Dispatch Info:</div>
-                        <div style={{ color: '#fff', fontStyle: 'normal', whiteSpace: 'pre-wrap' }}>{tx.notes}</div>
-                        <div style={{ marginTop: '8px', fontSize: '11px', color: '#888' }}>
-                          👉 Open your Mobile Money A/Mobile Money B/Binance app, send the matching net payout amount, then click <strong>Approve</strong> below.
+                      {tx.tx_id && (
+                        <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px', fontFamily: 'monospace' }}>
+                          <strong>TxID / Ref:</strong> {tx.tx_id}
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {tx.type === 'deposit' && tx.notes && (
-                      <div style={{ marginTop: '10px', background: 'rgba(0, 255, 136, 0.05)', border: '1px dashed rgba(0, 255, 136, 0.2)', padding: '12px', borderRadius: '8px', fontSize: '13px', color: '#bbb' }}>
-                        {tx.notes}
-                      </div>
-                    )}
+                      {tx.notes && (
+                        <div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>
+                          <em>{tx.notes}</em>
+                        </div>
+                      )}
 
-                    <div style={{ fontSize: '11px', color: '#555', marginTop: '10px' }}>📅 Requested {new Date(tx.created_at).toLocaleString()}</div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <button
-                      onClick={() => handleAction(tx.id, 'approve')}
-                      style={{ padding: '12px 20px', borderRadius: '8px', background: '#00ff88', color: '#000', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}
-                    >
-                      ✅ Approve
-                    </button>
-                    <button
-                      onClick={() => handleAction(tx.id, 'reject')}
-                      style={{ padding: '12px 20px', borderRadius: '8px', background: '#ff4444', color: '#fff', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}
-                    >
-                      ❌ Reject
-                    </button>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        )}
-
-        {/* ==========================================
-            TAB 2: USER ACCOUNTS (MANUAL BALANCE ADJUST)
-            ========================================== */}
-        {activeTab === 'users' && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-              <h2 style={{ color: 'var(--accent)', margin: 0, fontSize: '18px' }}>👥 User Wallets & Management</h2>
-              <input
-                type="text"
-                placeholder="🔍 Search email or user ID..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                style={{ padding: '10px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: '#fff', fontSize: '13px', width: '220px' }}
-              />
-            </div>
-
-            {/* Manual Balance Adjuster Form (Draw overlay if user selected) */}
-            {selectedUser && (
-              <div style={{ background: '#111', border: '1px solid var(--accent)', borderRadius: '12px', padding: '20px', marginBottom: '24px', position: 'relative' }}>
-                <button onClick={() => { setSelectedUser(null); setAdjustMsg(null); }} style={{ position: 'absolute', right: '16px', top: '16px', background: 'none', border: 'none', color: '#ff4444', fontWeight: 'bold', cursor: 'pointer' }}>✕ Close</button>
-                
-                <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#fff' }}>
-                  💰 Adjust Wallet Balance for <span style={{ color: 'var(--accent)' }}>{selectedUser.email}</span>
-                </h3>
-                <div style={{ fontSize: '13px', color: '#888', marginBottom: '14px' }}>
-                  Current Balance: <strong style={{ color: '#fff' }}>Pi {getBalance(selectedUser.id)}</strong>
-                </div>
-
-                {adjustMsg && (
-                  <div style={{ padding: '10px', borderRadius: '8px', marginBottom: '12px', fontSize: '13px', background: adjustMsg.type === 'error' ? '#ff000022' : '#00ff8822', color: adjustMsg.type === 'error' ? '#ff6666' : '#00ff88' }}>
-                    {adjustMsg.type === 'success' ? '✅ ' : '⚠️ '}{adjustMsg.text}
-                  </div>
-                )}
-
-                <form onSubmit={handleAdjustBalance} style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
-                  <input
-                    type="number"
-                    step="0.01"
-                    placeholder="Amount (e.g. 100 or -50)"
-                    value={adjustAmount}
-                    onChange={e => setAdjustAmount(e.target.value)}
-                    style={{ padding: '10px', borderRadius: '8px', border: '1px solid #333', background: '#000', color: '#fff', fontSize: '14px', flex: 1, minWidth: '160px' }}
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Reason (e.g. Winner payout, manual credit)"
-                    value={adjustNote}
-                    onChange={e => setAdjustNote(e.target.value)}
-                    style={{ padding: '10px', borderRadius: '8px', border: '1px solid #333', background: '#000', color: '#fff', fontSize: '14px', flex: 2, minWidth: '220px' }}
-                    required
-                  />
-                  <button 
-                    type="submit" 
-                    className="btn primary" 
-                    disabled={adjustLoading}
-                    style={{ padding: '10px 20px', fontSize: '14px' }}
-                  >
-                    {adjustLoading ? 'Adjusting...' : '💾 Submit Adjustment'}
-                  </button>
-                </form>
-                <small style={{ color: '#555', display: 'block', marginTop: '8px' }}>
-                  * Use a **positive** number to add balance (credits wallet). Use a **negative** sign (e.g. -500) to deduct balance (debits wallet).
-                </small>
-              </div>
-            )}
-
-            {/* Users grid listing */}
-            <div style={{ background: '#111', borderRadius: '12px', border: '1px solid var(--border)', overflow: 'hidden' }}>
-              <div style={{ display: 'flex', background: '#181b26', padding: '14px 16px', borderBottom: '1px solid var(--border)', fontSize: '13px', fontWeight: 'bold', color: '#888' }}>
-                <span style={{ flex: 2 }}>USER ACCOUNT</span>
-                <span style={{ flex: 1, textAlign: 'right' }}>BALANCE</span>
-                <span style={{ flex: 1, textAlign: 'right' }}>ACTIONS</span>
-              </div>
-
-              {filteredUsers.length === 0 ? (
-                <div style={{ padding: '24px', textAlign: 'center', color: '#555' }}>No matching accounts found.</div>
-              ) : (
-                filteredUsers.map(u => {
-                  const bal = getBalance(u.id)
-                  return (
-                    <div key={u.id} style={{ display: 'flex', padding: '14px 16px', borderBottom: '1px solid var(--border)', fontSize: '13px', alignItems: 'center' }}>
-                      <div style={{ flex: 2 }}>
-                        <div style={{ fontWeight: 'bold', color: '#fff' }}>{u.email}</div>
-                        <div style={{ fontSize: '11px', color: '#555', marginTop: '2px', fontFamily: 'monospace' }}>ID: {u.id}</div>
-                      </div>
-                      <div style={{ flex: 1, textAlign: 'right', fontWeight: 'bold', color: 'var(--accent)', fontSize: '14px' }}>
-                        Pi {bal}
-                      </div>
-                      <div style={{ flex: 1, textAlign: 'right' }}>
-                        <button 
-                          onClick={() => { setSelectedUser(u); setAdjustMsg(null); }}
-                          style={{ padding: '6px 12px', borderRadius: '6px', background: 'none', border: '1px solid var(--accent)', color: 'var(--accent)', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
-                        >
-                          ⚙️ Adjust Balance
-                        </button>
+                      <div style={{ fontSize: '11px', color: '#555', marginTop: '4px' }}>
+                        {new Date(tx.created_at).toLocaleString()}
                       </div>
                     </div>
-                  )
-                })
-              )}
-            </div>
+
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        onClick={() => handleAction(tx.id, 'approve')}
+                        style={{ padding: '8px 16px', background: '#00cc66', color: '#000', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+                      >
+                        ✓ Approve
+                      </button>
+                      <button
+                        onClick={() => handleAction(tx.id, 'reject')}
+                        style={{ padding: '8px 16px', background: '#331111', color: '#ff6666', border: '1px solid #ff444444', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+                      >
+                        ✕ Reject
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
         {/* ==========================================
-            TAB 3: EXCHANGE RATES
+            TAB 2: RATES & PAYMENT GATEWAY
             ========================================== */}
         {activeTab === 'rates' && (
-          <div style={{ background: '#111', borderRadius: '16px', border: '1px solid #222', padding: '24px' }}>
-            <h2 style={{ color: 'var(--accent)', marginTop: 0 }}>💵 Manage Currency Conversion Rates</h2>
-            <p style={{ color: '#aaa', fontSize: '14px', marginBottom: '24px', lineHeight: '1.6' }}>
-              Define how much in-game currency (Pi) users receive when they deposit Fiat (Pi) or USD ($). 
-              These values are calculated instantly in dynamic previews during their deposit/withdrawal submission.
+          <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px' }}>
+            <h2 style={{ color: 'var(--accent)', marginTop: 0 }}>💵 Conversion Rates & DirectPay Gateway</h2>
+            <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '24px', lineHeight: '1.6' }}>
+              Configure Pay-In/Pay-Out currency conversion rates and connect your <strong>DirectPay API</strong> credentials (Easypaisa, JazzCash, Card PWA Landing Page).
             </p>
 
             {ratesMsg && (
@@ -463,56 +362,194 @@ export default function AdminPanel() {
 
             <form onSubmit={handleSaveRates} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>
-                  🌍 Fiat (Pi) Conversion Rate:
-                </label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '16px', color: '#888' }}>1 Fiat =</span>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    min="0.0001"
-                    value={pkrRate}
-                    onChange={e => setPkrRate(e.target.value)}
-                    style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#000', color: '#fff', fontSize: '16px' }}
-                    required
-                  />
-                  <span style={{ fontSize: '16px', color: 'var(--accent)', fontWeight: 'bold' }}>Pi (In-game)</span>
+              {/* Currency Rates */}
+              <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                <h3 style={{ margin: '0 0 12px', fontSize: '15px', color: 'var(--accent)' }}>📈 Exchange Rates</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+                  <div>
+                    <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>
+                      🌍 1 Fiat (PKR) =
+                    </label>
+                    <input
+                      type="number"
+                      step="0.0001"
+                      min="0.0001"
+                      value={pkrRate}
+                      onChange={e => setPkrRate(e.target.value)}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px' }}
+                      required
+                    />
+                    <small style={{ color: 'var(--muted)', display: 'block', marginTop: '4px' }}>Pi Points per Fiat</small>
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>
+                      🇺🇸 1 USD ($) =
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      value={usdRate}
+                      onChange={e => setUsdRate(e.target.value)}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px' }}
+                      required
+                    />
+                    <small style={{ color: 'var(--muted)', display: 'block', marginTop: '4px' }}>Pi Points per USD</small>
+                  </div>
                 </div>
-                <small style={{ color: '#666' }}>Example: If set to 1.0, depositing 100 Fiat gives the user 100 Pi.</small>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>
-                  🇺🇸 USD ($) Conversion Rate:
-                </label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '16px', color: '#888' }}>1 USD =</span>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0.01"
-                    value={usdRate}
-                    onChange={e => setUsdRate(e.target.value)}
-                    style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#000', color: '#fff', fontSize: '16px' }}
-                    required
-                  />
-                  <span style={{ fontSize: '16px', color: 'var(--accent)', fontWeight: 'bold' }}>Pi (In-game)</span>
+              {/* DirectPay Gateway API Settings */}
+              <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <h3 style={{ margin: 0, fontSize: '15px', color: '#00e676', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    ⚡ DirectPay Landing Page API (Payin PWA)
+                  </h3>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={directpayEnabled} 
+                      onChange={e => setDirectpayEnabled(e.target.checked)} 
+                    />
+                    Enable Gateway
+                  </label>
                 </div>
-                <small style={{ color: '#666' }}>Example: If set to 280, depositing $10 gives the user 2,800 Pi.</small>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>
+                      DirectPay Client ID:
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. pwa_ci_test123"
+                      value={directpayClientId}
+                      onChange={e => setDirectpayClientId(e.target.value)}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px', fontFamily: 'monospace' }}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>
+                      DirectPay Client Secret (HMAC-SHA256 Key):
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Your secret key from DirectPay"
+                      value={directpayClientSecret}
+                      onChange={e => setDirectpayClientSecret(e.target.value)}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px', fontFamily: 'monospace' }}
+                      required
+                    />
+                  </div>
+                </div>
               </div>
 
               <button 
                 type="submit" 
                 className="btn primary" 
                 disabled={ratesLoading} 
-                style={{ width: '100%', padding: '16px', fontSize: '16px', background: 'var(--accent)', color: '#000', fontWeight: 'bold', borderRadius: '8px', marginTop: '12px' }}
+                style={{ width: '100%', padding: '16px', fontSize: '15px', background: 'var(--accent)', color: '#000', fontWeight: 'bold', borderRadius: '8px', marginTop: '8px' }}
               >
-                {ratesLoading ? '💾 Saving rates...' : '💾 Save Conversion Rates'}
+                {ratesLoading ? '💾 Saving settings...' : '💾 Save Rates & Gateway Credentials'}
               </button>
 
             </form>
+          </div>
+        )}
+
+        {/* ==========================================
+            TAB 3: USERS & BALANCES
+            ========================================== */}
+        {activeTab === 'users' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', gap: '12px', flexWrap: 'wrap' }}>
+              <h2 style={{ margin: 0, fontSize: '18px' }}>Registered Accounts</h2>
+              <input 
+                type="text" 
+                placeholder="Search user email or ID..." 
+                value={searchQuery} 
+                onChange={e => setSearchQuery(e.target.value)}
+                style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--bg-tertiary)', color: '#fff', fontSize: '13px', width: '240px' }}
+              />
+            </div>
+
+            {/* Adjust Balance Modal */}
+            {selectedUser && (
+              <div style={{ background: 'var(--card)', border: '2px solid var(--accent)', borderRadius: '12px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <h3 style={{ margin: 0, color: 'var(--accent)', fontSize: '16px' }}>
+                    ✏️ Adjust Balance: {selectedUser.email}
+                  </h3>
+                  <button onClick={() => setSelectedUser(null)} style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer', fontWeight: 'bold' }}>✕ Close</button>
+                </div>
+                
+                {adjustMsg && (
+                  <div style={{ padding: '8px 12px', borderRadius: '6px', marginBottom: '12px', fontSize: '13px', background: adjustMsg.type === 'error' ? '#ff000022' : '#00ff8822', color: adjustMsg.type === 'error' ? '#ff6666' : '#00ff88' }}>
+                    {adjustMsg.text}
+                  </div>
+                )}
+
+                <form onSubmit={handleAdjustBalance} style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="Amount to Add/Deduct (e.g. +500 or -200)"
+                    value={adjustAmount}
+                    onChange={e => setAdjustAmount(e.target.value)}
+                    style={{ flex: 1, minWidth: '200px', padding: '10px', borderRadius: '6px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px' }}
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Reason / Note (optional)"
+                    value={adjustNote}
+                    onChange={e => setAdjustNote(e.target.value)}
+                    style={{ flex: 2, minWidth: '200px', padding: '10px', borderRadius: '6px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px' }}
+                  />
+                  <button type="submit" disabled={adjustLoading} className="btn primary" style={{ padding: '10px 20px', fontWeight: 'bold', fontSize: '14px' }}>
+                    {adjustLoading ? 'Applying...' : 'Apply Balance Adjustment'}
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* Users Table */}
+            <div style={{ background: 'var(--card)', borderRadius: '12px', border: '1px solid var(--border)', overflow: 'hidden' }}>
+              {filteredUsers.length === 0 ? (
+                <div style={{ padding: '32px', textAlign: 'center', color: 'var(--muted)' }}>No matching users found.</div>
+              ) : (
+                filteredUsers.map(u => {
+                  const bal = getBalance(u.id)
+                  return (
+                    <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border)', flexWrap: 'wrap', gap: '8px' }}>
+                      <div>
+                        <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{u.email}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--muted)', fontFamily: 'monospace' }}>ID: {u.id}</div>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: '11px', color: 'var(--muted)' }}>Current Balance</div>
+                          <div style={{ fontWeight: 'bold', color: 'var(--accent)', fontSize: '15px' }}>
+                            Pi {bal}
+                          </div>
+                        </div>
+
+                        <button 
+                          onClick={() => { setSelectedUser(u); setAdjustMsg(null); setAdjustAmount('') }}
+                          style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: '#fff', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                        >
+                          ✏️ Adjust
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </div>
           </div>
         )}
 

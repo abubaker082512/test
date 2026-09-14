@@ -16,19 +16,28 @@ export default async function handler(req, res) {
       .single()
 
     if (error || !data) {
-      // Fallback to standard defaults if table is not created or query fails
       return res.status(200).json({
         success: true,
         pkr_rate: 1.00,
         usd_rate: 280.00,
+        payin_pkr_rate: 1.00,
+        payout_pkr_rate: 1.00,
+        directpay_client_id: process.env.DIRECTPAY_CLIENT_ID || 'pwa_ci_test123',
+        directpay_client_secret: process.env.DIRECTPAY_CLIENT_SECRET || 'your_secret_key',
+        directpay_enabled: true,
         is_fallback: true
       })
     }
 
     return res.status(200).json({
       success: true,
-      pkr_rate: parseFloat(data.pkr_rate),
-      usd_rate: parseFloat(data.usd_rate),
+      pkr_rate: parseFloat(data.pkr_rate || 1.0),
+      usd_rate: parseFloat(data.usd_rate || 280.0),
+      payin_pkr_rate: parseFloat(data.payin_pkr_rate || data.pkr_rate || 1.0),
+      payout_pkr_rate: parseFloat(data.payout_pkr_rate || data.pkr_rate || 1.0),
+      directpay_client_id: data.directpay_client_id || process.env.DIRECTPAY_CLIENT_ID || 'pwa_ci_test123',
+      directpay_client_secret: data.directpay_client_secret || process.env.DIRECTPAY_CLIENT_SECRET || 'your_secret_key',
+      directpay_enabled: data.directpay_enabled !== false,
       is_fallback: false
     })
   } catch (err) {
@@ -36,6 +45,11 @@ export default async function handler(req, res) {
       success: true,
       pkr_rate: 1.00,
       usd_rate: 280.00,
+      payin_pkr_rate: 1.00,
+      payout_pkr_rate: 1.00,
+      directpay_client_id: process.env.DIRECTPAY_CLIENT_ID || 'pwa_ci_test123',
+      directpay_client_secret: process.env.DIRECTPAY_CLIENT_SECRET || 'your_secret_key',
+      directpay_enabled: true,
       is_fallback: true,
       error: err.message
     })
