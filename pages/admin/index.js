@@ -93,35 +93,44 @@ export default function AdminPanel() {
     }
   }
 
-  const fetchRiskData = async () => {
+  const fetchLiveAnalytics = async () => {
     try {
-      const [analyticsRes, configRes] = await Promise.all([
-        fetch('/api/admin/live-analytics'),
-        fetch('/api/admin/risk-settings')
-      ])
-      const analyticsData = await analyticsRes.json()
-      const configData = await configRes.json()
-
-      if (analyticsData.success) {
-        setRiskAnalytics(analyticsData)
-      }
-      if (configData.success && configData.config) {
-        setRiskConfig(configData.config)
+      const res = await fetch('/api/admin/live-analytics')
+      const data = await res.json()
+      if (data.success) {
+        setRiskAnalytics(data)
       }
     } catch (err) {
-      console.error('Error fetching risk analytics/config:', err)
+      console.error('Error fetching live analytics:', err)
     }
+  }
+
+  const fetchRiskConfig = async () => {
+    try {
+      const res = await fetch('/api/admin/risk-settings')
+      const data = await res.json()
+      if (data.success && data.config) {
+        setRiskConfig(data.config)
+      }
+    } catch (err) {
+      console.error('Error fetching risk config:', err)
+    }
+  }
+
+  const fetchRiskData = async () => {
+    await Promise.all([fetchLiveAnalytics(), fetchRiskConfig()])
   }
 
   useEffect(() => {
     if (authed) {
       fetchAdminData()
       fetchRates()
-      fetchRiskData()
+      fetchRiskConfig()
+      fetchLiveAnalytics()
 
-      // Poll live analytics every 5s
+      // Poll ONLY live wager analytics every 5s (never overwrites the active slider/form state)
       const interval = setInterval(() => {
-        fetchRiskData()
+        fetchLiveAnalytics()
       }, 5000)
       return () => clearInterval(interval)
     }
@@ -738,24 +747,73 @@ export default function AdminPanel() {
                 
                 {/* Global Target RTP */}
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
                     <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#eee' }}>
                       Global Target RTP (Return to Player)
                     </label>
-                    <span style={{ fontSize: '14px', fontWeight: '900', color: 'var(--accent)' }}>
-                      {riskConfig.global_rtp}%
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input
+                        type="number"
+                        min="50"
+                        max="99"
+                        value={riskConfig.global_rtp}
+                        onChange={e => {
+                          const val = Math.max(50, Math.min(99, Number(e.target.value) || 50));
+                          setRiskConfig(prev => ({ ...prev, global_rtp: val }));
+                        }}
+                        style={{
+                          width: '60px',
+                          padding: '4px 8px',
+                          borderRadius: '6px',
+                          border: '1px solid var(--border)',
+                          background: '#000',
+                          color: 'var(--accent)',
+                          fontWeight: '900',
+                          fontSize: '14px',
+                          textAlign: 'center'
+                        }}
+                      />
+                      <span style={{ fontSize: '14px', fontWeight: '900', color: 'var(--accent)' }}>%</span>
+                      <span style={{ fontSize: '11px', color: 'var(--muted)', marginLeft: '4px' }}>
+                        (House Edge: {100 - (riskConfig.global_rtp || 92)}%)
+                      </span>
+                    </div>
                   </div>
+
                   <input
                     type="range"
                     min="50"
                     max="99"
                     step="1"
-                    value={riskConfig.global_rtp}
+                    value={riskConfig.global_rtp || 92}
                     onChange={e => setRiskConfig(prev => ({ ...prev, global_rtp: Number(e.target.value) }))}
-                    style={{ width: '100%', accentColor: 'var(--accent)', cursor: 'pointer' }}
+                    style={{ width: '100%', accentColor: 'var(--accent)', cursor: 'pointer', height: '8px' }}
                   />
-                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
+
+                  {/* Quick Preset Buttons */}
+                  <div style={{ display: 'flex', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
+                    {[80, 85, 90, 92, 95, 98].map(pct => (
+                      <button
+                        key={pct}
+                        type="button"
+                        onClick={() => setRiskConfig(prev => ({ ...prev, global_rtp: pct }))}
+                        style={{
+                          background: riskConfig.global_rtp === pct ? 'var(--accent)' : 'rgba(255,255,255,0.06)',
+                          color: riskConfig.global_rtp === pct ? '#000' : '#fff',
+                          border: '1px solid ' + (riskConfig.global_rtp === pct ? 'var(--accent)' : 'rgba(255,255,255,0.1)'),
+                          borderRadius: '6px',
+                          padding: '4px 10px',
+                          fontSize: '11px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {pct}% RTP
+                      </button>
+                    ))}
+                  </div>
+
+                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '6px' }}>
                     Recommended: 90% - 94% for healthy house margin while maintaining high player retention.
                   </div>
                 </div>
