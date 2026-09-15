@@ -22,6 +22,7 @@ const mockGames = [
   { id: 'paddy-blackjack-exclusive', title: 'Exclusive Blackjack', provider: 'PaddyPower', badge: 'VIP Table', recommended: true, theme: 'linear-gradient(135deg, #004d40 0%, #00251a 100%)', icon: '🃏', slug: 'paddy-blackjack-exclusive', category: 'Cards', imageUrl: '/games/live.png' },
   { id: 'paddy-age-of-gods', title: 'Age of the Gods', provider: 'PaddyPower', badge: '4 Jackpots', recommended: true, theme: 'linear-gradient(135deg, #4a148c 0%, #12005e 100%)', icon: '⚡', slug: 'paddy-age-of-gods', category: 'Jackpots', imageUrl: '/games/super_ace.png' },
   { id: 'paddy-mega-fire-blaze', title: 'Mega Fire Blaze Roulette', provider: 'PaddyPower', badge: '10,000x', recommended: true, theme: 'linear-gradient(135deg, #bf360c 0%, #3e2723 100%)', icon: '🔥', slug: 'paddy-mega-fire-blaze', category: 'Live', imageUrl: '/games/live.png' },
+  { id: 'paddy-rainbow-riches', title: 'Rainbow Riches Leprechauns', provider: 'PaddyPower', badge: 'Mega Wilds', recommended: true, theme: 'linear-gradient(135deg, #2e7d32 0%, #005005 100%)', icon: '🍀', slug: 'paddy-rainbow-riches', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/48.webp' },
 
   // Rainbow Riches Casino Series
   { id: 'rr-pots-of-gold', title: 'Rainbow Riches: Pots of Gold', provider: 'RainbowRiches', badge: 'Mega Jackpot', recommended: true, theme: 'linear-gradient(135deg, #1b5e20 0%, #003300 100%)', icon: '🌈', slug: 'rr-pots-of-gold', category: 'Jackpots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/74.webp' },
@@ -29,12 +30,19 @@ const mockGames = [
   { id: 'rr-reels-of-gold', title: 'Rainbow Riches: Reels of Gold', provider: 'RainbowRiches', badge: 'Colossal Reels', recommended: true, theme: 'linear-gradient(135deg, #f57f17 0%, #bc5100 100%)', icon: '💰', slug: 'rr-reels-of-gold', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/38.webp' },
   { id: 'rr-pick-n-mix', title: "Rainbow Riches: Pick 'n' Mix", provider: 'RainbowRiches', badge: '5 Bonus Games', recommended: true, theme: 'linear-gradient(135deg, #00838f 0%, #005662 100%)', icon: '🎩', slug: 'rr-pick-n-mix', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/37.png' },
   { id: 'rr-drop-of-gold', title: 'Rainbow Riches: Drops of Gold', provider: 'RainbowRiches', badge: 'Drop Wilds', recommended: false, theme: 'linear-gradient(135deg, #ff8f00 0%, #c56000 100%)', icon: '🪙', slug: 'rr-drop-of-gold', category: 'Jackpots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/47.webp' },
+  { id: 'rr-live-roulette', title: 'Rainbow Riches: Live Roulette', provider: 'RainbowRiches', badge: 'Live Stream', recommended: true, theme: 'linear-gradient(135deg, #311b92 0%, #12005e 100%)', icon: '🎡', slug: 'rr-live-roulette', category: 'Live', imageUrl: '/games/live.png' },
 
-  // ScorpioPlay / Pragmatic Flagships
+  // ScorpioPlay / Pragmatic Play & Spribe
   { id: 'vswaysdogs', title: 'The Dog House Megaways', provider: 'Pragmatic Play', badge: '117,649 Ways', recommended: true, theme: 'linear-gradient(135deg, #b71c1c 0%, #4a148c 100%)', icon: '🐶', slug: 'vswaysdogs', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/48.webp' },
   { id: 'vs20olympgate', title: 'Gates of Olympus 1000', provider: 'Pragmatic Play', badge: '5,000x Max', recommended: true, theme: 'linear-gradient(135deg, #ffd600 0%, #e65100 100%)', icon: '⚡', slug: 'vs20olympgate', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/74.webp' },
   { id: 'vs20sweetbonz', title: 'Sweet Bonanza 1000', provider: 'Pragmatic Play', badge: 'Tumble 100x', recommended: true, theme: 'linear-gradient(135deg, #e91e63 0%, #880e4f 100%)', icon: '🍭', slug: 'vs20sweetbonz', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/38.webp' },
-  { id: 'spribe_aviator', title: 'Aviator Crash Game', provider: 'Spribe', badge: '10,000x Crash', recommended: true, theme: 'linear-gradient(135deg, #d32f2f 0%, #000 100%)', icon: '🚀', slug: 'spribe_aviator', category: 'Crash', imageUrl: '/games/crash.png' }
+  { id: 'evo_lightning_roulette', title: 'Lightning Roulette Live', provider: 'Evolution Gaming', badge: '500x Multiplier', recommended: true, theme: 'linear-gradient(135deg, #f57f17 0%, #212121 100%)', icon: '⚡', slug: 'evo_lightning_roulette', category: 'Live', imageUrl: '/games/live.png' },
+  { id: 'evo_crazy_time', title: 'Crazy Time Live Show', provider: 'Evolution Gaming', badge: '4 Bonus Games', recommended: true, theme: 'linear-gradient(135deg, #e91e63 0%, #1a237e 100%)', icon: '🎪', slug: 'evo_crazy_time', category: 'Live', imageUrl: '/games/live.png' },
+  { id: 'spribe_aviator', title: 'Aviator Crash Game', provider: 'Spribe', badge: '10,000x Crash', recommended: true, theme: 'linear-gradient(135deg, #d32f2f 0%, #000 100%)', icon: '🚀', slug: 'spribe_aviator', category: 'Crash', imageUrl: '/games/crash.png' },
+
+  // JILI & Flagship Favorites
+  { id: 'super-ace', title: 'Super Ace Deluxe', provider: 'JILI', badge: 'Golden Cards', recommended: true, theme: 'linear-gradient(135deg, #e53935 0%, #b71c1c 100%)', icon: '🃏', slug: 'super-ace', category: 'Slots', imageUrl: '/games/super_ace.png' },
+  { id: 'fortune-gems', title: 'Fortune Gems 2', provider: 'JILI', badge: 'Lucky Wheel', recommended: true, theme: 'linear-gradient(135deg, #ffb300 0%, #f57f17 100%)', icon: '💎', slug: 'fortune-gems', category: 'Slots', imageUrl: '/games/fortune_gems.png' }
 ]
 
 // Scrolling live winner events
@@ -408,18 +416,18 @@ export default function Home() {
               <section key={cat.name} id={'section-' + cat.name} style={{ padding: '24px 16px 0' }} aria-label={`${cat.label || cat.name} Catalog`}>
                 <div className="section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                   <div className="title-left" style={{ fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontWeight: '900' }}>
-                    <span>{cat.icon}</span> {cat.label || cat.name}
+                    <span>{cat.icon}</span> {cat.label || cat.name} ({catGames.length})
                   </div>
                   <button 
                     onClick={() => setActiveCategory(cat.name)}
                     style={{ background: 'transparent', border: 'none', color: 'var(--accent)', fontSize: '12px', cursor: 'pointer' }}
                   >
-                    Explore {cat.label} ({catGames.length}) →
+                    Explore All {cat.label} →
                   </button>
                 </div>
 
                 <div className="games-grid">
-                  {catGames.slice(0, 6).map(game => (
+                  {catGames.map(game => (
                     <GameCard 
                       key={game.id}
                       id={game.id}
