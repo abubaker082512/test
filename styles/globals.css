@@ -535,25 +535,66 @@ body {
   color: var(--accent);
 }
 
-.games-grid {
+.games-grid,
+.games-horizontal-scroll {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+  grid-template-rows: repeat(2, minmax(130px, 155px));
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(120px, 140px);
   gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
   padding: 4px 14px 16px;
+  scroll-snap-type: x proximity;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 215, 0, 0.4) rgba(255, 255, 255, 0.05);
 }
-@media (max-width: 480px) {
-  .games-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    padding: 4px 10px 16px;
-  }
+
+.games-grid::-webkit-scrollbar,
+.games-horizontal-scroll::-webkit-scrollbar {
+  height: 6px;
 }
-.games-grid::-webkit-scrollbar {
-  display: none;
+
+.games-grid::-webkit-scrollbar-track,
+.games-horizontal-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
 }
-.games-grid > a {
+
+.games-grid::-webkit-scrollbar-thumb,
+.games-horizontal-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 215, 0, 0.4);
+  border-radius: 4px;
+}
+
+.games-grid::-webkit-scrollbar-thumb:hover,
+.games-horizontal-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+.games-grid > a,
+.games-horizontal-scroll > a {
   text-decoration: none;
+  display: block;
+  height: 100%;
+  scroll-snap-align: start;
+}
+
+.games-grid .game-card,
+.games-horizontal-scroll .game-card {
+  height: 100%;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .games-grid,
+  .games-horizontal-scroll {
+    grid-template-rows: repeat(2, minmax(120px, 140px));
+    grid-auto-columns: minmax(105px, 125px);
+    gap: 8px;
+    padding: 4px 10px 14px;
+  }
 }
 
 .game-card {
