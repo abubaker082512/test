@@ -15,11 +15,11 @@ const GAME_MAP = {
   // Paddy Power Flagships & Exclusives
   'Chests-of-Plenty': 'bdfb23c974a2517198c5443adeea77a8',
   'chests-of-plenty': 'bdfb23c974a2517198c5443adeea77a8',
-  'paddy-rainbow-riches': 'fb2a2ac51303c0a0801dbe6a72d936f7',
+  'paddy-rainbow-riches': '664fba4da609ee82b78820b1f570f4ad',
   'paddy-fishin-frenzy': '3cf4a85cb6dcf4d8836c982c359cd72d',
   'paddy-roulette-live': 'b4af506243cafae52908e8fa266f8ff6',
   'paddy-blackjack-exclusive': '87a7f4550407f5ed73c3353a54a11187',
-  'paddy-age-of-gods': '80aad2a10ae6a95068b50160d6c78897',
+  'paddy-age-of-gods': '490096198e28f770a3f85adb6ee49e0f',
   'paddy-mega-fire-blaze': '36b1e71c6f51827e24261d06a22b1e31',
 
   // JILI Flagships
