@@ -36,11 +36,11 @@ export default function CasinoLobby() {
           const data = await res.json()
           if (isMounted && data.games) {
             setGames(data.games.map(g => ({
-              id: g.id,
-              name: g.title,
-              img: g.imageUrl,
+              id: g.id || g.slug,
+              name: g.name || g.title,
+              img: g.img || g.imageUrl || '/games/fortune_gems.png',
               provider: 'PADDYPOWER',
-              type: g.category
+              type: g.category || 'Slots'
             })))
           }
         } catch (e) {

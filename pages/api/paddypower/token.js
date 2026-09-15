@@ -9,11 +9,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    const games = await PADDY.getGameList();
+    const data = await PADDY.getToken();
     return res.status(200).json({
       ok: true,
-      provider: 'PaddyPower',
-      games
+      data
     });
   } catch (err) {
     return res.status(500).json({ error: err.message });
