@@ -480,8 +480,8 @@ export default function WalletPage() {
             <div>
               <div style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px', marginBottom: '16px', fontSize: '12px', color: 'var(--muted)', lineHeight: '1.6' }}>
                 Manual transfer to official accounts:<br />
-                <strong style={{ color: '#fff' }}>🟢 Easypaisa:</strong> 0300-0000000 (BetPK Official)<br />
-                <strong style={{ color: '#fff' }}>🔴 JazzCash:</strong> 0300-0000000 (BetPK Official)<br />
+                <strong style={{ color: '#fff' }}>🟢 Easypaisa:</strong> 0300-0000000 (WinX Pro Official)<br />
+                <strong style={{ color: '#fff' }}>🔴 JazzCash:</strong> 0300-0000000 (WinX Pro Official)<br />
                 <strong style={{ color: '#fff' }}>🌐 Binance / USDT:</strong> usd-official-wallet-address<br />
                 <div style={{ borderTop: '1px solid var(--border)', marginTop: '8px', paddingTop: '8px', color: 'var(--accent)' }}>
                   Rates: <strong>1 Fiat = {rates.pkr_rate} Pi</strong> | <strong>1 USD = {rates.usd_rate} Pi</strong>

@@ -18,7 +18,7 @@ export default function Invite() {
   const emailPrefix = user?.email ? user.email.split('@')[0] : 'GUEST'
   const referralLink = typeof window !== 'undefined' 
     ? `${window.location.origin}/signup?ref=${user?.email || ''}`
-    : `https://betpk.com/signup?ref=${user?.email || ''}`
+    : `https://winxpro.com/signup?ref=${user?.email || ''}`
 
   const fetchReferralStats = async () => {
     if (!user) {

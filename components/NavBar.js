@@ -62,8 +62,35 @@ export default function NavBar() {
           <button className="menu-toggle" onClick={() => alert("Menu Drawer: VIP Club, Promotions, Referrals, Live Chat, and Sportsbook catalogs.")}>
             ☰
           </button>
-          <Link href="/" style={{ textDecoration: 'none' }}>
-            <div className="betpk-logo">BETPK</div>
+          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <img 
+              src="/logo.png" 
+              alt="WinX Pro" 
+              style={{ 
+                height: '38px', 
+                width: '38px', 
+                borderRadius: '8px',
+                objectFit: 'cover', 
+                filter: 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.45))' 
+              }} 
+            />
+            <div className="winx-logo" style={{ fontWeight: 900, fontSize: '18px', display: 'flex', alignItems: 'center', letterSpacing: '-0.5px' }}>
+              <span style={{ color: '#ffd700', textShadow: '0 0 10px rgba(255,215,0,0.5)' }}>Win</span>
+              <span style={{ color: '#c084fc', textShadow: '0 0 12px rgba(192,132,252,0.9)' }}>X</span>
+              <span style={{ 
+                marginLeft: '4px', 
+                fontSize: '10px', 
+                background: 'linear-gradient(135deg, #a855f7 0%, #6b21a8 100%)', 
+                color: '#fff', 
+                padding: '2px 5px', 
+                borderRadius: '4px', 
+                border: '1px solid #d8b4fe',
+                fontWeight: 900,
+                letterSpacing: '0.5px'
+              }}>
+                PRO
+              </span>
+            </div>
           </Link>
         </div>
 

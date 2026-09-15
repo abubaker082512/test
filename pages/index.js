@@ -288,7 +288,7 @@ export default function Home() {
         <span className="announcement-icon">🔊</span>
         <div className="announcement-marquee">
           <span className="announcement-text">
-            🌟 Welcome to BETPK Official! Earn Pi 155.55 instantly for every friend you refer. Double your first deposit with a 100% Match Bonus up to Pi 5,000.00! Withdrawals are completed in under 2 minutes via Mobile Money A and Mobile Money B! Play JILI slots, Cockfight, and Sportsbook now!
+            🌟 Welcome to WinX Pro Official! Earn Pi 155.55 instantly for every friend you refer. Double your first deposit with a 100% Match Bonus up to Pi 5,000.00! Withdrawals are completed in under 2 minutes via Easypaisa, JazzCash, and Cards! Play JILI slots, Cockfight, and Sportsbook now!
           </span>
         </div>
         <div className="announcement-mail" onClick={() => alert("Inbox: 2 new promotional messages loaded.")}>
@@ -406,7 +406,7 @@ export default function Home() {
         <p className="footer-disclaimer">
           Gambling involves risk. Winnings are not guaranteed. For <strong>21+ only</strong>. Please play responsibly. Gambling can be addictive - visit support for help resources.
           <br /><br />
-          <strong>BETPK Group</strong> is one of the most famous international online casino operating companies, providing slots, cards, live dealers, sportsbook, and cockfights. Authorized and regulated by the Government of Curacao under licensing authority Antillephone, issued to 8048/JAZ.
+          <strong>WinX Pro Group</strong> is one of the most famous international online casino operating companies, providing slots, cards, live dealers, sportsbook, and cockfights. Authorized and regulated by the Government of Curacao under licensing authority Antillephone, issued to 8048/JAZ.
         </p>
       </footer>
 
@@ -441,7 +441,7 @@ export default function Home() {
       {showWheelPopup && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ 
-            background: 'linear-gradient(135deg, #2d1155 0%, #07080c 100%)', 
+            background: 'linear-gradient(135deg, #1f0a38 0%, #0c0317 100%)', 
             border: '2px solid var(--accent)', 
             padding: '24px', 
             borderRadius: '16px', 
@@ -456,7 +456,7 @@ export default function Home() {
             >
               ✕
             </button>
-            <h3 style={{ color: 'var(--accent)', marginBottom: '12px', fontSize: '20px' }}>👑 BETPK Lucky Wheel</h3>
+            <h3 style={{ color: 'var(--accent)', marginBottom: '12px', fontSize: '20px' }}>👑 WinX Pro Lucky Wheel</h3>
             <p style={{ color: 'var(--muted)', fontSize: '12px', marginBottom: '20px' }}>
               Spin the lucky wheel once every day for free to claim massive rewards up to Pi 8,888.00!
             </p>

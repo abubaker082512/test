@@ -186,7 +186,7 @@ export default function AdminPanel() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ background: 'var(--card)', border: '2px solid var(--accent)', borderRadius: '16px', padding: '40px', width: '90%', maxWidth: '360px', textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔐</div>
-        <h2 style={{ color: 'var(--accent)', marginTop: 0 }}>BetPK Admin Panel</h2>
+        <h2 style={{ color: 'var(--accent)', marginTop: 0 }}>WinX Pro Admin Panel</h2>
         {msg && <div style={{ color: '#ff4444', marginBottom: '12px', fontSize: '14px' }}>{msg}</div>}
         <form onSubmit={login} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <input
@@ -222,7 +222,7 @@ export default function AdminPanel() {
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <div>
-            <h1 style={{ color: 'var(--accent)', margin: 0, fontSize: '24px' }}>🛡️ BetPK Management Console</h1>
+            <h1 style={{ color: 'var(--accent)', margin: 0, fontSize: '24px' }}>🛡️ WinX Pro Management Console</h1>
             <p style={{ margin: '4px 0 0', color: 'var(--muted)', fontSize: '13px' }}>Manage transactions, DirectPay gateway, exchange rates, and user balances</p>
           </div>
           <button 

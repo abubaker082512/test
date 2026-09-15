@@ -7,7 +7,7 @@ export default function Support() {
   const { user } = useAuth()
   const [chatOpen, setChatOpen] = useState(false)
   const [messages, setMessages] = useState([
-    { sender: 'agent', text: '👋 Hello! I am John from BetPK Support. How can I assist you with your wallet deposits, withdrawals, or gameplay today?' }
+    { sender: 'agent', text: '👋 Hello! I am John from WinX Pro Support. How can I assist you with your wallet deposits, withdrawals, or gameplay today?' }
   ])
   const [userInput, setUserInput] = useState('')
   const [typing, setTyping] = useState(false)
@@ -40,7 +40,7 @@ export default function Support() {
       } else if (textLower.includes('withdraw') || textLower.includes('withdrawal') || textLower.includes('cashout') || textLower.includes('refund')) {
         reply = "🏧 For withdrawal inquiries: Minimum withdrawal is Pi 500. Requests are processed manually within 24 hours. If your withdrawal request is rejected, the funds are instantly refunded back to your in-game balance. Please check your account details and try again."
       } else if (textLower.includes('game') || textLower.includes('crash') || textLower.includes('slots') || textLower.includes('dice') || textLower.includes('cheat') || textLower.includes('win')) {
-        reply = "🎮 For game inquiries: All games on BetPK are built on verified, cryptographically secure Random Number Generators (RNG). Multipliers and spins are fully transparent and provably fair. Good luck with your bets!"
+        reply = "🎮 For game inquiries: All games on WinX Pro are built on verified, cryptographically secure Random Number Generators (RNG). Multipliers and spins are fully transparent and provably fair. Good luck with your bets!"
       } else if (textLower.includes('pkr') || textLower.includes('usd') || textLower.includes('exchange') || textLower.includes('dollar') || textLower.includes('rupee') || textLower.includes('rate')) {
         reply = "💵 For exchange rates: Rates can be adjusted dynamically in the Admin Panel by the site administrator. Deposits and withdrawals automatically display live conversion calculators before submission!"
       } else if (textLower.includes('hello') || textLower.includes('hi') || textLower.includes('hey') || textLower.includes('support')) {
