@@ -7,6 +7,7 @@ import AuthModal from '../../components/AuthModal'
 
 const FEATURED_PROVIDERS = [
   { id: 'ALL', name: 'All Games', icon: '🔥', count: 'Exclusives' },
+  { id: 'POKER', name: 'Poker Room', icon: '♠️', count: 'Texas Hold\'em' },
   { id: 'RAINBOW', name: 'Rainbow Riches', icon: '🌈', count: 'Casino Series' },
   { id: 'PADDY', name: 'Paddy Power', icon: '☘️', count: 'Exclusives' },
   { id: 'SLOTS', name: 'Slots', icon: '🎰', count: 'Jackpots' },
@@ -23,16 +24,17 @@ export default function CasinoLobby() {
   const [search, setSearch] = useState('')
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
 
-  // Fetch games from Paddy Power and Rainbow Riches Casino
+  // Fetch games from Paddy Power, Rainbow Riches Casino, and Poker API
   useEffect(() => {
     let isMounted = true
     setLoading(true)
 
     const fetchGames = async () => {
       try {
-        const [paddyRes, rrRes] = await Promise.all([
+        const [paddyRes, rrRes, pokerRes] = await Promise.all([
           fetch('/api/paddypower/games'),
-          fetch('/api/rainbowriches/games')
+          fetch('/api/rainbowriches/games'),
+          fetch('/api/poker/games')
         ])
 
         const combined = []
@@ -65,6 +67,20 @@ export default function CasinoLobby() {
           }
         }
 
+        if (pokerRes.ok) {
+          const data = await pokerRes.json()
+          if (data.games) {
+            combined.push(...data.games.map(g => ({
+              id: g.id || g.slug,
+              name: g.name || g.title,
+              img: g.img || g.imageUrl || '/games/super_ace.png',
+              provider: 'PokerAPI',
+              category: 'Poker',
+              badge: g.badge || 'Poker Table'
+            })))
+          }
+        }
+
         if (isMounted) {
           setAllGames(combined)
         }
@@ -84,11 +100,12 @@ export default function CasinoLobby() {
 
   const games = allGames.filter(g => {
     if (selectedProvider === 'ALL') return true
+    if (selectedProvider === 'POKER') return g.provider === 'PokerAPI' || g.category.toLowerCase().includes('poker')
     if (selectedProvider === 'RAINBOW') return g.provider === 'RainbowRiches'
     if (selectedProvider === 'PADDY') return g.provider === 'PaddyPower'
     if (selectedProvider === 'SLOTS') return g.category.toLowerCase().includes('slot')
     if (selectedProvider === 'LIVE') return g.category.toLowerCase().includes('live')
-    if (selectedProvider === 'CARDS') return g.category.toLowerCase().includes('card') || g.category.toLowerCase().includes('table')
+    if (selectedProvider === 'CARDS') return g.category.toLowerCase().includes('card') || g.category.toLowerCase().includes('table') || g.category.toLowerCase().includes('poker')
     if (selectedProvider === 'JACKPOTS') return g.category.toLowerCase().includes('jackpot') || g.badge?.toLowerCase().includes('jackpot')
     return true
   })

@@ -20,17 +20,21 @@ const mockGames = [
   { id: 'rr-megaways', title: 'Rainbow Riches: Megaways', provider: 'RainbowRiches', badge: '117,649 Ways', recommended: true, theme: 'linear-gradient(135deg, #2e7d32 0%, #005005 100%)', icon: '🍀', slug: 'rr-megaways', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/48.webp' },
   { id: 'rr-reels-of-gold', title: 'Rainbow Riches: Reels of Gold', provider: 'RainbowRiches', badge: 'Colossal Reels', recommended: true, theme: 'linear-gradient(135deg, #f57f17 0%, #bc5100 100%)', icon: '💰', slug: 'rr-reels-of-gold', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/38.webp' },
   { id: 'rr-pick-n-mix', title: "Rainbow Riches: Pick 'n' Mix", provider: 'RainbowRiches', badge: '5 Bonus Games', recommended: true, theme: 'linear-gradient(135deg, #00838f 0%, #005662 100%)', icon: '🎩', slug: 'rr-pick-n-mix', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/37.png' },
-  { id: 'rr-drop-of-gold', title: 'Rainbow Riches: Drops of Gold', provider: 'RainbowRiches', badge: 'Drop Wilds', recommended: false, theme: 'linear-gradient(135deg, #ff8f00 0%, #c56000 100%)', icon: '🪙', slug: 'rr-drop-of-gold', category: 'Jackpots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/47.webp' }
+  { id: 'rr-drop-of-gold', title: 'Rainbow Riches: Drops of Gold', provider: 'RainbowRiches', badge: 'Drop Wilds', recommended: false, theme: 'linear-gradient(135deg, #ff8f00 0%, #c56000 100%)', icon: '🪙', slug: 'rr-drop-of-gold', category: 'Jackpots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/47.webp' },
+
+  // Poker API Texas Hold'em
+  { id: 'poker-texas-holdem', title: "Texas Hold'em No Limit", provider: 'PokerAPI', badge: 'High Stakes', recommended: true, theme: 'linear-gradient(135deg, #0d47a1 0%, #001064 100%)', icon: '♠️', slug: 'poker-texas-holdem', category: 'Poker', imageUrl: 'https://cdn.betnex.co/images/jiligaming/235.png' },
+  { id: 'poker-tournament', title: 'World Series Championship', provider: 'PokerAPI', badge: 'Pi 100K GTD', recommended: true, theme: 'linear-gradient(135deg, #f57f17 0%, #b71c1c 100%)', icon: '🏆', slug: 'poker-tournament', category: 'Poker', imageUrl: 'https://cdn.betnex.co/images/jiligaming/48.webp' }
 ]
 
 // Scrolling live winner events
 const winEvents = [
   { name: 'ali***77', game: 'Rainbow Riches Pots of Gold', amount: 'Pi 14,150.00', provider: 'RainbowRiches', avatar: '👨‍💻' },
-  { name: 'zain***88', game: 'Fishin Frenzy', amount: 'Pi 2,850.00', provider: 'PaddyPower', avatar: '👩‍⚕️' },
+  { name: 'zain***88', game: 'Texas Holdem NL', amount: 'Pi 9,450.00', provider: 'PokerAPI', avatar: '👩‍⚕️' },
   { name: 'pak***01', game: 'Chests of Plenty', amount: 'Pi 12,279.20', provider: 'PaddyPower', avatar: '🦁' },
   { name: 'jill***00', game: 'Rainbow Riches Megaways', amount: 'Pi 8,033.00', provider: 'RainbowRiches', avatar: '🐱' },
   { name: 'asif***99', game: 'Age of the Gods', amount: 'Pi 8,900.00', provider: 'PaddyPower', avatar: '🦅' },
-  { name: 'ahmed***10', game: 'Rainbow Riches Pick n Mix', amount: 'Pi 15,500.00', provider: 'RainbowRiches', avatar: '🔥' },
+  { name: 'ahmed***10', game: 'World Series Poker', amount: 'Pi 25,500.00', provider: 'PokerAPI', avatar: '🔥' },
 ]
 
 export default function Home() {
@@ -59,9 +63,10 @@ export default function Home() {
     let isMounted = true;
     const fetchCatalogGames = async () => {
       try {
-        const [paddyRes, rrRes] = await Promise.all([
+        const [paddyRes, rrRes, pokerRes] = await Promise.all([
           fetch('/api/paddypower/games'),
-          fetch('/api/rainbowriches/games')
+          fetch('/api/rainbowriches/games'),
+          fetch('/api/poker/games')
         ]);
         const allFetched = [];
 
@@ -96,6 +101,24 @@ export default function Home() {
               badge: g.badge || 'Popular',
               recommended: g.recommended || false,
               theme: g.theme || 'linear-gradient(135deg, #1b5e20 0%, #003300 100%)',
+              slug: g.id || g.slug
+            })));
+          }
+        }
+
+        if (pokerRes.ok) {
+          const data = await pokerRes.json();
+          const gamesList = data.games || data.data;
+          if (gamesList && Array.isArray(gamesList)) {
+            allFetched.push(...gamesList.map(g => ({
+              id: g.id || g.slug,
+              title: g.name || g.title,
+              provider: 'PokerAPI',
+              category: 'Poker',
+              imageUrl: g.img || g.imageUrl || 'https://cdn.betnex.co/images/jiligaming/235.png',
+              badge: g.badge || 'Poker Table',
+              recommended: g.recommended || false,
+              theme: g.theme || 'linear-gradient(135deg, #0d47a1 0%, #001064 100%)',
               slug: g.id || g.slug
             })));
           }

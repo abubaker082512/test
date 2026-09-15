@@ -20,6 +20,14 @@ const GAME_MAP = {
   'rr-drop-of-gold': '490096198e28f770a3f85adb6ee49e0f',
   'rr-live-roulette': 'b4af506243cafae52908e8fa266f8ff6',
 
+  // Poker API & Texas Hold'em
+  'poker-texas-holdem': '7b44393101abad7ac31e21fc1bdb3d56',
+  'poker-omaha': '87a7f4550407f5ed73c3353a54a11187',
+  'poker-caribbean-stud': '87a7f4550407f5ed73c3353a54a11187',
+  'poker-three-card': '7b44393101abad7ac31e21fc1bdb3d56',
+  'poker-jacks-or-better': 'bdfb23c974a2517198c5443adeea77a8',
+  'poker-tournament': '7b44393101abad7ac31e21fc1bdb3d56',
+
   // Paddy Power Flagships & Exclusives
   'Chests-of-Plenty': 'bdfb23c974a2517198c5443adeea77a8',
   'chests-of-plenty': 'bdfb23c974a2517198c5443adeea77a8',
