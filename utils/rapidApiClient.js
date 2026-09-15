@@ -146,7 +146,7 @@ export class RapidApiClient {
       gameId: payload.gameId || 'bdfb23c974a2517198c5443adeea77a8',
       lang: payload.lang || 'en',
       money: payload.money !== undefined ? payload.money : 0,
-      currency: payload.currency || 'Fiat',
+      currency: (payload.currency && payload.currency !== 'Fiat') ? payload.currency : 'USD',
       platform: payload.platform || 1,
       home_url: payload.home_url || 'https://test-eight-zeta-88.vercel.app/'
     };
