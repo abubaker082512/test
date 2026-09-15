@@ -25,6 +25,23 @@ export default function AdminPanel() {
   const [directpayClientId, setDirectpayClientId] = useState('pwa_ci_k1qlq54hv4gw5pr0khux')
   const [directpayClientSecret, setDirectpayClientSecret] = useState('pwa_secret_zp5rai8z02zr3o5sebm1co6uxci58uca')
   const [directpayEnabled, setDirectpayEnabled] = useState(true)
+
+  // JazzCash Direct API state
+  const [jazzcashMerchantId, setJazzcashMerchantId] = useState('74584985')
+  const [jazzcashPassword, setJazzcashPassword] = useState('qo38057jbm')
+  const [jazzcashIntegritySalt, setJazzcashIntegritySalt] = useState('z35f76uo0m')
+  const [jazzcashEnabled, setJazzcashEnabled] = useState(true)
+  const [jazzcashMode, setJazzcashMode] = useState('direct_api')
+
+  // EasyPaisa Direct API state
+  const [easypaisaStoreId, setEasypaisaStoreId] = useState('43')
+  const [easypaisaHashKey, setEasypaisaHashKey] = useState('1234567890123456')
+  const [easypaisaEnabled, setEasypaisaEnabled] = useState(true)
+  const [easypaisaMode, setEasypaisaMode] = useState('direct_api')
+
+  // Card Gateway state
+  const [cardMode, setCardMode] = useState('direct_api')
+
   const [ratesLoading, setRatesLoading] = useState(false)
   const [ratesMsg, setRatesMsg] = useState(null)
 
@@ -87,6 +104,19 @@ export default function AdminPanel() {
         if (data.directpay_client_id) setDirectpayClientId(data.directpay_client_id)
         if (data.directpay_client_secret) setDirectpayClientSecret(data.directpay_client_secret)
         if (data.directpay_enabled !== undefined) setDirectpayEnabled(data.directpay_enabled)
+
+        if (data.jazzcash_merchant_id) setJazzcashMerchantId(data.jazzcash_merchant_id)
+        if (data.jazzcash_password) setJazzcashPassword(data.jazzcash_password)
+        if (data.jazzcash_integrity_salt) setJazzcashIntegritySalt(data.jazzcash_integrity_salt)
+        if (data.jazzcash_enabled !== undefined) setJazzcashEnabled(data.jazzcash_enabled)
+        if (data.jazzcash_mode) setJazzcashMode(data.jazzcash_mode)
+
+        if (data.easypaisa_store_id) setEasypaisaStoreId(data.easypaisa_store_id)
+        if (data.easypaisa_hash_key) setEasypaisaHashKey(data.easypaisa_hash_key)
+        if (data.easypaisa_enabled !== undefined) setEasypaisaEnabled(data.easypaisa_enabled)
+        if (data.easypaisa_mode) setEasypaisaMode(data.easypaisa_mode)
+
+        if (data.card_mode) setCardMode(data.card_mode)
       }
     } catch (err) {
       console.error('Error fetching rates:', err)
@@ -220,12 +250,22 @@ export default function AdminPanel() {
           payout_pkr_rate: Number(payoutPkrRate),
           directpay_client_id: directpayClientId,
           directpay_client_secret: directpayClientSecret,
-          directpay_enabled: directpayEnabled
+          directpay_enabled: directpayEnabled,
+          jazzcash_merchant_id: jazzcashMerchantId,
+          jazzcash_password: jazzcashPassword,
+          jazzcash_integrity_salt: jazzcashIntegritySalt,
+          jazzcash_enabled: jazzcashEnabled,
+          jazzcash_mode: jazzcashMode,
+          easypaisa_store_id: easypaisaStoreId,
+          easypaisa_hash_key: easypaisaHashKey,
+          easypaisa_enabled: easypaisaEnabled,
+          easypaisa_mode: easypaisaMode,
+          card_mode: cardMode
         })
       })
       const data = await res.json()
       if (data.success) {
-        setRatesMsg({ type: 'success', text: 'Exchange rates & DirectPay credentials updated successfully!' })
+        setRatesMsg({ type: 'success', text: 'All exchange rates, DirectPay, JazzCash & EasyPaisa settings updated successfully!' })
       } else {
         setRatesMsg({ type: 'error', text: data.error })
       }
@@ -507,6 +547,189 @@ export default function AdminPanel() {
                 </div>
               </div>
 
+              {/* JazzCash Direct REST API Settings */}
+              <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '12px', border: '1px solid #d5000066' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <h3 style={{ margin: 0, fontSize: '15px', color: '#ff5252', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    🔴 JazzCash MWallet REST API v1.1 (Direct API)
+                  </h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={jazzcashEnabled} 
+                        onChange={e => setJazzcashEnabled(e.target.checked)} 
+                      />
+                      Enable JazzCash
+                    </label>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', marginBottom: '12px' }}>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>
+                      Merchant ID:
+                    </label>
+                    <input
+                      type="text"
+                      value={jazzcashMerchantId}
+                      onChange={e => setJazzcashMerchantId(e.target.value)}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px', fontFamily: 'monospace' }}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>
+                      Password:
+                    </label>
+                    <input
+                      type="text"
+                      value={jazzcashPassword}
+                      onChange={e => setJazzcashPassword(e.target.value)}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px', fontFamily: 'monospace' }}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>
+                      Integrity Salt (Secret Key):
+                    </label>
+                    <input
+                      type="text"
+                      value={jazzcashIntegritySalt}
+                      onChange={e => setJazzcashIntegritySalt(e.target.value)}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px', fontFamily: 'monospace' }}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.3)', padding: '10px 12px', borderRadius: '8px' }}>
+                  <span style={{ fontSize: '12px', color: '#ccc' }}>Default Player Gateway Route for JazzCash:</span>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setJazzcashMode('direct_api')}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: jazzcashMode === 'direct_api' ? '#d50000' : '#222',
+                        color: '#fff',
+                        fontWeight: 'bold',
+                        fontSize: '11px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ⚡ Direct API (REST)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setJazzcashMode('directpay')}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: jazzcashMode === 'directpay' ? 'var(--accent)' : '#222',
+                        color: jazzcashMode === 'directpay' ? '#000' : '#fff',
+                        fontWeight: 'bold',
+                        fontSize: '11px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      🔗 Direct Pay Gateway
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* EasyPaisa Direct API Settings */}
+              <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '12px', border: '1px solid #00c85366' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <h3 style={{ margin: 0, fontSize: '15px', color: '#00e676', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    🟢 EasyPaisa Easypay API (Direct API)
+                  </h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={easypaisaEnabled} 
+                        onChange={e => setEasypaisaEnabled(e.target.checked)} 
+                      />
+                      Enable EasyPaisa
+                    </label>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', marginBottom: '12px' }}>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>
+                      Store ID:
+                    </label>
+                    <input
+                      type="text"
+                      value={easypaisaStoreId}
+                      onChange={e => setEasypaisaStoreId(e.target.value)}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px', fontFamily: 'monospace' }}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>
+                      Hash Key / AES Secret:
+                    </label>
+                    <input
+                      type="text"
+                      value={easypaisaHashKey}
+                      onChange={e => setEasypaisaHashKey(e.target.value)}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px', fontFamily: 'monospace' }}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.3)', padding: '10px 12px', borderRadius: '8px' }}>
+                  <span style={{ fontSize: '12px', color: '#ccc' }}>Default Player Gateway Route for EasyPaisa:</span>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setEasypaisaMode('direct_api')}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: easypaisaMode === 'direct_api' ? '#00c853' : '#222',
+                        color: '#fff',
+                        fontWeight: 'bold',
+                        fontSize: '11px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ⚡ Direct API (Easypay)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEasypaisaMode('directpay')}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: easypaisaMode === 'directpay' ? 'var(--accent)' : '#222',
+                        color: easypaisaMode === 'directpay' ? '#000' : '#fff',
+                        fontWeight: 'bold',
+                        fontSize: '11px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      🔗 Direct Pay Gateway
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               {/* DirectPay Gateway API Settings */}
               <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
@@ -554,13 +777,59 @@ export default function AdminPanel() {
                 </div>
               </div>
 
+              {/* Card Gateway Preference */}
+              <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '12px', border: '1px solid #2979ff66' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '15px', color: '#2979ff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      💳 Card Payment Route Preference
+                    </h3>
+                    <p style={{ margin: '4px 0 0', color: 'var(--muted)', fontSize: '12px' }}>Select the default processor for Debit / Credit Card deposits</p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setCardMode('direct_api')}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: cardMode === 'direct_api' ? '#2979ff' : '#222',
+                        color: '#fff',
+                        fontWeight: 'bold',
+                        fontSize: '11px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ⚡ Direct API (JazzCash / EasyPay CC)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCardMode('directpay')}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: cardMode === 'directpay' ? 'var(--accent)' : '#222',
+                        color: cardMode === 'directpay' ? '#000' : '#fff',
+                        fontWeight: 'bold',
+                        fontSize: '11px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      🔗 Direct Pay Gateway
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               <button 
                 type="submit" 
                 className="btn primary" 
                 disabled={ratesLoading} 
                 style={{ width: '100%', padding: '16px', fontSize: '15px', background: 'var(--accent)', color: '#000', fontWeight: 'bold', borderRadius: '8px', marginTop: '8px' }}
               >
-                {ratesLoading ? '💾 Saving settings...' : '💾 Save Rates & Gateway Credentials'}
+                {ratesLoading ? '💾 Saving settings...' : '💾 Save Rates & All Gateway Credentials'}
               </button>
 
             </form>
