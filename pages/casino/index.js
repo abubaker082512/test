@@ -7,6 +7,7 @@ import AuthModal from '../../components/AuthModal'
 
 const FEATURED_PROVIDERS = [
   { id: 'ALL', name: 'All Games', icon: '🔥', count: 'Exclusives' },
+  { id: 'SCORPIO', name: 'ScorpioPlay / Pragmatic', icon: '⚡', count: 'Top Online' },
   { id: 'POKER', name: 'Poker Room', icon: '♠️', count: 'Texas Hold\'em' },
   { id: 'RAINBOW', name: 'Rainbow Riches', icon: '🌈', count: 'Casino Series' },
   { id: 'PADDY', name: 'Paddy Power', icon: '☘️', count: 'Exclusives' },
@@ -24,17 +25,18 @@ export default function CasinoLobby() {
   const [search, setSearch] = useState('')
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
 
-  // Fetch games from Paddy Power, Rainbow Riches Casino, and Poker API
+  // Fetch games from Paddy Power, Rainbow Riches Casino, Poker API, and ScorpioPlay
   useEffect(() => {
     let isMounted = true
     setLoading(true)
 
     const fetchGames = async () => {
       try {
-        const [paddyRes, rrRes, pokerRes] = await Promise.all([
+        const [paddyRes, rrRes, pokerRes, scorpioRes] = await Promise.all([
           fetch('/api/paddypower/games'),
           fetch('/api/rainbowriches/games'),
-          fetch('/api/poker/games')
+          fetch('/api/poker/games'),
+          fetch('/api/scorpioplay/games')
         ])
 
         const combined = []
@@ -81,6 +83,20 @@ export default function CasinoLobby() {
           }
         }
 
+        if (scorpioRes.ok) {
+          const data = await scorpioRes.json()
+          if (data.games) {
+            combined.push(...data.games.map(g => ({
+              id: g.gameID || g.gameCode || g.id,
+              name: g.gameName || g.name || g.title,
+              img: g.gameImage || g.img || g.imageUrl || '/games/fortune_gems.png',
+              provider: g.provider || 'ScorpioPlay',
+              category: g.category || (g.gameType === 1 ? 'Live' : g.gameType === 2 ? 'Crash' : 'Slots'),
+              badge: g.badge || 'Scorpio Pick'
+            })))
+          }
+        }
+
         if (isMounted) {
           setAllGames(combined)
         }
@@ -100,6 +116,7 @@ export default function CasinoLobby() {
 
   const games = allGames.filter(g => {
     if (selectedProvider === 'ALL') return true
+    if (selectedProvider === 'SCORPIO') return g.provider === 'ScorpioPlay' || g.provider === 'Pragmatic Play' || g.provider === 'Spribe'
     if (selectedProvider === 'POKER') return g.provider === 'PokerAPI' || g.category.toLowerCase().includes('poker')
     if (selectedProvider === 'RAINBOW') return g.provider === 'RainbowRiches'
     if (selectedProvider === 'PADDY') return g.provider === 'PaddyPower'

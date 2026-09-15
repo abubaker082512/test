@@ -63,10 +63,11 @@ export default function Home() {
     let isMounted = true;
     const fetchCatalogGames = async () => {
       try {
-        const [paddyRes, rrRes, pokerRes] = await Promise.all([
+        const [paddyRes, rrRes, pokerRes, scorpioRes] = await Promise.all([
           fetch('/api/paddypower/games'),
           fetch('/api/rainbowriches/games'),
-          fetch('/api/poker/games')
+          fetch('/api/poker/games'),
+          fetch('/api/scorpioplay/games')
         ]);
         const allFetched = [];
 
@@ -120,6 +121,24 @@ export default function Home() {
               recommended: g.recommended || false,
               theme: g.theme || 'linear-gradient(135deg, #0d47a1 0%, #001064 100%)',
               slug: g.id || g.slug
+            })));
+          }
+        }
+
+        if (scorpioRes.ok) {
+          const data = await scorpioRes.json();
+          const gamesList = data.games || data.data;
+          if (gamesList && Array.isArray(gamesList)) {
+            allFetched.push(...gamesList.map(g => ({
+              id: g.gameID || g.gameCode || g.id,
+              title: g.gameName || g.name || g.title,
+              provider: g.provider || 'ScorpioPlay',
+              category: g.category || (g.gameType === 1 ? 'Live' : g.gameType === 2 ? 'Crash' : 'Slots'),
+              imageUrl: g.gameImage || g.img || g.imageUrl || '/games/fortune_gems.png',
+              badge: g.badge || 'Scorpio Pick',
+              recommended: true,
+              theme: 'linear-gradient(135deg, #b71c1c 0%, #311b92 100%)',
+              slug: g.gameID || g.gameCode || g.id
             })));
           }
         }

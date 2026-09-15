@@ -28,6 +28,14 @@ const GAME_MAP = {
   'poker-jacks-or-better': 'bdfb23c974a2517198c5443adeea77a8',
   'poker-tournament': '7b44393101abad7ac31e21fc1bdb3d56',
 
+  // ScorpioPlay / SlotCity Casino API
+  'vswaysdogs': 'bdfb23c974a2517198c5443adeea77a8',
+  'vs20olympgate': 'a990de177577a2e6a889aaac5f57b429',
+  'vs20sweetbonz': '664fba4da609ee82b78820b1f570f4ad',
+  'evo_lightning_roulette': 'b4af506243cafae52908e8fa266f8ff6',
+  'evo_crazy_time': '7b44393101abad7ac31e21fc1bdb3d56',
+  'spribe_aviator': 'bdfb23c974a2517198c5443adeea77a8',
+
   // Paddy Power Flagships & Exclusives
   'Chests-of-Plenty': 'bdfb23c974a2517198c5443adeea77a8',
   'chests-of-plenty': 'bdfb23c974a2517198c5443adeea77a8',
