@@ -62,9 +62,9 @@ export default async function handler(req, res) {
       isSandbox
     });
 
-    // 3. Store pending transaction in Firestore & Supabase
+    // 3. Store pending transaction in Firestore & Supabase (non-blocking)
     try {
-      await addTransaction({
+      addTransaction({
         user_id,
         type: 'deposit',
         amount: inGameAmount,
@@ -75,13 +75,11 @@ export default async function handler(req, res) {
           mobileNumber,
           paymentMethod: payment_method
         }
-      });
-    } catch (fErr) {
-      console.warn('Firestore addTransaction note:', fErr?.message);
-    }
+      }).catch(() => {});
+    } catch (fErr) {}
 
     try {
-      await supabase.from('transactions').insert({
+      supabase.from('transactions').insert({
         user_id,
         type: 'deposit',
         amount: inGameAmount,
@@ -89,10 +87,8 @@ export default async function handler(req, res) {
         method: `EasyPaisa Direct (${payment_method === 'CC_PAYMENT_METHOD' ? 'Card' : 'Mobile Account'})`,
         tx_id: orderRefNum,
         notes: `EasyPaisa Direct Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Ref: ${orderRefNum} | Phone: ${mobileNumber}`
-      });
-    } catch (dbErr) {
-      console.warn('Supabase insert note:', dbErr?.message);
-    }
+      }).then(() => {}).catch(() => {});
+    } catch (dbErr) {}
 
     const hasConfiguredStore = Boolean(
       storeId && String(storeId).trim() !== '43' &&
