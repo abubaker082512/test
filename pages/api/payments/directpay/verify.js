@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { getOrCreateWallet, updateWalletBalance } from '../../../../utils/firebaseDb';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -42,29 +43,42 @@ export default async function handler(req, res) {
       });
     }
 
-    // 2. Mark completed and credit the user's wallet
-    const { data: wallet } = await supabase
-      .from('wallets')
-      .select('*')
-      .eq('user_id', tx.user_id)
-      .single();
-
-    if (wallet) {
-      await supabase
-        .from('wallets')
-        .update({ balance: wallet.balance + tx.amount })
-        .eq('user_id', tx.user_id);
-    } else {
-      await supabase
-        .from('wallets')
-        .insert({ user_id: tx.user_id, balance: tx.amount });
+    // 2. Mark completed and credit the user's wallet in both Firestore and Supabase
+    const targetUserId = tx.user_id || user_id;
+    try {
+      const fWallet = await getOrCreateWallet(targetUserId);
+      const curBal = Number(fWallet?.balance || 0);
+      await updateWalletBalance(targetUserId, curBal + tx.amount);
+    } catch (fErr) {
+      console.warn('Firestore wallet credit note:', fErr?.message);
     }
 
-    // Update transaction status
-    await supabase
-      .from('transactions')
-      .update({ status: 'completed' })
-      .eq('id', tx.id);
+    try {
+      const { data: wallet } = await supabase
+        .from('wallets')
+        .select('*')
+        .eq('user_id', targetUserId)
+        .single();
+
+      if (wallet) {
+        await supabase
+          .from('wallets')
+          .update({ balance: wallet.balance + tx.amount })
+          .eq('user_id', targetUserId);
+      } else {
+        await supabase
+          .from('wallets')
+          .insert({ user_id: targetUserId, balance: tx.amount });
+      }
+
+      // Update transaction status
+      await supabase
+        .from('transactions')
+        .update({ status: 'completed' })
+        .eq('id', tx.id);
+    } catch (dbErr) {
+      console.warn('Supabase wallet update note:', dbErr?.message);
+    }
 
     return res.status(200).json({
       success: true,

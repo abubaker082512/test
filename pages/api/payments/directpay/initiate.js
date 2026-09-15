@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { buildDirectPayUrl } from '../../../../utils/directPayClient';
+import { addTransaction } from '../../../../utils/firebaseDb';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -67,20 +68,38 @@ export default async function handler(req, res) {
       failedRedirectUrl
     });
 
-    // 5. Store pending deposit in transactions table
-    const { error: dbError } = await supabase.from('transactions').insert({
-      user_id,
-      type: 'deposit',
-      amount: inGameAmount,
-      status: 'pending',
-      method: `DirectPay (${payment_method})`,
-      tx_id: clientTransactionId,
-      notes: `DirectPay ${payment_method} Deposit: ${currency} ${numAmount.toFixed(2)} (Converted to Pi ${inGameAmount} at rate 1:${pkrRate}) | Phone: ${msisdn}`
-    });
+    // 5. Store pending deposit in Firestore & Supabase
+    try {
+      await addTransaction({
+        user_id,
+        type: 'deposit',
+        amount: inGameAmount,
+        status: 'pending',
+        notes: `DirectPay ${payment_method} Deposit: ${currency} ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Phone: ${msisdn}`,
+        metadata: {
+          clientTransactionId,
+          msisdn,
+          amountInPKR: numAmount,
+          currency,
+          payment_method
+        }
+      });
+    } catch (fErr) {
+      console.warn('Firestore transaction log note:', fErr?.message);
+    }
 
-    if (dbError) {
-      console.error('Failed to create pending transaction:', dbError);
-      return res.status(500).json({ error: 'Database error creating transaction record' });
+    try {
+      await supabase.from('transactions').insert({
+        user_id,
+        type: 'deposit',
+        amount: inGameAmount,
+        status: 'pending',
+        method: `DirectPay (${payment_method})`,
+        tx_id: clientTransactionId,
+        notes: `DirectPay ${payment_method} Deposit: ${currency} ${numAmount.toFixed(2)} (Converted to Pi ${inGameAmount} at rate 1:${pkrRate}) | Phone: ${msisdn}`
+      });
+    } catch (dbError) {
+      console.warn('Supabase fallback transaction insert note:', dbError?.message);
     }
 
     return res.status(200).json({

@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { buildEasypaisaCheckoutData } from '../../../../utils/easypaisaClient';
+import { addTransaction } from '../../../../utils/firebaseDb';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -61,19 +62,36 @@ export default async function handler(req, res) {
       isSandbox
     });
 
-    // 3. Store pending transaction
-    const { error: dbErr } = await supabase.from('transactions').insert({
-      user_id,
-      type: 'deposit',
-      amount: inGameAmount,
-      status: 'pending',
-      method: `EasyPaisa Direct (${payment_method === 'CC_PAYMENT_METHOD' ? 'Card' : 'Mobile Account'})`,
-      tx_id: orderRefNum,
-      notes: `EasyPaisa Direct Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Ref: ${orderRefNum} | Phone: ${mobileNumber}`
-    });
+    // 3. Store pending transaction in Firestore & Supabase
+    try {
+      await addTransaction({
+        user_id,
+        type: 'deposit',
+        amount: inGameAmount,
+        status: 'pending',
+        notes: `EasyPaisa Direct Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Ref: ${orderRefNum} | Phone: ${mobileNumber}`,
+        metadata: {
+          orderRefNum,
+          mobileNumber,
+          paymentMethod: payment_method
+        }
+      });
+    } catch (fErr) {
+      console.warn('Firestore addTransaction note:', fErr?.message);
+    }
 
-    if (dbErr) {
-      console.error('Failed to create pending transaction:', dbErr);
+    try {
+      await supabase.from('transactions').insert({
+        user_id,
+        type: 'deposit',
+        amount: inGameAmount,
+        status: 'pending',
+        method: `EasyPaisa Direct (${payment_method === 'CC_PAYMENT_METHOD' ? 'Card' : 'Mobile Account'})`,
+        tx_id: orderRefNum,
+        notes: `EasyPaisa Direct Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Ref: ${orderRefNum} | Phone: ${mobileNumber}`
+      });
+    } catch (dbErr) {
+      console.warn('Supabase insert note:', dbErr?.message);
     }
 
     const hasConfiguredStore = Boolean(

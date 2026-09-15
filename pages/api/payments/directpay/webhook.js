@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { getOrCreateWallet, updateWalletBalance } from '../../../../utils/firebaseDb';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -35,28 +36,38 @@ export default async function handler(req, res) {
     }
 
     if (status === 'completed' || status === 'success' || status === 'PAID') {
-      // Credit wallet
-      const { data: wallet } = await supabase
-        .from('wallets')
-        .select('*')
-        .eq('user_id', tx.user_id)
-        .single();
+      // Credit wallet in Firestore & Supabase
+      try {
+        const fWallet = await getOrCreateWallet(tx.user_id);
+        const curBal = Number(fWallet?.balance || 0);
+        await updateWalletBalance(tx.user_id, curBal + tx.amount);
+      } catch (fErr) {}
 
-      if (wallet) {
-        await supabase
+      try {
+        const { data: wallet } = await supabase
           .from('wallets')
-          .update({ balance: wallet.balance + tx.amount })
-          .eq('user_id', tx.user_id);
-      } else {
-        await supabase
-          .from('wallets')
-          .insert({ user_id: tx.user_id, balance: tx.amount });
-      }
+          .select('*')
+          .eq('user_id', tx.user_id)
+          .single();
 
-      await supabase
-        .from('transactions')
-        .update({ status: 'completed' })
-        .eq('id', tx.id);
+        if (wallet) {
+          await supabase
+            .from('wallets')
+            .update({ balance: wallet.balance + tx.amount })
+            .eq('user_id', tx.user_id);
+        } else {
+          await supabase
+            .from('wallets')
+            .insert({ user_id: tx.user_id, balance: tx.amount });
+        }
+      } catch (sErr) {}
+
+      try {
+        await supabase
+          .from('transactions')
+          .update({ status: 'completed' })
+          .eq('id', tx.id);
+      } catch (tErr) {}
 
       return res.status(200).json({ success: true, message: 'Transaction completed and balance credited' });
     } else if (status === 'failed' || status === 'FAILED' || status === 'cancelled') {

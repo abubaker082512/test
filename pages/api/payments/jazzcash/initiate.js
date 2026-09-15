@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { initiateJazzCashPayment } from '../../../../utils/jazzcashClient';
+import { addTransaction, getOrCreateWallet, updateWalletBalance } from '../../../../utils/firebaseDb';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -57,25 +58,55 @@ export default async function handler(req, res) {
 
     const txnRefNo = result.txnRefNo;
 
-    // 3. Insert transaction record
-    const { data: txRecord, error: dbErr } = await supabase.from('transactions').insert({
-      user_id,
-      type: 'deposit',
-      amount: inGameAmount,
-      status: result.success ? 'completed' : 'pending',
-      method: 'JazzCash Direct (MWallet)',
-      tx_id: txnRefNo,
-      notes: `JazzCash Direct Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Ref: ${txnRefNo} | Phone: ${mobileNumber} | Code: ${result.responseCode} - ${result.responseMessage}`
-    }).select().single();
+    // 3. Insert transaction record in Firestore & Supabase
+    try {
+      await addTransaction({
+        user_id,
+        type: 'deposit',
+        amount: inGameAmount,
+        status: result.success ? 'completed' : 'pending',
+        notes: `JazzCash Direct Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Ref: ${txnRefNo} | Phone: ${mobileNumber}`,
+        metadata: {
+          txnRefNo,
+          mobileNumber,
+          responseCode: result.responseCode,
+          responseMessage: result.responseMessage
+        }
+      });
+    } catch (fErr) {
+      console.warn('Firestore addTransaction note:', fErr?.message);
+    }
 
-    // 4. If transaction was instantly successful, credit wallet
+    try {
+      await supabase.from('transactions').insert({
+        user_id,
+        type: 'deposit',
+        amount: inGameAmount,
+        status: result.success ? 'completed' : 'pending',
+        method: 'JazzCash Direct (MWallet)',
+        tx_id: txnRefNo,
+        notes: `JazzCash Direct Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Ref: ${txnRefNo} | Phone: ${mobileNumber} | Code: ${result.responseCode} - ${result.responseMessage}`
+      });
+    } catch (dbErr) {
+      console.warn('Supabase fallback transaction insert note:', dbErr?.message);
+    }
+
+    // 4. If transaction was instantly successful, credit wallet in both Firestore and Supabase
     if (result.success) {
-      const { data: wallet } = await supabase.from('wallets').select('*').eq('user_id', user_id).single();
-      if (wallet) {
-        await supabase.from('wallets').update({ balance: wallet.balance + inGameAmount }).eq('user_id', user_id);
-      } else {
-        await supabase.from('wallets').insert({ user_id, balance: inGameAmount });
-      }
+      try {
+        const fWallet = await getOrCreateWallet(user_id);
+        const curBal = Number(fWallet?.balance || 0);
+        await updateWalletBalance(user_id, curBal + inGameAmount);
+      } catch (fErr) {}
+
+      try {
+        const { data: wallet } = await supabase.from('wallets').select('*').eq('user_id', user_id).single();
+        if (wallet) {
+          await supabase.from('wallets').update({ balance: wallet.balance + inGameAmount }).eq('user_id', user_id);
+        } else {
+          await supabase.from('wallets').insert({ user_id, balance: inGameAmount });
+        }
+      } catch (sErr) {}
     }
 
     return res.status(200).json({

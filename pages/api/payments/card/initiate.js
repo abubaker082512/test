@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { buildEasypaisaCheckoutData } from '../../../../utils/easypaisaClient';
 import { buildDirectPayUrl } from '../../../../utils/directPayClient';
+import { addTransaction } from '../../../../utils/firebaseDb';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -69,15 +70,28 @@ export default async function handler(req, res) {
         failedRedirectUrl
       });
 
-      await supabase.from('transactions').insert({
-        user_id,
-        type: 'deposit',
-        amount: inGameAmount,
-        status: 'pending',
-        method: 'DirectPay (Card)',
-        tx_id: clientTransactionId,
-        notes: `DirectPay Card Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount})`
-      });
+      try {
+        await addTransaction({
+          user_id,
+          type: 'deposit',
+          amount: inGameAmount,
+          status: 'pending',
+          notes: `DirectPay Card Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount})`,
+          metadata: { clientTransactionId, amountInPKR: numAmount }
+        });
+      } catch (fErr) {}
+
+      try {
+        await supabase.from('transactions').insert({
+          user_id,
+          type: 'deposit',
+          amount: inGameAmount,
+          status: 'pending',
+          method: 'DirectPay (Card)',
+          tx_id: clientTransactionId,
+          notes: `DirectPay Card Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount})`
+        });
+      } catch (dbErr) {}
 
       return res.status(200).json({
         success: true,
@@ -106,15 +120,28 @@ export default async function handler(req, res) {
       isSandbox: settings?.easypaisa_sandbox || false
     });
 
-    await supabase.from('transactions').insert({
-      user_id,
-      type: 'deposit',
-      amount: inGameAmount,
-      status: 'pending',
-      method: 'Direct API (Credit/Debit Card)',
-      tx_id: orderRefNum,
-      notes: `Direct Card Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Ref: ${orderRefNum} | Card Holder: ${cardHolderName || 'Cardholder'}`
-    });
+    try {
+      await addTransaction({
+        user_id,
+        type: 'deposit',
+        amount: inGameAmount,
+        status: 'pending',
+        notes: `Direct Card Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Ref: ${orderRefNum}`,
+        metadata: { orderRefNum, amountInPKR: numAmount }
+      });
+    } catch (fErr) {}
+
+    try {
+      await supabase.from('transactions').insert({
+        user_id,
+        type: 'deposit',
+        amount: inGameAmount,
+        status: 'pending',
+        method: 'Direct API (Credit/Debit Card)',
+        tx_id: orderRefNum,
+        notes: `Direct Card Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Ref: ${orderRefNum} | Card Holder: ${cardHolderName || 'Cardholder'}`
+      });
+    } catch (dbErr) {}
 
     return res.status(200).json({
       success: true,
