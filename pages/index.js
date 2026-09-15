@@ -7,7 +7,15 @@ import AuthModal from '../components/AuthModal'
 import GameCard from '../components/GameCard'
 
 const mockGames = [
-  // Paddy Power Flagships
+  // Poker API - Complete Texas Hold'em & Tournaments
+  { id: 'poker-texas-holdem', title: "Texas Hold'em No Limit", provider: 'PokerAPI', badge: 'High Stakes', recommended: true, theme: 'linear-gradient(135deg, #0d47a1 0%, #001064 100%)', icon: '♠️', slug: 'poker-texas-holdem', category: 'Poker', imageUrl: 'https://cdn.betnex.co/images/jiligaming/235.png' },
+  { id: 'poker-omaha', title: 'Omaha Hi-Lo Pot Limit', provider: 'PokerAPI', badge: '4 Hole Cards', recommended: true, theme: 'linear-gradient(135deg, #880e4f 0%, #311b92 100%)', icon: '♥️', slug: 'poker-omaha', category: 'Poker', imageUrl: '/games/super_ace.png' },
+  { id: 'poker-caribbean-stud', title: 'Caribbean Stud Poker', provider: 'PokerAPI', badge: '5+1 Bonus', recommended: true, theme: 'linear-gradient(135deg, #004d40 0%, #00251a 100%)', icon: '♦️', slug: 'poker-caribbean-stud', category: 'Poker', imageUrl: '/games/live.png' },
+  { id: 'poker-three-card', title: 'Three Card Poker Deluxe', provider: 'PokerAPI', badge: 'Pair Plus 40:1', recommended: true, theme: 'linear-gradient(135deg, #37474f 0%, #102027 100%)', icon: '♣️', slug: 'poker-three-card', category: 'Poker', imageUrl: '/games/live.png' },
+  { id: 'poker-jacks-or-better', title: 'Video Poker: Jacks or Better', provider: 'PokerAPI', badge: '4,000x Royal Flush', recommended: false, theme: 'linear-gradient(135deg, #bf360c 0%, #4e342e 100%)', icon: '🃏', slug: 'poker-jacks-or-better', category: 'Poker', imageUrl: 'https://cdn.betnex.co/images/jiligaming/74.webp' },
+  { id: 'poker-tournament', title: 'World Series Poker Championship', provider: 'PokerAPI', badge: 'Pi 100,000 GTD', recommended: true, theme: 'linear-gradient(135deg, #f57f17 0%, #b71c1c 100%)', icon: '🏆', slug: 'poker-tournament', category: 'Poker', imageUrl: 'https://cdn.betnex.co/images/jiligaming/48.webp' },
+
+  // Paddy Power Flagships & Exclusives
   { id: 'Chests-of-Plenty', title: 'Chests of Plenty', provider: 'PaddyPower', badge: 'Jackpot', recommended: true, theme: 'linear-gradient(135deg, #1b5e20 0%, #003300 100%)', icon: '🏴‍☠️', slug: 'Chests-of-Plenty', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/235.png' },
   { id: 'paddy-fishin-frenzy', title: "Fishin' Frenzy Big Catch", provider: 'PaddyPower', badge: 'Popular', recommended: true, theme: 'linear-gradient(135deg, #01579b 0%, #002f6c 100%)', icon: '🎣', slug: 'paddy-fishin-frenzy', category: 'Slots', imageUrl: '/games/fishing.png' },
   { id: 'paddy-roulette-live', title: 'Paddy Power Live Roulette', provider: 'PaddyPower', badge: 'Live HD', recommended: true, theme: 'linear-gradient(135deg, #311b92 0%, #12005e 100%)', icon: '🎡', slug: 'paddy-roulette-live', category: 'Live', imageUrl: '/games/live.png' },
@@ -22,19 +30,21 @@ const mockGames = [
   { id: 'rr-pick-n-mix', title: "Rainbow Riches: Pick 'n' Mix", provider: 'RainbowRiches', badge: '5 Bonus Games', recommended: true, theme: 'linear-gradient(135deg, #00838f 0%, #005662 100%)', icon: '🎩', slug: 'rr-pick-n-mix', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/37.png' },
   { id: 'rr-drop-of-gold', title: 'Rainbow Riches: Drops of Gold', provider: 'RainbowRiches', badge: 'Drop Wilds', recommended: false, theme: 'linear-gradient(135deg, #ff8f00 0%, #c56000 100%)', icon: '🪙', slug: 'rr-drop-of-gold', category: 'Jackpots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/47.webp' },
 
-  // Poker API Texas Hold'em
-  { id: 'poker-texas-holdem', title: "Texas Hold'em No Limit", provider: 'PokerAPI', badge: 'High Stakes', recommended: true, theme: 'linear-gradient(135deg, #0d47a1 0%, #001064 100%)', icon: '♠️', slug: 'poker-texas-holdem', category: 'Poker', imageUrl: 'https://cdn.betnex.co/images/jiligaming/235.png' },
-  { id: 'poker-tournament', title: 'World Series Championship', provider: 'PokerAPI', badge: 'Pi 100K GTD', recommended: true, theme: 'linear-gradient(135deg, #f57f17 0%, #b71c1c 100%)', icon: '🏆', slug: 'poker-tournament', category: 'Poker', imageUrl: 'https://cdn.betnex.co/images/jiligaming/48.webp' }
+  // ScorpioPlay / Pragmatic Flagships
+  { id: 'vswaysdogs', title: 'The Dog House Megaways', provider: 'Pragmatic Play', badge: '117,649 Ways', recommended: true, theme: 'linear-gradient(135deg, #b71c1c 0%, #4a148c 100%)', icon: '🐶', slug: 'vswaysdogs', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/48.webp' },
+  { id: 'vs20olympgate', title: 'Gates of Olympus 1000', provider: 'Pragmatic Play', badge: '5,000x Max', recommended: true, theme: 'linear-gradient(135deg, #ffd600 0%, #e65100 100%)', icon: '⚡', slug: 'vs20olympgate', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/74.webp' },
+  { id: 'vs20sweetbonz', title: 'Sweet Bonanza 1000', provider: 'Pragmatic Play', badge: 'Tumble 100x', recommended: true, theme: 'linear-gradient(135deg, #e91e63 0%, #880e4f 100%)', icon: '🍭', slug: 'vs20sweetbonz', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/38.webp' },
+  { id: 'spribe_aviator', title: 'Aviator Crash Game', provider: 'Spribe', badge: '10,000x Crash', recommended: true, theme: 'linear-gradient(135deg, #d32f2f 0%, #000 100%)', icon: '🚀', slug: 'spribe_aviator', category: 'Crash', imageUrl: '/games/crash.png' }
 ]
 
 // Scrolling live winner events
 const winEvents = [
-  { name: 'ali***77', game: 'Rainbow Riches Pots of Gold', amount: 'Pi 14,150.00', provider: 'RainbowRiches', avatar: '👨‍💻' },
-  { name: 'zain***88', game: 'Texas Holdem NL', amount: 'Pi 9,450.00', provider: 'PokerAPI', avatar: '👩‍⚕️' },
-  { name: 'pak***01', game: 'Chests of Plenty', amount: 'Pi 12,279.20', provider: 'PaddyPower', avatar: '🦁' },
-  { name: 'jill***00', game: 'Rainbow Riches Megaways', amount: 'Pi 8,033.00', provider: 'RainbowRiches', avatar: '🐱' },
-  { name: 'asif***99', game: 'Age of the Gods', amount: 'Pi 8,900.00', provider: 'PaddyPower', avatar: '🦅' },
-  { name: 'ahmed***10', game: 'World Series Poker', amount: 'Pi 25,500.00', provider: 'PokerAPI', avatar: '🔥' },
+  { name: 'ali***77', game: 'Texas Holdem NL', amount: 'Pi 24,150.00', provider: 'PokerAPI', avatar: '♠️' },
+  { name: 'zain***88', game: 'Rainbow Riches Pots', amount: 'Pi 12,850.00', provider: 'RainbowRiches', avatar: '🌈' },
+  { name: 'pak***01', game: 'Chests of Plenty', amount: 'Pi 18,279.20', provider: 'PaddyPower', avatar: '☘️' },
+  { name: 'jill***00', game: 'World Series Poker', amount: 'Pi 48,033.00', provider: 'PokerAPI', avatar: '🏆' },
+  { name: 'asif***99', game: 'Gates of Olympus', amount: 'Pi 15,900.00', provider: 'Pragmatic', avatar: '⚡' },
+  { name: 'ahmed***10', game: 'Aviator Crash', amount: 'Pi 35,500.00', provider: 'Spribe', avatar: '🚀' },
 ]
 
 export default function Home() {
@@ -179,7 +189,6 @@ export default function Home() {
   ]
 
   useEffect(() => {
-    // Auto banner transition every 4.5 seconds
     const slideInt = setInterval(() => {
       setCurrentSlide(prev => (prev + 1) % promoBanners.length)
     }, 4500)
@@ -230,19 +239,21 @@ export default function Home() {
     }
   }
 
-  // Categories list matching Paddy Power exclusive catalog
+  // Categories list covering all integrated providers
   const categoriesList = [
     { name: 'Hot', label: 'All Games', icon: '🔥' },
+    { name: 'Poker', label: 'Poker Room', icon: '♠️' },
+    { name: 'Rainbow', label: 'Rainbow Riches', icon: '🌈' },
+    { name: 'Paddy', label: 'Paddy Power', icon: '☘️' },
     { name: 'Slots', label: 'Slots', icon: '🎰' },
     { name: 'Live', label: 'Live Tables', icon: '🎡' },
-    { name: 'Cards', label: 'Cards & Blackjack', icon: '🃏' },
-    { name: 'Jackpots', label: 'Jackpots', icon: '⚡' },
+    { name: 'Cards', label: 'Cards & Table', icon: '🃏' },
+    { name: 'Crash', label: 'Crash Games', icon: '🚀' }
   ]
 
   // Filter games based on selected tab
   const getFilteredGames = (category) => {
     const combined = [...mockGames, ...apiGames];
-    // Deduplicate by id
     const unique = [];
     const seen = new Set();
     for (const g of combined) {
@@ -253,17 +264,18 @@ export default function Home() {
     }
 
     if (category === 'Hot') return unique;
-    if (category === 'Slots') return unique.filter(g => g.category === 'Slots' || g.category === 'slot');
-    if (category === 'Live') return unique.filter(g => g.category === 'Live' || g.category === 'live');
-    if (category === 'Cards') return unique.filter(g => g.category === 'Cards' || g.category === 'table');
-    if (category === 'Jackpots') return unique.filter(g => g.category === 'Jackpots' || g.badge?.toLowerCase().includes('jackpot'));
+    if (category === 'Poker') return unique.filter(g => g.category === 'Poker' || g.provider === 'PokerAPI' || g.id?.includes('poker') || g.title?.toLowerCase().includes('poker') || g.title?.toLowerCase().includes('hold\'em') || g.title?.toLowerCase().includes('omaha'));
+    if (category === 'Rainbow') return unique.filter(g => g.provider === 'RainbowRiches' || g.id?.startsWith('rr-'));
+    if (category === 'Paddy') return unique.filter(g => g.provider === 'PaddyPower' || g.id?.startsWith('paddy-') || g.id === 'Chests-of-Plenty');
+    if (category === 'Slots') return unique.filter(g => g.category?.toLowerCase().includes('slot') || g.gameType === 0 || g.gameType === 'slot');
+    if (category === 'Live') return unique.filter(g => g.category?.toLowerCase().includes('live') || g.gameType === 1 || g.gameType === 'live');
+    if (category === 'Cards') return unique.filter(g => g.category?.toLowerCase().includes('card') || g.category === 'Poker' || g.category?.toLowerCase().includes('table'));
+    if (category === 'Crash') return unique.filter(g => g.category?.toLowerCase().includes('crash') || g.id?.includes('crash') || g.id?.includes('aviator') || g.gameType === 2);
+    if (category === 'Jackpots') return unique.filter(g => g.category?.toLowerCase().includes('jackpot') || g.badge?.toLowerCase().includes('jackpot'));
     return unique.filter(g => g.category === category);
   }
 
-  const filteredGames = getFilteredGames(activeCategory)
-  
-  // Display all games in the horizontal scrolling row
-  const displayedGames = filteredGames
+  const activeTabGames = getFilteredGames(activeCategory);
 
   return (
     <div className="app">
@@ -311,7 +323,7 @@ export default function Home() {
         <span className="announcement-icon">🔊</span>
         <div className="announcement-marquee">
           <span className="announcement-text">
-            🌟 Welcome to WinX Pro Official! Play Paddy Power exclusive slots, live tables & jackpots. Withdrawals are processed in under 2 minutes via Easypaisa, JazzCash, and Cards!
+            🌟 Welcome to WinX Pro Official! Play Paddy Power exclusive slots, live tables, Poker Room & Rainbow Riches. Withdrawals in under 2 minutes!
           </span>
         </div>
         <div className="announcement-mail" onClick={() => alert("Inbox: 2 new promotional messages loaded.")}>
@@ -326,7 +338,6 @@ export default function Home() {
           🏆 Top Winning Live Ticker
         </div>
         <div className="winners-ticker-track">
-          {/* Double list contents for seamless looping */}
           {[...winEvents, ...winEvents].map((win, idx) => (
             <div key={idx} className="winner-card">
               <span className="winner-avatar">{win.avatar}</span>
@@ -340,21 +351,13 @@ export default function Home() {
         </div>
       </div>
 
-      
-      {/* Category Tabs chip navigation (Anchor Links) */}
+      {/* Category Tabs chip navigation */}
       <div className="category-bar" style={{ position: 'sticky', top: '60px', zIndex: 40, background: 'var(--bg-tertiary)', paddingBottom: '10px' }}>
         {categoriesList.map(cat => (
           <button 
             key={cat.name}
             className={`category-chip ${activeCategory === cat.name ? 'active' : ''}`}
-            onClick={() => {
-              setActiveCategory(cat.name);
-              const el = document.getElementById('section-' + cat.name);
-              if (el) {
-                const y = el.getBoundingClientRect().top + window.scrollY - 120;
-                window.scrollTo({ top: y, behavior: 'smooth' });
-              }
-            }}
+            onClick={() => setActiveCategory(cat.name)}
           >
             <span>{cat.icon}</span>
             <span>{cat.label || cat.name}</span>
@@ -362,41 +365,80 @@ export default function Home() {
         ))}
       </div>
 
-      {/* Games List Vertical Sections */}
+      {/* Games List Container */}
       <div className="all-games-container" style={{ paddingBottom: '24px' }}>
-        {categoriesList.map(cat => {
-          const catGames = getFilteredGames(cat.name);
-          if (catGames.length === 0) return null;
+        {activeCategory !== 'Hot' ? (
+          <section style={{ padding: '20px 16px 0' }}>
+            <div className="section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div className="title-left" style={{ fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontWeight: '900' }}>
+                <span>{categoriesList.find(c => c.name === activeCategory)?.icon}</span> {categoriesList.find(c => c.name === activeCategory)?.label} ({activeTabGames.length})
+              </div>
+              <button 
+                onClick={() => setActiveCategory('Hot')}
+                style={{ background: 'transparent', border: 'none', color: 'var(--accent)', fontSize: '12px', cursor: 'pointer' }}
+              >
+                View All Categories →
+              </button>
+            </div>
 
-          return (
-            <section key={cat.name} id={'section-' + cat.name} style={{ padding: '24px 16px 0' }} aria-label={`${cat.label || cat.name} Catalog`}>
-              <div className="section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <div className="title-left" style={{ fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontWeight: '900' }}>
-                  <span>{cat.icon}</span> {cat.label || cat.name}
+            <div className="games-grid">
+              {activeTabGames.map(game => (
+                <GameCard 
+                  key={game.id}
+                  id={game.id}
+                  title={game.title}
+                  provider={game.provider}
+                  badge={game.badge}
+                  recommended={game.recommended}
+                  theme={game.theme}
+                  icon={game.icon}
+                  slug={game.slug}
+                  imageType={game.imageType}
+                  imageUrl={game.imageUrl}
+                />
+              ))}
+            </div>
+          </section>
+        ) : (
+          categoriesList.filter(c => c.name !== 'Hot').map(cat => {
+            const catGames = getFilteredGames(cat.name);
+            if (catGames.length === 0) return null;
+
+            return (
+              <section key={cat.name} id={'section-' + cat.name} style={{ padding: '24px 16px 0' }} aria-label={`${cat.label || cat.name} Catalog`}>
+                <div className="section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <div className="title-left" style={{ fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontWeight: '900' }}>
+                    <span>{cat.icon}</span> {cat.label || cat.name}
+                  </div>
+                  <button 
+                    onClick={() => setActiveCategory(cat.name)}
+                    style={{ background: 'transparent', border: 'none', color: 'var(--accent)', fontSize: '12px', cursor: 'pointer' }}
+                  >
+                    Explore {cat.label} ({catGames.length}) →
+                  </button>
                 </div>
-                
-              </div>
 
-              <div className="games-grid">
-                {catGames.map(game => (
-                  <GameCard 
-                    key={game.id}
-                    id={game.id}
-                    title={game.title}
-                    provider={game.provider}
-                    badge={game.badge}
-                    recommended={game.recommended}
-                    theme={game.theme}
-                    icon={game.icon}
-                    slug={game.slug}
-                    imageType={game.imageType}
-                    imageUrl={game.imageUrl}
-                  />
-                ))}
-              </div>
-            </section>
-          )
-        })}
+                <div className="games-grid">
+                  {catGames.slice(0, 6).map(game => (
+                    <GameCard 
+                      key={game.id}
+                      id={game.id}
+                      title={game.title}
+                      provider={game.provider}
+                      badge={game.badge}
+                      recommended={game.recommended}
+                      theme={game.theme}
+                      icon={game.icon}
+                      slug={game.slug}
+                      imageType={game.imageType}
+                      imageUrl={game.imageUrl}
+                    />
+                  ))}
+                </div>
+              </section>
+            )
+          })
+        )}
       </div>
       
 {/* Partners section */}

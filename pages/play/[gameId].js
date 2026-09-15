@@ -179,7 +179,7 @@ export default function PlayGame() {
       </div>
 
       {/* Main Game Stage */}
-      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: '#0a0d14' }}>
         {liveLoading ? (
           <div style={{ 
             flex: 1, 
@@ -192,7 +192,7 @@ export default function PlayGame() {
           }}>
             <div style={{ fontSize: '48px', animation: 'spin-slow 2s infinite' }}>🎡</div>
             <h3 style={{ marginTop: '16px', fontSize: '18px' }}>Connecting to Official Provider...</h3>
-            <p style={{ color: 'var(--muted)', fontSize: '12px', marginTop: '6px' }}>Establishing secure API session & Fiat Bridge</p>
+            <p style={{ color: 'var(--muted)', fontSize: '12px', marginTop: '6px' }}>Establishing secure API session & Real-time Balance Bridge</p>
           </div>
         ) : liveError ? (
           <div style={{ 
@@ -210,7 +210,7 @@ export default function PlayGame() {
             </h2>
             <p style={{ color: 'var(--muted)', fontSize: '13px', maxWidth: '440px', lineHeight: '1.6', marginBottom: '24px' }}>
               {liveError 
-                ? `Provider error: ${liveError}.` 
+                ? `Provider message: ${liveError}.` 
                 : `We could not establish an active session for "${gameId}". Please retry.`}
             </p>
             <div style={{ display: 'flex', gap: '12px' }}>
@@ -225,19 +225,49 @@ export default function PlayGame() {
             </div>
           </div>
         ) : liveGameUrl ? (
-          <iframe 
-            id="game-iframe"
-            src={liveGameUrl}
-            style={{ 
-              width: '100%', 
-              height: '100%', 
-              border: 'none', 
-              flex: 1,
-              background: '#000'
-            }}
-            allow="fullscreen; autoplay; encrypted-media; screen-wake-lock"
-            title={gameTitle || 'Game'}
-          />
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+            {/* Quick Direct Launch Banner */}
+            <div style={{
+              background: 'linear-gradient(90deg, #1e3a8a 0%, #065f46 100%)',
+              padding: '8px 16px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              fontSize: '12px',
+              zIndex: 10
+            }}>
+              <span>🎮 <strong>Official Live Session Ready</strong>. If game shows loader below, click direct mode:</span>
+              <button
+                onClick={() => window.open(liveGameUrl, '_blank', 'noopener,noreferrer')}
+                style={{
+                  background: '#00e676',
+                  color: '#000',
+                  fontWeight: '800',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '4px 12px',
+                  cursor: 'pointer',
+                  fontSize: '11px'
+                }}
+              >
+                🚀 Open Direct Window
+              </button>
+            </div>
+
+            <iframe 
+              id="game-iframe"
+              src={liveGameUrl}
+              style={{ 
+                width: '100%', 
+                height: '100%', 
+                border: 'none', 
+                flex: 1,
+                background: '#000'
+              }}
+              allow="fullscreen; autoplay; encrypted-media; camera; microphone; clipboard-read; clipboard-write; screen-wake-lock"
+              title={gameTitle || 'Game'}
+            />
+          </div>
         ) : null}
       </div>
     </div>
