@@ -110,9 +110,9 @@ export default async function handler(req, res) {
   // Resolve game ID through mapping if user provided a slug
   const finalGameId = GAME_MAP[payload.gameId] || (payload.gameId?.length === 32 ? payload.gameId : 'bdfb23c974a2517198c5443adeea77a8');
 
-  // Ensure username is strictly alphanumeric between 4 and 32 chars, prefixed with "akw" to prevent provider collisions
-  const rawUser = (payload.username || 'player').replace(/[^a-zA-Z0-9]/g, '');
-  const cleanUsername = `akw${rawUser}`.substring(0, 30);
+  // Ensure username is strictly lowercase alphanumeric between 4 and 24 chars, prefixed with "akw" to prevent provider collisions
+  const rawUser = String(payload.username || 'player').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const cleanUsername = `akw${rawUser}`.toLowerCase().substring(0, 24);
 
   try {
     const data = await RAPID.getGameUrl({

@@ -1,4 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
+import { db } from '../../../utils/firebase'
+import { doc, getDoc } from 'firebase/firestore'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -18,62 +20,44 @@ const DEFAULT_EASYPAISA_HASH_KEY = process.env.EASYPAISA_HASH_KEY || '1234567890
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })
 
+  let firestoreGateways = {}
   try {
-    const { data, error } = await supabase
+    const docRef = doc(db, 'settings', 'payment_gateways')
+    const snap = await getDoc(docRef)
+    if (snap.exists()) {
+      firestoreGateways = snap.data() || {}
+    }
+  } catch (e) {}
+
+  try {
+    const { data } = await supabase
       .from('currency_rates')
       .select('*')
       .eq('id', 1)
       .single()
 
-    const defaults = {
+    const merged = {
       success: true,
-      pkr_rate: 1.00,
-      usd_rate: 280.00,
-      payin_pkr_rate: 1.00,
-      payout_pkr_rate: 1.00,
-      directpay_client_id: DEFAULT_CLIENT_ID,
-      directpay_client_secret: DEFAULT_CLIENT_SECRET,
-      directpay_enabled: true,
-      jazzcash_merchant_id: DEFAULT_JAZZCASH_MERCHANT_ID,
-      jazzcash_password: DEFAULT_JAZZCASH_PASSWORD,
-      jazzcash_integrity_salt: DEFAULT_JAZZCASH_SALT,
-      jazzcash_enabled: true,
-      jazzcash_mode: 'direct_api',
-      easypaisa_store_id: DEFAULT_EASYPAISA_STORE_ID,
-      easypaisa_hash_key: DEFAULT_EASYPAISA_HASH_KEY,
-      easypaisa_enabled: true,
-      easypaisa_mode: 'direct_api',
-      card_mode: 'direct_api'
+      pkr_rate: parseFloat(data?.pkr_rate || firestoreGateways?.pkr_rate || 1.0),
+      usd_rate: parseFloat(data?.usd_rate || firestoreGateways?.usd_rate || 280.0),
+      payin_pkr_rate: parseFloat(data?.payin_pkr_rate || firestoreGateways?.payin_pkr_rate || data?.pkr_rate || 1.0),
+      payout_pkr_rate: parseFloat(data?.payout_pkr_rate || firestoreGateways?.payout_pkr_rate || data?.pkr_rate || 1.0),
+      directpay_client_id: data?.directpay_client_id || firestoreGateways?.directpay_client_id || DEFAULT_CLIENT_ID,
+      directpay_client_secret: data?.directpay_client_secret || firestoreGateways?.directpay_client_secret || DEFAULT_CLIENT_SECRET,
+      directpay_enabled: data?.directpay_enabled !== undefined ? Boolean(data.directpay_enabled) : (firestoreGateways?.directpay_enabled !== false),
+      jazzcash_merchant_id: firestoreGateways?.jazzcash_merchant_id || DEFAULT_JAZZCASH_MERCHANT_ID,
+      jazzcash_password: firestoreGateways?.jazzcash_password || DEFAULT_JAZZCASH_PASSWORD,
+      jazzcash_integrity_salt: firestoreGateways?.jazzcash_integrity_salt || DEFAULT_JAZZCASH_SALT,
+      jazzcash_enabled: firestoreGateways?.jazzcash_enabled !== undefined ? Boolean(firestoreGateways.jazzcash_enabled) : true,
+      jazzcash_mode: firestoreGateways?.jazzcash_mode || 'direct_api',
+      easypaisa_store_id: firestoreGateways?.easypaisa_store_id || DEFAULT_EASYPAISA_STORE_ID,
+      easypaisa_hash_key: firestoreGateways?.easypaisa_hash_key || DEFAULT_EASYPAISA_HASH_KEY,
+      easypaisa_enabled: firestoreGateways?.easypaisa_enabled !== undefined ? Boolean(firestoreGateways.easypaisa_enabled) : true,
+      easypaisa_mode: firestoreGateways?.easypaisa_mode || 'direct_api',
+      card_mode: firestoreGateways?.card_mode || 'direct_api'
     }
 
-    if (error || !data) {
-      return res.status(200).json({
-        ...defaults,
-        is_fallback: true
-      })
-    }
-
-    return res.status(200).json({
-      success: true,
-      pkr_rate: parseFloat(data.pkr_rate || 1.0),
-      usd_rate: parseFloat(data.usd_rate || 280.0),
-      payin_pkr_rate: parseFloat(data.payin_pkr_rate || data.pkr_rate || 1.0),
-      payout_pkr_rate: parseFloat(data.payout_pkr_rate || data.pkr_rate || 1.0),
-      directpay_client_id: data.directpay_client_id || DEFAULT_CLIENT_ID,
-      directpay_client_secret: data.directpay_client_secret || DEFAULT_CLIENT_SECRET,
-      directpay_enabled: data.directpay_enabled !== false,
-      jazzcash_merchant_id: data.jazzcash_merchant_id || DEFAULT_JAZZCASH_MERCHANT_ID,
-      jazzcash_password: data.jazzcash_password || DEFAULT_JAZZCASH_PASSWORD,
-      jazzcash_integrity_salt: data.jazzcash_integrity_salt || DEFAULT_JAZZCASH_SALT,
-      jazzcash_enabled: data.jazzcash_enabled !== false,
-      jazzcash_mode: data.jazzcash_mode || 'direct_api',
-      easypaisa_store_id: data.easypaisa_store_id || DEFAULT_EASYPAISA_STORE_ID,
-      easypaisa_hash_key: data.easypaisa_hash_key || DEFAULT_EASYPAISA_HASH_KEY,
-      easypaisa_enabled: data.easypaisa_enabled !== false,
-      easypaisa_mode: data.easypaisa_mode || 'direct_api',
-      card_mode: data.card_mode || 'direct_api',
-      is_fallback: false
-    })
+    return res.status(200).json(merged)
   } catch (err) {
     return res.status(200).json({
       success: true,
@@ -94,8 +78,7 @@ export default async function handler(req, res) {
       easypaisa_enabled: true,
       easypaisa_mode: 'direct_api',
       card_mode: 'direct_api',
-      is_fallback: true,
-      error: err.message
+      ...firestoreGateways
     })
   }
 }

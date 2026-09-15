@@ -84,8 +84,19 @@ export default function WalletPage() {
 
   const fetchData = async () => {
     if (!user) return
-    const { data: w } = await supabase.from('wallets').select('*').eq('user_id', user.id).single()
-    setWallet(w)
+    try {
+      const res = await fetch(`/api/wallet/get-balance?user_id=${encodeURIComponent(user.id || user.uid || '')}&email=${encodeURIComponent(user.email || '')}`)
+      const json = await res.json()
+      if (json.success && json.wallet) {
+        setWallet(json.wallet)
+      } else {
+        const { data: w } = await supabase.from('wallets').select('*').eq('user_id', user.id).single()
+        setWallet(w)
+      }
+    } catch (e) {
+      const { data: w } = await supabase.from('wallets').select('*').eq('user_id', user.id).single()
+      setWallet(w)
+    }
     const { data: t } = await supabase.from('transactions').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(20)
     setTransactions(t || [])
   }

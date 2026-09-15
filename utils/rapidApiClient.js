@@ -142,7 +142,7 @@ export class RapidApiClient {
 
   async getGameUrl(payload = {}) {
     const formattedPayload = {
-      username: (payload.username || 'player').replace(/[^a-zA-Z0-9]/g, '').substring(0, 30) || 'akwplayer1',
+      username: String(payload.username || 'player').toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 24) || 'akwplayer1',
       gameId: payload.gameId || 'bdfb23c974a2517198c5443adeea77a8',
       lang: payload.lang || 'en',
       money: payload.money !== undefined ? payload.money : 0,

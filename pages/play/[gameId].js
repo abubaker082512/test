@@ -24,6 +24,15 @@ export default function PlayGame() {
   
   const fetchWallet = async () => {
     if (!user) return
+    try {
+      const res = await fetch(`/api/wallet/get-balance?user_id=${encodeURIComponent(user.id || user.uid || '')}&email=${encodeURIComponent(user.email || '')}`)
+      const json = await res.json()
+      if (json.success && json.wallet) {
+        setWallet(json.wallet)
+        return
+      }
+    } catch (e) {}
+
     const { data } = await supabase.from('wallets').select('*').eq('user_id', user.id).single()
     if (data) setWallet(data)
   }
