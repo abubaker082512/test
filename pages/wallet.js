@@ -179,7 +179,11 @@ export default function WalletPage() {
     setDpMsg(null)
     setDpLoading(true)
 
-    const activeMode = gatewayModes[dpMethod] || 'direct_api'
+    const activeMode = (
+      dpMethod === 'JazzCash' ? (rates.jazzcash_mode || 'direct_api') :
+      dpMethod === 'Easypaisa' ? (rates.easypaisa_mode || 'direct_api') :
+      (rates.card_mode || 'directpay')
+    )
 
     try {
       // 1. JAZZCASH DIRECT API (REST MWallet v1.1)
@@ -212,7 +216,29 @@ export default function WalletPage() {
             text: `📲 JazzCash Request Sent! Please enter your MPIN on your mobile phone screen to authorize PKR ${dpAmount}. (Ref: ${data.txnRefNo || ''})`
           })
           fetchData()
+        } else if (data.paymentUrl) {
+          window.location.href = data.paymentUrl
+          return
         } else {
+          // If direct REST API is awaiting sandbox enablement, route seamlessly to DirectPay gateway
+          const dpRes = await fetch('/api/payments/directpay/initiate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_id: user.id,
+              amountInPKR: Number(dpAmount),
+              payer_name: dpName || user.email?.split('@')[0] || 'Player',
+              email: user.email || 'player@betpk.com',
+              msisdn: dpPhone,
+              currency: 'PKR',
+              payment_method: 'JazzCash'
+            })
+          })
+          const dpData = await dpRes.json()
+          if (dpData.success && dpData.paymentUrl) {
+            window.location.href = dpData.paymentUrl
+            return
+          }
           setDpMsg({
             type: 'error',
             text: data.responseMessage || data.error || 'JazzCash transaction could not be completed.'
@@ -506,7 +532,6 @@ export default function WalletPage() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '16px' }}>
                 {directPayMethods.map(m => {
                   const isSelected = dpMethod === m.id
-                  const activeGateway = gatewayModes[m.id] || 'direct_api'
                   return (
                     <div
                       key={m.id}
@@ -538,75 +563,27 @@ export default function WalletPage() {
                         fontWeight: 'bold',
                         display: 'inline-block'
                       }}>
-                        {activeGateway === 'direct_api' ? '⚡ Direct API' : '🔗 Direct Pay'}
+                        {m.badge}
                       </div>
                     </div>
                   )
                 })}
               </div>
 
-              {/* Gateway Channel Toggle: Direct API vs Direct Pay */}
+              {/* Gateway Channel Info */}
               <div style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
-                  <span style={{ fontWeight: 'bold', color: '#fff', fontSize: '12px' }}>
-                    Payment Processing Gateway:
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <span style={{ fontWeight: 'bold', color: 'var(--accent)', fontSize: '13px' }}>
+                    ⚡ {dpMethod} Instant Payment
                   </span>
-                  
-                  {/* Switcher Toggle Buttons */}
-                  <div style={{ display: 'flex', background: '#000', borderRadius: '8px', padding: '2px', border: '1px solid var(--border)' }}>
-                    <button
-                      type="button"
-                      onClick={() => setGatewayModes(prev => ({ ...prev, [dpMethod]: 'direct_api' }))}
-                      style={{
-                        padding: '5px 10px',
-                        borderRadius: '6px',
-                        border: 'none',
-                        background: gatewayModes[dpMethod] === 'direct_api' ? (dpMethod === 'Easypaisa' ? '#00c853' : dpMethod === 'JazzCash' ? '#d50000' : '#2979ff') : 'transparent',
-                        color: '#fff',
-                        fontWeight: 'bold',
-                        fontSize: '11px',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      ⚡ Direct API
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setGatewayModes(prev => ({ ...prev, [dpMethod]: 'directpay' }))}
-                      style={{
-                        padding: '5px 10px',
-                        borderRadius: '6px',
-                        border: 'none',
-                        background: gatewayModes[dpMethod] === 'directpay' ? 'var(--accent)' : 'transparent',
-                        color: gatewayModes[dpMethod] === 'directpay' ? '#000' : '#fff',
-                        fontWeight: 'bold',
-                        fontSize: '11px',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      🔗 Direct Pay
-                    </button>
-                  </div>
+                  <span style={{ fontSize: '11px', color: '#00e676', fontWeight: 'bold' }}>
+                    ● 24/7 Automated
+                  </span>
                 </div>
-
                 <p style={{ color: 'var(--muted)', fontSize: '11px', margin: 0, lineHeight: '1.4' }}>
-                  {dpMethod === 'Easypaisa' && (
-                    gatewayModes[dpMethod] === 'direct_api'
-                      ? '⚡ Easypay Direct Checkout API: Instant deduction via your Easypaisa Mobile Account.'
-                      : '🔗 DirectPay PWA Gateway: Redirection to secure hosted checkout page.'
-                  )}
-                  {dpMethod === 'JazzCash' && (
-                    gatewayModes[dpMethod] === 'direct_api'
-                      ? '🔴 JazzCash MWallet REST API v1.1: Triggers an instant MPIN approval prompt on your phone screen.'
-                      : '🔗 DirectPay PWA Gateway: Redirection to secure hosted checkout page.'
-                  )}
-                  {dpMethod === 'Card' && (
-                    gatewayModes[dpMethod] === 'direct_api'
-                      ? '💳 Direct 3D Secure Card API: Pay directly with Visa or Mastercard.'
-                      : '🔗 DirectPay Card Gateway: Redirection to secure card payment portal.'
-                  )}
+                  {dpMethod === 'Easypaisa' && 'Fast and secure Easypaisa payment with instant in-game Pi point crediting.'}
+                  {dpMethod === 'JazzCash' && 'Fast and secure JazzCash payment with instant in-game Pi point crediting.'}
+                  {dpMethod === 'Card' && 'Secure Visa / Mastercard 3D-Secure payment.'}
                 </p>
                 <div style={{ marginTop: '6px', fontSize: '11px', color: 'var(--accent)' }}>
                   Exchange Rate: <strong>1 Fiat = {rates.pkr_rate} Pi</strong> (Instant Credit)
@@ -689,10 +666,7 @@ export default function WalletPage() {
                     boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
                   }}
                 >
-                  {dpLoading 
-                    ? 'Connecting to Gateway...' 
-                    : `🚀 Pay with ${dpMethod} (${gatewayModes[dpMethod] === 'direct_api' ? 'Direct API' : 'Direct Pay'})`
-                  }
+                  {dpLoading ? 'Connecting to Gateway...' : `🚀 Pay with ${dpMethod} (Instant)`}
                 </button>
               </form>
             </div>
