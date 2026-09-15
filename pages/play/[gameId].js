@@ -143,6 +143,35 @@ export default function PlayGame() {
             </div>
           )}
 
+          {liveGameUrl && (
+            <button 
+              onClick={() => {
+                const elem = document.getElementById('game-iframe');
+                if (elem) {
+                  if (elem.requestFullscreen) elem.requestFullscreen();
+                  else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+                  else window.open(liveGameUrl, '_blank');
+                } else {
+                  window.open(liveGameUrl, '_blank');
+                }
+              }}
+              className="btn"
+              style={{ padding: '5px 10px', fontSize: '11px', background: 'rgba(255,255,255,0.08)' }}
+              title="Fullscreen"
+            >
+              ⛶ Fullscreen
+            </button>
+          )}
+
+          <button 
+            onClick={fetchLiveUrl}
+            className="btn"
+            style={{ padding: '5px 10px', fontSize: '11px', background: 'rgba(255,255,255,0.08)' }}
+            title="Reload Game"
+          >
+            🔄
+          </button>
+
           <Link href="/" style={{ textDecoration: 'none' }}>
             <button className="btn" style={{ padding: '5px 12px', fontSize: '11px' }}>Exit</button>
           </Link>
@@ -196,46 +225,19 @@ export default function PlayGame() {
             </div>
           </div>
         ) : liveGameUrl ? (
-          (
-            <div style={{ 
-              flex: 1, 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              padding: '20px',
-              textAlign: 'center',
-              background: 'radial-gradient(circle at center, var(--bg-secondary) 0%, var(--bg) 100%)'
-            }}>
-              <div style={{ fontSize: '64px', marginBottom: '24px' }}>🎮</div>
-              <h2 style={{ fontSize: '28px', color: '#fff', marginBottom: '12px' }}>{gameTitle || 'Provider Game'} is Ready!</h2>
-              <p style={{ color: 'var(--muted)', fontSize: '15px', maxWidth: '400px', marginBottom: '32px', lineHeight: '1.5' }}>
-                This provider requires the game to be launched in fullscreen mode for the best performance and security.
-              </p>
-              
-              <div style={{ display: 'flex', gap: '16px', flexDirection: 'column', alignItems: 'center' }}>
-                <button 
-                  className="btn primary" 
-                  style={{ 
-                    padding: '16px 48px', 
-                    fontSize: '20px', 
-                    fontWeight: '900',
-                    boxShadow: '0 0 20px rgba(59, 130, 246, 0.5)',
-                    transform: 'scale(1.05)',
-                    transition: 'all 0.2s',
-                    cursor: 'pointer',
-                    borderRadius: '30px'
-                  }}
-                  onClick={() => window.location.href = liveGameUrl}
-                >
-                  ▶ PLAY NOW
-                </button>
-                <p style={{ fontSize: '11px', color: '#64748b', marginTop: '8px' }}>
-                  The game will securely open in this window.
-                </p>
-              </div>
-            </div>
-          )
+          <iframe 
+            id="game-iframe"
+            src={liveGameUrl}
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              border: 'none', 
+              flex: 1,
+              background: '#000'
+            }}
+            allow="fullscreen; autoplay; encrypted-media; screen-wake-lock"
+            title={gameTitle || 'Game'}
+          />
         ) : null}
       </div>
     </div>

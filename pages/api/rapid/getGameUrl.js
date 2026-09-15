@@ -2,15 +2,26 @@ import RapidApiClient from '../../../utils/rapidApiClient';
 import { isAllowed } from '../../../utils/rateLimiter';
 
 const RAPID = new RapidApiClient({
-  key: process.env.RAPIDAPI_KEY,
-  host: process.env.RAPIDAPI_HOST,
-  timeout: 8000,
+  key: process.env.BETNEX_API_KEY || '6aa7f4d40f809768b886e31e',
+  host: process.env.BETNEX_HOST || 'livecasinoapi.betnex.co:8055',
+  baseUrl: process.env.BETNEX_BASE_URL || 'http://livecasinoapi.betnex.co:8055',
+  timeout: 10000,
   maxRetries: 2,
   cacheTtlMs: 60 * 1000
 });
 
-// Translation map from user-friendly slugs to actual RapidAPI provider hashes
+// Translation map from user-friendly slugs to actual provider hashes
 const GAME_MAP = {
+  // Paddy Power Flagships & Exclusives
+  'Chests-of-Plenty': 'bdfb23c974a2517198c5443adeea77a8',
+  'chests-of-plenty': 'bdfb23c974a2517198c5443adeea77a8',
+  'paddy-rainbow-riches': 'fb2a2ac51303c0a0801dbe6a72d936f7',
+  'paddy-fishin-frenzy': '3cf4a85cb6dcf4d8836c982c359cd72d',
+  'paddy-roulette-live': 'b4af506243cafae52908e8fa266f8ff6',
+  'paddy-blackjack-exclusive': '87a7f4550407f5ed73c3353a54a11187',
+  'paddy-age-of-gods': '80aad2a10ae6a95068b50160d6c78897',
+  'paddy-mega-fire-blaze': '36b1e71c6f51827e24261d06a22b1e31',
+
   // JILI Flagships
   'super-ace': 'bdfb23c974a2517198c5443adeea77a8',          // Super Ace (JILI)
   'super-ace-deluxe': '80aad2a10ae6a95068b50160d6c78897',   // Super Ace Deluxe (JILI)
@@ -43,14 +54,6 @@ const GAME_MAP = {
   'cq9-slots': 'bdfb23c974a2517198c5443adeea77a8',          // Super Ace (JILI)
   'bng-slots': 'a990de177577a2e6a889aaac5f57b429',          // Fortune Gems (JILI)
 
-  // PaddyPower Mappings
-  'paddy-rainbow-riches': 'fb2a2ac51303c0a0801dbe6a72d936f7',
-  'paddy-fishin-frenzy': '3cf4a85cb6dcf4d8836c982c359cd72d',
-  'paddy-roulette-live': 'b4af506243cafae52908e8fa266f8ff6',
-  'paddy-blackjack-exclusive': '87a7f4550407f5ed73c3353a54a11187',
-  'paddy-age-of-gods': '80aad2a10ae6a95068b50160d6c78897',
-  'paddy-mega-fire-blaze': '36b1e71c6f51827e24261d06a22b1e31',
-  
   // Fallbacks
   'gold-slots': 'bdfb23c974a2517198c5443adeea77a8',
   'crash': 'bdfb23c974a2517198c5443adeea77a8',
