@@ -67,11 +67,11 @@ export default function NavBar() {
               src="/logo.png" 
               alt="WinX Pro" 
               style={{ 
-                height: '44px', 
+                height: '52px', 
                 width: 'auto', 
-                maxHeight: '44px',
+                maxHeight: '54px',
                 objectFit: 'contain',
-                filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4))'
+                filter: 'drop-shadow(0 2px 10px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 8px rgba(255, 215, 0, 0.3))'
               }} 
             />
           </Link>
