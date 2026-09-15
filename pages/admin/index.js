@@ -147,6 +147,9 @@ export default function AdminPanel() {
         body: JSON.stringify({
           password: ADMIN_PASSWORD,
           action: 'update_config',
+          global_rtp: Number(riskConfig.global_rtp),
+          max_win_cap: Number(riskConfig.max_win_cap),
+          force_house_edge: Boolean(riskConfig.force_house_edge),
           config: {
             global_rtp: Number(riskConfig.global_rtp),
             max_win_cap: Number(riskConfig.max_win_cap),
@@ -156,7 +159,7 @@ export default function AdminPanel() {
       })
       const data = await res.json()
       if (data.success) {
-        setRiskMsg({ type: 'success', text: 'Risk Controls updated successfully!' })
+        setRiskMsg({ type: 'success', text: `Risk Controls updated successfully! Global RTP set to ${riskConfig.global_rtp}%` })
         if (data.config) setRiskConfig(data.config)
       } else {
         setRiskMsg({ type: 'error', text: data.error })

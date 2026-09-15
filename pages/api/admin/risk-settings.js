@@ -1,9 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+import { supabase } from '../../../utils/supabase.js'
 
 const ADMIN_PASSWORD = 'Admin@123'
 
@@ -41,11 +36,19 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const { password, global_rtp, max_win_cap, force_house_edge, restricted_users, toggle_user_id } = req.body
+    const body = req.body || {}
+    const password = body.password
+    const cfg = body.config || body
 
     if (password !== ADMIN_PASSWORD) {
       return res.status(401).json({ error: 'Unauthorized' })
     }
+
+    const global_rtp = cfg.global_rtp !== undefined ? cfg.global_rtp : body.global_rtp
+    const max_win_cap = cfg.max_win_cap !== undefined ? cfg.max_win_cap : body.max_win_cap
+    const force_house_edge = cfg.force_house_edge !== undefined ? cfg.force_house_edge : body.force_house_edge
+    const restricted_users = cfg.restricted_users !== undefined ? cfg.restricted_users : body.restricted_users
+    const toggle_user_id = body.toggle_user_id || body.user_id || cfg.toggle_user_id || cfg.user_id
 
     if (global_rtp !== undefined) riskConfig.global_rtp = parseFloat(global_rtp)
     if (max_win_cap !== undefined) riskConfig.max_win_cap = parseFloat(max_win_cap)
@@ -56,6 +59,9 @@ export default async function handler(req, res) {
 
     // Quick toggle for a single user ID
     if (toggle_user_id) {
+      if (!Array.isArray(riskConfig.restricted_users)) {
+        riskConfig.restricted_users = []
+      }
       const exists = riskConfig.restricted_users.includes(toggle_user_id)
       if (exists) {
         riskConfig.restricted_users = riskConfig.restricted_users.filter(id => id !== toggle_user_id)
