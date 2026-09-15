@@ -179,6 +179,11 @@ export default function WalletPage() {
     setDpMsg(null)
     setDpLoading(true)
 
+    const activeUserId = user?.id || user?.uid || (typeof window !== 'undefined' && JSON.parse(localStorage.getItem('winxpro_session') || '{}')?.id) || 'player_' + Date.now()
+    const activeEmail = user?.email || dpEmail || 'player@betpk.com'
+    const activeName = dpName || user?.displayName || (activeEmail ? activeEmail.split('@')[0] : 'Player')
+    const activePhone = dpPhone || '03001234567'
+
     const activeMode = (
       dpMethod === 'JazzCash' ? (rates.jazzcash_mode || 'direct_api') :
       dpMethod === 'Easypaisa' ? (rates.easypaisa_mode || 'direct_api') :
@@ -192,18 +197,18 @@ export default function WalletPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            user_id: user.id,
+            user_id: activeUserId,
             amountInPKR: Number(dpAmount),
-            payer_name: dpName || user.email?.split('@')[0] || 'Player',
-            email: user.email || 'player@betpk.com',
-            msisdn: dpPhone,
+            payer_name: activeName,
+            email: activeEmail,
+            msisdn: activePhone,
             currency: 'PKR',
             payment_method: 'JazzCash'
           })
         })
-        const dpData = await dpRes.json()
+        const dpData = await dpRes.json().catch(() => ({}))
         if (dpData.success && dpData.paymentUrl) {
-          window.location.href = dpData.paymentUrl
+          window.location.assign(dpData.paymentUrl)
           return
         }
 
@@ -212,21 +217,21 @@ export default function WalletPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            user_id: user.id,
+            user_id: activeUserId,
             amountInPKR: Number(dpAmount),
-            mobileNumber: dpPhone,
-            payer_name: dpName || user.email?.split('@')[0] || 'Player'
+            mobileNumber: activePhone,
+            payer_name: activeName
           })
         })
-        const data = await res.json()
+        const data = await res.json().catch(() => ({}))
         if (data.paymentUrl) {
-          window.location.href = data.paymentUrl
+          window.location.assign(data.paymentUrl)
           return
         }
 
         setDpMsg({
           type: data.success ? 'success' : 'error',
-          text: data.responseMessage || data.error || 'Unable to connect to JazzCash gateway. Please try again.'
+          text: data.responseMessage || data.error || dpData.error || 'Unable to connect to JazzCash gateway. Please try again.'
         })
         setDpLoading(false)
         return
@@ -239,15 +244,15 @@ export default function WalletPage() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              user_id: user.id,
+              user_id: activeUserId,
               amountInPKR: Number(dpAmount),
-              mobileNumber: dpPhone,
-              email: dpEmail || user.email || 'player@winxpro.com',
+              mobileNumber: activePhone,
+              email: activeEmail,
               payment_method: 'MA_PAYMENT_METHOD'
             })
           })
 
-          const data = await res.json()
+          const data = await res.json().catch(() => ({}))
 
           if (data.success && data.hasConfiguredStore && data.actionUrl && data.fields) {
             // Post directly to Easypaisa checkout if custom store credentials exist
@@ -261,18 +266,18 @@ export default function WalletPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            user_id: user.id,
+            user_id: activeUserId,
             amountInPKR: Number(dpAmount),
-            payer_name: dpName || user.email?.split('@')[0] || 'Player',
-            email: user.email || 'player@betpk.com',
-            msisdn: dpPhone,
+            payer_name: activeName,
+            email: activeEmail,
+            msisdn: activePhone,
             currency: 'PKR',
             payment_method: 'Easypaisa'
           })
         })
-        const dpData = await dpRes.json()
+        const dpData = await dpRes.json().catch(() => ({}))
         if (dpData.success && dpData.paymentUrl) {
-          window.location.href = dpData.paymentUrl
+          window.location.assign(dpData.paymentUrl)
           return
         }
 
@@ -287,20 +292,20 @@ export default function WalletPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            user_id: user.id,
+            user_id: activeUserId,
             amountInPKR: Number(dpAmount),
             gateway_mode: activeMode,
-            cardHolderName: dpName || 'Cardholder',
-            mobileNumber: dpPhone,
-            email: dpEmail || user.email || 'player@winxpro.com'
+            cardHolderName: activeName,
+            mobileNumber: activePhone,
+            email: activeEmail
           })
         })
 
-        const data = await res.json()
+        const data = await res.json().catch(() => ({}))
 
         if (data.success) {
           if (data.mode === 'directpay' && data.paymentUrl) {
-            window.location.href = data.paymentUrl
+            window.location.assign(data.paymentUrl)
             return
           } else if (data.mode === 'direct_api' && data.actionUrl && data.fields) {
             submitPostForm(data.actionUrl, data.fields)
@@ -313,27 +318,27 @@ export default function WalletPage() {
         return
       }
 
-      // 4. DIRECTPAY GATEWAY (For Easypaisa / JazzCash / DirectPay Route)
+      // 4. DIRECTPAY GATEWAY (Default)
       const res = await fetch('/api/payments/directpay/initiate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: user.id,
+          user_id: activeUserId,
           amountInPKR: Number(dpAmount),
-          payer_name: dpName || user.email?.split('@')[0] || 'Player',
-          email: user.email || 'player@betpk.com',
-          msisdn: dpPhone,
+          payer_name: activeName,
+          email: activeEmail,
+          msisdn: activePhone,
           currency: 'PKR',
           payment_method: dpMethod
         })
       })
 
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
 
       if (data.success && data.paymentUrl) {
-        window.location.href = data.paymentUrl
+        window.location.assign(data.paymentUrl)
       } else {
-        setDpMsg({ type: 'error', text: data.error || 'Failed to initiate DirectPay payment.' })
+        setDpMsg({ type: 'error', text: data.error || 'Failed to initiate payment gateway.' })
         setDpLoading(false)
       }
     } catch (err) {

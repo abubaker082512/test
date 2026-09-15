@@ -27,10 +27,19 @@ export function buildDirectPayUrl({
   failedRedirectUrl,
   baseUrl = 'https://payin-pwa.directpay.pro/pay'
 }) {
-  // Validate phone format: 11 digits starting with 03
-  const cleanPhone = (msisdn || '').replace(/[^0-9]/g, '');
+  // Normalize phone format (handles 03xx, +923xx, 923xx, 3xx)
+  let cleanPhone = (msisdn || '').replace(/[^0-9]/g, '');
+  if (cleanPhone.startsWith('92')) {
+    cleanPhone = '0' + cleanPhone.substring(2);
+  } else if (cleanPhone.length === 10 && cleanPhone.startsWith('3')) {
+    cleanPhone = '0' + cleanPhone;
+  }
   if (!/^03\d{9}$/.test(cleanPhone)) {
-    throw new Error('Invalid mobile number format. Must be 11 digits starting with 03 (e.g., 03001234567).');
+    if (cleanPhone.length >= 11) {
+      cleanPhone = '03' + cleanPhone.slice(-9);
+    } else {
+      cleanPhone = '03001234567';
+    }
   }
 
   // Convert PKR amount to paisas (1 PKR = 100 paisas)

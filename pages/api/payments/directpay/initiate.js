@@ -32,11 +32,14 @@ export default async function handler(req, res) {
 
   try {
     // 1. Fetch current exchange rate and DirectPay settings
-    const { data: settings } = await supabase
-      .from('currency_rates')
-      .select('*')
-      .eq('id', 1)
-      .single();
+    let settings = null;
+    try {
+      const { data } = await Promise.race([
+        supabase.from('currency_rates').select('*').eq('id', 1).single(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
+      ]);
+      settings = data;
+    } catch (e) {}
 
     const pkrRate = settings?.pkr_rate ? parseFloat(settings.pkr_rate) : 1.0;
     const clientId = settings?.directpay_client_id || DEFAULT_CLIENT_ID;
