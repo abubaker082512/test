@@ -186,8 +186,28 @@ export default function WalletPage() {
     )
 
     try {
-      // 1. JAZZCASH DIRECT API (REST MWallet v1.1)
-      if (dpMethod === 'JazzCash' && activeMode === 'direct_api') {
+      // 1. JAZZCASH PAYMENT (Direct interactive checkout redirect)
+      if (dpMethod === 'JazzCash') {
+        const dpRes = await fetch('/api/payments/directpay/initiate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: user.id,
+            amountInPKR: Number(dpAmount),
+            payer_name: dpName || user.email?.split('@')[0] || 'Player',
+            email: user.email || 'player@betpk.com',
+            msisdn: dpPhone,
+            currency: 'PKR',
+            payment_method: 'JazzCash'
+          })
+        })
+        const dpData = await dpRes.json()
+        if (dpData.success && dpData.paymentUrl) {
+          window.location.href = dpData.paymentUrl
+          return
+        }
+
+        // Fallback to MWallet REST API
         const res = await fetch('/api/payments/jazzcash/initiate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -198,52 +218,16 @@ export default function WalletPage() {
             payer_name: dpName || user.email?.split('@')[0] || 'Player'
           })
         })
-
         const data = await res.json()
-
-        if (data.success) {
-          setDpMsg({
-            type: 'success',
-            text: `🎉 Payment successful! Pi ${data.inGameAmount} has been credited to your balance.`
-          })
-          setDpAmount('')
-          setDpPhone('')
-          fetchData()
-          window.dispatchEvent(new Event('wallet-updated'))
-        } else if (data.isPending || data.responseCode === '124' || data.responseCode === '001') {
-          setDpMsg({
-            type: 'success',
-            text: `📲 JazzCash Request Sent! Please enter your MPIN on your mobile phone screen to authorize PKR ${dpAmount}. (Ref: ${data.txnRefNo || ''})`
-          })
-          fetchData()
-        } else if (data.paymentUrl) {
+        if (data.paymentUrl) {
           window.location.href = data.paymentUrl
           return
-        } else {
-          // If direct REST API is awaiting sandbox enablement, route seamlessly to DirectPay gateway
-          const dpRes = await fetch('/api/payments/directpay/initiate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              user_id: user.id,
-              amountInPKR: Number(dpAmount),
-              payer_name: dpName || user.email?.split('@')[0] || 'Player',
-              email: user.email || 'player@betpk.com',
-              msisdn: dpPhone,
-              currency: 'PKR',
-              payment_method: 'JazzCash'
-            })
-          })
-          const dpData = await dpRes.json()
-          if (dpData.success && dpData.paymentUrl) {
-            window.location.href = dpData.paymentUrl
-            return
-          }
-          setDpMsg({
-            type: 'error',
-            text: data.responseMessage || data.error || 'JazzCash transaction could not be completed.'
-          })
         }
+
+        setDpMsg({
+          type: data.success ? 'success' : 'error',
+          text: data.responseMessage || data.error || 'Unable to connect to JazzCash gateway. Please try again.'
+        })
         setDpLoading(false)
         return
       }
