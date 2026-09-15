@@ -1,17 +1,17 @@
-﻿import { initializeApp, getApps, getApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getAnalytics, isSupported } from 'firebase/analytics';
 
 export const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyADYzDtfGP1AMcdr4lIqZ2Mdwlj03ANLkw",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyADYzDtfgPiAMcdr4lTqZ2MdwlJ83ANLkw",
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "winxpro-1263f.firebaseapp.com",
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "winxpro-1263f",
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "winxpro-1263f.firebasestorage.app",
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "752052905755",
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:752052905755:web:d0c286ca3db9a84bb395be",
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-WJWNYBYMHX"
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-W7WNYBYMHX"
 };
 
 // Initialize Firebase App
