@@ -122,7 +122,7 @@ export default async function handler(req, res) {
   }
 
   // Resolve game ID through mapping if user provided a slug
-  const finalGameId = GAME_MAP[payload.gameId] || payload.gameId;
+  const finalGameId = GAME_MAP[payload.gameId] || (payload.gameId?.length === 32 ? payload.gameId : 'bdfb23c974a2517198c5443adeea77a8');
 
   // Ensure username is strictly alphanumeric between 4 and 32 chars, prefixed with "akw" to prevent provider collisions
   const rawUser = (payload.username || 'player').replace(/[^a-zA-Z0-9]/g, '');
@@ -134,20 +134,17 @@ export default async function handler(req, res) {
       gameId: finalGameId,
       lang: payload.lang || 'en',
       money: payload.money !== undefined ? payload.money : 0,
-      home_url: payload.home_url || 'https://betnex.co',
+      home_url: payload.home_url || 'https://test-eight-zeta-88.vercel.app/',
       platform: payload.platform || 1,
-      currency: 'Fiat'
+      currency: payload.currency || 'Fiat'
     });
 
     const rawGameUrl = data?.payload?.game_launch_url || data?.game_launch_url || data?.gameUrl || (data?.data && data?.data?.url);
 
     if (rawGameUrl) {
-      // Resolve direct provider URL to avoid iframe blocking
-      const directUrl = await unrollDirectGameUrl(rawGameUrl);
-
       return res.status(200).json({
         success: true,
-        gameUrl: directUrl || rawGameUrl,
+        gameUrl: rawGameUrl,
         rawLaunchUrl: rawGameUrl,
         gameName: data?.payload?.game_name || payload.gameId,
         provider: data?.payload?.provider,

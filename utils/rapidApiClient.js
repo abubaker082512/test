@@ -140,7 +140,17 @@ export class RapidApiClient {
     }
   }
 
-  async getGameUrl(payload) {
+  async getGameUrl(payload = {}) {
+    const formattedPayload = {
+      username: (payload.username || 'player').replace(/[^a-zA-Z0-9]/g, '').substring(0, 30) || 'akwplayer1',
+      gameId: payload.gameId || 'bdfb23c974a2517198c5443adeea77a8',
+      lang: payload.lang || 'en',
+      money: payload.money !== undefined ? payload.money : 0,
+      currency: payload.currency || 'Fiat',
+      platform: payload.platform || 1,
+      home_url: payload.home_url || 'https://test-eight-zeta-88.vercel.app/'
+    };
+
     const url = this._buildUrl('/casino/getgameurl');
     try {
       const data = await this._retry(url, {
@@ -149,7 +159,7 @@ export class RapidApiClient {
           'Content-Type': 'application/json',
           'x-betnex-key': this.key
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(formattedPayload)
       });
       return data;
     } catch (err) {
@@ -160,7 +170,7 @@ export class RapidApiClient {
           'Content-Type': 'application/json',
           'x-betnex-key': this.key
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(formattedPayload)
       });
       return prodData;
     }
