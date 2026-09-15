@@ -31,19 +31,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. Fetch current exchange rate and DirectPay settings
-    let settings = null;
-    try {
-      const { data } = await Promise.race([
-        supabase.from('currency_rates').select('*').eq('id', 1).single(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
-      ]);
-      settings = data;
-    } catch (e) {}
-
-    const pkrRate = settings?.pkr_rate ? parseFloat(settings.pkr_rate) : 1.0;
-    const clientId = settings?.directpay_client_id || DEFAULT_CLIENT_ID;
-    const clientSecret = settings?.directpay_client_secret || DEFAULT_CLIENT_SECRET;
+    const pkrRate = 1.0;
+    const clientId = DEFAULT_CLIENT_ID;
+    const clientSecret = DEFAULT_CLIENT_SECRET;
 
     // Calculate in-game Pi points
     const inGameAmount = parseFloat((numAmount * pkrRate).toFixed(2));
@@ -56,7 +46,7 @@ export default async function handler(req, res) {
     const successRedirectUrl = `${host}/wallet?directpay_status=success&txn_id=${encodeURIComponent(clientTransactionId)}&amount=${encodeURIComponent(inGameAmount)}`;
     const failedRedirectUrl = `${host}/wallet?directpay_status=failed&txn_id=${encodeURIComponent(clientTransactionId)}`;
 
-    // 4. Build the DirectPay URL with Checksum
+    // 4. Build the DirectPay URL with Checksum immediately
     const paymentUrl = buildDirectPayUrl({
       clientId,
       clientSecret,
@@ -65,15 +55,15 @@ export default async function handler(req, res) {
       description: `BetPK Deposit via ${payment_method}: Pi ${inGameAmount}`,
       payerName: payer_name || 'Player',
       email: email || 'player@betpk.com',
-      msisdn,
+      msisdn: msisdn || '03001234567',
       currency,
       successRedirectUrl,
       failedRedirectUrl
     });
 
-    // 5. Store pending deposit in Firestore & Supabase
+    // 5. Fire-and-forget background logging (non-blocking)
     try {
-      await addTransaction({
+      addTransaction({
         user_id,
         type: 'deposit',
         amount: inGameAmount,
@@ -86,13 +76,11 @@ export default async function handler(req, res) {
           currency,
           payment_method
         }
-      });
-    } catch (fErr) {
-      console.warn('Firestore transaction log note:', fErr?.message);
-    }
+      }).catch(() => {});
+    } catch (e) {}
 
     try {
-      await supabase.from('transactions').insert({
+      supabase.from('transactions').insert({
         user_id,
         type: 'deposit',
         amount: inGameAmount,
@@ -100,10 +88,8 @@ export default async function handler(req, res) {
         method: `DirectPay (${payment_method})`,
         tx_id: clientTransactionId,
         notes: `DirectPay ${payment_method} Deposit: ${currency} ${numAmount.toFixed(2)} (Converted to Pi ${inGameAmount} at rate 1:${pkrRate}) | Phone: ${msisdn}`
-      });
-    } catch (dbError) {
-      console.warn('Supabase fallback transaction insert note:', dbError?.message);
-    }
+      }).then(() => {}).catch(() => {});
+    } catch (e) {}
 
     return res.status(200).json({
       success: true,

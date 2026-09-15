@@ -173,7 +173,7 @@ export default function WalletPage() {
     form.submit()
   }
 
-  // Unified Auto Pay Flow (Direct API vs DirectPay Gateway)
+  // Unified Auto Pay Flow (DirectPay Gateway for Easypaisa, JazzCash, Card)
   const handleAutoPaySubmit = async (e) => {
     e.preventDefault()
     setDpMsg(null)
@@ -184,141 +184,7 @@ export default function WalletPage() {
     const activeName = dpName || user?.displayName || (activeEmail ? activeEmail.split('@')[0] : 'Player')
     const activePhone = dpPhone || '03001234567'
 
-    const activeMode = (
-      dpMethod === 'JazzCash' ? (rates.jazzcash_mode || 'direct_api') :
-      dpMethod === 'Easypaisa' ? (rates.easypaisa_mode || 'direct_api') :
-      (rates.card_mode || 'directpay')
-    )
-
     try {
-      // 1. JAZZCASH PAYMENT (Direct interactive checkout redirect)
-      if (dpMethod === 'JazzCash') {
-        const dpRes = await fetch('/api/payments/directpay/initiate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            user_id: activeUserId,
-            amountInPKR: Number(dpAmount),
-            payer_name: activeName,
-            email: activeEmail,
-            msisdn: activePhone,
-            currency: 'PKR',
-            payment_method: 'JazzCash'
-          })
-        })
-        const dpData = await dpRes.json().catch(() => ({}))
-        if (dpData.success && dpData.paymentUrl) {
-          window.location.assign(dpData.paymentUrl)
-          return
-        }
-
-        // Fallback to MWallet REST API
-        const res = await fetch('/api/payments/jazzcash/initiate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            user_id: activeUserId,
-            amountInPKR: Number(dpAmount),
-            mobileNumber: activePhone,
-            payer_name: activeName
-          })
-        })
-        const data = await res.json().catch(() => ({}))
-        if (data.paymentUrl) {
-          window.location.assign(data.paymentUrl)
-          return
-        }
-
-        setDpMsg({
-          type: data.success ? 'success' : 'error',
-          text: data.responseMessage || data.error || dpData.error || 'Unable to connect to JazzCash gateway. Please try again.'
-        })
-        setDpLoading(false)
-        return
-      }
-
-      // 2. EASYPAISA PAYMENT (Direct API if configured, or live DirectPay gateway)
-      if (dpMethod === 'Easypaisa') {
-        if (activeMode === 'direct_api') {
-          const res = await fetch('/api/payments/easypaisa/initiate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              user_id: activeUserId,
-              amountInPKR: Number(dpAmount),
-              mobileNumber: activePhone,
-              email: activeEmail,
-              payment_method: 'MA_PAYMENT_METHOD'
-            })
-          })
-
-          const data = await res.json().catch(() => ({}))
-
-          if (data.success && data.hasConfiguredStore && data.actionUrl && data.fields) {
-            // Post directly to Easypaisa checkout if custom store credentials exist
-            submitPostForm(data.actionUrl, data.fields)
-            return
-          }
-        }
-
-        // Live DirectPay Easypaisa Checkout
-        const dpRes = await fetch('/api/payments/directpay/initiate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            user_id: activeUserId,
-            amountInPKR: Number(dpAmount),
-            payer_name: activeName,
-            email: activeEmail,
-            msisdn: activePhone,
-            currency: 'PKR',
-            payment_method: 'Easypaisa'
-          })
-        })
-        const dpData = await dpRes.json().catch(() => ({}))
-        if (dpData.success && dpData.paymentUrl) {
-          window.location.assign(dpData.paymentUrl)
-          return
-        }
-
-        setDpMsg({ type: 'error', text: dpData.error || 'Failed to initiate EasyPaisa payment.' })
-        setDpLoading(false)
-        return
-      }
-
-      // 3. CARD DIRECT API OR DIRECTPAY
-      if (dpMethod === 'Card') {
-        const res = await fetch('/api/payments/card/initiate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            user_id: activeUserId,
-            amountInPKR: Number(dpAmount),
-            gateway_mode: activeMode,
-            cardHolderName: activeName,
-            mobileNumber: activePhone,
-            email: activeEmail
-          })
-        })
-
-        const data = await res.json().catch(() => ({}))
-
-        if (data.success) {
-          if (data.mode === 'directpay' && data.paymentUrl) {
-            window.location.assign(data.paymentUrl)
-            return
-          } else if (data.mode === 'direct_api' && data.actionUrl && data.fields) {
-            submitPostForm(data.actionUrl, data.fields)
-            return
-          }
-        }
-
-        setDpMsg({ type: 'error', text: data.error || 'Failed to initiate Card payment.' })
-        setDpLoading(false)
-        return
-      }
-
-      // 4. DIRECTPAY GATEWAY (Default)
       const res = await fetch('/api/payments/directpay/initiate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -336,13 +202,20 @@ export default function WalletPage() {
       const data = await res.json().catch(() => ({}))
 
       if (data.success && data.paymentUrl) {
-        window.location.assign(data.paymentUrl)
-      } else {
-        setDpMsg({ type: 'error', text: data.error || 'Failed to initiate payment gateway.' })
-        setDpLoading(false)
+        window.location.href = data.paymentUrl
+        return
       }
+
+      setDpMsg({
+        type: 'error',
+        text: data.error || `Unable to connect to ${dpMethod} gateway. Please try again.`
+      })
+      setDpLoading(false)
     } catch (err) {
-      setDpMsg({ type: 'error', text: err.message || 'Connection error with payment gateway.' })
+      setDpMsg({
+        type: 'error',
+        text: err.message || `Connection error with ${dpMethod} gateway.`
+      })
       setDpLoading(false)
     }
   }
