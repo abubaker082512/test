@@ -7,6 +7,8 @@ import AuthModal from '../../components/AuthModal'
 
 const FEATURED_PROVIDERS = [
   { id: 'ALL', name: 'All Games', icon: '🔥', count: 'Exclusives' },
+  { id: 'RAINBOW', name: 'Rainbow Riches', icon: '🌈', count: 'Casino Series' },
+  { id: 'PADDY', name: 'Paddy Power', icon: '☘️', count: 'Exclusives' },
   { id: 'SLOTS', name: 'Slots', icon: '🎰', count: 'Jackpots' },
   { id: 'LIVE', name: 'Live Casino', icon: '🎡', count: 'Live HD' },
   { id: 'CARDS', name: 'Cards & Table', icon: '🃏', count: 'VIP Tables' },
@@ -21,27 +23,53 @@ export default function CasinoLobby() {
   const [search, setSearch] = useState('')
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
 
-  // Fetch games from Paddy Power
+  // Fetch games from Paddy Power and Rainbow Riches Casino
   useEffect(() => {
     let isMounted = true
     setLoading(true)
 
     const fetchGames = async () => {
       try {
-        const res = await fetch('/api/paddypower/games')
-        const data = await res.json()
-        if (isMounted && data.games) {
-          setAllGames(data.games.map(g => ({
-            id: g.id || g.slug,
-            name: g.name || g.title,
-            img: g.img || g.imageUrl || '/games/fortune_gems.png',
-            provider: 'PADDYPOWER',
-            category: g.category || 'Slots',
-            badge: g.badge || 'Popular'
-          })))
+        const [paddyRes, rrRes] = await Promise.all([
+          fetch('/api/paddypower/games'),
+          fetch('/api/rainbowriches/games')
+        ])
+
+        const combined = []
+
+        if (paddyRes.ok) {
+          const data = await paddyRes.json()
+          if (data.games) {
+            combined.push(...data.games.map(g => ({
+              id: g.id || g.slug,
+              name: g.name || g.title,
+              img: g.img || g.imageUrl || '/games/fortune_gems.png',
+              provider: 'PaddyPower',
+              category: g.category || 'Slots',
+              badge: g.badge || 'Popular'
+            })))
+          }
+        }
+
+        if (rrRes.ok) {
+          const data = await rrRes.json()
+          if (data.games) {
+            combined.push(...data.games.map(g => ({
+              id: g.id || g.slug,
+              name: g.name || g.title,
+              img: g.img || g.imageUrl || 'https://cdn.betnex.co/images/jiligaming/74.webp',
+              provider: 'RainbowRiches',
+              category: g.category || 'Slots',
+              badge: g.badge || 'Jackpot'
+            })))
+          }
+        }
+
+        if (isMounted) {
+          setAllGames(combined)
         }
       } catch (e) {
-        console.error('Failed to load Paddy Power games:', e)
+        console.error('Failed to load casino games:', e)
       } finally {
         if (isMounted) setLoading(false)
       }
@@ -56,6 +84,8 @@ export default function CasinoLobby() {
 
   const games = allGames.filter(g => {
     if (selectedProvider === 'ALL') return true
+    if (selectedProvider === 'RAINBOW') return g.provider === 'RainbowRiches'
+    if (selectedProvider === 'PADDY') return g.provider === 'PaddyPower'
     if (selectedProvider === 'SLOTS') return g.category.toLowerCase().includes('slot')
     if (selectedProvider === 'LIVE') return g.category.toLowerCase().includes('live')
     if (selectedProvider === 'CARDS') return g.category.toLowerCase().includes('card') || g.category.toLowerCase().includes('table')

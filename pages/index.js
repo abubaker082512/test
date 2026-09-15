@@ -7,23 +7,30 @@ import AuthModal from '../components/AuthModal'
 import GameCard from '../components/GameCard'
 
 const mockGames = [
+  // Paddy Power Flagships
   { id: 'Chests-of-Plenty', title: 'Chests of Plenty', provider: 'PaddyPower', badge: 'Jackpot', recommended: true, theme: 'linear-gradient(135deg, #1b5e20 0%, #003300 100%)', icon: '🏴‍☠️', slug: 'Chests-of-Plenty', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/235.png' },
-  { id: 'paddy-rainbow-riches', title: 'Rainbow Riches', provider: 'PaddyPower', badge: 'Jackpot', recommended: true, theme: 'linear-gradient(135deg, #1b5e20 0%, #003300 100%)', icon: '🌈', slug: 'paddy-rainbow-riches', category: 'Slots', imageUrl: '/games/fortune_gems.png' },
   { id: 'paddy-fishin-frenzy', title: "Fishin' Frenzy Big Catch", provider: 'PaddyPower', badge: 'Popular', recommended: true, theme: 'linear-gradient(135deg, #01579b 0%, #002f6c 100%)', icon: '🎣', slug: 'paddy-fishin-frenzy', category: 'Slots', imageUrl: '/games/fishing.png' },
   { id: 'paddy-roulette-live', title: 'Paddy Power Live Roulette', provider: 'PaddyPower', badge: 'Live HD', recommended: true, theme: 'linear-gradient(135deg, #311b92 0%, #12005e 100%)', icon: '🎡', slug: 'paddy-roulette-live', category: 'Live', imageUrl: '/games/live.png' },
   { id: 'paddy-blackjack-exclusive', title: 'Exclusive Blackjack', provider: 'PaddyPower', badge: 'VIP Table', recommended: true, theme: 'linear-gradient(135deg, #004d40 0%, #00251a 100%)', icon: '🃏', slug: 'paddy-blackjack-exclusive', category: 'Cards', imageUrl: '/games/live.png' },
   { id: 'paddy-age-of-gods', title: 'Age of the Gods', provider: 'PaddyPower', badge: '4 Jackpots', recommended: true, theme: 'linear-gradient(135deg, #4a148c 0%, #12005e 100%)', icon: '⚡', slug: 'paddy-age-of-gods', category: 'Jackpots', imageUrl: '/games/super_ace.png' },
-  { id: 'paddy-mega-fire-blaze', title: 'Mega Fire Blaze Roulette', provider: 'PaddyPower', badge: '10,000x', recommended: true, theme: 'linear-gradient(135deg, #bf360c 0%, #3e2723 100%)', icon: '🔥', slug: 'paddy-mega-fire-blaze', category: 'Live', imageUrl: '/games/live.png' }
+  { id: 'paddy-mega-fire-blaze', title: 'Mega Fire Blaze Roulette', provider: 'PaddyPower', badge: '10,000x', recommended: true, theme: 'linear-gradient(135deg, #bf360c 0%, #3e2723 100%)', icon: '🔥', slug: 'paddy-mega-fire-blaze', category: 'Live', imageUrl: '/games/live.png' },
+
+  // Rainbow Riches Casino Series
+  { id: 'rr-pots-of-gold', title: 'Rainbow Riches: Pots of Gold', provider: 'RainbowRiches', badge: 'Mega Jackpot', recommended: true, theme: 'linear-gradient(135deg, #1b5e20 0%, #003300 100%)', icon: '🌈', slug: 'rr-pots-of-gold', category: 'Jackpots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/74.webp' },
+  { id: 'rr-megaways', title: 'Rainbow Riches: Megaways', provider: 'RainbowRiches', badge: '117,649 Ways', recommended: true, theme: 'linear-gradient(135deg, #2e7d32 0%, #005005 100%)', icon: '🍀', slug: 'rr-megaways', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/48.webp' },
+  { id: 'rr-reels-of-gold', title: 'Rainbow Riches: Reels of Gold', provider: 'RainbowRiches', badge: 'Colossal Reels', recommended: true, theme: 'linear-gradient(135deg, #f57f17 0%, #bc5100 100%)', icon: '💰', slug: 'rr-reels-of-gold', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/38.webp' },
+  { id: 'rr-pick-n-mix', title: "Rainbow Riches: Pick 'n' Mix", provider: 'RainbowRiches', badge: '5 Bonus Games', recommended: true, theme: 'linear-gradient(135deg, #00838f 0%, #005662 100%)', icon: '🎩', slug: 'rr-pick-n-mix', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/37.png' },
+  { id: 'rr-drop-of-gold', title: 'Rainbow Riches: Drops of Gold', provider: 'RainbowRiches', badge: 'Drop Wilds', recommended: false, theme: 'linear-gradient(135deg, #ff8f00 0%, #c56000 100%)', icon: '🪙', slug: 'rr-drop-of-gold', category: 'Jackpots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/47.webp' }
 ]
 
 // Scrolling live winner events
 const winEvents = [
-  { name: 'ali***77', game: 'Rainbow Riches', amount: 'Pi 4,150.00', provider: 'PaddyPower', avatar: '👨‍💻' },
+  { name: 'ali***77', game: 'Rainbow Riches Pots of Gold', amount: 'Pi 14,150.00', provider: 'RainbowRiches', avatar: '👨‍💻' },
   { name: 'zain***88', game: 'Fishin Frenzy', amount: 'Pi 2,850.00', provider: 'PaddyPower', avatar: '👩‍⚕️' },
   { name: 'pak***01', game: 'Chests of Plenty', amount: 'Pi 12,279.20', provider: 'PaddyPower', avatar: '🦁' },
-  { name: 'jill***00', game: 'Paddy Live Roulette', amount: 'Pi 1,033.00', provider: 'PaddyPower', avatar: '🐱' },
+  { name: 'jill***00', game: 'Rainbow Riches Megaways', amount: 'Pi 8,033.00', provider: 'RainbowRiches', avatar: '🐱' },
   { name: 'asif***99', game: 'Age of the Gods', amount: 'Pi 8,900.00', provider: 'PaddyPower', avatar: '🦅' },
-  { name: 'ahmed***10', game: 'Mega Fire Blaze', amount: 'Pi 15,500.00', provider: 'PaddyPower', avatar: '🔥' },
+  { name: 'ahmed***10', game: 'Rainbow Riches Pick n Mix', amount: 'Pi 15,500.00', provider: 'RainbowRiches', avatar: '🔥' },
 ]
 
 export default function Home() {
@@ -50,14 +57,19 @@ export default function Home() {
 
   useEffect(() => {
     let isMounted = true;
-    const fetchPaddyPowerGames = async () => {
+    const fetchCatalogGames = async () => {
       try {
-        const res = await fetch('/api/paddypower/games');
-        if (res.ok) {
-          const data = await res.json();
+        const [paddyRes, rrRes] = await Promise.all([
+          fetch('/api/paddypower/games'),
+          fetch('/api/rainbowriches/games')
+        ]);
+        const allFetched = [];
+
+        if (paddyRes.ok) {
+          const data = await paddyRes.json();
           const gamesList = data.games || data.data;
           if (gamesList && Array.isArray(gamesList)) {
-            const mapped = gamesList.map(g => ({
+            allFetched.push(...gamesList.map(g => ({
               id: g.id || g.slug,
               title: g.name || g.title,
               provider: 'PaddyPower',
@@ -67,18 +79,37 @@ export default function Home() {
               recommended: g.recommended || false,
               theme: g.theme || 'linear-gradient(135deg, #1b5e20 0%, #003300 100%)',
               slug: g.id || g.slug
-            }));
-            if (isMounted) {
-              setApiGames(mapped);
-              setApiLoaded(true);
-            }
+            })));
           }
         }
+
+        if (rrRes.ok) {
+          const data = await rrRes.json();
+          const gamesList = data.games || data.data;
+          if (gamesList && Array.isArray(gamesList)) {
+            allFetched.push(...gamesList.map(g => ({
+              id: g.id || g.slug,
+              title: g.name || g.title,
+              provider: 'RainbowRiches',
+              category: g.category || 'Slots',
+              imageUrl: g.img || g.imageUrl || 'https://cdn.betnex.co/images/jiligaming/74.webp',
+              badge: g.badge || 'Popular',
+              recommended: g.recommended || false,
+              theme: g.theme || 'linear-gradient(135deg, #1b5e20 0%, #003300 100%)',
+              slug: g.id || g.slug
+            })));
+          }
+        }
+
+        if (isMounted) {
+          setApiGames(allFetched);
+          setApiLoaded(true);
+        }
       } catch (err) {
-        console.error('Failed to fetch Paddy Power API games for home', err);
+        console.error('Failed to fetch catalog games for home', err);
       }
     };
-    fetchPaddyPowerGames();
+    fetchCatalogGames();
     return () => { isMounted = false; }
   }, []);
 

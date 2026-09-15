@@ -12,6 +12,14 @@ const RAPID = new RapidApiClient({
 
 // Translation map from user-friendly slugs to actual provider hashes
 const GAME_MAP = {
+  // Rainbow Riches Casino Series
+  'rr-pots-of-gold': '664fba4da609ee82b78820b1f570f4ad',
+  'rr-megaways': 'a990de177577a2e6a889aaac5f57b429',
+  'rr-reels-of-gold': 'db249defce63610fccabfa829a405232',
+  'rr-pick-n-mix': 'bdfb23c974a2517198c5443adeea77a8',
+  'rr-drop-of-gold': '490096198e28f770a3f85adb6ee49e0f',
+  'rr-live-roulette': 'b4af506243cafae52908e8fa266f8ff6',
+
   // Paddy Power Flagships & Exclusives
   'Chests-of-Plenty': 'bdfb23c974a2517198c5443adeea77a8',
   'chests-of-plenty': 'bdfb23c974a2517198c5443adeea77a8',
