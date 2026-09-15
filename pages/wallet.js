@@ -248,31 +248,53 @@ export default function WalletPage() {
         return
       }
 
-      // 2. EASYPAISA DIRECT API (Easypay Plugin / Hosted Token API)
-      if (dpMethod === 'Easypaisa' && activeMode === 'direct_api') {
-        const res = await fetch('/api/payments/easypaisa/initiate', {
+      // 2. EASYPAISA PAYMENT (Direct API if configured, or live DirectPay gateway)
+      if (dpMethod === 'Easypaisa') {
+        if (activeMode === 'direct_api') {
+          const res = await fetch('/api/payments/easypaisa/initiate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_id: user.id,
+              amountInPKR: Number(dpAmount),
+              mobileNumber: dpPhone,
+              email: dpEmail || user.email || 'player@winxpro.com',
+              payment_method: 'MA_PAYMENT_METHOD'
+            })
+          })
+
+          const data = await res.json()
+
+          if (data.success && data.hasConfiguredStore && data.actionUrl && data.fields) {
+            // Post directly to Easypaisa checkout if custom store credentials exist
+            submitPostForm(data.actionUrl, data.fields)
+            return
+          }
+        }
+
+        // Live DirectPay Easypaisa Checkout
+        const dpRes = await fetch('/api/payments/directpay/initiate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             user_id: user.id,
             amountInPKR: Number(dpAmount),
-            mobileNumber: dpPhone,
-            email: dpEmail || user.email || 'player@winxpro.com',
-            payment_method: 'MA_PAYMENT_METHOD'
+            payer_name: dpName || user.email?.split('@')[0] || 'Player',
+            email: user.email || 'player@betpk.com',
+            msisdn: dpPhone,
+            currency: 'PKR',
+            payment_method: 'Easypaisa'
           })
         })
-
-        const data = await res.json()
-
-        if (data.success && data.actionUrl && data.fields) {
-          // Post directly to Easypaisa checkout
-          submitPostForm(data.actionUrl, data.fields)
-          return
-        } else {
-          setDpMsg({ type: 'error', text: data.error || 'Failed to initiate EasyPaisa payment.' })
-          setDpLoading(false)
+        const dpData = await dpRes.json()
+        if (dpData.success && dpData.paymentUrl) {
+          window.location.href = dpData.paymentUrl
           return
         }
+
+        setDpMsg({ type: 'error', text: dpData.error || 'Failed to initiate EasyPaisa payment.' })
+        setDpLoading(false)
+        return
       }
 
       // 3. CARD DIRECT API OR DIRECTPAY

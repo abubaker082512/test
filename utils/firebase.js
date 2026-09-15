@@ -20,11 +20,6 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
-let analytics = null;
-if (typeof window !== 'undefined') {
-  isSupported().then(yes => {
-    if (yes) analytics = getAnalytics(app);
-  }).catch(() => {});
-}
+// Safe export for analytics without triggering invalid-key installations requests
+export const analytics = null;
 
-export { analytics };

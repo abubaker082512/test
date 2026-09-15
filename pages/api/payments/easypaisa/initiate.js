@@ -76,8 +76,14 @@ export default async function handler(req, res) {
       console.error('Failed to create pending transaction:', dbErr);
     }
 
+    const hasConfiguredStore = Boolean(
+      storeId && String(storeId).trim() !== '43' &&
+      hashKey && String(hashKey).trim() !== '1234567890123456'
+    );
+
     return res.status(200).json({
       success: true,
+      hasConfiguredStore,
       actionUrl: checkoutData.actionUrl,
       fields: checkoutData.fields,
       orderRefNum,
