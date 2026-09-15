@@ -10,6 +10,7 @@ export default function SideDrawer({ isOpen, onClose, balance = 0, onOpenAuth })
   if (!isOpen) return null
 
   const navItems = [
+    { label: '⚽ Sportsbook Live Odds', href: '/sports', icon: '⚡', badge: 'Live' },
     { label: '🎰 Paddy Power Games', href: '/casino', icon: '🍀', badge: 'Active' },
     { label: '💳 Deposit Funds', href: '/wallet', icon: '⚡', badge: '+4%' },
     { label: '🏧 Request Payout', href: '/wallet', icon: '💰' },

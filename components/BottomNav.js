@@ -8,9 +8,9 @@ export default function BottomNav() {
 
   const navItems = [
     { name: 'Home', path: '/', icon: '🏠', badge: 0 },
+    { name: 'Sports', path: '/sports', icon: '⚽', badge: 0 },
     { name: 'Casino', path: '/casino', icon: '🎰', badge: 0 },
-    { name: 'Promo', path: '/offers', icon: '🎁', badge: 3 }, // Show 3 new promos/offers badge
-    { name: 'Invite', path: '/invite', icon: '👥', badge: 0 },
+    { name: 'Promo', path: '/offers', icon: '🎁', badge: 3 },
     { name: 'Profile', path: '/profile', icon: '👤', badge: 0 },
   ]
 

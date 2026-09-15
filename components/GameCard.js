@@ -11,7 +11,8 @@ export default function GameCard({
   icon = '🎮',
   slug = '',
   imageType = '', // 'ronaldo', 'messi', etc. to draw simulated player canvas/portraits
-  imageUrl = ''
+  imageUrl = '',
+  category = ''
 }) {
   const [isFavorite, setIsFavorite] = useState(false)
 
@@ -142,8 +143,10 @@ export default function GameCard({
     )
   }
 
+  const targetUrl = (category === 'Sports' || provider === 'BetStack') ? '/sports' : `/play/${slug || id}`;
+
   return (
-    <Link href={`/play/${slug || id}`} style={{ textDecoration: 'none' }}>
+    <Link href={targetUrl} style={{ textDecoration: 'none' }}>
       <div className="game-card">
         {/* Card Image area */}
         <div className="game-card-img-container">

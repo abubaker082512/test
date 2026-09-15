@@ -42,7 +42,13 @@ const mockGames = [
 
   // JILI & Flagship Favorites
   { id: 'super-ace', title: 'Super Ace Deluxe', provider: 'JILI', badge: 'Golden Cards', recommended: true, theme: 'linear-gradient(135deg, #e53935 0%, #b71c1c 100%)', icon: '🃏', slug: 'super-ace', category: 'Slots', imageUrl: '/games/super_ace.png' },
-  { id: 'fortune-gems', title: 'Fortune Gems 2', provider: 'JILI', badge: 'Lucky Wheel', recommended: true, theme: 'linear-gradient(135deg, #ffb300 0%, #f57f17 100%)', icon: '💎', slug: 'fortune-gems', category: 'Slots', imageUrl: '/games/fortune_gems.png' }
+  { id: 'fortune-gems', title: 'Fortune Gems 2', provider: 'JILI', badge: 'Lucky Wheel', recommended: true, theme: 'linear-gradient(135deg, #ffb300 0%, #f57f17 100%)', icon: '💎', slug: 'fortune-gems', category: 'Slots', imageUrl: '/games/fortune_gems.png' },
+
+  // BetStack Sportsbook Live Matches
+  { id: 'betstack-nfl-live', title: 'NFL Football Live Odds', provider: 'BetStack', badge: 'Consensus', recommended: true, theme: 'linear-gradient(135deg, #0d47a1 0%, #000a12 100%)', icon: '🏈', slug: 'sports', category: 'Sports', imageUrl: '/games/crash.png' },
+  { id: 'betstack-mlb-live', title: 'MLB Baseball Matchups', provider: 'BetStack', badge: 'In-Play', recommended: true, theme: 'linear-gradient(135deg, #b71c1c 0%, #311b92 100%)', icon: '⚾', slug: 'sports', category: 'Sports', imageUrl: '/games/fortune_gems.png' },
+  { id: 'betstack-nba-live', title: 'NBA Basketball Pro Odds', provider: 'BetStack', badge: 'High Limits', recommended: true, theme: 'linear-gradient(135deg, #e65100 0%, #ff8f00 100%)', icon: '🏀', slug: 'sports', category: 'Sports', imageUrl: '/games/super_ace.png' },
+  { id: 'betstack-soccer-live', title: 'Premier League Soccer', provider: 'BetStack', badge: '1X2 Live', recommended: true, theme: 'linear-gradient(135deg, #1b5e20 0%, #003300 100%)', icon: '⚽', slug: 'sports', category: 'Sports', imageUrl: '/games/live.png' }
 ]
 
 // Scrolling live winner events
@@ -81,11 +87,12 @@ export default function Home() {
     let isMounted = true;
     const fetchCatalogGames = async () => {
       try {
-        const [paddyRes, rrRes, pokerRes, scorpioRes] = await Promise.all([
+        const [paddyRes, rrRes, pokerRes, scorpioRes, sportsRes] = await Promise.all([
           fetch('/api/paddypower/games'),
           fetch('/api/rainbowriches/games'),
           fetch('/api/poker/games'),
-          fetch('/api/scorpioplay/games')
+          fetch('/api/scorpioplay/games'),
+          fetch('/api/sports/lines?north_american=true')
         ]);
         const allFetched = [];
 
@@ -158,6 +165,27 @@ export default function Home() {
               theme: 'linear-gradient(135deg, #b71c1c 0%, #311b92 100%)',
               slug: g.gameID || g.gameCode || g.id
             })));
+          }
+        }
+
+        if (sportsRes && sportsRes.ok) {
+          const data = await sportsRes.json();
+          const linesList = data.lines || data.data;
+          if (linesList && Array.isArray(linesList)) {
+            allFetched.push(...linesList.slice(0, 15).map(line => {
+              const ev = line.event || {};
+              return {
+                id: 'sports-' + (line.id || ev.id || Math.random()),
+                title: `${ev.home_team || 'Home'} vs ${ev.away_team || 'Away'}`,
+                provider: 'BetStack',
+                category: 'Sports',
+                imageUrl: '/games/crash.png',
+                badge: ev.league?.name || 'Live Match',
+                recommended: true,
+                theme: 'linear-gradient(135deg, #0d47a1 0%, #000a12 100%)',
+                slug: 'sports'
+              };
+            }));
           }
         }
 
@@ -250,6 +278,7 @@ export default function Home() {
   // Categories list covering all integrated providers
   const categoriesList = [
     { name: 'Hot', label: 'All Games', icon: '🔥' },
+    { name: 'Sports', label: 'Sportsbook', icon: '⚽' },
     { name: 'Poker', label: 'Poker Room', icon: '♠️' },
     { name: 'Rainbow', label: 'Rainbow Riches', icon: '🌈' },
     { name: 'Paddy', label: 'Paddy Power', icon: '☘️' },
@@ -272,6 +301,7 @@ export default function Home() {
     }
 
     if (category === 'Hot') return unique;
+    if (category === 'Sports') return unique.filter(g => g.category === 'Sports' || g.provider === 'BetStack' || g.id?.includes('sports') || g.id?.startsWith('betstack-'));
     if (category === 'Poker') return unique.filter(g => g.category === 'Poker' || g.provider === 'PokerAPI' || g.id?.includes('poker') || g.title?.toLowerCase().includes('poker') || g.title?.toLowerCase().includes('hold\'em') || g.title?.toLowerCase().includes('omaha'));
     if (category === 'Rainbow') return unique.filter(g => g.provider === 'RainbowRiches' || g.id?.startsWith('rr-'));
     if (category === 'Paddy') return unique.filter(g => g.provider === 'PaddyPower' || g.id?.startsWith('paddy-') || g.id === 'Chests-of-Plenty');
