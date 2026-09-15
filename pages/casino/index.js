@@ -6,62 +6,42 @@ import { useAuth } from '../../context/AuthContext'
 import AuthModal from '../../components/AuthModal'
 
 const FEATURED_PROVIDERS = [
-  { id: 'JILIGAMING', name: 'JILI Games', icon: '🎰', count: '253 Games' },
-  { id: 'EVOLUTIONLIVE', name: 'Evolution Live', icon: '💃', count: '420 Tables' },
-  { id: 'PGSOFT', name: 'PG Soft', icon: '💎', count: '130 Slots' },
-  { id: 'PRAGMATICSLOTS', name: 'Pragmatic Play', icon: '👑', count: '300 Slots' },
-  { id: 'PADDYPOWER', name: 'Paddy Power', icon: '☘️', count: 'Exclusives' },
-  { id: 'FACHAIGAMING', name: 'Fa Chai Gaming', icon: '🐉', count: 'Slots & Fish' },
-  { id: 'NETENT', name: 'NetEnt', icon: '⭐', count: 'Classics' },
-  { id: 'MICROGAMING', name: 'Microgaming', icon: '🔥', count: 'Jackpots' }
+  { id: 'ALL', name: 'All Games', icon: '🔥', count: 'Exclusives' },
+  { id: 'SLOTS', name: 'Slots', icon: '🎰', count: 'Jackpots' },
+  { id: 'LIVE', name: 'Live Casino', icon: '🎡', count: 'Live HD' },
+  { id: 'CARDS', name: 'Cards & Table', icon: '🃏', count: 'VIP Tables' },
+  { id: 'JACKPOTS', name: 'Jackpots', icon: '⚡', count: 'Mega Pots' }
 ]
 
 export default function CasinoLobby() {
   const { user } = useAuth()
-  const [selectedProvider, setSelectedProvider] = useState('JILIGAMING')
-  const [games, setGames] = useState([])
+  const [selectedProvider, setSelectedProvider] = useState('ALL')
+  const [allGames, setAllGames] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
 
-  // Fetch games for the selected provider
+  // Fetch games from Paddy Power
   useEffect(() => {
     let isMounted = true
     setLoading(true)
 
     const fetchGames = async () => {
-      if (selectedProvider === 'PADDYPOWER') {
-        try {
-          const res = await fetch('/api/paddypower/games')
-          const data = await res.json()
-          if (isMounted && data.games) {
-            setGames(data.games.map(g => ({
-              id: g.id || g.slug,
-              name: g.name || g.title,
-              img: g.img || g.imageUrl || '/games/fortune_gems.png',
-              provider: 'PADDYPOWER',
-              type: g.category || 'Slots'
-            })))
-          }
-        } catch (e) {
-          console.error(e)
-        } finally {
-          if (isMounted) setLoading(false)
-        }
-        return
-      }
-
       try {
-        const res = await fetch(`/api/rapid/getAllGamesByProvider?provider=${encodeURIComponent(selectedProvider)}`)
+        const res = await fetch('/api/paddypower/games')
         const data = await res.json()
         if (isMounted && data.games) {
-          setGames(data.games)
-        } else if (isMounted) {
-          setGames([])
+          setAllGames(data.games.map(g => ({
+            id: g.id || g.slug,
+            name: g.name || g.title,
+            img: g.img || g.imageUrl || '/games/fortune_gems.png',
+            provider: 'PADDYPOWER',
+            category: g.category || 'Slots',
+            badge: g.badge || 'Popular'
+          })))
         }
-      } catch (err) {
-        console.error('Failed to load games for provider:', err)
-        if (isMounted) setGames([])
+      } catch (e) {
+        console.error('Failed to load Paddy Power games:', e)
       } finally {
         if (isMounted) setLoading(false)
       }
@@ -72,7 +52,16 @@ export default function CasinoLobby() {
     return () => {
       isMounted = false
     }
-  }, [selectedProvider])
+  }, [])
+
+  const games = allGames.filter(g => {
+    if (selectedProvider === 'ALL') return true
+    if (selectedProvider === 'SLOTS') return g.category.toLowerCase().includes('slot')
+    if (selectedProvider === 'LIVE') return g.category.toLowerCase().includes('live')
+    if (selectedProvider === 'CARDS') return g.category.toLowerCase().includes('card') || g.category.toLowerCase().includes('table')
+    if (selectedProvider === 'JACKPOTS') return g.category.toLowerCase().includes('jackpot') || g.badge?.toLowerCase().includes('jackpot')
+    return true
+  })
 
   const filteredGames = games.filter(g => 
     g.name && g.name.toLowerCase().includes(search.toLowerCase())
@@ -86,7 +75,7 @@ export default function CasinoLobby() {
         
         {/* Hero Header */}
         <div style={{
-          background: 'radial-gradient(circle at center, #1b263b 0%, #0d131f 100%)',
+          background: 'radial-gradient(circle at center, #004d40 0%, #00120a 100%)',
           border: '1px solid var(--border)',
           borderRadius: '16px',
           padding: '24px 20px',
@@ -94,16 +83,16 @@ export default function CasinoLobby() {
           textAlign: 'center',
           boxShadow: '0 8px 32px rgba(0,0,0,0.5)'
         }}>
-          <span style={{ fontSize: '36px' }}>🎰</span>
+          <span style={{ fontSize: '36px' }}>☘️</span>
           <h1 style={{ color: 'var(--accent)', fontSize: '24px', margin: '8px 0 4px', fontWeight: '900' }}>
-            LIVE CASINO & OFFICIAL PROVIDERS
+            PADDY POWER CASINO LOBBY
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '13px', maxWidth: '500px', margin: '0 auto' }}>
-            Play authentic slots, live dealer streams, and arcade games from JILI, Evolution, PG Soft, and Paddy Power. Real-time Fiat balances enabled.
+            Play authentic Paddy Power exclusive slots, live dealer roulette, blackjack tables, and progressive jackpots. Real-time Fiat balances enabled.
           </p>
         </div>
 
-        {/* Provider Tabs */}
+        {/* Category Tabs */}
         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '12px', marginBottom: '20px' }}>
           {FEATURED_PROVIDERS.map(p => {
             const active = selectedProvider === p.id

@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useAuth } from '../context/AuthContext'
 import AuthModal from './AuthModal'
+import SideDrawer from './SideDrawer'
 import { supabase } from '../utils/supabase'
 
 export default function NavBar() {
   const { user, logOut } = useAuth()
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [balance, setBalance] = useState(0.0)
   const [showMenu, setShowMenu] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
@@ -59,7 +61,11 @@ export default function NavBar() {
     <>
       <nav className="navbar">
         <div className="logo-container">
-          <button className="menu-toggle" onClick={() => alert("Menu Drawer: VIP Club, Promotions, Referrals, Live Chat, and Sportsbook catalogs.")}>
+          <button 
+            className="menu-toggle" 
+            onClick={() => setIsDrawerOpen(true)}
+            aria-label="Open Navigation Menu"
+          >
             ☰
           </button>
           <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
@@ -172,6 +178,12 @@ export default function NavBar() {
       </nav>
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      <SideDrawer 
+        isOpen={isDrawerOpen} 
+        onClose={() => setIsDrawerOpen(false)} 
+        balance={balance}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
+      />
     </>
   )
 }

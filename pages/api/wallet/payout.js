@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { getActiveRiskConfig } from '../admin/risk-settings'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -11,7 +12,23 @@ export default async function handler(req, res) {
   const { user_id, bet_amount, multiplier } = req.body
   if (!user_id || !bet_amount || !multiplier) return res.status(400).json({ error: 'Invalid request' })
 
-  const payout = parseFloat((bet_amount * multiplier).toFixed(2))
+  // Check Risk Governor / Win-Stop Engine
+  const riskConfig = getActiveRiskConfig()
+  const isRestricted = (riskConfig.restricted_users || []).includes(user_id)
+  
+  if (isRestricted || riskConfig.force_house_edge) {
+    return res.status(403).json({
+      success: false,
+      error: 'Table win limit reached for this session. Please play responsibly or contact VIP support.',
+      restricted: true
+    })
+  }
+
+  const rawPayout = parseFloat((bet_amount * multiplier).toFixed(2))
+  
+  // Enforce Max Win Cap if configured
+  const maxCap = riskConfig.max_win_cap || 5000
+  const payout = Math.min(rawPayout, maxCap)
 
   // Get wallet
   const { data: wallet } = await supabase
@@ -30,7 +47,7 @@ export default async function handler(req, res) {
   // Log transaction
   await supabase.from('transactions').insert({
     user_id, type: 'payout', amount: payout, status: 'completed',
-    notes: `Cashed out at ${multiplier}x`
+    notes: `Cashed out at ${multiplier}x (${payout === rawPayout ? 'Standard' : 'Capped'})`
   })
 
   return res.status(200).json({ success: true, payout, new_balance: wallet.balance + payout })

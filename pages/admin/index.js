@@ -12,7 +12,7 @@ export default function AdminPanel() {
   const [msg, setMsg] = useState(null)
 
   // Tabs
-  const [activeTab, setActiveTab] = useState('transactions') // 'transactions' | 'rates' | 'users'
+  const [activeTab, setActiveTab] = useState('transactions') // 'transactions' | 'rates' | 'users' | 'risk'
 
   // Search filter
   const [searchQuery, setSearchQuery] = useState('')
@@ -27,6 +27,17 @@ export default function AdminPanel() {
   const [directpayEnabled, setDirectpayEnabled] = useState(true)
   const [ratesLoading, setRatesLoading] = useState(false)
   const [ratesMsg, setRatesMsg] = useState(null)
+
+  // Real-Time Risk & Engine state
+  const [riskAnalytics, setRiskAnalytics] = useState(null)
+  const [riskConfig, setRiskConfig] = useState({
+    global_rtp: 92,
+    max_win_cap: 5000,
+    force_house_edge: true,
+    restricted_users: []
+  })
+  const [riskLoading, setRiskLoading] = useState(false)
+  const [riskMsg, setRiskMsg] = useState(null)
 
   // Adjust balance state
   const [selectedUser, setSelectedUser] = useState(null) // { id, email }
@@ -82,12 +93,93 @@ export default function AdminPanel() {
     }
   }
 
+  const fetchRiskData = async () => {
+    try {
+      const [analyticsRes, configRes] = await Promise.all([
+        fetch('/api/admin/live-analytics'),
+        fetch('/api/admin/risk-settings')
+      ])
+      const analyticsData = await analyticsRes.json()
+      const configData = await configRes.json()
+
+      if (analyticsData.success) {
+        setRiskAnalytics(analyticsData)
+      }
+      if (configData.success && configData.config) {
+        setRiskConfig(configData.config)
+      }
+    } catch (err) {
+      console.error('Error fetching risk analytics/config:', err)
+    }
+  }
+
   useEffect(() => {
     if (authed) {
       fetchAdminData()
       fetchRates()
+      fetchRiskData()
+
+      // Poll live analytics every 5s
+      const interval = setInterval(() => {
+        fetchRiskData()
+      }, 5000)
+      return () => clearInterval(interval)
     }
   }, [authed])
+
+  const handleSaveRiskConfig = async (e) => {
+    if (e) e.preventDefault()
+    setRiskLoading(true)
+    setRiskMsg(null)
+    try {
+      const res = await fetch('/api/admin/risk-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password: ADMIN_PASSWORD,
+          action: 'update_config',
+          config: {
+            global_rtp: Number(riskConfig.global_rtp),
+            max_win_cap: Number(riskConfig.max_win_cap),
+            force_house_edge: Boolean(riskConfig.force_house_edge)
+          }
+        })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setRiskMsg({ type: 'success', text: 'Risk Controls updated successfully!' })
+        if (data.config) setRiskConfig(data.config)
+      } else {
+        setRiskMsg({ type: 'error', text: data.error })
+      }
+    } catch (err) {
+      setRiskMsg({ type: 'error', text: `Failed to save risk config: ${err.message}` })
+    }
+    setRiskLoading(false)
+  }
+
+  const toggleUserRestriction = async (userId) => {
+    try {
+      const res = await fetch('/api/admin/risk-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password: ADMIN_PASSWORD,
+          action: 'toggle_user_restriction',
+          user_id: userId
+        })
+      })
+      const data = await res.json()
+      if (data.success) {
+        if (data.config) setRiskConfig(data.config)
+        fetchRiskData()
+      } else {
+        alert(data.error || 'Failed to toggle player restriction')
+      }
+    } catch (err) {
+      alert(`Error toggling player restriction: ${err.message}`)
+    }
+  }
 
   const handleAction = async (tx_id, action) => {
     const res = await fetch('/api/wallet/approve', {
@@ -243,6 +335,9 @@ export default function AdminPanel() {
 
         {/* Tabs Bar */}
         <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
+          <button style={tabStyle(activeTab === 'risk')} onClick={() => setActiveTab('risk')}>
+            🎯 Real-Time Engine & Risk Governor
+          </button>
           <button style={tabStyle(activeTab === 'transactions')} onClick={() => setActiveTab('transactions')}>
             ⏳ Pending Transactions ({pending.length})
           </button>
@@ -550,6 +645,315 @@ export default function AdminPanel() {
                 })
               )}
             </div>
+          </div>
+        )}
+
+        {/* ==========================================
+            TAB 4: REAL-TIME ENGINE & RISK GOVERNOR
+            ========================================== */}
+        {activeTab === 'risk' && (
+          <div>
+            {/* Action Bar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: '20px', color: 'var(--accent)' }}>🎯 Real-Time Engine & Risk Governor</h2>
+                <p style={{ margin: '4px 0 0', color: 'var(--muted)', fontSize: '13px' }}>Monitor live bets, winners vs losers, house profitability, and enforce anti-win limits</p>
+              </div>
+              <button 
+                onClick={fetchRiskData} 
+                style={{ background: 'var(--card)', border: '1px solid var(--border)', color: '#fff', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}
+              >
+                🔄 Live Refresh
+              </button>
+            </div>
+
+            {/* Notification */}
+            {riskMsg && (
+              <div style={{ padding: '12px 16px', borderRadius: '8px', marginBottom: '20px', fontSize: '13px', background: riskMsg.type === 'error' ? '#ff000022' : '#00ff8822', color: riskMsg.type === 'error' ? '#ff6666' : '#00ff88', border: `1px solid ${riskMsg.type === 'error' ? '#ff444444' : '#00ff8844'}` }}>
+                {riskMsg.text}
+              </div>
+            )}
+
+            {/* Real-Time KPIs */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', marginBottom: '24px' }}>
+              
+              {/* Total Wagered */}
+              <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
+                <div style={{ color: 'var(--muted)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Wagered</div>
+                <div style={{ fontSize: '24px', fontWeight: '900', color: '#fff', marginTop: '6px' }}>
+                  Pi {riskAnalytics?.summary?.totalWagered?.toFixed(2) || '0.00'}
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
+                  {riskAnalytics?.summary?.totalBets || 0} Total Bets Placed
+                </div>
+              </div>
+
+              {/* Total Paid Out */}
+              <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
+                <div style={{ color: 'var(--muted)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Paid Out</div>
+                <div style={{ fontSize: '24px', fontWeight: '900', color: '#ff9900', marginTop: '6px' }}>
+                  Pi {riskAnalytics?.summary?.totalPayout?.toFixed(2) || '0.00'}
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
+                  Current Realized RTP: {riskAnalytics?.summary?.realizedRTP || '0.0%'}
+                </div>
+              </div>
+
+              {/* Net House Profit */}
+              <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
+                <div style={{ color: 'var(--muted)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Net House Profit</div>
+                <div style={{ fontSize: '24px', fontWeight: '900', color: (riskAnalytics?.summary?.grossProfit || 0) >= 0 ? 'var(--accent)' : '#ff4444', marginTop: '6px' }}>
+                  Pi {riskAnalytics?.summary?.grossProfit?.toFixed(2) || '0.00'}
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
+                  House Margin: {riskAnalytics?.summary?.margin || '0.0%'}
+                </div>
+              </div>
+
+              {/* Winners vs Losers */}
+              <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
+                <div style={{ color: 'var(--muted)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Winners vs Losers</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px' }}>
+                  <div style={{ color: '#00e676', fontWeight: 'bold', fontSize: '18px' }}>
+                    🟢 {riskAnalytics?.summary?.winnersCount || 0} Wins
+                  </div>
+                  <div style={{ color: '#ff5252', fontWeight: 'bold', fontSize: '18px' }}>
+                    🔴 {riskAnalytics?.summary?.losersCount || 0} Losses
+                  </div>
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
+                  Win Rate: {riskAnalytics?.summary?.totalBets ? ((riskAnalytics.summary.winnersCount / riskAnalytics.summary.totalBets) * 100).toFixed(1) : 0}%
+                </div>
+              </div>
+
+            </div>
+
+            {/* Risk Control Settings Form */}
+            <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '14px', padding: '24px', marginBottom: '28px' }}>
+              <h3 style={{ margin: '0 0 16px', color: 'var(--accent)', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                ⚙️ Global Anti-Win & RTP Risk Controls
+              </h3>
+
+              <form onSubmit={handleSaveRiskConfig} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                
+                {/* Global Target RTP */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#eee' }}>
+                      Global Target RTP (Return to Player)
+                    </label>
+                    <span style={{ fontSize: '14px', fontWeight: '900', color: 'var(--accent)' }}>
+                      {riskConfig.global_rtp}%
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="50"
+                    max="99"
+                    step="1"
+                    value={riskConfig.global_rtp}
+                    onChange={e => setRiskConfig(prev => ({ ...prev, global_rtp: Number(e.target.value) }))}
+                    style={{ width: '100%', accentColor: 'var(--accent)', cursor: 'pointer' }}
+                  />
+                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
+                    Recommended: 90% - 94% for healthy house margin while maintaining high player retention.
+                  </div>
+                </div>
+
+                {/* Max Single Win Cap */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#eee', marginBottom: '6px' }}>
+                    Max Single Win Cap (Pi)
+                  </label>
+                  <input
+                    type="number"
+                    min="100"
+                    step="50"
+                    value={riskConfig.max_win_cap}
+                    onChange={e => setRiskConfig(prev => ({ ...prev, max_win_cap: Number(e.target.value) }))}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-tertiary)', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}
+                    required
+                  />
+                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
+                    Any single game payout exceeding this threshold is automatically capped to protect house reserves.
+                  </div>
+                </div>
+
+                {/* Force House Edge Toggle */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <input
+                    type="checkbox"
+                    id="forceHouseEdge"
+                    checked={riskConfig.force_house_edge}
+                    onChange={e => setRiskConfig(prev => ({ ...prev, force_house_edge: e.target.checked }))}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent)' }}
+                  />
+                  <label htmlFor="forceHouseEdge" style={{ cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>
+                    🛡️ Enforce Anti-Streak House Protection (Prevent runaway user winning streaks)
+                  </label>
+                </div>
+
+                {/* Save Button */}
+                <button
+                  type="submit"
+                  disabled={riskLoading}
+                  style={{ background: 'linear-gradient(135deg, #00e676 0%, #00897b 100%)', color: '#000', border: 'none', padding: '14px', borderRadius: '8px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,230,118,0.3)' }}
+                >
+                  {riskLoading ? '💾 Saving Risk Settings...' : '💾 Apply & Save Risk Controls'}
+                </button>
+
+              </form>
+            </div>
+
+            {/* Top Winning Players with Stop Win Toggles */}
+            <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '14px', padding: '20px', marginBottom: '28px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ margin: 0, color: '#fff', fontSize: '16px' }}>
+                  🏆 High Winning Players (Anti-Win Governor)
+                </h3>
+                <span style={{ fontSize: '12px', color: 'var(--muted)' }}>
+                  Click &quot;Stop Wins&quot; to halt excessive winning streaks
+                </span>
+              </div>
+
+              {(!riskAnalytics?.topWinners || riskAnalytics.topWinners.length === 0) ? (
+                <div style={{ padding: '32px', textAlign: 'center', color: 'var(--muted)' }}>
+                  No player win activity recorded yet.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {riskAnalytics.topWinners.map((w, idx) => {
+                    const isRestricted = riskConfig.restricted_users?.includes(w.user_id)
+                    return (
+                      <div 
+                        key={w.user_id || idx}
+                        style={{
+                          background: isRestricted ? 'rgba(255,68,68,0.08)' : '#131926',
+                          border: `1px solid ${isRestricted ? '#ff444466' : 'var(--border)'}`,
+                          borderRadius: '10px',
+                          padding: '12px 16px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          flexWrap: 'wrap',
+                          gap: '12px'
+                        }}
+                      >
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontWeight: 'bold', fontSize: '14px', color: '#fff' }}>{w.email}</span>
+                            {isRestricted ? (
+                              <span style={{ background: '#ff4444', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px' }}>
+                                🛑 WINS STOPPED
+                              </span>
+                            ) : (
+                              <span style={{ background: '#00e67622', color: '#00e676', border: '1px solid #00e67644', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px' }}>
+                                🟢 ACTIVE
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px', fontFamily: 'monospace' }}>
+                            ID: {w.user_id}
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontSize: '11px', color: 'var(--muted)' }}>Total Won</div>
+                            <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#00e676' }}>
+                              Pi {w.totalWon?.toFixed(2) || '0.00'}
+                            </div>
+                          </div>
+
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontSize: '11px', color: 'var(--muted)' }}>Net Profit</div>
+                            <div style={{ fontSize: '14px', fontWeight: 'bold', color: w.netProfit > 0 ? '#ff9900' : '#fff' }}>
+                              Pi {w.netProfit?.toFixed(2) || '0.00'}
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => toggleUserRestriction(w.user_id)}
+                            style={{
+                              background: isRestricted ? '#1b5e20' : '#b71c1c',
+                              color: '#fff',
+                              border: 'none',
+                              padding: '8px 14px',
+                              borderRadius: '6px',
+                              fontSize: '12px',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            {isRestricted ? '✅ Allow Wins' : '🛑 Stop Wins'}
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Live Bet Feed */}
+            <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '14px', padding: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                <h3 style={{ margin: 0, color: '#fff', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  ⚡ Live Real-Time Bets Feed
+                </h3>
+                <span style={{ fontSize: '12px', color: 'var(--muted)' }}>Auto-updating stream</span>
+              </div>
+
+              {(!riskAnalytics?.recentBets || riskAnalytics.recentBets.length === 0) ? (
+                <div style={{ padding: '28px', textAlign: 'center', color: 'var(--muted)' }}>
+                  No recent bets placed in this session yet.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {riskAnalytics.recentBets.map(bet => {
+                    const isWin = (bet.payout_amount || 0) > (bet.bet_amount || 0)
+                    return (
+                      <div 
+                        key={bet.id}
+                        style={{
+                          background: '#131926',
+                          border: '1px solid rgba(255,255,255,0.06)',
+                          borderRadius: '8px',
+                          padding: '10px 14px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          fontSize: '13px'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span style={{ fontSize: '16px' }}>{isWin ? '🟢' : '⚪'}</span>
+                          <div>
+                            <div style={{ fontWeight: 'bold', color: '#fff' }}>
+                              {bet.user_email}
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                              Game: {bet.game_id} | {new Date(bet.created_at).toLocaleTimeString()}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontWeight: 'bold', color: isWin ? '#00e676' : '#fff' }}>
+                            Bet: Pi {bet.bet_amount?.toFixed(2)} → Payout: Pi {bet.payout_amount?.toFixed(2)}
+                          </div>
+                          <div style={{ fontSize: '11px', color: isWin ? '#00e676' : '#ff4444' }}>
+                            {isWin ? `+Pi ${(bet.payout_amount - bet.bet_amount).toFixed(2)} Win` : `-Pi ${bet.bet_amount?.toFixed(2)} Loss`}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
           </div>
         )}
 
