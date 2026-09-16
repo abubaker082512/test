@@ -21,29 +21,27 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Bubblewrap CLI
-        run: npm install -g @bubblewrap/cli
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Build Android APK & Bundle with Gradle
         working-directory: ./android
         run: |
-          if [ -f gradlew ]; then
-            chmod +x gradlew
-            ./gradlew assembleRelease bundleRelease || ./gradlew assembleDebug
-          else
-            gradle assembleDebug || echo 'Gradle build initiated'
-          fi
+          gradle wrapper
+          chmod +x gradlew
+          ./gradlew assembleDebug assembleRelease bundleRelease || ./gradlew assembleDebug
 
-      - name: Upload APK Artifact
+      - name: Upload APK Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: WinX-Pro-APK
           path: android/app/build/outputs/apk/
-          if-no-files-found: ignore
+          if-no-files-found: warn
 
-      - name: Upload AAB Artifact
+      - name: Upload AAB Bundle Artifacts (Play Store)
         uses: actions/upload-artifact@v4
         with:
           name: WinX-Pro-AAB
           path: android/app/build/outputs/bundle/
-          if-no-files-found: ignore
+          if-no-files-found: warn
+
