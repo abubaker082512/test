@@ -198,3 +198,18 @@ export function completeAndCreditTransaction(txnId, fallbackData = {}) {
   return { success: true, transaction: tx, wallet: creditedWallet };
 }
 
+export function failTransaction(txnId, failureReason = "Payment cancelled or failed") {
+  loadData();
+  let tx = findTransaction(txnId);
+  if (tx) {
+    tx.status = "failed";
+    tx.updated_at = new Date().toISOString();
+    tx.notes = (tx.notes ? tx.notes + " | " : "") + `Failed: ${failureReason}`;
+    if (!tx.metadata) tx.metadata = {};
+    tx.metadata.failure_reason = failureReason;
+    persistData();
+    return { success: true, transaction: tx };
+  }
+  return { success: false, error: "Transaction not found" };
+}
+

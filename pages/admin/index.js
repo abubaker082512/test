@@ -167,9 +167,10 @@ export default function AdminPanel() {
       fetchRiskConfig()
       fetchLiveAnalytics()
 
-      // Poll ONLY live wager analytics every 5s (never overwrites the active slider/form state)
+      // Poll live transactions and wager analytics every 5s in real time
       const interval = setInterval(() => {
         fetchLiveAnalytics()
+        fetchAdminData()
       }, 5000)
       return () => clearInterval(interval)
     }

@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { getOrCreateWallet, updateWalletBalance } from '../../../../utils/firebaseDb';
-import { completeAndCreditTransaction, findTransaction } from '../../../../utils/walletStore';
+import { completeAndCreditTransaction, failTransaction, findTransaction } from '../../../../utils/walletStore';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { txn_id, user_id, amount, email } = req.body;
+  const { txn_id, user_id, amount, email, status } = req.body;
 
   if (!txn_id) {
     return res.status(400).json({ error: 'Missing transaction ID' });
@@ -21,6 +21,21 @@ export default async function handler(req, res) {
   try {
     const numAmount = parseFloat(amount) || 0;
     const targetUserId = user_id || 'player_' + Date.now();
+
+    if (status === 'failed' || status === 'cancelled') {
+      failTransaction(txn_id, 'Payment cancelled or declined by user');
+      try {
+        await supabase
+          .from('transactions')
+          .update({ status: 'failed' })
+          .eq('tx_id', txn_id);
+      } catch (sErr) {}
+      return res.status(200).json({
+        success: true,
+        status: 'failed',
+        message: 'Transaction marked as failed/cancelled.'
+      });
+    }
 
     // 1. Complete transaction and credit balance atomically in persistent store
     const result = completeAndCreditTransaction(txn_id, {

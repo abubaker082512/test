@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { getOrCreateWallet, updateWalletBalance } from '../../../../utils/firebaseDb';
-import { completeAndCreditTransaction } from '../../../../utils/walletStore';
+import { completeAndCreditTransaction, failTransaction } from '../../../../utils/walletStore';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
 
   const payload = req.body || {};
   const clientTransactionId = payload.client_transaction_id || payload.clientTransactionId || payload.txn_id;
-  const status = payload.status || (payload.success ? 'completed' : 'pending');
+  const status = (payload.status || (payload.success ? 'completed' : 'pending')).toLowerCase();
   const amount = parseFloat(payload.amount || payload.amountInPKR || 0);
 
   if (!clientTransactionId) {
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    if (status === 'completed' || status === 'success' || status === 'PAID') {
+    if (status === 'completed' || status === 'success' || status === 'paid' || status === '0000') {
       const result = completeAndCreditTransaction(clientTransactionId, {
         amount,
         method: 'DirectPay',
@@ -45,7 +45,16 @@ export default async function handler(req, res) {
         } catch (sErr) {}
       });
 
-      return res.status(200).json({ success: true, message: 'Transaction completed and balance credited' });
+      return res.status(200).json({ success: true, status: 'completed', message: 'Transaction completed and balance credited' });
+    } else if (status === 'failed' || status === 'cancelled' || status === 'declined' || status === 'failure') {
+      failTransaction(clientTransactionId, payload.reason || payload.message || 'DirectPay webhook marked failed');
+      try {
+        await supabase
+          .from('transactions')
+          .update({ status: 'failed' })
+          .eq('tx_id', clientTransactionId);
+      } catch (sErr) {}
+      return res.status(200).json({ success: true, status: 'failed', message: 'Transaction recorded as failed' });
     }
 
     return res.status(200).json({ success: true, message: 'Webhook received' });

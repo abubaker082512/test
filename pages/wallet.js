@@ -182,6 +182,13 @@ export default function WalletPage() {
           fetchData()
         })
     } else if (directpay_status === 'failed') {
+      if (txn_id) {
+        fetch('/api/payments/directpay/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ txn_id, status: 'failed' })
+        }).catch(() => {})
+      }
       setDpMsg({ type: 'error', text: 'DirectPay transaction was cancelled or failed. Please try again.' })
     }
 
