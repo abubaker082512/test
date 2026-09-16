@@ -1,10 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
 import { getActiveRiskConfig } from '../admin/risk-settings'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+import { creditUserBalance, recordTransactionRecord, getUserWallet } from '../../../utils/walletStore'
+import { updateWalletBalance, addTransaction } from '../../../utils/firebaseDb'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
@@ -30,25 +26,30 @@ export default async function handler(req, res) {
   const maxCap = riskConfig.max_win_cap || 5000
   const payout = Math.min(rawPayout, maxCap)
 
-  // Get wallet
-  const { data: wallet } = await supabase
-    .from('wallets').select('*').eq('user_id', user_id).single()
-
-  if (!wallet) return res.status(404).json({ error: 'Wallet not found' })
-
   // Credit payout
-  const { error } = await supabase
-    .from('wallets')
-    .update({ balance: wallet.balance + payout })
-    .eq('user_id', user_id)
-
-  if (error) return res.status(500).json({ error: 'Failed to process payout' })
+  const updatedWallet = creditUserBalance(user_id, payout, '', `Cashed out at ${multiplier}x`)
 
   // Log transaction
-  await supabase.from('transactions').insert({
-    user_id, type: 'payout', amount: payout, status: 'completed',
+  recordTransactionRecord({
+    user_id,
+    type: 'payout',
+    amount: payout,
+    status: 'completed',
+    method: 'Game Payout',
     notes: `Cashed out at ${multiplier}x (${payout === rawPayout ? 'Standard' : 'Capped'})`
   })
 
-  return res.status(200).json({ success: true, payout, new_balance: wallet.balance + payout })
+  // Background Firestore sync
+  try {
+    updateWalletBalance(user_id, updatedWallet.balance).catch(() => {})
+    addTransaction({
+      user_id,
+      type: 'payout',
+      amount: payout,
+      status: 'completed',
+      notes: `Cashed out at ${multiplier}x`
+    }).catch(() => {})
+  } catch (e) {}
+
+  return res.status(200).json({ success: true, payout, new_balance: updatedWallet.balance })
 }

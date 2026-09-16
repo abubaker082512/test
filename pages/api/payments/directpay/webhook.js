@@ -1,11 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
 import { getOrCreateWallet, updateWalletBalance } from '../../../../utils/firebaseDb';
 import { completeAndCreditTransaction, failTransaction } from '../../../../utils/walletStore';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -29,31 +23,18 @@ export default async function handler(req, res) {
         notes: `DirectPay Webhook Completed: Pi ${amount.toFixed(2)}`
       });
 
-      // Background sync
+      // Background sync to Firestore
       Promise.resolve().then(async () => {
         try {
           const fWallet = await getOrCreateWallet(result.transaction.user_id);
           const curBal = Number(fWallet?.balance || 0);
           await updateWalletBalance(result.transaction.user_id, curBal + result.transaction.amount);
         } catch (fErr) {}
-
-        try {
-          await supabase
-            .from('transactions')
-            .update({ status: 'completed' })
-            .eq('tx_id', clientTransactionId);
-        } catch (sErr) {}
       });
 
       return res.status(200).json({ success: true, status: 'completed', message: 'Transaction completed and balance credited' });
     } else if (status === 'failed' || status === 'cancelled' || status === 'declined' || status === 'failure') {
       failTransaction(clientTransactionId, payload.reason || payload.message || 'DirectPay webhook marked failed');
-      try {
-        await supabase
-          .from('transactions')
-          .update({ status: 'failed' })
-          .eq('tx_id', clientTransactionId);
-      } catch (sErr) {}
       return res.status(200).json({ success: true, status: 'failed', message: 'Transaction recorded as failed' });
     }
 

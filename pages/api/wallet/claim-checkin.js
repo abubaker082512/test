@@ -1,69 +1,55 @@
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+import { getUserWallet, creditUserBalance, recordTransactionRecord, getUserTransactionsList } from '../../../utils/walletStore'
+import { updateWalletBalance, addTransaction } from '../../../utils/firebaseDb'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const { user_id } = req.body
+  const { user_id, email } = req.body
   if (!user_id) return res.status(400).json({ error: 'Missing user_id' })
 
-  const todayStr = new Date().toISOString().split('T')[0] // E.g., '2026-06-08'
+  const todayStr = new Date().toISOString().split('T')[0]
   const checkinNote = `Daily Check-in Bonus - ${todayStr}`
 
   try {
     // 1. Check if user already claimed today's check-in
-    const { data: existing, error: queryErr } = await supabase
-      .from('transactions')
-      .select('id')
-      .eq('user_id', user_id)
-      .eq('notes', checkinNote)
-      .limit(1)
+    const userTxs = getUserTransactionsList(user_id, email || '')
+    const existing = userTxs.find(t => t.notes && t.notes.includes(checkinNote))
 
-    if (queryErr) return res.status(500).json({ error: 'Failed to verify check-in status' })
-    if (existing && existing.length > 0) {
+    if (existing) {
       return res.status(400).json({ error: 'You have already checked in today!' })
     }
 
-    // 2. Get user's wallet
-    const { data: wallet, error: walletErr } = await supabase
-      .from('wallets')
-      .select('*')
-      .eq('user_id', user_id)
-      .single()
-
-    if (walletErr || !wallet) {
-      return res.status(404).json({ error: 'Wallet not found' })
-    }
-
     const bonusAmount = 5.00
-    const newBalance = parseFloat(wallet.balance) + bonusAmount
+    const wallet = creditUserBalance(user_id, bonusAmount, email || '', checkinNote)
 
-    // 3. Update wallet balance
-    const { error: updateErr } = await supabase
-      .from('wallets')
-      .update({ balance: newBalance })
-      .eq('user_id', user_id)
-
-    if (updateErr) return res.status(500).json({ error: 'Failed to update wallet balance' })
-
-    // 4. Log check-in transaction
-    await supabase.from('transactions').insert({
+    // Log check-in transaction
+    recordTransactionRecord({
       user_id,
+      email: email || '',
       type: 'payout',
       amount: bonusAmount,
       status: 'completed',
+      method: 'Check-in Reward',
       notes: checkinNote
     })
+
+    // Firestore sync
+    try {
+      updateWalletBalance(user_id, wallet.balance).catch(() => {})
+      addTransaction({
+        user_id,
+        type: 'payout',
+        amount: bonusAmount,
+        status: 'completed',
+        notes: checkinNote
+      }).catch(() => {})
+    } catch (e) {}
 
     return res.status(200).json({ 
       success: true, 
       message: 'Daily check-in successful!', 
       bonus_amount: bonusAmount,
-      new_balance: newBalance
+      new_balance: wallet.balance
     })
 
   } catch (err) {

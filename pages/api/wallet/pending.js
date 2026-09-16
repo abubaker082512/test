@@ -1,10 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
 import { getAllTransactionsList, getAllWalletsList } from '../../../utils/walletStore'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
@@ -17,25 +11,9 @@ export default async function handler(req, res) {
     const localTxs = getAllTransactionsList()
     const localWallets = getAllWalletsList()
 
-    // 2. Fetch remote Supabase transactions & wallets if reachable
-    let remoteTxs = []
-    let remoteWallets = []
-    try {
-      const { data: txs } = await supabase
-        .from('transactions')
-        .select('*')
-        .order('created_at', { ascending: false })
-      if (txs) remoteTxs = txs
-
-      const { data: wList } = await supabase
-        .from('wallets')
-        .select('*')
-      if (wList) remoteWallets = wList
-    } catch (e) {}
-
     // Merge transactions uniquely by id / tx_id
     const txMap = new Map()
-    for (const t of [...localTxs, ...remoteTxs]) {
+    for (const t of localTxs) {
       const key = t.tx_id || t.id
       if (key && (!txMap.has(key) || t.status === 'completed')) {
         txMap.set(key, t)
@@ -57,7 +35,7 @@ export default async function handler(req, res) {
 
     // Merge wallets uniquely by canonical email / user_id
     const walletMap = new Map()
-    for (const w of [...localWallets, ...remoteWallets]) {
+    for (const w of localWallets) {
       const email = (w.email || KNOWN_EMAILS[w.user_id] || (w.user_id.includes('@') ? w.user_id : '')).toLowerCase().trim()
       const key = email || w.user_id
       if (key) {

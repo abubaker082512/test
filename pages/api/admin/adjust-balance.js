@@ -1,10 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
 import { creditUserBalance, debitUserBalance, getUserWallet, recordTransactionRecord } from '../../../utils/walletStore'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+import { updateWalletBalance } from '../../../utils/firebaseDb'
 
 const ADMIN_PASSWORD = 'Admin@123'
 
@@ -52,24 +47,10 @@ export default async function handler(req, res) {
       notes: notesStr
     })
 
-    // 2. Background sync to Supabase (non-blocking)
+    // 2. Background sync to Firestore (non-blocking)
     Promise.resolve().then(async () => {
       try {
-        await supabase.from('wallets').upsert({
-          user_id,
-          balance: updatedWallet.balance,
-          currency: 'Pi',
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id' })
-
-        await supabase.from('transactions').insert({
-          user_id,
-          type: adjAmount >= 0 ? 'payout' : 'withdraw',
-          amount: Math.abs(adjAmount),
-          status: 'completed',
-          method: 'admin',
-          notes: notesStr
-        })
+        await updateWalletBalance(user_id, updatedWallet.balance)
       } catch (e) {}
     })
 

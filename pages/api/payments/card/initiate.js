@@ -1,12 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
 import { buildEasypaisaCheckoutData } from '../../../../utils/easypaisaClient';
 import { buildDirectPayUrl } from '../../../../utils/directPayClient';
 import { addTransaction } from '../../../../utils/firebaseDb';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+import { recordTransactionRecord } from '../../../../utils/walletStore';
+import { db } from '../../../../utils/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -37,20 +34,31 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { data: settings } = await supabase
-      .from('currency_rates')
-      .select('*')
-      .eq('id', 1)
-      .single();
+    let pkrRate = 1.0;
+    let clientId = process.env.DIRECTPAY_CLIENT_ID || 'pwa_ci_k1qlq54hv4gw5pr0khux';
+    let clientSecret = process.env.DIRECTPAY_CLIENT_SECRET || 'pwa_secret_zp5rai8z02zr3o5sebm1co6uxci58uca';
+    let storeId = process.env.EASYPAISA_STORE_ID || '43';
+    let hashKey = process.env.EASYPAISA_HASH_KEY || '1234567890123456';
+    let isSandbox = false;
 
-    const pkrRate = settings?.pkr_rate ? parseFloat(settings.pkr_rate) : 1.0;
+    try {
+      const snap = await getDoc(doc(db, 'settings', 'payment_gateways'));
+      if (snap.exists()) {
+        const s = snap.data();
+        if (s.pkr_rate) pkrRate = parseFloat(s.pkr_rate) || 1.0;
+        if (s.directpay_client_id) clientId = s.directpay_client_id;
+        if (s.directpay_client_secret) clientSecret = s.directpay_client_secret;
+        if (s.easypaisa_store_id) storeId = s.easypaisa_store_id;
+        if (s.easypaisa_hash_key) hashKey = s.easypaisa_hash_key;
+        if (s.easypaisa_sandbox !== undefined) isSandbox = Boolean(s.easypaisa_sandbox);
+      }
+    } catch (e) {}
+
     const inGameAmount = parseFloat((numAmount * pkrRate).toFixed(2));
     const host = req.headers.origin || (req.headers.host ? `https://${req.headers.host}` : 'https://winxpro.com');
 
     // Route 1: DirectPay Gateway
     if (gateway_mode === 'directpay') {
-      const clientId = settings?.directpay_client_id || process.env.DIRECTPAY_CLIENT_ID || 'pwa_ci_k1qlq54hv4gw5pr0khux';
-      const clientSecret = settings?.directpay_client_secret || process.env.DIRECTPAY_CLIENT_SECRET || 'pwa_secret_zp5rai8z02zr3o5sebm1co6uxci58uca';
       const clientTransactionId = `CARD-DP-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
 
       const successRedirectUrl = `${host}/wallet?directpay_status=success&txn_id=${encodeURIComponent(clientTransactionId)}&amount=${encodeURIComponent(inGameAmount)}`;
@@ -70,6 +78,19 @@ export default async function handler(req, res) {
         failedRedirectUrl
       });
 
+      recordTransactionRecord({
+        id: clientTransactionId,
+        user_id,
+        email: email || '',
+        type: 'deposit',
+        amount: inGameAmount,
+        status: 'pending',
+        method: 'DirectPay (Card)',
+        tx_id: clientTransactionId,
+        notes: `DirectPay Card Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount})`,
+        metadata: { clientTransactionId, account_number: mobileNumber, amountInPKR: numAmount }
+      });
+
       try {
         await addTransaction({
           user_id,
@@ -77,21 +98,9 @@ export default async function handler(req, res) {
           amount: inGameAmount,
           status: 'pending',
           notes: `DirectPay Card Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount})`,
-          metadata: { clientTransactionId, amountInPKR: numAmount }
+          metadata: { clientTransactionId, account_number: mobileNumber, amountInPKR: numAmount }
         });
       } catch (fErr) {}
-
-      try {
-        await supabase.from('transactions').insert({
-          user_id,
-          type: 'deposit',
-          amount: inGameAmount,
-          status: 'pending',
-          method: 'DirectPay (Card)',
-          tx_id: clientTransactionId,
-          notes: `DirectPay Card Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount})`
-        });
-      } catch (dbErr) {}
 
       return res.status(200).json({
         success: true,
@@ -103,8 +112,6 @@ export default async function handler(req, res) {
     }
 
     // Route 2: Direct Card API (EasyPaisa CC or JazzCash 3D Secure)
-    const storeId = settings?.easypaisa_store_id || process.env.EASYPAISA_STORE_ID || '43';
-    const hashKey = settings?.easypaisa_hash_key || process.env.EASYPAISA_HASH_KEY || '1234567890123456';
     const postBackURL = `${host}/api/payments/easypaisa/callback`;
     const orderRefNum = `CARD-${Date.now()}${Math.floor(100 + Math.random() * 900)}`;
 
@@ -117,7 +124,20 @@ export default async function handler(req, res) {
       emailAddr: email || 'card@winxpro.com',
       storeId,
       hashKey,
-      isSandbox: settings?.easypaisa_sandbox || false
+      isSandbox
+    });
+
+    recordTransactionRecord({
+      id: orderRefNum,
+      user_id,
+      email: email || '',
+      type: 'deposit',
+      amount: inGameAmount,
+      status: 'pending',
+      method: 'Direct API (Credit/Debit Card)',
+      tx_id: orderRefNum,
+      notes: `Direct Card Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Ref: ${orderRefNum}`,
+      metadata: { orderRefNum, account_number: mobileNumber, amountInPKR: numAmount }
     });
 
     try {
@@ -127,21 +147,9 @@ export default async function handler(req, res) {
         amount: inGameAmount,
         status: 'pending',
         notes: `Direct Card Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Ref: ${orderRefNum}`,
-        metadata: { orderRefNum, amountInPKR: numAmount }
+        metadata: { orderRefNum, account_number: mobileNumber, amountInPKR: numAmount }
       });
     } catch (fErr) {}
-
-    try {
-      await supabase.from('transactions').insert({
-        user_id,
-        type: 'deposit',
-        amount: inGameAmount,
-        status: 'pending',
-        method: 'Direct API (Credit/Debit Card)',
-        tx_id: orderRefNum,
-        notes: `Direct Card Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Ref: ${orderRefNum} | Card Holder: ${cardHolderName || 'Cardholder'}`
-      });
-    } catch (dbErr) {}
 
     return res.status(200).json({
       success: true,

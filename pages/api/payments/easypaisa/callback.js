@@ -1,10 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
 import { getOrCreateWallet, updateWalletBalance } from '../../../../utils/firebaseDb';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+import { completeAndCreditTransaction, failTransaction } from '../../../../utils/walletStore';
 
 export default async function handler(req, res) {
   const data = req.method === 'POST' ? req.body : req.query;
@@ -54,47 +49,20 @@ export default async function handler(req, res) {
     const isSuccess = status === '0000' || status === 'Success' || status === '00';
 
     if (ref) {
-      const { data: tx } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('tx_id', ref)
-        .single();
+      if (isSuccess) {
+        const result = completeAndCreditTransaction(ref, {
+          method: 'EasyPaisa Direct',
+          notes: `Verified EasyPaisa Code: ${desc || status}`
+        });
 
-      if (tx && isSuccess && tx.status !== 'completed') {
         // Credit in Firestore
         try {
-          const fWallet = await getOrCreateWallet(tx.user_id);
+          const fWallet = await getOrCreateWallet(result.transaction.user_id);
           const curBal = Number(fWallet?.balance || 0);
-          await updateWalletBalance(tx.user_id, curBal + tx.amount);
+          await updateWalletBalance(result.transaction.user_id, curBal + result.transaction.amount);
         } catch (fErr) {}
-
-        // Credit in Supabase
-        try {
-          const { data: wallet } = await supabase
-            .from('wallets')
-            .select('*')
-            .eq('user_id', tx.user_id)
-            .single();
-
-          if (wallet) {
-            await supabase
-              .from('wallets')
-              .update({ balance: wallet.balance + tx.amount })
-              .eq('user_id', tx.user_id);
-          } else {
-            await supabase
-              .from('wallets')
-              .insert({ user_id: tx.user_id, balance: tx.amount });
-          }
-
-          await supabase
-            .from('transactions')
-            .update({
-              status: 'completed',
-              notes: `${tx.notes || ''} | Verified EasyPaisa Code: ${desc || status}`
-            })
-            .eq('id', tx.id);
-        } catch (sErr) {}
+      } else {
+        failTransaction(ref, desc || status || 'EasyPaisa payment declined');
       }
     }
 

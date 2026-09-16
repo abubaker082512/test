@@ -1,9 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+import { completeAndCreditTransaction, failTransaction } from '../../../../utils/walletStore';
+import { getOrCreateWallet, updateWalletBalance } from '../../../../utils/firebaseDb';
 
 export default async function handler(req, res) {
   const body = req.method === 'POST' ? req.body : req.query;
@@ -18,39 +14,19 @@ export default async function handler(req, res) {
   try {
     const isSuccess = pp_ResponseCode === '000';
 
-    // Find pending transaction
-    const { data: tx } = await supabase
-      .from('transactions')
-      .select('*')
-      .eq('tx_id', pp_TxnRefNo)
-      .single();
+    if (isSuccess) {
+      const result = completeAndCreditTransaction(pp_TxnRefNo, {
+        method: 'JazzCash Direct (MWallet)',
+        notes: `JazzCash Payment Verified: Ref ${pp_RetreivalReferenceNo || pp_TxnRefNo}`
+      });
 
-    if (tx && isSuccess && tx.status !== 'completed') {
-      // Credit wallet
-      const { data: wallet } = await supabase
-        .from('wallets')
-        .select('*')
-        .eq('user_id', tx.user_id)
-        .single();
-
-      if (wallet) {
-        await supabase
-          .from('wallets')
-          .update({ balance: wallet.balance + tx.amount })
-          .eq('user_id', tx.user_id);
-      } else {
-        await supabase
-          .from('wallets')
-          .insert({ user_id: tx.user_id, balance: tx.amount });
-      }
-
-      await supabase
-        .from('transactions')
-        .update({
-          status: 'completed',
-          notes: `${tx.notes || ''} | Completed via Callback: ${pp_RetreivalReferenceNo || ''}`
-        })
-        .eq('id', tx.id);
+      try {
+        const fWallet = await getOrCreateWallet(result.transaction.user_id);
+        const curBal = Number(fWallet?.balance || 0);
+        await updateWalletBalance(result.transaction.user_id, curBal + result.transaction.amount);
+      } catch (fErr) {}
+    } else {
+      failTransaction(pp_TxnRefNo, pp_ResponseMessage || 'JazzCash payment declined');
     }
 
     const redirectStatus = isSuccess ? 'success' : 'failed';

@@ -1,10 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
-import { findTransaction, completeAndCreditTransaction, creditUserBalance, debitUserBalance, recordTransactionRecord } from '../../../utils/walletStore'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+import { findTransaction, completeAndCreditTransaction, creditUserBalance, recordTransactionRecord } from '../../../utils/walletStore'
+import { getOrCreateWallet, updateWalletBalance } from '../../../utils/firebaseDb'
 
 const ADMIN_PASSWORD = 'Admin@123'
 
@@ -21,27 +16,19 @@ export default async function handler(req, res) {
 
     if (action === 'approve') {
       if (localTx) {
-        completeAndCreditTransaction(tx_id, {
+        const result = completeAndCreditTransaction(tx_id, {
           amount: localTx.amount,
           user_id: localTx.user_id,
           email: localTx.email,
           notes: `Admin approved transaction ${tx_id}`
         })
-      }
 
-      // Background sync to Supabase if reachable
-      try {
-        const { data: tx } = await supabase.from('transactions').select('*').eq('id', tx_id).single()
-        if (tx && tx.type === 'deposit') {
-          const { data: wallet } = await supabase.from('wallets').select('*').eq('user_id', tx.user_id).single()
-          if (wallet) {
-            await supabase.from('wallets').update({ balance: wallet.balance + tx.amount }).eq('user_id', tx.user_id)
-          } else {
-            await supabase.from('wallets').insert({ user_id: tx.user_id, balance: tx.amount })
-          }
-        }
-        await supabase.from('transactions').update({ status: 'completed' }).eq('id', tx_id)
-      } catch (e) {}
+        try {
+          const fWallet = await getOrCreateWallet(localTx.user_id)
+          const curBal = Number(fWallet?.balance || 0)
+          await updateWalletBalance(localTx.user_id, curBal + localTx.amount)
+        } catch (e) {}
+      }
 
       return res.status(200).json({ success: true, message: 'Transaction approved and credited successfully!' })
     }
@@ -54,17 +41,6 @@ export default async function handler(req, res) {
         }
         recordTransactionRecord(localTx)
       }
-
-      try {
-        const { data: tx } = await supabase.from('transactions').select('*').eq('id', tx_id).single()
-        if (tx && tx.type === 'withdraw') {
-          const { data: wallet } = await supabase.from('wallets').select('*').eq('user_id', tx.user_id).single()
-          if (wallet) {
-            await supabase.from('wallets').update({ balance: wallet.balance + tx.amount }).eq('user_id', tx.user_id)
-          }
-        }
-        await supabase.from('transactions').update({ status: 'failed' }).eq('id', tx_id)
-      } catch (e) {}
 
       return res.status(200).json({ success: true, message: 'Transaction rejected and updated.' })
     }

@@ -1,11 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
 import { initiateJazzCashPayment } from '../../../../utils/jazzcashClient';
 import { addTransaction, getOrCreateWallet, updateWalletBalance } from '../../../../utils/firebaseDb';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+import { creditUserBalance, recordTransactionRecord } from '../../../../utils/walletStore';
+import { db } from '../../../../utils/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -28,19 +25,24 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. Fetch current exchange rate and settings
-    const { data: settings } = await supabase
-      .from('currency_rates')
-      .select('*')
-      .eq('id', 1)
-      .single();
+    // 1. Fetch current exchange rate and settings from Firestore
+    let pkrRate = 1.0;
+    let merchantId = process.env.JAZZCASH_MERCHANT_ID || '74584985';
+    let password = process.env.JAZZCASH_PASSWORD || 'qo38057jbm';
+    let integritySalt = process.env.JAZZCASH_INTEGRITY_SALT || 'z35f76uo0m';
 
-    const pkrRate = settings?.pkr_rate ? parseFloat(settings.pkr_rate) : 1.0;
+    try {
+      const snap = await getDoc(doc(db, 'settings', 'payment_gateways'));
+      if (snap.exists()) {
+        const s = snap.data();
+        if (s.pkr_rate) pkrRate = parseFloat(s.pkr_rate) || 1.0;
+        if (s.jazzcash_merchant_id) merchantId = s.jazzcash_merchant_id;
+        if (s.jazzcash_password) password = s.jazzcash_password;
+        if (s.jazzcash_integrity_salt) integritySalt = s.jazzcash_integrity_salt;
+      }
+    } catch (e) {}
+
     const inGameAmount = parseFloat((numAmount * pkrRate).toFixed(2));
-
-    const merchantId = settings?.jazzcash_merchant_id || process.env.JAZZCASH_MERCHANT_ID || '74584985';
-    const password = settings?.jazzcash_password || process.env.JAZZCASH_PASSWORD || 'qo38057jbm';
-    const integritySalt = settings?.jazzcash_integrity_salt || process.env.JAZZCASH_INTEGRITY_SALT || 'z35f76uo0m';
 
     const host = req.headers.origin || (req.headers.host ? `https://${req.headers.host}` : 'https://winxpro.com');
     const returnUrl = `${host}/api/payments/jazzcash/callback`;
@@ -58,7 +60,25 @@ export default async function handler(req, res) {
 
     const txnRefNo = result.txnRefNo;
 
-    // 3. Insert transaction record in Firestore & Supabase
+    // 3. Insert transaction record in persistent store & Firestore
+    recordTransactionRecord({
+      id: txnRefNo,
+      user_id,
+      type: 'deposit',
+      amount: inGameAmount,
+      status: result.success ? 'completed' : 'pending',
+      method: 'JazzCash Direct (MWallet)',
+      tx_id: txnRefNo,
+      notes: `JazzCash Direct Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Phone: ${mobileNumber}`,
+      metadata: {
+        txnRefNo,
+        account_number: mobileNumber,
+        msisdn: mobileNumber,
+        responseCode: result.responseCode,
+        responseMessage: result.responseMessage
+      }
+    });
+
     try {
       await addTransaction({
         user_id,
@@ -68,45 +88,22 @@ export default async function handler(req, res) {
         notes: `JazzCash Direct Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Ref: ${txnRefNo} | Phone: ${mobileNumber}`,
         metadata: {
           txnRefNo,
-          mobileNumber,
+          account_number: mobileNumber,
+          msisdn: mobileNumber,
           responseCode: result.responseCode,
           responseMessage: result.responseMessage
         }
       });
-    } catch (fErr) {
-      console.warn('Firestore addTransaction note:', fErr?.message);
-    }
+    } catch (fErr) {}
 
-    try {
-      await supabase.from('transactions').insert({
-        user_id,
-        type: 'deposit',
-        amount: inGameAmount,
-        status: result.success ? 'completed' : 'pending',
-        method: 'JazzCash Direct (MWallet)',
-        tx_id: txnRefNo,
-        notes: `JazzCash Direct Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Ref: ${txnRefNo} | Phone: ${mobileNumber} | Code: ${result.responseCode} - ${result.responseMessage}`
-      });
-    } catch (dbErr) {
-      console.warn('Supabase fallback transaction insert note:', dbErr?.message);
-    }
-
-    // 4. If transaction was instantly successful, credit wallet in both Firestore and Supabase
+    // 4. If transaction was instantly successful, credit wallet
     if (result.success) {
+      creditUserBalance(user_id, inGameAmount, '', `JazzCash Deposit Ref: ${txnRefNo}`);
       try {
         const fWallet = await getOrCreateWallet(user_id);
         const curBal = Number(fWallet?.balance || 0);
         await updateWalletBalance(user_id, curBal + inGameAmount);
       } catch (fErr) {}
-
-      try {
-        const { data: wallet } = await supabase.from('wallets').select('*').eq('user_id', user_id).single();
-        if (wallet) {
-          await supabase.from('wallets').update({ balance: wallet.balance + inGameAmount }).eq('user_id', user_id);
-        } else {
-          await supabase.from('wallets').insert({ user_id, balance: inGameAmount });
-        }
-      } catch (sErr) {}
     }
 
     return res.status(200).json({

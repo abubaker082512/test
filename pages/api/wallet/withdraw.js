@@ -1,30 +1,41 @@
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+import { debitUserBalance, recordTransactionRecord, getUserWallet } from '../../../utils/walletStore'
+import { updateWalletBalance, addTransaction } from '../../../utils/firebaseDb'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const { user_id, amount, method, account_number } = req.body
-  if (!user_id || !amount || amount < 500) return res.status(400).json({ error: 'Minimum withdrawal is Pi 500' })
+  const { user_id, amount, method, account_number, email } = req.body
+  const numAmount = parseFloat(amount)
+  if (!user_id || !numAmount || numAmount < 500) return res.status(400).json({ error: 'Minimum withdrawal is Pi 500' })
 
-  // Check balance
-  const { data: wallet } = await supabase
-    .from('wallets').select('*').eq('user_id', user_id).single()
-
-  if (!wallet || wallet.balance < amount) return res.status(400).json({ error: 'Insufficient balance' })
-
-  // Hold the amount (deduct immediately, will be reversed if rejected)
-  await supabase.from('wallets').update({ balance: wallet.balance - amount }).eq('user_id', user_id)
+  // Check balance and debit
+  const debitRes = debitUserBalance(user_id, numAmount)
+  if (!debitRes.success) {
+    return res.status(400).json({ error: 'Insufficient balance' })
+  }
 
   // Log pending withdrawal
-  await supabase.from('transactions').insert({
-    user_id, type: 'withdraw', amount, status: 'pending', method,
+  recordTransactionRecord({
+    user_id,
+    email: email || '',
+    type: 'withdraw',
+    amount: numAmount,
+    status: 'pending',
+    method,
     notes: `Withdraw to ${method} account: ${account_number}`
   })
 
-  return res.status(200).json({ success: true, message: 'Withdrawal request submitted. Processing within 24 hours.' })
+  // Firestore sync
+  try {
+    updateWalletBalance(user_id, debitRes.wallet.balance).catch(() => {})
+    addTransaction({
+      user_id,
+      type: 'withdraw',
+      amount: numAmount,
+      status: 'pending',
+      notes: `Withdraw to ${method} account: ${account_number}`
+    }).catch(() => {})
+  } catch (e) {}
+
+  return res.status(200).json({ success: true, message: 'Withdrawal request submitted. Processing within 24 hours.', new_balance: debitRes.wallet.balance })
 }

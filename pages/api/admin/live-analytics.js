@@ -1,10 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
 import { getActiveRiskConfig } from './risk-settings'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+import { getAllTransactionsList, getAllWalletsList } from '../../../utils/walletStore'
 
 const ADMIN_PASSWORD = 'Admin@123'
 
@@ -19,22 +14,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. Fetch recent transactions (bets, payouts)
-    const { data: txs, error: txErr } = await supabase
-      .from('transactions')
-      .select('*')
-      .in('type', ['bet', 'payout'])
-      .order('created_at', { ascending: false })
-      .limit(500)
+    // 1. Fetch recent transactions from persistent wallet store
+    const allTxs = getAllTransactionsList()
+    const txs = allTxs.filter(t => t.type === 'bet' || t.type === 'payout' || t.type === 'deposit' || t.type === 'withdraw').slice(0, 500)
 
-    // 2. Fetch users to map user_id -> email
-    const { data: users } = await supabase.auth.admin.listUsers()
+    // 2. Map user_id -> email
+    const allWallets = getAllWalletsList()
     const userMap = {}
-    if (users?.users) {
-      users.users.forEach(u => {
-        userMap[u.id] = u.email
-      })
-    }
+    allWallets.forEach(w => {
+      if (w.user_id && w.email) userMap[w.user_id] = w.email
+    })
 
     const riskConfig = getActiveRiskConfig()
     const restrictedList = riskConfig.restricted_users || []

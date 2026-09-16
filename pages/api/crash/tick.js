@@ -1,11 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
-// For backend server routes, we need the SERVICE_ROLE_KEY to bypass RLS, 
-// but since we only have Anon Key right now for demo purposes, we'll use it.
-// In a real production app, this should be the SUPABASE_SERVICE_ROLE_KEY.
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder_key'
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+import { getCrashState, updateCrashState } from '../../../utils/firebaseDb'
 
 // A simple RNG that ensures 40% win rate
 function generateCrashTarget() {
@@ -21,38 +14,40 @@ export default async function handler(req, res) {
 
   try {
     // 1. Read current state
-    const { data: currentState } = await supabase.from('crash_state').select('*').eq('id', 1).single()
+    const currentState = await getCrashState()
 
     if (!currentState) {
       return res.status(500).json({ error: 'Crash state not initialized in DB' })
     }
 
-    if (currentState.status === 'waiting') {
+    if (currentState.status === 'waiting' || currentState.phase === 'betting') {
       // START THE ROUND
       const target = generateCrashTarget()
       
       // Update DB to 'running'
-      await supabase.from('crash_state').update({
+      await updateCrashState({
         status: 'running',
-        multiplier: 1.00
-      }).eq('id', 1)
+        phase: 'running',
+        multiplier: 1.00,
+        crashed: false
+      })
 
-      // In a serverless environment, we can't reliably run a `setInterval` loop that lasts 10 seconds.
-      // For this demo, we will simulate the crash instantly on the backend, 
-      // but in a production setup, you would use a dedicated Node.js worker.
-      // Here, we just instantly skip to the crash point for Vercel compatibility.
       setTimeout(async () => {
-        await supabase.from('crash_state').update({
+        await updateCrashState({
           status: 'crashed',
-          multiplier: target
-        }).eq('id', 1)
+          phase: 'crashed',
+          multiplier: target,
+          crashed: true
+        })
 
         // Reset back to waiting after 5 seconds
         setTimeout(async () => {
-          await supabase.from('crash_state').update({
+          await updateCrashState({
             status: 'waiting',
-            multiplier: 1.00
-          }).eq('id', 1)
+            phase: 'betting',
+            multiplier: 1.00,
+            crashed: false
+          })
         }, 5000)
 
       }, 2000) // 2 second mock run

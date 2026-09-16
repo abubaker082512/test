@@ -1,12 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
 import { db } from '../../../utils/firebase'
 import { doc, setDoc } from 'firebase/firestore'
 import { savePersistedSettings } from '../../../utils/settingsStore'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
 
 const ADMIN_PASSWORD = 'Admin@123'
 
@@ -77,28 +71,14 @@ export default async function handler(req, res) {
   // 3. Atomically persist immediately to disk/in-memory store
   const persisted = savePersistedSettings(extendedConfig)
 
-  // 4. Update in Firestore and Supabase with bounded timeout in background/non-blocking
-  const writePromises = []
-
+  // 4. Update in Firestore with bounded timeout
   try {
     const docRef = doc(db, 'settings', 'payment_gateways')
-    writePromises.push(setDoc(docRef, extendedConfig, { merge: true }))
-  } catch (fsErr) {
-    console.warn('Firestore sync note:', fsErr?.message)
-  }
-
-  try {
-    writePromises.push(supabase.from('currency_rates').upsert(basePayload, { onConflict: 'id' }))
-  } catch (sbErr) {
-    console.warn('Supabase sync note:', sbErr?.message)
-  }
-
-  try {
     await Promise.race([
-      Promise.allSettled(writePromises),
+      setDoc(docRef, extendedConfig, { merge: true }),
       new Promise((res) => setTimeout(res, 800))
     ])
-  } catch (e) {}
+  } catch (fsErr) {}
 
   return res.status(200).json({
     success: true,

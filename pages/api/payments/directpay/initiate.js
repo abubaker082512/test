@@ -1,14 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
 import { db } from '../../../../utils/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { buildDirectPayUrl } from '../../../../utils/directPayClient';
 import { addTransaction } from '../../../../utils/firebaseDb';
 import { recordTransactionRecord } from '../../../../utils/walletStore';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
 
 const DEFAULT_CLIENT_ID = process.env.DIRECTPAY_CLIENT_ID || 'pwa_ci_k1qlq54hv4gw5pr0khux';
 const DEFAULT_CLIENT_SECRET = process.env.DIRECTPAY_CLIENT_SECRET || 'pwa_secret_zp5rai8z02zr3o5sebm1co6uxci58uca';
@@ -115,7 +109,7 @@ export default async function handler(req, res) {
       });
     } catch (e) {}
 
-    // Background sync to Firestore & Supabase (non-blocking)
+    // Background sync to Firestore (non-blocking)
     try {
       addTransaction({
         user_id,
@@ -125,6 +119,7 @@ export default async function handler(req, res) {
         notes: `DirectPay ${payment_method} Deposit: ${currency} ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Phone: ${msisdn}`,
         metadata: {
           clientTransactionId,
+          account_number: msisdn,
           msisdn,
           amountInPKR: numAmount,
           currency,
@@ -132,18 +127,6 @@ export default async function handler(req, res) {
           description: 'sheikh abu baker group deposit'
         }
       }).catch(() => {});
-    } catch (e) {}
-
-    try {
-      supabase.from('transactions').insert({
-        user_id,
-        type: 'deposit',
-        amount: inGameAmount,
-        status: 'pending',
-        method: `DirectPay (${payment_method})`,
-        tx_id: clientTransactionId,
-        notes: `DirectPay ${payment_method} Deposit: ${currency} ${numAmount.toFixed(2)} (Converted to Pi ${inGameAmount} at rate 1:${pkrRate}) | Phone: ${msisdn}`
-      }).then(() => {}).catch(() => {});
     } catch (e) {}
 
     return res.status(200).json({

@@ -30,14 +30,25 @@ export default function Profile() {
     }
 
     try {
-      // 1. Fetch wallet balance
-      const { data: wallet } = await supabase
-        .from('wallets').select('balance').eq('user_id', user.id).single()
-      if (wallet) setBalance(parseFloat(wallet.balance))
+      const activeUid = user.id || user.uid
+      const activeEmail = user.email || ''
 
-      // 2. Fetch completed transactions to compile stats
-      const { data: txs } = await supabase
-        .from('transactions').select('*').eq('user_id', user.id)
+      // 1. Fetch wallet and transactions from get-balance endpoint
+      const res = await fetch(`/api/wallet/get-balance?user_id=${encodeURIComponent(activeUid)}&email=${encodeURIComponent(activeEmail)}`)
+      const json = await res.json()
+
+      let txs = []
+      if (json.success) {
+        if (json.wallet) setBalance(parseFloat(json.wallet.balance) || 0)
+        if (Array.isArray(json.transactions)) txs = json.transactions
+      }
+
+      // Fallback or augment if empty
+      if (txs.length === 0) {
+        const { data: supaTxs } = await supabase
+          .from('transactions').select('*').eq('user_id', activeUid)
+        if (supaTxs) txs = supaTxs
+      }
 
       if (txs) {
         let wager = 0

@@ -1,11 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
 import { getOrCreateWallet, updateWalletBalance } from '../../../../utils/firebaseDb';
 import { completeAndCreditTransaction, failTransaction, findTransaction } from '../../../../utils/walletStore';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -24,12 +18,6 @@ export default async function handler(req, res) {
 
     if (status === 'failed' || status === 'cancelled') {
       failTransaction(txn_id, 'Payment cancelled or declined by user');
-      try {
-        await supabase
-          .from('transactions')
-          .update({ status: 'failed' })
-          .eq('tx_id', txn_id);
-      } catch (sErr) {}
       return res.status(200).json({
         success: true,
         status: 'failed',
@@ -46,37 +34,13 @@ export default async function handler(req, res) {
       notes: `DirectPay Payment Verified: Pi ${numAmount.toFixed(2)} | TxID: ${txn_id}`
     });
 
-    // 2. Background sync to Firestore and Supabase (non-blocking)
+    // 2. Background sync to Firestore (non-blocking)
     Promise.resolve().then(async () => {
       try {
         const fWallet = await getOrCreateWallet(targetUserId);
         const curBal = Number(fWallet?.balance || 0);
         await updateWalletBalance(targetUserId, curBal + (result.transaction.amount || numAmount));
       } catch (fErr) {}
-
-      try {
-        const { data: wallet } = await supabase
-          .from('wallets')
-          .select('*')
-          .eq('user_id', targetUserId)
-          .single();
-
-        if (wallet) {
-          await supabase
-            .from('wallets')
-            .update({ balance: wallet.balance + (result.transaction.amount || numAmount) })
-            .eq('user_id', targetUserId);
-        } else {
-          await supabase
-            .from('wallets')
-            .insert({ user_id: targetUserId, balance: result.transaction.amount || numAmount });
-        }
-
-        await supabase
-          .from('transactions')
-          .update({ status: 'completed' })
-          .eq('tx_id', txn_id);
-      } catch (dbErr) {}
     });
 
     return res.status(200).json({

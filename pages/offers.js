@@ -80,7 +80,7 @@ export default function Offers() {
       const res = await fetch('/api/wallet/claim-checkin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id })
+        body: JSON.stringify({ user_id: user.id || user.uid, email: user.email })
       })
       const data = await res.json()
       if (data.success) {
@@ -106,7 +106,7 @@ export default function Offers() {
       const res = await fetch('/api/wallet/claim-deposit-bonus', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id })
+        body: JSON.stringify({ user_id: user.id || user.uid, email: user.email })
       })
       const data = await res.json()
       if (data.success) {

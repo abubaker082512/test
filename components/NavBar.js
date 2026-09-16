@@ -44,6 +44,11 @@ export default function NavBar() {
       })
       .subscribe()
 
+    // Real-time polling every 5 seconds for instant synchronization
+    const pollInterval = setInterval(() => {
+      fetchBalance()
+    }, 5000)
+
     // Custom client-side event for instant updates without websocket dependency
     const handleWalletUpdate = () => {
       fetchBalance()
@@ -52,6 +57,7 @@ export default function NavBar() {
 
     return () => {
       supabase.removeChannel(channel)
+      clearInterval(pollInterval)
       window.removeEventListener('wallet-updated', handleWalletUpdate)
     }
   }, [user])

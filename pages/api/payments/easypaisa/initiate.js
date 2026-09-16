@@ -1,11 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
 import { buildEasypaisaCheckoutData } from '../../../../utils/easypaisaClient';
 import { addTransaction } from '../../../../utils/firebaseDb';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+import { recordTransactionRecord } from '../../../../utils/walletStore';
+import { db } from '../../../../utils/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -30,19 +27,24 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. Fetch settings
-    const { data: settings } = await supabase
-      .from('currency_rates')
-      .select('*')
-      .eq('id', 1)
-      .single();
+    // 1. Fetch settings from Firestore
+    let pkrRate = 1.0;
+    let storeId = process.env.EASYPAISA_STORE_ID || '43';
+    let hashKey = process.env.EASYPAISA_HASH_KEY || '1234567890123456';
+    let isSandbox = false;
 
-    const pkrRate = settings?.pkr_rate ? parseFloat(settings.pkr_rate) : 1.0;
+    try {
+      const snap = await getDoc(doc(db, 'settings', 'payment_gateways'));
+      if (snap.exists()) {
+        const s = snap.data();
+        if (s.pkr_rate) pkrRate = parseFloat(s.pkr_rate) || 1.0;
+        if (s.easypaisa_store_id) storeId = s.easypaisa_store_id;
+        if (s.easypaisa_hash_key) hashKey = s.easypaisa_hash_key;
+        if (s.easypaisa_sandbox !== undefined) isSandbox = Boolean(s.easypaisa_sandbox);
+      }
+    } catch (e) {}
+
     const inGameAmount = parseFloat((numAmount * pkrRate).toFixed(2));
-
-    const storeId = settings?.easypaisa_store_id || process.env.EASYPAISA_STORE_ID || '43';
-    const hashKey = settings?.easypaisa_hash_key || process.env.EASYPAISA_HASH_KEY || '1234567890123456';
-    const isSandbox = settings?.easypaisa_sandbox || false;
 
     const host = req.headers.origin || (req.headers.host ? `https://${req.headers.host}` : 'https://winxpro.com');
     const postBackURL = `${host}/api/payments/easypaisa/callback`;
@@ -62,7 +64,25 @@ export default async function handler(req, res) {
       isSandbox
     });
 
-    // 3. Store pending transaction in Firestore & Supabase (non-blocking)
+    // 3. Store pending transaction in walletStore & Firestore
+    recordTransactionRecord({
+      id: orderRefNum,
+      user_id,
+      email: email || '',
+      type: 'deposit',
+      amount: inGameAmount,
+      status: 'pending',
+      method: `EasyPaisa Direct (${payment_method === 'CC_PAYMENT_METHOD' ? 'Card' : 'Mobile Account'})`,
+      tx_id: orderRefNum,
+      notes: `EasyPaisa Direct Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Phone: ${mobileNumber}`,
+      metadata: {
+        orderRefNum,
+        account_number: mobileNumber,
+        msisdn: mobileNumber,
+        paymentMethod: payment_method
+      }
+    });
+
     try {
       addTransaction({
         user_id,
@@ -72,23 +92,12 @@ export default async function handler(req, res) {
         notes: `EasyPaisa Direct Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Ref: ${orderRefNum} | Phone: ${mobileNumber}`,
         metadata: {
           orderRefNum,
-          mobileNumber,
+          account_number: mobileNumber,
+          msisdn: mobileNumber,
           paymentMethod: payment_method
         }
       }).catch(() => {});
     } catch (fErr) {}
-
-    try {
-      supabase.from('transactions').insert({
-        user_id,
-        type: 'deposit',
-        amount: inGameAmount,
-        status: 'pending',
-        method: `EasyPaisa Direct (${payment_method === 'CC_PAYMENT_METHOD' ? 'Card' : 'Mobile Account'})`,
-        tx_id: orderRefNum,
-        notes: `EasyPaisa Direct Deposit: PKR ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Ref: ${orderRefNum} | Phone: ${mobileNumber}`
-      }).then(() => {}).catch(() => {});
-    } catch (dbErr) {}
 
     const hasConfiguredStore = Boolean(
       storeId && String(storeId).trim() !== '43' &&

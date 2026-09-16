@@ -1,38 +1,28 @@
-import { supabase } from '../../../utils/supabase.js'
+import { getRiskSettings, updateRiskSettings } from '../../../utils/firebaseDb'
 
 const ADMIN_PASSWORD = 'Admin@123'
 
 // In-memory fallback risk configuration
 let riskConfig = {
-  global_rtp: 95.0, // Global Return To Player percentage
-  max_win_cap: 2000.0, // Max net win before auto win-stop
+  global_rtp: 95.0,
+  max_win_cap: 2000.0,
   force_house_edge: false,
-  restricted_users: [] // Array of user_ids whose winnings are frozen/stopped
+  restricted_users: []
 }
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
-      const { data } = await supabase
-        .from('currency_rates')
-        .select('*')
-        .eq('id', 1)
-        .single()
-
-      if (data && data.risk_config) {
-        riskConfig = { ...riskConfig, ...data.risk_config }
+      const fbSettings = await getRiskSettings()
+      if (fbSettings) {
+        riskConfig = { ...riskConfig, ...fbSettings }
       }
+    } catch (e) {}
 
-      return res.status(200).json({
-        success: true,
-        config: riskConfig
-      })
-    } catch {
-      return res.status(200).json({
-        success: true,
-        config: riskConfig
-      })
-    }
+    return res.status(200).json({
+      success: true,
+      config: riskConfig
+    })
   }
 
   if (req.method === 'POST') {
@@ -71,15 +61,9 @@ export default async function handler(req, res) {
     }
 
     try {
-      await supabase
-        .from('currency_rates')
-        .upsert({
-          id: 1,
-          risk_config: riskConfig,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'id' })
+      await updateRiskSettings(riskConfig)
     } catch (e) {
-      console.warn('Could not persist risk config to DB, using in-memory state:', e.message)
+      console.warn('Could not persist risk config to Firestore:', e.message)
     }
 
     return res.status(200).json({
