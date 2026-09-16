@@ -175,17 +175,25 @@ export default function WalletPage() {
   useEffect(() => {
     if (!router.isReady) return
 
-    const { directpay_status, jazzcash_status, easypaisa_status, txn_id, orderRefNum, amount } = router.query
+    const { directpay_status, jazzcash_status, easypaisa_status, txn_id, orderRefNum, amount, gateway_transaction_id, dp_txn_id, transaction_id, bank_ref } = router.query
+    const resolvedTxnId = txn_id || orderRefNum || router.query.client_transaction_id
+    const resolvedGatewayId = gateway_transaction_id || dp_txn_id || transaction_id || bank_ref || ''
 
     // DirectPay Return
-    if (directpay_status === 'success' && txn_id) {
+    if (directpay_status === 'success' && resolvedTxnId) {
       const activeUid = user?.id || user?.uid || (typeof window !== 'undefined' && JSON.parse(localStorage.getItem('winxpro_session') || '{}')?.id)
       const activeEmail = user?.email || (typeof window !== 'undefined' && JSON.parse(localStorage.getItem('winxpro_session') || '{}')?.email)
 
       fetch('/api/payments/directpay/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ txn_id, user_id: activeUid, email: activeEmail, amount })
+        body: JSON.stringify({
+          txn_id: resolvedTxnId,
+          gateway_transaction_id: resolvedGatewayId,
+          user_id: activeUid,
+          email: activeEmail,
+          amount
+        })
       })
         .then(res => res.json())
         .then(data => {
@@ -195,21 +203,25 @@ export default function WalletPage() {
               setWallet(prev => ({ ...(prev || {}), balance: data.balance }))
             }
           } else {
-            setDpMsg({ type: 'success', text: `Payment received! Processing transaction ID: ${txn_id}` })
+            setDpMsg({ type: 'success', text: `Payment received! Processing transaction ID: ${resolvedTxnId}` })
           }
           fetchData()
           window.dispatchEvent(new Event('wallet-updated'))
         })
         .catch(() => {
-          setDpMsg({ type: 'success', text: `Payment completed! Transaction ${txn_id} confirmed.` })
+          setDpMsg({ type: 'success', text: `Payment completed! Transaction ${resolvedTxnId} confirmed.` })
           fetchData()
         })
     } else if (directpay_status === 'failed') {
-      if (txn_id) {
+      if (resolvedTxnId) {
         fetch('/api/payments/directpay/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ txn_id, status: 'failed' })
+          body: JSON.stringify({
+            txn_id: resolvedTxnId,
+            gateway_transaction_id: resolvedGatewayId,
+            status: 'failed'
+          })
         }).catch(() => {})
       }
       setDpMsg({ type: 'error', text: 'DirectPay transaction was cancelled or failed. Please try again.' })

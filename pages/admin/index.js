@@ -569,7 +569,13 @@ export default function AdminPanel() {
 
                           {(tx.tx_id || tx.id) && (
                             <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px', fontFamily: 'monospace' }}>
-                              <strong>TxID / Reference:</strong> {tx.tx_id || tx.id}
+                              <strong>Merchant TxID:</strong> {tx.tx_id || tx.id}
+                            </div>
+                          )}
+
+                          {tx.metadata?.gateway_transaction_id && (
+                            <div style={{ fontSize: '12px', color: '#ffb300', marginTop: '2px', fontFamily: 'monospace' }}>
+                              <strong>⚡ DirectPay Gateway ID:</strong> {tx.metadata.gateway_transaction_id}
                             </div>
                           )}
 
@@ -579,8 +585,34 @@ export default function AdminPanel() {
                             </div>
                           )}
 
-                          <div style={{ fontSize: '11px', color: '#888', marginTop: '4px' }}>
-                            📅 {new Date(tx.created_at).toLocaleString()}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px' }}>
+                            <span style={{ fontSize: '11px', color: '#888' }}>📅 {new Date(tx.created_at).toLocaleString()}</span>
+                            {tx.method?.toLowerCase().includes('directpay') && (
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  try {
+                                    const res = await fetch(`/api/payments/directpay/inquire?txn_id=${encodeURIComponent(tx.tx_id || tx.id)}`);
+                                    const data = await res.json();
+                                    alert(`DirectPay Transaction Details:\n\nMerchant TxID: ${data.client_transaction_id || tx.tx_id}\nGateway ID: ${data.gateway_transaction_id || 'N/A'}\nStatus: ${data.gateway_status || tx.status}\nAmount: PKR ${data.amountInPKR}\nAccount: ${data.account_number}`);
+                                  } catch (err) {
+                                    alert('Failed to inquire DirectPay details: ' + err.message);
+                                  }
+                                }}
+                                style={{
+                                  background: 'rgba(255, 215, 0, 0.1)',
+                                  border: '1px solid var(--accent)',
+                                  color: 'var(--accent)',
+                                  padding: '2px 8px',
+                                  borderRadius: '4px',
+                                  fontSize: '10px',
+                                  fontWeight: 'bold',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                🔍 Inquire DirectPay API
+                              </button>
+                            )}
                           </div>
                         </div>
 
