@@ -6,7 +6,7 @@ import SideDrawer from './SideDrawer'
 import { supabase } from '../utils/supabase'
 
 export default function NavBar() {
-  const { user, logOut } = useAuth()
+  const { user, logOut, isDemoMode, demoBalance, toggleDemoMode } = useAuth()
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [balance, setBalance] = useState(0.0)
@@ -69,7 +69,7 @@ export default function NavBar() {
     }
     setRefreshing(true)
     await fetchBalance()
-    setTimeout(() => setRefreshing(false), 800) // Spin animation duration
+    setTimeout(() => setRefreshing(false), 800)
   }
 
   return (
@@ -88,9 +88,9 @@ export default function NavBar() {
               src="/logo.png" 
               alt="WinX Pro" 
               style={{ 
-                height: '52px', 
+                height: '48px', 
                 width: 'auto', 
-                maxHeight: '54px',
+                maxHeight: '50px',
                 objectFit: 'contain',
                 filter: 'drop-shadow(0 2px 10px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 8px rgba(255, 215, 0, 0.3))'
               }} 
@@ -99,32 +99,60 @@ export default function NavBar() {
         </div>
 
         <div className="header-right">
-          {/* Wallet Balance Display with Flag and Refresh */}
-          <div className="wallet-display">
-            <span className="wallet-flag">🌍</span>
-            <span className="wallet-amount">
-              Pi {user ? balance.toFixed(2) : '0.00'}
-            </span>
-            <button 
-              className={`wallet-refresh ${refreshing ? 'coin-spin' : ''}`} 
-              onClick={handleRefresh}
-              title="Refresh Balance (Fiat)"
+          {/* Demo Mode Toggle Badge */}
+          {isDemoMode ? (
+            <div 
+              onClick={() => toggleDemoMode(false)}
+              style={{
+                background: 'rgba(0, 230, 118, 0.15)',
+                border: '1px solid #00e676',
+                borderRadius: '20px',
+                padding: '4px 10px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                cursor: 'pointer'
+              }}
+              title="Click to switch to Real Account"
             >
-              🔄
-            </button>
-          </div>
+              <span style={{ fontSize: '13px' }}>🎮</span>
+              <span style={{ fontSize: '12px', fontWeight: 900, color: '#00e676' }}>
+                DEMO Pi {demoBalance.toFixed(2)}
+              </span>
+              <span style={{ fontSize: '9px', background: '#00e676', color: '#000', padding: '1px 5px', borderRadius: '4px', fontWeight: 900 }}>
+                TRIAL
+              </span>
+            </div>
+          ) : (
+            /* Real Wallet Balance Display */
+            <div className="wallet-display">
+              <span className="wallet-flag">🌍</span>
+              <span className="wallet-amount">
+                Pi {user ? balance.toFixed(2) : '0.00'}
+              </span>
+              <button 
+                className={`wallet-refresh ${refreshing ? 'coin-spin' : ''}`} 
+                onClick={handleRefresh}
+                title="Refresh Balance (Fiat)"
+              >
+                🔄
+              </button>
+            </div>
+          )}
 
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               {/* Deposit Button with Dropdown and Badge */}
-              <div className="deposit-dropdown-container">
-                <Link href="/wallet" style={{ textDecoration: 'none' }}>
-                  <button className="btn-deposit">
-                    Deposit <span style={{ fontSize: '10px' }}>▼</span>
-                    <span className="deposit-badge">+4%</span>
-                  </button>
-                </Link>
-              </div>
+              {!isDemoMode && (
+                <div className="deposit-dropdown-container">
+                  <Link href="/wallet" style={{ textDecoration: 'none' }}>
+                    <button className="btn-deposit">
+                      Deposit <span style={{ fontSize: '10px' }}>▼</span>
+                      <span className="deposit-badge">+4%</span>
+                    </button>
+                  </Link>
+                </div>
+              )}
 
               {/* User Menu Dropdown */}
               <div style={{ position: 'relative' }}>
@@ -154,13 +182,20 @@ export default function NavBar() {
                     background: 'var(--bg-secondary)', 
                     border: '1px solid var(--border)', 
                     borderRadius: '12px', 
-                    minWidth: '160px', 
+                    minWidth: '170px', 
                     zIndex: 100, 
                     overflow: 'hidden',
                     boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
                   }}>
                     <div style={{ padding: '10px 14px', fontSize: '11px', color: 'var(--muted)', borderBottom: '1px solid var(--border)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {user.email}
+                      {user.email || 'Player'}
+                    </div>
+                    <div 
+                      onClick={() => { toggleDemoMode(!isDemoMode); setShowMenu(false) }}
+                      className="menu-item-hover" 
+                      style={{ padding: '10px 14px', cursor: 'pointer', color: '#00e676', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}
+                    >
+                      {isDemoMode ? '💰 Switch to Real Mode' : '🎮 Switch to Demo Mode'}
                     </div>
                     <Link href="/wallet" style={{ textDecoration: 'none' }}>
                       <div onClick={() => setShowMenu(false)} className="menu-item-hover" style={{ padding: '10px 14px', cursor: 'pointer', color: '#fff', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>

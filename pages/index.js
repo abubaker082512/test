@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import NavBar from '../components/NavBar'
 import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
@@ -62,6 +63,7 @@ const winEvents = [
 ]
 
 export default function Home() {
+  const router = useRouter()
   const [activeCategory, setActiveCategory] = useState('Hot')
   const { user } = useAuth()
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
@@ -82,6 +84,31 @@ export default function Home() {
 
   const [apiGames, setApiGames] = useState([])
   const [apiLoaded, setApiLoaded] = useState(false)
+
+  // Sync active tab with router query if provided
+  useEffect(() => {
+    if (!router.isReady) return
+    const { tab, search } = router.query
+    if (tab) {
+      const tabMap = {
+        'hot': 'Hot',
+        'slot': 'Slots',
+        'slots': 'Slots',
+        'mini': 'Mini Games',
+        'cards': 'Cards',
+        'fishing': 'Fishing',
+        'live': 'Live',
+        'sports': 'Sports',
+        'poker': 'Poker',
+        'crash': 'Crash',
+        'recent': 'Recent',
+        'favorites': 'Favorites'
+      }
+      if (tabMap[tab.toLowerCase()]) {
+        setActiveCategory(tabMap[tab.toLowerCase()])
+      }
+    }
+  }, [router.isReady, router.query])
 
   useEffect(() => {
     let isMounted = true;
@@ -275,17 +302,18 @@ export default function Home() {
     }
   }
 
-  // Categories list covering all integrated providers
+  // Categories list covering all integrated providers matching Drawer
   const categoriesList = [
-    { name: 'Hot', label: 'All Games', icon: '🔥' },
-    { name: 'Sports', label: 'Sportsbook', icon: '⚽' },
-    { name: 'Poker', label: 'Poker Room', icon: '♠️' },
-    { name: 'Rainbow', label: 'Rainbow Riches', icon: '🌈' },
-    { name: 'Paddy', label: 'Paddy Power', icon: '☘️' },
-    { name: 'Slots', label: 'Slots', icon: '🎰' },
-    { name: 'Live', label: 'Live Tables', icon: '🎡' },
-    { name: 'Cards', label: 'Cards & Table', icon: '🃏' },
-    { name: 'Crash', label: 'Crash Games', icon: '🚀' }
+    { name: 'Hot', label: '🔥 Hot', icon: '🔥' },
+    { name: 'Slots', label: '🎰 Slots', icon: '🎰' },
+    { name: 'Mini Games', label: '💠 Mini Games', icon: '💠' },
+    { name: 'Cards', label: '🃏 Cards', icon: '🃏' },
+    { name: 'Fishing', label: '🦈 Fishing', icon: '🦈' },
+    { name: 'Live', label: '💃 Live Casino', icon: '💃' },
+    { name: 'Sports', label: '⚽ Sportsbook', icon: '⚽' },
+    { name: 'Poker', label: '♠️ Poker', icon: '♠️' },
+    { name: 'Crash', label: '🚀 Crash', icon: '🚀' },
+    { name: 'Favorites', label: '⭐ Favorites', icon: '⭐' }
   ]
 
   // Filter games based on selected tab
@@ -303,12 +331,16 @@ export default function Home() {
     if (category === 'Hot') return unique;
     if (category === 'Sports') return unique.filter(g => g.category === 'Sports' || g.provider === 'BetStack' || g.id?.includes('sports') || g.id?.startsWith('betstack-'));
     if (category === 'Poker') return unique.filter(g => g.category === 'Poker' || g.provider === 'PokerAPI' || g.id?.includes('poker') || g.title?.toLowerCase().includes('poker') || g.title?.toLowerCase().includes('hold\'em') || g.title?.toLowerCase().includes('omaha'));
+    if (category === 'Slots') return unique.filter(g => g.category?.toLowerCase().includes('slot') || g.provider === 'RainbowRiches' || g.provider === 'PaddyPower' || g.provider === 'Pragmatic Play' || g.provider === 'JILI' || g.gameType === 0 || g.gameType === 'slot');
+    if (category === 'Mini Games') return unique.filter(g => g.category?.toLowerCase().includes('mini') || g.category?.toLowerCase().includes('crash') || g.id?.includes('crash') || g.id?.includes('aviator') || g.id?.includes('gems') || g.id?.includes('plinko'));
+    if (category === 'Fishing') return unique.filter(g => g.title?.toLowerCase().includes('fish') || g.id?.toLowerCase().includes('fish') || g.category?.toLowerCase().includes('fish'));
+    if (category === 'Live') return unique.filter(g => g.category?.toLowerCase().includes('live') || g.provider === 'Evolution Gaming' || g.gameType === 1 || g.gameType === 'live');
+    if (category === 'Cards') return unique.filter(g => g.category?.toLowerCase().includes('card') || g.category === 'Poker' || g.provider === 'PokerAPI' || g.title?.toLowerCase().includes('blackjack') || g.category?.toLowerCase().includes('table'));
+    if (category === 'Crash') return unique.filter(g => g.category?.toLowerCase().includes('crash') || g.id?.includes('crash') || g.id?.includes('aviator') || g.gameType === 2);
+    if (category === 'Favorites') return unique.slice(0, 10);
+    if (category === 'Recent') return unique.slice(0, 8);
     if (category === 'Rainbow') return unique.filter(g => g.provider === 'RainbowRiches' || g.id?.startsWith('rr-'));
     if (category === 'Paddy') return unique.filter(g => g.provider === 'PaddyPower' || g.id?.startsWith('paddy-') || g.id === 'Chests-of-Plenty');
-    if (category === 'Slots') return unique.filter(g => g.category?.toLowerCase().includes('slot') || g.gameType === 0 || g.gameType === 'slot');
-    if (category === 'Live') return unique.filter(g => g.category?.toLowerCase().includes('live') || g.gameType === 1 || g.gameType === 'live');
-    if (category === 'Cards') return unique.filter(g => g.category?.toLowerCase().includes('card') || g.category === 'Poker' || g.category?.toLowerCase().includes('table'));
-    if (category === 'Crash') return unique.filter(g => g.category?.toLowerCase().includes('crash') || g.id?.includes('crash') || g.id?.includes('aviator') || g.gameType === 2);
     if (category === 'Jackpots') return unique.filter(g => g.category?.toLowerCase().includes('jackpot') || g.badge?.toLowerCase().includes('jackpot'));
     return unique.filter(g => g.category === category);
   }

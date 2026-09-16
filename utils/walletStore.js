@@ -109,7 +109,7 @@ export function getUserWallet(userId, email = "") {
       id: key,
       user_id: key,
       email: cleanEmail,
-      balance: 1000.0, // Default starting welcome balance
+      balance: 100.0, // Rs 100 welcome starting bonus
       currency: "Pi",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()

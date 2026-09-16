@@ -14,6 +14,19 @@ export default async function handler(req, res) {
     getOrCreateWallet(user_id, wallet.balance).catch(() => {})
   } catch (e) {}
 
+  // Log welcome bonus if newly created
+  try {
+    recordTransactionRecord({
+      user_id,
+      email: email || '',
+      type: 'payout',
+      amount: 100.00,
+      status: 'completed',
+      method: 'Welcome Bonus',
+      notes: 'New User Registration Bonus: Pi 100.00'
+    })
+  } catch (e) {}
+
   // Process referral reward if referrer email provided
   if (referrer_email && referrer_email.toLowerCase() !== (email || '').toLowerCase()) {
     try {
