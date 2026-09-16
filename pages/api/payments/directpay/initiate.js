@@ -1,4 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
+import { db } from '../../../../utils/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import { buildDirectPayUrl } from '../../../../utils/directPayClient';
 import { addTransaction } from '../../../../utils/firebaseDb';
 
@@ -31,9 +33,36 @@ export default async function handler(req, res) {
   }
 
   try {
-    const pkrRate = 1.0;
-    const clientId = DEFAULT_CLIENT_ID;
-    const clientSecret = DEFAULT_CLIENT_SECRET;
+    let pkrRate = 1.0;
+    let clientId = DEFAULT_CLIENT_ID;
+    let clientSecret = DEFAULT_CLIENT_SECRET;
+
+    // 1. Fetch real-time settings from Firestore and Supabase
+    try {
+      const docRef = doc(db, 'settings', 'payment_gateways');
+      const snap = await Promise.race([
+        getDoc(docRef),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 1000))
+      ]);
+      if (snap && snap.exists()) {
+        const s = snap.data();
+        if (s.directpay_client_id) clientId = s.directpay_client_id;
+        if (s.directpay_client_secret) clientSecret = s.directpay_client_secret;
+        if (s.pkr_rate) pkrRate = parseFloat(s.pkr_rate) || 1.0;
+      }
+    } catch (e) {}
+
+    try {
+      const { data: sbData } = await Promise.race([
+        supabase.from('currency_rates').select('*').eq('id', 1).single(),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 1000))
+      ]);
+      if (sbData) {
+        if (sbData.directpay_client_id) clientId = sbData.directpay_client_id;
+        if (sbData.directpay_client_secret) clientSecret = sbData.directpay_client_secret;
+        if (sbData.pkr_rate) pkrRate = parseFloat(sbData.pkr_rate) || pkrRate;
+      }
+    } catch (e) {}
 
     // Calculate in-game Pi points
     const inGameAmount = parseFloat((numAmount * pkrRate).toFixed(2));

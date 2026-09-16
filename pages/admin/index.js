@@ -266,6 +266,9 @@ export default function AdminPanel() {
       const data = await res.json()
       if (data.success) {
         setRatesMsg({ type: 'success', text: 'All exchange rates, DirectPay, JazzCash & EasyPaisa settings updated successfully!' })
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('settings-updated'))
+        }
       } else {
         setRatesMsg({ type: 'error', text: data.error })
       }

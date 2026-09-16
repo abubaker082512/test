@@ -73,23 +73,28 @@ export default async function handler(req, res) {
     card_mode: card_mode ? String(card_mode).trim() : 'direct_api'
   }
 
-  // Update in Firestore and Supabase asynchronously / non-blocking
+  // Update in Firestore and Supabase with bounded timeout
+  const writePromises = []
+
   try {
     const docRef = doc(db, 'settings', 'payment_gateways')
-    setDoc(docRef, extendedConfig, { merge: true }).catch(err => {
-      console.warn('Firestore settings update note:', err?.message)
-    })
+    writePromises.push(setDoc(docRef, extendedConfig, { merge: true }))
   } catch (fsErr) {
     console.warn('Firestore sync note:', fsErr?.message)
   }
 
   try {
-    supabase.from('currency_rates').upsert(basePayload, { onConflict: 'id' }).then(() => {}).catch(err => {
-      console.warn('Supabase update note:', err?.message)
-    })
+    writePromises.push(supabase.from('currency_rates').upsert(basePayload, { onConflict: 'id' }))
   } catch (sbErr) {
     console.warn('Supabase sync note:', sbErr?.message)
   }
+
+  try {
+    await Promise.race([
+      Promise.allSettled(writePromises),
+      new Promise((res) => setTimeout(res, 1200))
+    ])
+  } catch (e) {}
 
   return res.status(200).json({
     success: true,

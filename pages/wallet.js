@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../utils/supabase'
+import { db } from '../utils/firebase'
+import { doc, onSnapshot } from 'firebase/firestore'
 import AuthModal from '../components/AuthModal'
 
 export default function WalletPage() {
@@ -104,6 +106,38 @@ export default function WalletPage() {
   useEffect(() => {
     fetchRates()
     fetchData()
+
+    // Real-time listener for Settings & Gateway routes via Firestore
+    let unsub = null
+    try {
+      unsub = onSnapshot(doc(db, 'settings', 'payment_gateways'), (snap) => {
+        if (snap && snap.exists()) {
+          const data = snap.data()
+          setRates(prev => ({
+            ...prev,
+            pkr_rate: data.pkr_rate ? parseFloat(data.pkr_rate) : prev.pkr_rate,
+            usd_rate: data.usd_rate ? parseFloat(data.usd_rate) : prev.usd_rate,
+            directpay_enabled: data.directpay_enabled !== undefined ? Boolean(data.directpay_enabled) : prev.directpay_enabled,
+            jazzcash_mode: data.jazzcash_mode || prev.jazzcash_mode,
+            easypaisa_mode: data.easypaisa_mode || prev.easypaisa_mode,
+            card_mode: data.card_mode || prev.card_mode
+          }))
+          setGatewayModes({
+            Easypaisa: data.easypaisa_mode || 'direct_api',
+            JazzCash: data.jazzcash_mode || 'direct_api',
+            Card: data.card_mode || 'direct_api'
+          })
+        }
+      })
+    } catch (e) {}
+
+    const onSettingsUpdate = () => { fetchRates() }
+    window.addEventListener('settings-updated', onSettingsUpdate)
+
+    return () => {
+      if (unsub) unsub()
+      window.removeEventListener('settings-updated', onSettingsUpdate)
+    }
   }, [user])
 
   // Handle return redirect from DirectPay, JazzCash, or EasyPaisa
