@@ -203,12 +203,12 @@ export class RapidApiClient {
   }
 
   async getGameUrl(payload = {}) {
-    const rawGameId = payload.gameId || 'super-ace';
+    const rawGameId = payload.gameId || 'bdfb23c974a2517198c5443adeea77a8';
     const formattedPayload = {
-      username: String(payload.username || 'player').toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 24) || 'akwplayer1',
+      username: String(payload.username || 'player').toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 20) || 'akwplayer1',
       gameId: rawGameId,
       lang: payload.lang || 'en',
-      money: payload.money !== undefined ? payload.money : 0,
+      money: payload.money !== undefined ? Number(payload.money) : 100,
       currency: (payload.currency && payload.currency !== 'Fiat') ? payload.currency : 'PKR',
       platform: payload.platform || 1,
       home_url: payload.home_url || 'https://www.winxpro.com.pk/'
@@ -224,11 +224,24 @@ export class RapidApiClient {
         },
         body: JSON.stringify(formattedPayload)
       });
-      if (data && (data.game_launch_url || data.gameUrl || data.success)) {
-        return data;
+      const launchUrl = data?.payload?.game_launch_url || data?.game_launch_url || data?.gameUrl;
+      if (data && (launchUrl || data.code === 0 || data.success)) {
+        return {
+          success: true,
+          ok: true,
+          code: 0,
+          gameUrl: launchUrl,
+          game_launch_url: launchUrl,
+          game_name: data?.payload?.game_name || payload.gameName || rawGameId,
+          payload: data?.payload || {
+            game_launch_url: launchUrl,
+            game_name: data?.payload?.game_name || payload.gameName || rawGameId,
+            provider: data?.payload?.provider || payload.provider || 'JILI'
+          }
+        };
       }
     } catch (err) {
-      // Fallback to internal native interactive game engine
+      console.error('RapidApiClient getGameUrl error:', err);
     }
 
     const directLaunchUrl = `/play/${encodeURIComponent(rawGameId)}`;

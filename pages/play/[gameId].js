@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useAuth } from '../../context/AuthContext'
 import AuthModal from '../../components/AuthModal'
 
-// Native Interactive Game Engines
+// Native Interactive Game Engines (Fallback / Local Mode)
 import SuperAce from '../../components/games/SuperAce'
 import FortuneGems from '../../components/games/FortuneGems'
 import MahjongWays from '../../components/games/MahjongWays'
@@ -40,6 +40,15 @@ export default function PlayGame() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
 
+  // Live Provider Stream State
+  const [gameMode, setGameMode] = useState('api') // 'api' | 'canvas'
+  const [liveGameUrl, setLiveGameUrl] = useState(null)
+  const [apiGameName, setApiGameName] = useState(null)
+  const [apiProvider, setApiProvider] = useState(null)
+  const [apiLoading, setApiLoading] = useState(true)
+  const [apiError, setApiError] = useState(null)
+  const [streamKey, setStreamKey] = useState(Date.now())
+
   const activeUser = user || {
     id: 'guest_player',
     uid: 'guest_player',
@@ -65,11 +74,68 @@ export default function PlayGame() {
     }
   }, [user])
 
-  // Current effective wallet balance (Real or Demo)
+  // Effective wallet balance (Real or Demo)
   const activeBalance = isDemoMode ? demoBalance : (wallet ? parseFloat(wallet.balance) : 100.0)
   const activeWalletObj = {
     balance: activeBalance,
     currency: 'Pi'
+  }
+
+  // Fetch official live game launch URL from provider API
+  const fetchLiveGameUrl = async () => {
+    if (!gameId) return
+    setApiLoading(true)
+    setApiError(null)
+
+    try {
+      const cleanUser = (activeUser.email || activeUser.displayName || 'player')
+        .split('@')[0]
+        .replace(/[^a-zA-Z0-9]/g, '')
+        .slice(0, 16) || 'player'
+
+      const res = await fetch('/api/rapid/getGameUrl', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gameId: gameId,
+          username: cleanUser,
+          money: activeBalance,
+          currency: 'PKR',
+          lang: 'en'
+        })
+      })
+
+      const json = await res.json()
+      if (json.success && json.gameUrl && json.gameUrl.startsWith('http')) {
+        setLiveGameUrl(json.gameUrl)
+        setApiGameName(json.gameName || null)
+        setApiProvider(json.provider || null)
+      } else {
+        setApiError(json.error || 'Direct provider session temporarily unavailable')
+      }
+    } catch (err) {
+      console.error('Error fetching live game URL:', err)
+      setApiError(err.message || 'Network error fetching game stream')
+    } finally {
+      setApiLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (gameId) {
+      fetchLiveGameUrl()
+    }
+  }, [gameId, isDemoMode])
+
+  const reloadStream = () => {
+    setStreamKey(Date.now())
+    fetchLiveGameUrl()
+  }
+
+  const openInNewTab = () => {
+    if (liveGameUrl) {
+      window.open(liveGameUrl, '_blank', 'noopener,noreferrer')
+    }
   }
 
   const toggleFullscreen = () => {
@@ -87,12 +153,13 @@ export default function PlayGame() {
   const normalizedSlug = (gameId || '').toLowerCase()
 
   const getGameTitle = () => {
-    if (!gameId) return 'Live Game'
+    if (apiGameName) return apiGameName
+    if (!gameId) return 'Live Casino Game'
     const words = gameId.replace(/[-_]/g, ' ').split(' ')
     return words.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
   }
 
-  const renderGameComponent = () => {
+  const renderCanvasFallback = () => {
     const props = {
       user: activeUser,
       wallet: activeWalletObj,
@@ -223,27 +290,38 @@ export default function PlayGame() {
       return <SportsBook {...props} />
     }
 
-    // Default: High-performance Neon Classic Slots for all other slots (Pragmatic, PaddyPower, RainbowRiches, etc.)
+    // Default: High-performance Neon Classic Slots
     return <ClassicSlots {...props} gameId={gameId} title={getGameTitle()} />
   }
 
-  if (loading) return <div style={{ color: 'white', padding: '40px', textAlign: 'center' }}>Loading Game...</div>
+  if (loading) {
+    return (
+      <div style={{ width: '100vw', height: '100vh', background: '#0a0a0c', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '32px', animation: 'spin 1s linear infinite', marginBottom: '12px' }}>🎰</div>
+          <div>Loading Game Environment...</div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={{ width: '100vw', height: '100vh', background: '#0a0a0c', color: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       
       {/* Universal Top Header */}
       <div style={{ 
-        padding: '10px 16px', 
+        padding: '8px 14px', 
         background: '#121215', 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
         borderBottom: '1px solid #222',
         zIndex: 20,
-        gap: '8px'
+        gap: '8px',
+        flexWrap: 'nowrap'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* Left: Navigation & Game Info */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
           <Link href="/" style={{ textDecoration: 'none' }}>
             <button 
               style={{
@@ -254,32 +332,118 @@ export default function PlayGame() {
                 borderRadius: '6px',
                 fontSize: '12px',
                 fontWeight: 'bold',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                whiteSpace: 'nowrap'
               }}
             >
               ⬅ Lobby
             </button>
           </Link>
-          <div style={{ fontWeight: '900', color: 'var(--accent)', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          
+          <div style={{ 
+            fontWeight: '900', 
+            color: 'var(--accent)', 
+            fontSize: '13px', 
+            textTransform: 'uppercase', 
+            letterSpacing: '0.5px',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}>
             🎮 {getGameTitle()}
           </div>
+
+          {apiProvider && (
+            <span style={{
+              background: 'rgba(255,215,0,0.15)',
+              color: 'var(--accent)',
+              border: '1px solid rgba(255,215,0,0.3)',
+              fontSize: '10px',
+              fontWeight: '900',
+              padding: '2px 6px',
+              borderRadius: '4px'
+            }}>
+              {apiProvider}
+            </span>
+          )}
         </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {/* Right: Mode Switcher, Stream Controls & Wallet */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+          
+          {/* Mode Switcher (Live API Stream vs Interactive Canvas) */}
+          <button
+            onClick={() => setGameMode(gameMode === 'api' ? 'canvas' : 'api')}
+            style={{
+              background: gameMode === 'api' ? 'rgba(0, 230, 118, 0.15)' : 'rgba(255, 152, 0, 0.15)',
+              border: `1px solid ${gameMode === 'api' ? '#00e676' : '#ff9800'}`,
+              color: gameMode === 'api' ? '#00e676' : '#ff9800',
+              padding: '4px 8px',
+              borderRadius: '6px',
+              fontSize: '11px',
+              fontWeight: '900',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+            title={gameMode === 'api' ? 'Currently playing Official Provider Stream. Click for Canvas Engine.' : 'Currently in Canvas Engine. Click for Official Provider Stream.'}
+          >
+            <span>{gameMode === 'api' ? '📡 LIVE API' : '⚡ CANVAS'}</span>
+          </button>
+
+          {/* Refresh Stream Button (only in API mode) */}
+          {gameMode === 'api' && (
+            <button
+              onClick={reloadStream}
+              style={{
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid #333',
+                color: '#fff',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                fontSize: '11px',
+                cursor: 'pointer'
+              }}
+              title="Reload Game Stream"
+            >
+              🔄
+            </button>
+          )}
+
+          {/* Popout Button (opens in fresh tab for full browser compatibility) */}
+          {gameMode === 'api' && liveGameUrl && (
+            <button
+              onClick={openInNewTab}
+              style={{
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid #333',
+                color: '#fff',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                fontSize: '11px',
+                cursor: 'pointer'
+              }}
+              title="Open Game in Full Window"
+            >
+              ↗
+            </button>
+          )}
+
           {/* Demo Mode / Real Mode Toggle Badge */}
           <div 
             onClick={() => toggleDemoMode(!isDemoMode)}
             style={{ 
               background: isDemoMode ? 'rgba(0, 230, 118, 0.15)' : 'rgba(255, 215, 0, 0.15)', 
               border: `1px solid ${isDemoMode ? '#00e676' : 'var(--accent)'}`, 
-              padding: '4px 10px', 
+              padding: '4px 8px', 
               borderRadius: '14px', 
-              fontSize: '12px', 
+              fontSize: '11px', 
               fontWeight: '900',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px'
+              gap: '4px'
             }}
             title="Click to toggle Demo/Real Mode"
           >
@@ -292,19 +456,19 @@ export default function PlayGame() {
           <button 
             onClick={toggleFullscreen}
             className="btn"
-            style={{ padding: '5px 10px', fontSize: '11px', background: 'rgba(255,255,255,0.08)' }}
+            style={{ padding: '4px 8px', fontSize: '11px', background: 'rgba(255,255,255,0.08)' }}
             title="Toggle Fullscreen"
           >
-            {isFullscreen ? 'Exit Full' : '⛶ Fullscreen'}
+            {isFullscreen ? 'Exit' : '⛶'}
           </button>
 
           {!user && (
             <button 
               onClick={() => setIsAuthModalOpen(true)}
               className="btn primary"
-              style={{ padding: '5px 12px', fontSize: '11px' }}
+              style={{ padding: '4px 10px', fontSize: '11px' }}
             >
-              Login / Sign Up
+              Login
             </button>
           )}
         </div>
@@ -312,7 +476,58 @@ export default function PlayGame() {
 
       {/* Main Interactive Direct Live Game Stage */}
       <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: '#070709' }}>
-        {renderGameComponent()}
+        {gameMode === 'api' ? (
+          apiLoading ? (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', gap: '16px' }}>
+              <div style={{ width: '48px', height: '48px', border: '4px solid rgba(255,215,0,0.2)', borderTop: '4px solid var(--accent)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+              <div style={{ fontSize: '18px', fontWeight: 'bold' }}>Connecting to Live Provider Stream...</div>
+              <div style={{ color: '#888', fontSize: '13px' }}>Launching {getGameTitle()} from Official Casino Server</div>
+            </div>
+          ) : liveGameUrl ? (
+            <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', flexDirection: 'column' }}>
+              <iframe
+                key={streamKey}
+                src={liveGameUrl}
+                title={getGameTitle()}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  border: 'none',
+                  background: '#000',
+                  flex: 1
+                }}
+                allow="autoplay; fullscreen; screen-wake-lock; camera; microphone; payment; accelerometer; gyroscope; xr-spatial-tracking"
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center' }}>
+              <div style={{ fontSize: '36px', marginBottom: '12px' }}>⚠️</div>
+              <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px' }}>API Stream Connection Offline</div>
+              <div style={{ color: '#aaa', fontSize: '13px', maxWidth: '400px', marginBottom: '16px' }}>
+                {apiError || 'The live provider session could not be established.'}
+              </div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button 
+                  onClick={reloadStream} 
+                  className="btn" 
+                  style={{ background: 'var(--accent)', color: '#000', fontWeight: 'bold', padding: '8px 16px', borderRadius: '6px' }}
+                >
+                  🔄 Retry Stream
+                </button>
+                <button 
+                  onClick={() => setGameMode('canvas')} 
+                  className="btn" 
+                  style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', padding: '8px 16px', borderRadius: '6px' }}
+                >
+                  ⚡ Play Canvas Engine
+                </button>
+              </div>
+            </div>
+          )
+        ) : (
+          renderCanvasFallback()
+        )}
       </div>
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
