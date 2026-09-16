@@ -382,33 +382,151 @@ export default function PlayGame() {
         </div>
       </div>
 
-      {/* Main Interactive Direct Live Game Stage (100% Touch & Click Responsive) */}
-      <div style={{ flex: 1, position: 'relative', width: '100%', height: 'calc(100vh - 48px)', background: '#000', overflow: 'hidden' }}>
+      {/* Main Interactive Direct Live Game Stage */}
+      <div style={{ flex: 1, position: 'relative', width: '100%', height: 'calc(100vh - 48px)', background: '#07070a', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
         {gameMode === 'api' ? (
           apiLoading ? (
             <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', gap: '16px' }}>
-              <div style={{ width: '48px', height: '48px', border: '4px solid rgba(255,215,0,0.2)', borderTop: '4px solid var(--accent)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-              <div style={{ fontSize: '18px', fontWeight: 'bold' }}>Connecting to Live Provider Stream...</div>
-              <div style={{ color: '#888', fontSize: '13px' }}>Launching {getGameTitle()} from Official Casino Server</div>
+              <div style={{ width: '52px', height: '52px', border: '4px solid rgba(255,215,0,0.2)', borderTop: '4px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+              <div style={{ fontSize: '18px', fontWeight: '900', letterSpacing: '0.5px' }}>Connecting to Live Provider Stream...</div>
+              <div style={{ color: '#888', fontSize: '13px' }}>Generating verified session token for {getGameTitle()}</div>
             </div>
           ) : liveGameUrl ? (
-            <iframe
-              key={streamKey}
-              src={liveGameUrl}
-              title={getGameTitle()}
-              style={{
+            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', background: 'radial-gradient(circle at center, #1b122c 0%, #080511 100%)' }}>
+              
+              {/* Sleek Live Game Launch Hub */}
+              <div style={{
+                maxWidth: '460px',
                 width: '100%',
-                height: '100%',
-                border: 'none',
-                background: '#000',
-                position: 'absolute',
-                inset: 0,
-                zIndex: 1,
-                touchAction: 'manipulation'
-              }}
-              allow="autoplay; fullscreen; screen-wake-lock; camera; microphone; payment; accelerometer; gyroscope; xr-spatial-tracking"
-              allowFullScreen
-            />
+                background: 'rgba(18, 14, 30, 0.95)',
+                border: '1px solid rgba(255, 215, 0, 0.35)',
+                borderRadius: '20px',
+                padding: '32px 24px',
+                textAlign: 'center',
+                boxShadow: '0 16px 48px rgba(0, 0, 0, 0.85), 0 0 24px rgba(255, 215, 0, 0.1)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '18px',
+                backdropFilter: 'blur(12px)'
+              }}>
+                
+                {/* Glowing Provider Icon */}
+                <div style={{ 
+                  width: '84px', 
+                  height: '84px', 
+                  borderRadius: '50%', 
+                  background: 'linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(255,140,0,0.1) 100%)',
+                  border: '2px solid rgba(255,215,0,0.5)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '40px',
+                  boxShadow: '0 0 20px rgba(255,215,0,0.25)'
+                }}>
+                  🎰
+                </div>
+
+                {/* Game Title & Provider Verification Badge */}
+                <div>
+                  <h1 style={{ fontSize: '24px', fontWeight: '900', color: '#fff', textTransform: 'uppercase', margin: 0, letterSpacing: '0.5px' }}>
+                    {getGameTitle()}
+                  </h1>
+                  <div style={{ fontSize: '13px', color: '#00e676', fontWeight: 'bold', marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00e676', boxShadow: '0 0 8px #00e676' }}></span>
+                    <span>Official {apiProvider || 'Live Provider'} Stream Active</span>
+                  </div>
+                </div>
+
+                {/* Session Active Balance */}
+                <div style={{ 
+                  background: 'rgba(255, 255, 255, 0.05)', 
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px', 
+                  padding: '12px 18px', 
+                  width: '100%', 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center' 
+                }}>
+                  <span style={{ color: '#aaa', fontSize: '13px', fontWeight: '600' }}>Active Session Funds:</span>
+                  <strong style={{ color: isDemoMode ? '#00e676' : 'var(--accent)', fontSize: '16px', fontWeight: '900' }}>
+                    Pi {activeBalance.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </strong>
+                </div>
+
+                {/* Primary User Gesture Play Action */}
+                <button
+                  onClick={openInNewTab}
+                  style={{
+                    width: '100%',
+                    padding: '18px 0',
+                    background: 'linear-gradient(135deg, #ffd700 0%, #ff9100 100%)',
+                    color: '#000',
+                    border: 'none',
+                    borderRadius: '14px',
+                    fontSize: '17px',
+                    fontWeight: '900',
+                    cursor: 'pointer',
+                    boxShadow: '0 8px 30px rgba(255, 215, 0, 0.45)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px',
+                    letterSpacing: '0.6px',
+                    transition: 'all 0.2s ease',
+                    textTransform: 'uppercase'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                  onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  <span>▶ TAP TO PLAY LIVE STREAM</span>
+                </button>
+
+                <div style={{ fontSize: '11px', color: '#888', lineHeight: '1.4' }}>
+                  ⚡ Clicking activates full sound, HD WebGL acceleration & official provider bet sync.
+                </div>
+
+                {/* Secondary Action Controls */}
+                <div style={{ display: 'flex', gap: '10px', width: '100%', marginTop: '4px' }}>
+                  <button
+                    onClick={reloadStream}
+                    style={{
+                      flex: 1,
+                      padding: '11px 0',
+                      background: 'rgba(255,255,255,0.08)',
+                      border: '1px solid #333',
+                      color: '#fff',
+                      borderRadius: '10px',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    🔄 Refresh Token
+                  </button>
+
+                  <Link href="/" style={{ flex: 1, textDecoration: 'none' }}>
+                    <button
+                      style={{
+                        width: '100%',
+                        padding: '11px 0',
+                        background: 'rgba(255,255,255,0.08)',
+                        border: '1px solid #333',
+                        color: '#fff',
+                        borderRadius: '10px',
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ⬅ Back to Lobby
+                    </button>
+                  </Link>
+                </div>
+
+              </div>
+            </div>
           ) : (
             <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center' }}>
               <div style={{ fontSize: '36px', marginBottom: '12px' }}>⚠️</div>
