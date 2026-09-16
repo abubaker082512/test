@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
 import NavBar from '../components/NavBar'
@@ -8,12 +8,14 @@ import AuthModal from '../components/AuthModal'
 import { americanToDecimal } from '../utils/betstackClient'
 
 export default function Sportsbook() {
-  const { user } = useAuth()
+  const { user, isDemoMode, demoBalance, toggleDemoMode, spendDemoBalance, addDemoBalance } = useAuth()
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [activeSport, setActiveSport] = useState('all')
+  const [searchQuery, setSearchQuery] = useState('')
   const [lines, setLines] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [wallet, setWallet] = useState(null)
   
   // Bet Slip state
   const [selectedBet, setSelectedBet] = useState(null)
@@ -27,22 +29,59 @@ export default function Sportsbook() {
   const [myBets, setMyBets] = useState([])
 
   const sportsList = [
-    { key: 'all', name: 'All Sports', icon: '🔥' },
-    { key: 'soccer', name: 'Soccer', icon: '⚽', filterKey: 'soccer' },
-    { key: 'cricket', name: 'Cricket', icon: '🏏', filterKey: 'cricket' },
-    { key: 'basketball', name: 'Basketball', icon: '🏀', filterKey: 'basketball' },
-    { key: 'americanfootball', name: 'Football (NFL)', icon: '🏈', filterKey: 'americanfootball' },
-    { key: 'baseball', name: 'Baseball (MLB)', icon: '⚾', filterKey: 'baseball' },
-    { key: 'tennis', name: 'Tennis', icon: '🎾', filterKey: 'tennis' },
+    { key: 'all', name: 'All Sports', icon: '🔥', filterKey: '' },
+    { key: 'cricket', name: 'Cricket (PSL / IPL)', icon: '🏏', filterKey: 'cricket' },
+    { key: 'soccer', name: 'Soccer (EPL / UCL)', icon: '⚽', filterKey: 'soccer' },
+    { key: 'basketball', name: 'Basketball (NBA)', icon: '🏀', filterKey: 'basketball' },
+    { key: 'tennis', name: 'Tennis (ATP)', icon: '🎾', filterKey: 'tennis' },
     { key: 'mma', name: 'MMA & Boxing', icon: '🥊', filterKey: 'mma' },
+    { key: 'baseball', name: 'Baseball (MLB)', icon: '⚾', filterKey: 'baseball' },
+    { key: 'americanfootball', name: 'Football (NFL)', icon: '🏈', filterKey: 'americanfootball' },
     { key: 'icehockey', name: 'Ice Hockey (NHL)', icon: '🏒', filterKey: 'icehockey' }
   ]
 
+  // Load saved bets from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('akw_sports_my_bets')
+      if (saved) {
+        setMyBets(JSON.parse(saved))
+      }
+    } catch (e) {}
+  }, [])
+
+  // Save bets to localStorage
+  const saveMyBets = (bets) => {
+    setMyBets(bets)
+    try {
+      localStorage.setItem('akw_sports_my_bets', JSON.stringify(bets))
+    } catch (e) {}
+  }
+
+  // Fetch real wallet
+  const fetchWallet = async () => {
+    if (!user) return
+    try {
+      const res = await fetch(`/api/wallet/get-balance?user_id=${encodeURIComponent(user.id || user.uid || '')}&email=${encodeURIComponent(user.email || '')}`)
+      const json = await res.json()
+      if (json.success && json.wallet) {
+        setWallet(json.wallet)
+      }
+    } catch (e) {}
+  }
+
+  useEffect(() => {
+    if (user) fetchWallet()
+  }, [user])
+
+  const activeBalance = isDemoMode ? demoBalance : (wallet ? parseFloat(wallet.balance) : 100.0)
+
+  // Fetch live sports lines from API
   const fetchSportsLines = async () => {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/sports/lines?north_american=true')
+      const res = await fetch('/api/sports/lines')
       const data = await res.json()
       if (data.success && Array.isArray(data.lines)) {
         setLines(data.lines)
@@ -59,17 +98,33 @@ export default function Sportsbook() {
 
   useEffect(() => {
     fetchSportsLines()
-    const interval = setInterval(fetchSportsLines, 60000)
+    const interval = setInterval(fetchSportsLines, 30000)
     return () => clearInterval(interval)
   }, [])
 
-  // Filter lines by selected sport
+  // Filter lines by selected sport and search term
   const filteredLines = lines.filter(item => {
-    if (activeSport === 'all') return true
     const leagueKey = item.event?.league?.key?.toLowerCase() || ''
     const sportName = item.event?.league?.name?.toLowerCase() || ''
-    const target = sportsList.find(s => s.key === activeSport)?.filterKey || ''
-    return leagueKey.includes(target) || sportName.includes(target)
+    const homeTeam = item.event?.home_team?.toLowerCase() || ''
+    const awayTeam = item.event?.away_team?.toLowerCase() || ''
+    
+    // Sport category match
+    if (activeSport !== 'all') {
+      const target = sportsList.find(s => s.key === activeSport)?.filterKey || ''
+      const matchesSport = leagueKey.includes(target) || sportName.includes(target) || 
+        (target === 'cricket' && (sportName.includes('psl') || sportName.includes('ipl'))) ||
+        (target === 'soccer' && (sportName.includes('premier') || sportName.includes('champions') || sportName.includes('liga')))
+      if (!matchesSport) return false
+    }
+
+    // Search query match
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim()
+      return homeTeam.includes(q) || awayTeam.includes(q) || sportName.includes(q)
+    }
+
+    return true
   })
 
   // Select a bet odd
@@ -91,17 +146,17 @@ export default function Sportsbook() {
   }
 
   // Quick Stake handler
-  const handleAddStake = (val) => {
+  const handleSetStake = (val) => {
+    if (val === 'MAX') {
+      setStake(Math.floor(activeBalance).toString())
+      return
+    }
     const current = parseFloat(stake) || 0
     setStake((current + val).toString())
   }
 
   // Place bet action
   const handlePlaceBet = async () => {
-    if (!user) {
-      setIsAuthModalOpen(true)
-      return
-    }
     if (!selectedBet) return
     const stakeNum = parseFloat(stake)
     if (isNaN(stakeNum) || stakeNum <= 0) {
@@ -109,36 +164,81 @@ export default function Sportsbook() {
       return
     }
 
+    if (stakeNum > activeBalance) {
+      setBetErrorMsg(`Insufficient balance! You have Pi ${activeBalance.toFixed(2)}, stake is Pi ${stakeNum.toFixed(2)}.`)
+      return
+    }
+
     setPlacingBet(true)
     setBetErrorMsg(null)
     setBetSuccessMsg(null)
 
+    const potentialPayout = (stakeNum * selectedBet.decimalOdd).toFixed(2)
+
     try {
-      const potentialPayout = (stakeNum * selectedBet.decimalOdd).toFixed(2)
-      const res = await fetch('/api/sports/place-bet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: user.id,
-          event_id: selectedBet.eventId,
+      if (isDemoMode) {
+        // Handle Demo Mode Bet
+        const success = spendDemoBalance(stakeNum)
+        if (!success) {
+          setBetErrorMsg('Insufficient demo balance!')
+          setPlacingBet(false)
+          return
+        }
+
+        const demoBet = {
+          id: 'SP-DEMO-' + Date.now().toString(36).toUpperCase(),
           match_title: selectedBet.matchTitle,
           selection: `${selectedBet.selection} (${selectedBet.marketType})`,
           odds: `${selectedBet.americanOdd} (${selectedBet.decimalOdd}x)`,
           stake: stakeNum,
           potential_payout: potentialPayout,
-          market_type: selectedBet.marketType
-        })
-      })
-
-      const data = await res.json()
-      if (res.ok && data.success) {
-        setBetSuccessMsg(`🎉 Bet Placed! Stake: Pi ${stakeNum.toFixed(2)} | Potential Win: Pi ${potentialPayout}`)
-        if (data.bet) {
-          setMyBets(prev => [data.bet, ...prev])
+          placed_at: new Date().toISOString(),
+          is_demo: true,
+          status: 'ACTIVE'
         }
-        window.dispatchEvent(new Event('wallet-updated'))
+
+        const updated = [demoBet, ...myBets]
+        saveMyBets(updated)
+        setBetSuccessMsg(`🎉 Demo Bet Placed! Stake: Pi ${stakeNum.toFixed(2)} | Potential Win: Pi ${potentialPayout}`)
+        setSelectedBet(null)
       } else {
-        setBetErrorMsg(data.error || 'Failed to place bet')
+        // Handle Real Wallet Bet
+        if (!user) {
+          setIsAuthModalOpen(true)
+          setPlacingBet(false)
+          return
+        }
+
+        const res = await fetch('/api/sports/place-bet', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: user.id || user.uid || user.email,
+            email: user.email || '',
+            event_id: selectedBet.eventId,
+            match_title: selectedBet.matchTitle,
+            selection: `${selectedBet.selection} (${selectedBet.marketType})`,
+            odds: `${selectedBet.americanOdd} (${selectedBet.decimalOdd}x)`,
+            stake: stakeNum,
+            potential_payout: potentialPayout,
+            market_type: selectedBet.marketType,
+            is_demo: false
+          })
+        })
+
+        const data = await res.json()
+        if (res.ok && data.success) {
+          setBetSuccessMsg(`🎉 Real Bet Placed! Stake: Pi ${stakeNum.toFixed(2)} | Potential Win: Pi ${potentialPayout}`)
+          if (data.bet) {
+            const updated = [data.bet, ...myBets]
+            saveMyBets(updated)
+          }
+          fetchWallet()
+          window.dispatchEvent(new Event('wallet-updated'))
+          setSelectedBet(null)
+        } else {
+          setBetErrorMsg(data.error || 'Failed to place bet')
+        }
       }
     } catch (err) {
       setBetErrorMsg('Network error. Failed to place bet.')
@@ -147,24 +247,55 @@ export default function Sportsbook() {
     }
   }
 
+  // Cash out an active bet
+  const handleCashout = (betId) => {
+    const targetBet = myBets.find(b => b.id === betId)
+    if (!targetBet || targetBet.status !== 'ACTIVE') return
+
+    const cashoutValue = parseFloat(((targetBet.stake * 0.9) + (parseFloat(targetBet.potential_payout) * 0.4)).toFixed(2))
+
+    if (targetBet.is_demo) {
+      addDemoBalance(cashoutValue)
+    } else if (user) {
+      fetch('/api/wallet/deposit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id || user.uid || user.email,
+          email: user.email || '',
+          amount: cashoutValue,
+          type: 'sports_cashout',
+          notes: `Cashout on ${targetBet.match_title}`
+        })
+      }).then(() => fetchWallet()).catch(() => {})
+    }
+
+    const updated = myBets.map(b => {
+      if (b.id === betId) {
+        return { ...b, status: 'CASHED_OUT', cashout_amount: cashoutValue }
+      }
+      return b
+    })
+    saveMyBets(updated)
+  }
+
   return (
     <div className="app">
       <Head>
-        <title>Sportsbook - Live Betting Odds | BetStack</title>
+        <title>Sportsbook - Live Betting Odds | WinxPro</title>
       </Head>
 
       <NavBar />
 
-      <main style={{ paddingBottom: '90px' }}>
+      <main style={{ paddingBottom: '100px' }}>
         {/* Sports Header Banner */}
         <div style={{
           background: 'linear-gradient(135deg, #1f0b3b 0%, #0d021a 100%)',
-          padding: '20px 16px',
+          padding: '16px',
           borderBottom: '1px solid var(--border)',
-          position: 'relative',
-          overflow: 'hidden'
+          position: 'relative'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                 <span style={{ fontSize: '24px' }}>⚡</span>
@@ -173,24 +304,50 @@ export default function Sportsbook() {
                 </h1>
               </div>
               <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>
-                Powered by BetStack consensus odds engine. NFL, MLB, NBA, Soccer, Cricket & more.
+                Live Consensus Multi-Sport Feed (Cricket, PSL, Soccer, Champions League, NBA, Tennis & NFL)
               </p>
             </div>
-            <button
-              onClick={fetchSportsLines}
-              style={{
-                background: 'rgba(255, 215, 0, 0.1)',
-                border: '1px solid var(--accent)',
-                color: 'var(--accent)',
-                borderRadius: '20px',
-                padding: '6px 12px',
-                fontSize: '11px',
-                fontWeight: 'bold',
-                cursor: 'pointer'
-              }}
-            >
-              🔄 Refresh
-            </button>
+
+            {/* Demo / Real Balance Toggle & Refresh */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div 
+                onClick={() => toggleDemoMode(!isDemoMode)}
+                style={{ 
+                  background: isDemoMode ? 'rgba(0, 230, 118, 0.15)' : 'rgba(255, 215, 0, 0.15)', 
+                  border: `1px solid ${isDemoMode ? '#00e676' : 'var(--accent)'}`, 
+                  padding: '5px 10px', 
+                  borderRadius: '14px', 
+                  fontSize: '12px', 
+                  fontWeight: '900',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+                title="Click to toggle Demo/Real Mode"
+              >
+                <span>{isDemoMode ? '🎮 DEMO' : '💰 REAL'}</span>
+                <span style={{ color: isDemoMode ? '#00e676' : 'var(--accent)' }}>
+                  Pi {activeBalance.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+
+              <button
+                onClick={fetchSportsLines}
+                style={{
+                  background: 'rgba(255, 215, 0, 0.1)',
+                  border: '1px solid var(--accent)',
+                  color: 'var(--accent)',
+                  borderRadius: '14px',
+                  padding: '5px 10px',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                🔄 Refresh
+              </button>
+            </div>
           </div>
         </div>
 
@@ -201,57 +358,100 @@ export default function Sportsbook() {
             style={{
               flex: 1,
               padding: '12px',
-              background: 'transparent',
+              background: activeTab === 'markets' ? 'rgba(255, 215, 0, 0.1)' : 'none',
               border: 'none',
-              borderBottom: activeTab === 'markets' ? '3px solid var(--accent)' : '3px solid transparent',
+              borderBottom: activeTab === 'markets' ? '2px solid var(--accent)' : 'none',
               color: activeTab === 'markets' ? 'var(--accent)' : 'var(--muted)',
               fontWeight: 'bold',
               fontSize: '13px',
               cursor: 'pointer'
             }}
           >
-            🏟️ Live & Upcoming Matches ({filteredLines.length})
+            🏟️ Live Match Fixtures ({filteredLines.length})
           </button>
           <button
             onClick={() => setActiveTab('mybets')}
             style={{
               flex: 1,
               padding: '12px',
-              background: 'transparent',
+              background: activeTab === 'mybets' ? 'rgba(255, 215, 0, 0.1)' : 'none',
               border: 'none',
-              borderBottom: activeTab === 'mybets' ? '3px solid var(--accent)' : '3px solid transparent',
+              borderBottom: activeTab === 'mybets' ? '2px solid var(--accent)' : 'none',
               color: activeTab === 'mybets' ? 'var(--accent)' : 'var(--muted)',
               fontWeight: 'bold',
               fontSize: '13px',
               cursor: 'pointer'
             }}
           >
-            📋 My Wagers ({myBets.length})
+            📑 My Bets ({myBets.length})
           </button>
         </div>
 
         {activeTab === 'markets' && (
           <>
-            {/* Sports Category Chips */}
-            <div className="category-bar" style={{ position: 'sticky', top: '60px', zIndex: 30, background: 'var(--bg-tertiary)', paddingBottom: '10px' }}>
-              {sportsList.map(sport => (
-                <button
-                  key={sport.key}
-                  className={`category-chip ${activeSport === sport.key ? 'active' : ''}`}
-                  onClick={() => setActiveSport(sport.key)}
-                >
-                  <span>{sport.icon}</span>
-                  <span>{sport.name}</span>
-                </button>
-              ))}
+            {/* Search Bar */}
+            <div style={{ padding: '12px 16px 0 16px' }}>
+              <input
+                type="text"
+                placeholder="Search team, player, or tournament (e.g. Lahore, Real Madrid, Pakistan)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: '100%',
+                  background: '#131926',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px',
+                  padding: '10px 14px',
+                  color: '#fff',
+                  fontSize: '13px',
+                  outline: 'none'
+                }}
+              />
             </div>
 
-            {/* Match List */}
-            <div style={{ padding: '16px' }}>
+            {/* Sports Horizontal Filter Chips */}
+            <div style={{
+              display: 'flex',
+              overflowX: 'auto',
+              gap: '8px',
+              padding: '12px 16px',
+              scrollbarWidth: 'none'
+            }}>
+              {sportsList.map(sport => {
+                const isActive = activeSport === sport.key
+                return (
+                  <button
+                    key={sport.key}
+                    onClick={() => setActiveSport(sport.key)}
+                    style={{
+                      background: isActive ? 'var(--accent)' : 'var(--bg-secondary)',
+                      color: isActive ? '#000' : '#fff',
+                      border: `1px solid ${isActive ? 'var(--accent)' : 'var(--border)'}`,
+                      borderRadius: '20px',
+                      padding: '6px 14px',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      cursor: 'pointer',
+                      boxShadow: isActive ? '0 0 10px rgba(255, 215, 0, 0.3)' : 'none'
+                    }}
+                  >
+                    <span>{sport.icon}</span>
+                    <span>{sport.name}</span>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Live Lines Grid / List */}
+            <div style={{ padding: '0 16px 16px 16px' }}>
               {loading ? (
-                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--muted)' }}>
-                  <div className="coin-spin" style={{ fontSize: '32px', marginBottom: '12px' }}>⚽</div>
-                  <div>Loading real-time BetStack lines & match odds...</div>
+                <div style={{ textAlign: 'center', padding: '50px 20px', color: 'var(--muted)' }}>
+                  <div className="spinner" style={{ width: '40px', height: '40px', border: '3px solid rgba(255,215,0,0.2)', borderTop: '3px solid var(--accent)', borderRadius: '50%', margin: '0 auto 12px auto', animation: 'spin 1s linear infinite' }} />
+                  <div>Fetching Live Multi-Sport Consensus Lines & Odds...</div>
                 </div>
               ) : error ? (
                 <div style={{ textAlign: 'center', padding: '30px 20px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--danger)', borderRadius: '12px', color: '#ff8080' }}>
@@ -263,7 +463,7 @@ export default function Sportsbook() {
               ) : filteredLines.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--muted)' }}>
                   <div style={{ fontSize: '32px', marginBottom: '8px' }}>🏟️</div>
-                  <div>No open betting lines right now for {sportsList.find(s => s.key === activeSport)?.name}.</div>
+                  <div>No open betting lines found for your search.</div>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -277,11 +477,13 @@ export default function Sportsbook() {
                     const awayML = moneyline.away
                     const drawML = moneyline.draw
 
+                    const isLive = event.status === 'LIVE' || !event.commence_time || new Date(event.commence_time) <= new Date()
+
                     return (
                       <div
                         key={item.id || item.event_id}
                         style={{
-                          background: 'linear-gradient(180deg, #230c45 0%, #150529 100%)',
+                          background: 'linear-gradient(180deg, #200d3b 0%, #110424 100%)',
                           border: '1px solid var(--border)',
                           borderRadius: '14px',
                           padding: '14px',
@@ -289,18 +491,27 @@ export default function Sportsbook() {
                           position: 'relative'
                         }}
                       >
-                        {/* League Header & Time */}
+                        {/* League Header & Status */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '8px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <span style={{ fontSize: '10px', background: 'var(--accent)', color: '#000', fontWeight: '900', padding: '2px 6px', borderRadius: '4px' }}>
-                              {event.league?.name || 'SPORTS'}
+                              {event.league?.name || 'PRO SPORTS'}
                             </span>
                             <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 'bold' }}>
-                              Consensus Odds
+                              {item.bookmaker?.name || 'BetStack Consensus'}
                             </span>
                           </div>
-                          <div style={{ fontSize: '11px', color: '#00e676', fontWeight: 'bold' }}>
-                            {event.commence_time ? new Date(event.commence_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'LIVE'}
+                          
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            {isLive ? (
+                              <span style={{ fontSize: '10px', background: '#e53935', color: '#fff', fontWeight: '900', padding: '2px 6px', borderRadius: '4px', animation: 'pulse 1.5s infinite' }}>
+                                🔴 LIVE
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: '11px', color: '#00e676', fontWeight: 'bold' }}>
+                                ⏰ {event.commence_time ? new Date(event.commence_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'UPCOMING'}
+                              </span>
+                            )}
                           </div>
                         </div>
 
@@ -318,7 +529,7 @@ export default function Sportsbook() {
 
                         {/* Betting Markets Matrix */}
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                          {/* Home Moneyline */}
+                          {/* Home Win */}
                           <button
                             onClick={() => handleSelectOdd(item, 'Moneyline', `${event.home_team} (Home Win)`, homeML)}
                             disabled={!homeML}
@@ -338,7 +549,7 @@ export default function Sportsbook() {
                             </div>
                           </button>
 
-                          {/* Draw / Total */}
+                          {/* Draw / Over */}
                           {drawML ? (
                             <button
                               onClick={() => handleSelectOdd(item, 'Moneyline', 'Draw (Tie)', drawML)}
@@ -359,7 +570,7 @@ export default function Sportsbook() {
                             </button>
                           ) : total.number ? (
                             <button
-                              onClick={() => handleSelectOdd(item, 'Total Over', `Over ${total.number} Pts`, total.over)}
+                              onClick={() => handleSelectOdd(item, 'Total Over', `Over ${total.number} Runs/Pts`, total.over)}
                               style={{
                                 background: selectedBet?.eventId === (item.event_id || event.id) && selectedBet?.selection.includes('Over') ? 'linear-gradient(135deg, var(--accent) 0%, #cc8800 100%)' : 'rgba(255,255,255,0.05)',
                                 color: selectedBet?.eventId === (item.event_id || event.id) && selectedBet?.selection.includes('Over') ? '#000' : '#fff',
@@ -382,7 +593,7 @@ export default function Sportsbook() {
                             </div>
                           )}
 
-                          {/* Away Moneyline */}
+                          {/* Away Win */}
                           <button
                             onClick={() => handleSelectOdd(item, 'Moneyline', `${event.away_team} (Away Win)`, awayML)}
                             disabled={!awayML}
@@ -417,7 +628,7 @@ export default function Sportsbook() {
             {myBets.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--muted)' }}>
                 <div style={{ fontSize: '32px', marginBottom: '8px' }}>📑</div>
-                <div>No active sports bets placed in this session yet.</div>
+                <div>No sports bets placed in your history yet.</div>
                 <button onClick={() => setActiveTab('markets')} className="btn primary" style={{ marginTop: '16px', padding: '8px 16px' }}>
                   Explore Live Matches →
                 </button>
@@ -426,23 +637,55 @@ export default function Sportsbook() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {myBets.map((bet, idx) => (
                   <div
-                    key={idx}
+                    key={bet.id || idx}
                     style={{
                       background: 'var(--bg-secondary)',
                       border: '1px solid var(--border)',
                       borderRadius: '12px',
-                      padding: '14px'
+                      padding: '14px',
+                      position: 'relative'
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <span style={{ fontSize: '11px', color: 'var(--muted)' }}>Ticket: {bet.id}</span>
-                      <span style={{ fontSize: '11px', color: '#00e676', fontWeight: 'bold' }}>ACTIVE</span>
+                      <span style={{
+                        fontSize: '10px',
+                        fontWeight: '900',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        background: bet.status === 'CASHED_OUT' ? 'rgba(255, 152, 0, 0.2)' : 'rgba(0, 230, 118, 0.2)',
+                        color: bet.status === 'CASHED_OUT' ? '#ff9800' : '#00e676'
+                      }}>
+                        {bet.status === 'CASHED_OUT' ? `CASHED OUT (Pi ${bet.cashout_amount})` : '🟢 LIVE ACTIVE'}
+                      </span>
                     </div>
+
                     <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>{bet.match_title}</div>
                     <div style={{ fontSize: '13px', color: 'var(--accent)', marginTop: '2px', fontWeight: 'bold' }}>{bet.selection}</div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '8px', fontSize: '12px' }}>
-                      <span>Stake: <strong style={{ color: '#fff' }}>Pi {bet.stake}</strong></span>
-                      <span>Potential Win: <strong style={{ color: '#00e676' }}>Pi {bet.potential_payout}</strong></span>
+                    
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '8px', fontSize: '12px' }}>
+                      <div>
+                        <span>Stake: <strong style={{ color: '#fff' }}>Pi {bet.stake}</strong></span>
+                        <span style={{ marginLeft: '12px' }}>Potential Win: <strong style={{ color: '#00e676' }}>Pi {bet.potential_payout}</strong></span>
+                      </div>
+
+                      {bet.status === 'ACTIVE' && (
+                        <button
+                          onClick={() => handleCashout(bet.id)}
+                          style={{
+                            background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                            color: '#000',
+                            border: 'none',
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            fontSize: '11px',
+                            fontWeight: '900',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          ⚡ Cash Out (Pi {parseFloat(((bet.stake * 0.9) + (parseFloat(bet.potential_payout) * 0.4)).toFixed(2))})
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -469,6 +712,9 @@ export default function Sportsbook() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ fontSize: '16px' }}>🎟️</span>
                   <strong style={{ fontSize: '13px', color: '#fff' }}>Bet Slip Selection</strong>
+                  <span style={{ fontSize: '10px', background: isDemoMode ? '#00e676' : 'var(--accent)', color: '#000', padding: '1px 5px', borderRadius: '4px', fontWeight: '900' }}>
+                    {isDemoMode ? 'DEMO' : 'REAL'}
+                  </span>
                 </div>
                 <button
                   onClick={() => setSelectedBet(null)}
@@ -492,10 +738,10 @@ export default function Sportsbook() {
                 {[50, 100, 500, 1000, 5000].map(amt => (
                   <button
                     key={amt}
-                    onClick={() => setStake(amt.toString())}
+                    onClick={() => handleSetStake(amt)}
                     style={{
                       flex: 1,
-                      padding: '4px 0',
+                      padding: '5px 0',
                       background: stake === amt.toString() ? 'var(--accent)' : 'rgba(255,255,255,0.08)',
                       color: stake === amt.toString() ? '#000' : '#fff',
                       border: '1px solid rgba(255,255,255,0.1)',
@@ -508,6 +754,22 @@ export default function Sportsbook() {
                     +{amt}
                   </button>
                 ))}
+                <button
+                  onClick={() => handleSetStake('MAX')}
+                  style={{
+                    flex: 1,
+                    padding: '5px 0',
+                    background: 'rgba(255, 215, 0, 0.2)',
+                    color: 'var(--accent)',
+                    border: '1px solid var(--accent)',
+                    borderRadius: '6px',
+                    fontSize: '11px',
+                    fontWeight: '900',
+                    cursor: 'pointer'
+                  }}
+                >
+                  MAX
+                </button>
               </div>
 
               {/* Stake input & Place button */}
@@ -547,7 +809,7 @@ export default function Sportsbook() {
                     justifyContent: 'center'
                   }}
                 >
-                  <span style={{ fontWeight: '900' }}>{placingBet ? 'Placing...' : 'Place Bet'}</span>
+                  <span style={{ fontWeight: '900' }}>{placingBet ? 'Placing...' : `Place ${isDemoMode ? 'Demo' : 'Real'} Bet`}</span>
                   <span style={{ fontSize: '10px', opacity: 0.9 }}>
                     Win Pi {((parseFloat(stake) || 0) * selectedBet.decimalOdd).toFixed(2)}
                   </span>
