@@ -468,6 +468,21 @@ export default function AdminPanel() {
                 >
                   Completed ({allTransactions.filter(t => t.status === 'completed').length})
                 </button>
+                <button
+                  onClick={() => setTxFilter('failed')}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: txFilter === 'failed' ? '#ff4444' : 'var(--bg-tertiary)',
+                    color: txFilter === 'failed' ? '#fff' : '#fff',
+                    fontWeight: 'bold',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Failed ({allTransactions.filter(t => t.status === 'failed').length})
+                </button>
               </div>
 
               <button onClick={fetchAdminData} style={{ background: 'var(--card)', border: '1px solid var(--border)', color: '#fff', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>
@@ -481,6 +496,7 @@ export default function AdminPanel() {
               const displayList = allTransactions.filter(t => {
                 if (txFilter === 'pending') return t.status === 'pending';
                 if (txFilter === 'completed') return t.status === 'completed';
+                if (txFilter === 'failed') return t.status === 'failed';
                 return true;
               });
 

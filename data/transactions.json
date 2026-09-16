@@ -1,14 +1,36 @@
 [
   {
+    "id": "tx-directpay-03493530916-100",
+    "user_id": "player_03493530916",
+    "email": "sheikhabubaker082512@gmail.com",
+    "type": "deposit",
+    "amount": 100.0,
+    "status": "completed",
+    "method": "DirectPay (EasyPaisa)",
+    "tx_id": "TXN-DP-03493530916-100",
+    "notes": "DirectPay EasyPaisa Deposit: PKR 100.00 (Pi 100.00) | Phone/Account: 03493530916",
+    "metadata": {
+      "account_number": "03493530916",
+      "msisdn": "03493530916",
+      "channel": "EasyPaisa",
+      "gateway": "DirectPay",
+      "amountInPKR": 100.0,
+      "currency": "PKR",
+      "description": "sheikh abu baker group deposit"
+    },
+    "created_at": "2026-09-16T13:10:00.000Z",
+    "updated_at": "2026-09-16T13:10:30.000Z"
+  },
+  {
     "id": "tx-directpay-03493530916-500",
     "user_id": "player_03493530916",
     "email": "sheikhabubaker082512@gmail.com",
     "type": "deposit",
     "amount": 500.0,
-    "status": "completed",
+    "status": "failed",
     "method": "DirectPay (EasyPaisa)",
     "tx_id": "TXN-DP-03493530916-500",
-    "notes": "DirectPay EasyPaisa Deposit: PKR 500.00 (Pi 500.00) | Phone/Account: 03493530916",
+    "notes": "DirectPay EasyPaisa Deposit: PKR 500.00 (Pi 500.00) - Unsuccessful / Cancelled | Phone/Account: 03493530916",
     "metadata": {
       "account_number": "03493530916",
       "msisdn": "03493530916",
@@ -16,7 +38,8 @@
       "gateway": "DirectPay",
       "amountInPKR": 500.0,
       "currency": "PKR",
-      "description": "sheikh abu baker group deposit"
+      "description": "sheikh abu baker group deposit",
+      "failure_reason": "Payment unsuccessful / declined by user or gateway"
     },
     "created_at": "2026-09-16T12:51:00.000Z",
     "updated_at": "2026-09-16T12:51:30.000Z"
