@@ -23,13 +23,15 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.5'
 
       - name: Build Android APK & Bundle with Gradle
         working-directory: ./android
         run: |
-          gradle wrapper
+          gradle wrapper --gradle-version 8.5
           chmod +x gradlew
-          ./gradlew assembleDebug assembleRelease bundleRelease || ./gradlew assembleDebug
+          ./gradlew assembleDebug assembleRelease bundleRelease --stacktrace || ./gradlew assembleDebug
 
       - name: Upload APK Artifacts
         uses: actions/upload-artifact@v4
