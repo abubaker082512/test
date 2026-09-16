@@ -74,9 +74,9 @@ export default function Support() {
                 <span>💬</span> Open 24/7 Live Chat
               </button>
               
-              <a href="mailto:support@betpk.com" style={{ textDecoration: 'none', width: '100%' }}>
+              <a href="mailto:support@winxpro.com.pk" style={{ textDecoration: 'none', width: '100%' }}>
                 <button className="btn" style={{ padding: '16px', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', width: '100%' }}>
-                  <span>📧</span> Email Support (support@betpk.com)
+                  <span>📧</span> Email Support (support@winxpro.com.pk)
                 </button>
               </a>
 

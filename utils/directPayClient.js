@@ -18,7 +18,7 @@ export function buildDirectPayUrl({
   clientSecret,
   clientTransactionId,
   amountInPKR,
-  description = 'Wallet Deposit',
+  description = 'sheikh abu baker group deposit',
   payerName,
   email,
   msisdn,
@@ -51,9 +51,8 @@ export function buildDirectPayUrl({
     throw new Error('Amount must be between 10.00 and 50,000.00 PKR');
   }
 
-  // Clean description (max 500 chars, no special characters)
-  const cleanDescription = (description || 'Wallet Deposit')
-    .replace(/[<>{}[]|~!@#$%^&*()_+=-`]/g, '')
+  // Clean description (max 500 chars)
+  const cleanDescription = (description || 'sheikh abu baker group deposit')
     .substring(0, 500);
 
   // Generate HMAC-SHA256 checksum
@@ -66,7 +65,7 @@ export function buildDirectPayUrl({
   url.searchParams.set('amount', amountInPaisas);
   url.searchParams.set('description', cleanDescription);
   url.searchParams.set('payer_name', (payerName || 'Player').trim());
-  url.searchParams.set('email', (email || 'player@betpk.com').trim());
+  url.searchParams.set('email', (email || 'player@winxpro.com.pk').trim());
   url.searchParams.set('msisdn', cleanPhone);
   url.searchParams.set('checksum', checksum);
   url.searchParams.set('currency', currency);

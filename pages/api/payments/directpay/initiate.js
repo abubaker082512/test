@@ -81,9 +81,9 @@ export default async function handler(req, res) {
       clientSecret,
       clientTransactionId,
       amountInPKR: numAmount,
-      description: `BetPK Deposit via ${payment_method}: Pi ${inGameAmount}`,
+      description: 'sheikh abu baker group deposit',
       payerName: payer_name || 'Player',
-      email: email || 'player@betpk.com',
+      email: email || 'player@winxpro.com.pk',
       msisdn: msisdn || '03001234567',
       currency,
       successRedirectUrl,
@@ -103,7 +103,8 @@ export default async function handler(req, res) {
           msisdn,
           amountInPKR: numAmount,
           currency,
-          payment_method
+          payment_method,
+          description: 'sheikh abu baker group deposit'
         }
       }).catch(() => {});
     } catch (e) {}

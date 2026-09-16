@@ -222,7 +222,7 @@ export default function WalletPage() {
     setDpLoading(true)
 
     const activeUserId = user?.id || user?.uid || (typeof window !== 'undefined' && JSON.parse(localStorage.getItem('winxpro_session') || '{}')?.id) || 'player_' + Date.now()
-    const activeEmail = user?.email || dpEmail || 'player@betpk.com'
+    const activeEmail = user?.email || dpEmail || 'player@winxpro.com.pk'
     const activeName = dpName || user?.displayName || (activeEmail ? activeEmail.split('@')[0] : 'Player')
     const activePhone = dpPhone || '03001234567'
 
