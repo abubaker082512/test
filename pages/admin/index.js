@@ -326,20 +326,28 @@ export default function AdminPanel() {
 
   // Lookup helper: user ID to email
   const getEmail = (userId) => {
-    const found = users.find(u => u.id === userId)
-    return found ? found.email : 'Unknown Account'
+    if (!userId) return 'Unknown Account'
+    if (userId.includes('@')) return userId
+    const found = users.find(u => u.id === userId || u.email === userId)
+    return found ? found.email : userId
   }
 
-  // Lookup helper: user ID to balance
-  const getBalance = (userId) => {
-    const found = wallets.find(w => w.user_id === userId)
-    return found ? parseFloat(found.balance).toFixed(2) : '0.00'
+  // Lookup helper: user ID/email to balance
+  const getBalance = (userId, email = '') => {
+    let found = wallets.find(w => w.user_id === userId)
+    if (!found && email) {
+      found = wallets.find(w => w.email && w.email.toLowerCase() === email.toLowerCase())
+    }
+    if (!found && userId && userId.includes('@')) {
+      found = wallets.find(w => w.email && w.email.toLowerCase() === userId.toLowerCase())
+    }
+    return found ? parseFloat(found.balance || 0).toFixed(2) : '0.00'
   }
 
   // Filtered users list
   const filteredUsers = users.filter(u => 
     u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.id.includes(searchQuery)
+    (u.id && u.id.includes(searchQuery))
   )
 
   if (!authed) return (
@@ -550,11 +558,14 @@ export default function AdminPanel() {
                             <strong>Player Account:</strong> {tx.email || getEmail(tx.user_id)} <span style={{ color: 'var(--muted)', fontSize: '11px', fontFamily: 'monospace' }}>({tx.user_id})</span>
                           </div>
 
-                          {(tx.metadata?.account_number || tx.metadata?.msisdn) && (
-                            <div style={{ fontSize: '13px', color: '#00e5ff', marginTop: '2px' }}>
-                              <strong>📱 Payment Mobile/Account:</strong> {tx.metadata?.account_number || tx.metadata?.msisdn}
-                            </div>
-                          )}
+                          {(() => {
+                            const paymentPhone = tx.metadata?.account_number || tx.metadata?.msisdn || (tx.notes && tx.notes.match(/(?:Phone\/Account|Phone|Account):\s*(\d+)/i)?.[1]);
+                            return paymentPhone ? (
+                              <div style={{ fontSize: '13px', color: '#00e5ff', marginTop: '2px' }}>
+                                <strong>📱 Payment Mobile/Account:</strong> {paymentPhone}
+                              </div>
+                            ) : null;
+                          })()}
 
                           {(tx.tx_id || tx.id) && (
                             <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px', fontFamily: 'monospace' }}>
@@ -1013,7 +1024,7 @@ export default function AdminPanel() {
                 <div style={{ padding: '32px', textAlign: 'center', color: 'var(--muted)' }}>No matching users found.</div>
               ) : (
                 filteredUsers.map(u => {
-                  const bal = getBalance(u.id)
+                  const bal = u.balance !== undefined && Number(u.balance) > 0 ? parseFloat(u.balance).toFixed(2) : getBalance(u.id, u.email)
                   return (
                     <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border)', flexWrap: 'wrap', gap: '8px' }}>
                       <div>

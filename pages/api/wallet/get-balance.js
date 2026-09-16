@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { db } from '../../../utils/firebase'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
-import { getUserWallet } from '../../../utils/walletStore'
+import { getUserTransactionsList, getUserWallet } from '../../../utils/walletStore'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -19,11 +19,14 @@ export default async function handler(req, res) {
   try {
     // 1. Primary: load from persistent walletStore
     const pWallet = getUserWallet(userId, email);
+    const userTxs = getUserTransactionsList(userId, email);
+
     if (pWallet) {
       return res.status(200).json({
         success: true,
         balance: parseFloat(pWallet.balance || 0),
-        wallet: pWallet
+        wallet: pWallet,
+        transactions: userTxs
       });
     }
 

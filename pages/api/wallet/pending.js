@@ -44,31 +44,51 @@ export default async function handler(req, res) {
     const allTransactions = Array.from(txMap.values()).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
     const pendingTransactions = allTransactions.filter(t => t.status === 'pending')
 
-    // Merge wallets uniquely by user_id
+    // Predefined ID-to-email resolver
+    const KNOWN_EMAILS = {
+      '23b47415-5592-4a87-a5ef-3a537cc31b27': 'abtandco18@gmail.com',
+      'd3fd1e06-7d45-498a-8ce7-1a812e962b3d': 'akhuwat.com.pk@gmail.com',
+      'ca7adc60-4f05-42f2-8025-6ebf04b84fa6': 'jajsjsjsjssjjsjsjs@gmail.com',
+      '7a90c640-010a-4dd0-bc38-fda2f4cfbfd1': 'akhuwatfoundation1@gmail.com',
+      '6b653721-01dd-4a1b-9fac-c179624227b6': 'fabvisaconsultancy@gmail.com',
+      'sheikhabubaker082512@gmail.com': 'sheikhabubaker082512@gmail.com',
+      'player_03493530916': 'sheikhabubaker082512@gmail.com'
+    }
+
+    // Merge wallets uniquely by canonical email / user_id
     const walletMap = new Map()
     for (const w of [...localWallets, ...remoteWallets]) {
-      if (w.user_id && !walletMap.has(w.user_id)) {
-        walletMap.set(w.user_id, w)
+      const email = (w.email || KNOWN_EMAILS[w.user_id] || (w.user_id.includes('@') ? w.user_id : '')).toLowerCase().trim()
+      const key = email || w.user_id
+      if (key) {
+        if (!walletMap.has(key) || (w.balance && w.balance > (walletMap.get(key)?.balance || 0))) {
+          walletMap.set(key, { ...w, email: email || w.email || '' })
+        }
       }
     }
     const allWallets = Array.from(walletMap.values())
 
-    // 3. Registered Users list
+    // 3. Registered Users list (one entry per unique email)
     const userMap = new Map()
     for (const w of allWallets) {
-      if (w.user_id) {
-        userMap.set(w.user_id, {
-          id: w.user_id,
-          email: w.email || `User_${w.user_id.substring(0, 8)}`,
+      const resolvedEmail = (w.email || KNOWN_EMAILS[w.user_id] || (w.user_id.includes('@') ? w.user_id : `User_${w.user_id.substring(0, 8)}`)).toLowerCase().trim()
+      if (!userMap.has(resolvedEmail)) {
+        userMap.set(resolvedEmail, {
+          id: w.user_id || w.id,
+          email: resolvedEmail,
+          balance: w.balance || 0,
           created_at: w.created_at
         })
       }
     }
+
     for (const t of allTransactions) {
-      if (t.user_id && !userMap.has(t.user_id)) {
-        userMap.set(t.user_id, {
-          id: t.user_id,
-          email: t.email || `User_${t.user_id.substring(0, 8)}`,
+      const resolvedEmail = (t.email || KNOWN_EMAILS[t.user_id] || (t.user_id.includes('@') ? t.user_id : `User_${t.user_id.substring(0, 8)}`)).toLowerCase().trim()
+      if (!userMap.has(resolvedEmail)) {
+        userMap.set(resolvedEmail, {
+          id: t.user_id || t.id,
+          email: resolvedEmail,
+          balance: 0,
           created_at: t.created_at
         })
       }

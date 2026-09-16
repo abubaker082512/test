@@ -105,6 +105,7 @@ export default async function handler(req, res) {
         notes: `DirectPay ${payment_method} Deposit: ${currency} ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Phone: ${msisdn}`,
         metadata: {
           clientTransactionId,
+          account_number: msisdn,
           msisdn,
           amountInPKR: numAmount,
           currency,

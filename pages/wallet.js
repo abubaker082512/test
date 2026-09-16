@@ -93,27 +93,46 @@ export default function WalletPage() {
   }
 
   const fetchData = async () => {
-    if (!user) return
+    const activeUid = user?.id || user?.uid || (typeof window !== 'undefined' && JSON.parse(localStorage.getItem('winxpro_session') || '{}')?.id) || ''
+    const activeEmail = user?.email || (typeof window !== 'undefined' && JSON.parse(localStorage.getItem('winxpro_session') || '{}')?.email) || ''
+    if (!activeUid && !activeEmail) return
+
     try {
-      const res = await fetch(`/api/wallet/get-balance?user_id=${encodeURIComponent(user.id || user.uid || '')}&email=${encodeURIComponent(user.email || '')}`)
+      const res = await fetch(`/api/wallet/get-balance?user_id=${encodeURIComponent(activeUid)}&email=${encodeURIComponent(activeEmail)}`)
       const json = await res.json()
-      if (json.success && json.wallet) {
-        setWallet(json.wallet)
-      } else {
-        const { data: w } = await supabase.from('wallets').select('*').eq('user_id', user.id).single()
-        setWallet(w)
+      if (json.success) {
+        if (json.wallet) setWallet(json.wallet)
+        if (Array.isArray(json.transactions)) {
+          setTransactions(json.transactions)
+        }
       }
-    } catch (e) {
-      const { data: w } = await supabase.from('wallets').select('*').eq('user_id', user.id).single()
-      setWallet(w)
-    }
-    const { data: t } = await supabase.from('transactions').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(20)
-    setTransactions(t || [])
+    } catch (e) {}
+
+    try {
+      if (user?.id) {
+        const { data: t } = await supabase.from('transactions').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(20)
+        if (t && t.length > 0) {
+          setTransactions(prev => {
+            const map = new Map()
+            for (const item of [...(prev || []), ...t]) {
+              const k = item.id || item.tx_id
+              if (k) map.set(k, item)
+            }
+            return Array.from(map.values()).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+          })
+        }
+      }
+    } catch (e) {}
   }
 
   useEffect(() => {
     fetchRates()
     fetchData()
+
+    // Real-time polling every 4s for instant balance & transaction auto-updates
+    const pollInterval = setInterval(() => {
+      fetchData()
+    }, 4000)
 
     // Real-time listener for Settings & Gateway routes via Firestore
     let unsub = null
@@ -140,11 +159,15 @@ export default function WalletPage() {
     } catch (e) {}
 
     const onSettingsUpdate = () => { fetchRates() }
+    const onWalletUpdate = () => { fetchData() }
     window.addEventListener('settings-updated', onSettingsUpdate)
+    window.addEventListener('wallet-updated', onWalletUpdate)
 
     return () => {
       if (unsub) unsub()
+      clearInterval(pollInterval)
       window.removeEventListener('settings-updated', onSettingsUpdate)
+      window.removeEventListener('wallet-updated', onWalletUpdate)
     }
   }, [user])
 

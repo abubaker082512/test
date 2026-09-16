@@ -62,19 +62,53 @@ export function getUserWallet(userId, email = "") {
   loadData();
   if (!userId && !email) return { user_id: "anonymous", balance: 0.0, currency: "Pi" };
 
-  const key = userId || (email ? "user_" + btoa(email.toLowerCase()).replace(/[^a-zA-Z0-9]/g, "").substring(0, 24) : "anonymous");
+  const cleanEmail = (email || "").toLowerCase().trim();
+
+  // 1. Direct match by user_id key
+  if (userId && memoryWallets[userId]) {
+    if (cleanEmail && !memoryWallets[userId].email) {
+      memoryWallets[userId].email = cleanEmail;
+      persistData();
+    }
+    return memoryWallets[userId];
+  }
+
+  // 2. Search by email match
+  if (cleanEmail) {
+    const found = Object.values(memoryWallets).find(w => w.email && w.email.toLowerCase() === cleanEmail);
+    if (found) {
+      // If user provided a specific userId, bind it so both resolve together
+      if (userId && found.user_id !== userId) {
+        memoryWallets[userId] = found;
+      }
+      return found;
+    }
+  }
+
+  // 3. Known predefined user mappings
+  const KNOWN_USERS = {
+    "abtandco18@gmail.com": "23b47415-5592-4a87-a5ef-3a537cc31b27",
+    "akhuwat.com.pk@gmail.com": "d3fd1e06-7d45-498a-8ce7-1a812e962b3d",
+    "jajsjsjsjssjjsjsjs@gmail.com": "ca7adc60-4f05-42f2-8025-6ebf04b84fa6",
+    "akhuwatfoundation1@gmail.com": "7a90c640-010a-4dd0-bc38-fda2f4cfbfd1",
+    "fabvisaconsultancy@gmail.com": "6b653721-01dd-4a1b-9fac-c179624227b6"
+  };
+
+  if (cleanEmail && KNOWN_USERS[cleanEmail] && memoryWallets[KNOWN_USERS[cleanEmail]]) {
+    const w = memoryWallets[KNOWN_USERS[cleanEmail]];
+    w.email = cleanEmail;
+    if (userId) memoryWallets[userId] = w;
+    persistData();
+    return w;
+  }
+
+  const key = userId || (cleanEmail ? "user_" + btoa(cleanEmail).replace(/[^a-zA-Z0-9]/g, "").substring(0, 24) : "anonymous");
 
   if (!memoryWallets[key]) {
-    // Also search by email if key not direct match
-    if (email) {
-      const found = Object.values(memoryWallets).find(w => w.email && w.email.toLowerCase() === email.toLowerCase());
-      if (found) return found;
-    }
-
     memoryWallets[key] = {
       id: key,
       user_id: key,
-      email: email || "",
+      email: cleanEmail,
       balance: 1000.0, // Default starting welcome balance
       currency: "Pi",
       created_at: new Date().toISOString(),
@@ -94,7 +128,7 @@ export function creditUserBalance(userId, amount, email = "", notes = "") {
   const wallet = getUserWallet(userId, email);
   wallet.balance = parseFloat((wallet.balance + numAmount).toFixed(2));
   wallet.updated_at = new Date().toISOString();
-  if (email && !wallet.email) wallet.email = email;
+  if (email && !wallet.email) wallet.email = email.toLowerCase().trim();
 
   memoryWallets[wallet.user_id] = wallet;
   persistData();
@@ -126,7 +160,7 @@ export function recordTransactionRecord(txData) {
   const record = {
     id,
     user_id: txData.user_id || "anonymous",
-    email: txData.email || "",
+    email: (txData.email || "").toLowerCase().trim(),
     type: txData.type || "deposit",
     amount: parseFloat(txData.amount) || 0,
     status: txData.status || "pending",
@@ -151,6 +185,17 @@ export function recordTransactionRecord(txData) {
 export function getAllTransactionsList() {
   loadData();
   return memoryTransactions.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+}
+
+export function getUserTransactionsList(userId, email = "") {
+  loadData();
+  const cleanEmail = (email || "").toLowerCase().trim();
+  return memoryTransactions.filter(t => {
+    if (userId && t.user_id === userId) return true;
+    if (cleanEmail && t.email && t.email.toLowerCase() === cleanEmail) return true;
+    if (cleanEmail && t.user_id === cleanEmail) return true;
+    return false;
+  }).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 }
 
 export function findTransaction(txnId) {
