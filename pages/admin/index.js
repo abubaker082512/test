@@ -530,23 +530,29 @@ export default function AdminPanel() {
                           </div>
 
                           <div style={{ fontSize: '13px', color: '#ccc', marginTop: '6px' }}>
-                            <strong>User:</strong> {tx.email || getEmail(tx.user_id)} ({tx.user_id})
+                            <strong>Player Account:</strong> {tx.email || getEmail(tx.user_id)} <span style={{ color: 'var(--muted)', fontSize: '11px', fontFamily: 'monospace' }}>({tx.user_id})</span>
                           </div>
+
+                          {(tx.metadata?.account_number || tx.metadata?.msisdn) && (
+                            <div style={{ fontSize: '13px', color: '#00e5ff', marginTop: '2px' }}>
+                              <strong>📱 Payment Mobile/Account:</strong> {tx.metadata?.account_number || tx.metadata?.msisdn}
+                            </div>
+                          )}
 
                           {(tx.tx_id || tx.id) && (
                             <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px', fontFamily: 'monospace' }}>
-                              <strong>TxID / Ref:</strong> {tx.tx_id || tx.id}
+                              <strong>TxID / Reference:</strong> {tx.tx_id || tx.id}
                             </div>
                           )}
 
                           {tx.notes && (
-                            <div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>
-                              <em>{tx.notes}</em>
+                            <div style={{ fontSize: '12px', color: '#ffb300', marginTop: '2px' }}>
+                              <em>📝 {tx.notes}</em>
                             </div>
                           )}
 
-                          <div style={{ fontSize: '11px', color: '#555', marginTop: '4px' }}>
-                            {new Date(tx.created_at).toLocaleString()}
+                          <div style={{ fontSize: '11px', color: '#888', marginTop: '4px' }}>
+                            📅 {new Date(tx.created_at).toLocaleString()}
                           </div>
                         </div>
 
