@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { creditUserBalance, debitUserBalance, getUserWallet, recordTransactionRecord } from '../../../utils/walletStore'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -26,64 +27,59 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. Fetch user's current wallet
-    const { data: wallet, error: walletErr } = await supabase
-      .from('wallets')
-      .select('*')
-      .eq('user_id', user_id)
-      .single()
-
-    let newBalance = adjAmount
-
-    if (walletErr && walletErr.code !== 'PGRST116') {
-      // PGRST116 is code for "no rows returned", which is fine (means wallet doesn't exist yet)
-      return res.status(500).json({ error: `Wallet lookup error: ${walletErr.message}` })
-    }
-
-    if (wallet) {
-      newBalance = parseFloat(wallet.balance) + adjAmount
-      if (newBalance < 0) {
-        return res.status(400).json({ error: `Adjustment would result in negative balance (Pi ${newBalance.toFixed(2)}). Operation aborted.` })
-      }
-
-      // Update wallet balance
-      const { error: updateErr } = await supabase
-        .from('wallets')
-        .update({ balance: newBalance })
-        .eq('user_id', user_id)
-
-      if (updateErr) throw updateErr
-    } else {
-      // Wallet does not exist, create new one
-      if (newBalance < 0) {
-        return res.status(400).json({ error: 'Cannot initialize a new wallet with a negative balance.' })
-      }
-
-      const { error: insertErr } = await supabase
-        .from('wallets')
-        .insert({ user_id, balance: newBalance })
-
-      if (insertErr) throw insertErr
-    }
-
-    // 2. Log manual transaction
+    // 1. Update walletStore
+    let updatedWallet = null
+    const currentWallet = getUserWallet(user_id)
     const notesStr = note ? `Admin Adjust: ${note}` : 'Admin manual balance adjustment'
-    await supabase.from('transactions').insert({
+
+    if (adjAmount >= 0) {
+      updatedWallet = creditUserBalance(user_id, adjAmount, currentWallet.email, notesStr)
+    } else {
+      const debitRes = debitUserBalance(user_id, Math.abs(adjAmount))
+      if (!debitRes.success) {
+        return res.status(400).json({ error: `Cannot deduct Pi ${Math.abs(adjAmount)}. Current balance is only Pi ${currentWallet.balance.toFixed(2)}` })
+      }
+      updatedWallet = debitRes.wallet
+    }
+
+    recordTransactionRecord({
       user_id,
-      type: adjAmount >= 0 ? 'payout' : 'withdraw', // payout represents credit, withdraw represents debit
+      email: updatedWallet.email,
+      type: adjAmount >= 0 ? 'deposit' : 'withdraw',
       amount: Math.abs(adjAmount),
       status: 'completed',
-      method: 'admin',
+      method: 'Admin Manual',
       notes: notesStr
+    })
+
+    // 2. Background sync to Supabase (non-blocking)
+    Promise.resolve().then(async () => {
+      try {
+        await supabase.from('wallets').upsert({
+          user_id,
+          balance: updatedWallet.balance,
+          currency: 'Pi',
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' })
+
+        await supabase.from('transactions').insert({
+          user_id,
+          type: adjAmount >= 0 ? 'payout' : 'withdraw',
+          amount: Math.abs(adjAmount),
+          status: 'completed',
+          method: 'admin',
+          notes: notesStr
+        })
+      } catch (e) {}
     })
 
     return res.status(200).json({
       success: true,
-      message: `Balance adjusted successfully! New balance is Pi ${newBalance.toFixed(2)}`,
-      new_balance: newBalance
+      message: `Balance adjusted successfully! New balance is Pi ${updatedWallet.balance.toFixed(2)}`,
+      new_balance: updatedWallet.balance
     })
 
   } catch (err) {
-    return res.status(500).json({ error: `Database update failed: ${err.message}` })
+    return res.status(500).json({ error: `Balance adjustment failed: ${err.message}` })
   }
 }

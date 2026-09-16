@@ -3,6 +3,7 @@ import { db } from '../../../../utils/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { buildDirectPayUrl } from '../../../../utils/directPayClient';
 import { addTransaction } from '../../../../utils/firebaseDb';
+import { recordTransactionRecord } from '../../../../utils/walletStore';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -90,7 +91,30 @@ export default async function handler(req, res) {
       failedRedirectUrl
     });
 
-    // 5. Fire-and-forget background logging (non-blocking)
+    // 5. Immediate persistent recording in walletStore
+    try {
+      recordTransactionRecord({
+        id: clientTransactionId,
+        user_id,
+        email: email || '',
+        type: 'deposit',
+        amount: inGameAmount,
+        status: 'pending',
+        method: `DirectPay (${payment_method})`,
+        tx_id: clientTransactionId,
+        notes: `DirectPay ${payment_method} Deposit: ${currency} ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Phone: ${msisdn}`,
+        metadata: {
+          clientTransactionId,
+          msisdn,
+          amountInPKR: numAmount,
+          currency,
+          payment_method,
+          description: 'sheikh abu baker group deposit'
+        }
+      });
+    } catch (e) {}
+
+    // Background sync to Firestore & Supabase (non-blocking)
     try {
       addTransaction({
         user_id,

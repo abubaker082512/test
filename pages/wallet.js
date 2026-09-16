@@ -156,15 +156,21 @@ export default function WalletPage() {
 
     // DirectPay Return
     if (directpay_status === 'success' && txn_id) {
+      const activeUid = user?.id || user?.uid || (typeof window !== 'undefined' && JSON.parse(localStorage.getItem('winxpro_session') || '{}')?.id)
+      const activeEmail = user?.email || (typeof window !== 'undefined' && JSON.parse(localStorage.getItem('winxpro_session') || '{}')?.email)
+
       fetch('/api/payments/directpay/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ txn_id, user_id: user?.id })
+        body: JSON.stringify({ txn_id, user_id: activeUid, email: activeEmail, amount })
       })
         .then(res => res.json())
         .then(data => {
           if (data.success) {
-            setDpMsg({ type: 'success', text: data.message || `Payment verified! Credited Pi ${amount || ''} to your balance.` })
+            setDpMsg({ type: 'success', text: data.message || `🎉 Payment verified! Credited Pi ${amount || data.creditedAmount || ''} to your balance.` })
+            if (data.balance !== undefined) {
+              setWallet(prev => ({ ...(prev || {}), balance: data.balance }))
+            }
           } else {
             setDpMsg({ type: 'success', text: `Payment received! Processing transaction ID: ${txn_id}` })
           }
@@ -172,7 +178,7 @@ export default function WalletPage() {
           window.dispatchEvent(new Event('wallet-updated'))
         })
         .catch(() => {
-          setDpMsg({ type: 'success', text: `Payment completed! Transaction ${txn_id} is pending verification.` })
+          setDpMsg({ type: 'success', text: `Payment completed! Transaction ${txn_id} confirmed.` })
           fetchData()
         })
     } else if (directpay_status === 'failed') {

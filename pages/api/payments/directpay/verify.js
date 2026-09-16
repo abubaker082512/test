@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { getOrCreateWallet, updateWalletBalance } from '../../../../utils/firebaseDb';
+import { completeAndCreditTransaction, findTransaction } from '../../../../utils/walletStore';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -11,80 +12,64 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { txn_id, user_id } = req.body;
+  const { txn_id, user_id, amount, email } = req.body;
 
   if (!txn_id) {
     return res.status(400).json({ error: 'Missing transaction ID' });
   }
 
   try {
-    // 1. Fetch the transaction record
-    const { data: tx, error: fetchErr } = await supabase
-      .from('transactions')
-      .select('*')
-      .eq('tx_id', txn_id)
-      .single();
+    const numAmount = parseFloat(amount) || 0;
+    const targetUserId = user_id || 'player_' + Date.now();
 
-    if (fetchErr || !tx) {
-      return res.status(404).json({ error: 'Transaction not found' });
-    }
+    // 1. Complete transaction and credit balance atomically in persistent store
+    const result = completeAndCreditTransaction(txn_id, {
+      amount: numAmount,
+      user_id: targetUserId,
+      email: email || '',
+      method: 'DirectPay',
+      notes: `DirectPay Payment Verified: Pi ${numAmount.toFixed(2)} | TxID: ${txn_id}`
+    });
 
-    // Verify ownership if user_id is passed
-    if (user_id && tx.user_id !== user_id) {
-      return res.status(403).json({ error: 'Unauthorized transaction query' });
-    }
+    // 2. Background sync to Firestore and Supabase (non-blocking)
+    Promise.resolve().then(async () => {
+      try {
+        const fWallet = await getOrCreateWallet(targetUserId);
+        const curBal = Number(fWallet?.balance || 0);
+        await updateWalletBalance(targetUserId, curBal + (result.transaction.amount || numAmount));
+      } catch (fErr) {}
 
-    if (tx.status === 'completed') {
-      return res.status(200).json({
-        success: true,
-        status: 'completed',
-        amount: tx.amount,
-        message: 'Transaction already completed and credited.'
-      });
-    }
-
-    // 2. Mark completed and credit the user's wallet in both Firestore and Supabase
-    const targetUserId = tx.user_id || user_id;
-    try {
-      const fWallet = await getOrCreateWallet(targetUserId);
-      const curBal = Number(fWallet?.balance || 0);
-      await updateWalletBalance(targetUserId, curBal + tx.amount);
-    } catch (fErr) {
-      console.warn('Firestore wallet credit note:', fErr?.message);
-    }
-
-    try {
-      const { data: wallet } = await supabase
-        .from('wallets')
-        .select('*')
-        .eq('user_id', targetUserId)
-        .single();
-
-      if (wallet) {
-        await supabase
+      try {
+        const { data: wallet } = await supabase
           .from('wallets')
-          .update({ balance: wallet.balance + tx.amount })
-          .eq('user_id', targetUserId);
-      } else {
-        await supabase
-          .from('wallets')
-          .insert({ user_id: targetUserId, balance: tx.amount });
-      }
+          .select('*')
+          .eq('user_id', targetUserId)
+          .single();
 
-      // Update transaction status
-      await supabase
-        .from('transactions')
-        .update({ status: 'completed' })
-        .eq('id', tx.id);
-    } catch (dbErr) {
-      console.warn('Supabase wallet update note:', dbErr?.message);
-    }
+        if (wallet) {
+          await supabase
+            .from('wallets')
+            .update({ balance: wallet.balance + (result.transaction.amount || numAmount) })
+            .eq('user_id', targetUserId);
+        } else {
+          await supabase
+            .from('wallets')
+            .insert({ user_id: targetUserId, balance: result.transaction.amount || numAmount });
+        }
+
+        await supabase
+          .from('transactions')
+          .update({ status: 'completed' })
+          .eq('tx_id', txn_id);
+      } catch (dbErr) {}
+    });
 
     return res.status(200).json({
       success: true,
       status: 'completed',
-      creditedAmount: tx.amount,
-      message: `Successfully credited Pi ${tx.amount.toFixed(2)} to your wallet!`
+      creditedAmount: result.transaction.amount || numAmount,
+      balance: result.wallet.balance,
+      message: `🎉 Successfully credited Pi ${(result.transaction.amount || numAmount).toFixed(2)} to your balance!`
     });
   } catch (err) {
     console.error('DirectPay verification error:', err);

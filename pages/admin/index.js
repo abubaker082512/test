@@ -6,6 +6,8 @@ export default function AdminPanel() {
   const [password, setPassword] = useState('')
   const [authed, setAuthed] = useState(false)
   const [pending, setPending] = useState([])
+  const [allTransactions, setAllTransactions] = useState([])
+  const [txFilter, setTxFilter] = useState('all') // 'all' | 'pending' | 'completed'
   const [users, setUsers] = useState([])
   const [wallets, setWallets] = useState([])
   const [loading, setLoading] = useState(false)
@@ -80,6 +82,7 @@ export default function AdminPanel() {
       const data = await res.json()
       if (data.success) {
         setPending(data.pending || [])
+        setAllTransactions(data.all_transactions || data.pending || [])
         setUsers(data.users || [])
         setWallets(data.wallets || [])
       } else {
@@ -403,7 +406,7 @@ export default function AdminPanel() {
             🎯 Real-Time Engine & Risk Governor
           </button>
           <button style={tabStyle(activeTab === 'transactions')} onClick={() => setActiveTab('transactions')}>
-            ⏳ Pending Transactions ({pending.length})
+            💳 Transactions & Payments ({allTransactions.length})
           </button>
           <button style={tabStyle(activeTab === 'rates')} onClick={() => setActiveTab('rates')}>
             💵 Rates & Payment Gateway
@@ -414,84 +417,161 @@ export default function AdminPanel() {
         </div>
 
         {/* ==========================================
-            TAB 1: PENDING TRANSACTIONS
+            TAB 1: TRANSACTIONS & PAYMENTS
             ========================================== */}
         {activeTab === 'transactions' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h2 style={{ margin: 0, fontSize: '18px' }}>Pending Approvals</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => setTxFilter('all')}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: txFilter === 'all' ? 'var(--accent)' : 'var(--bg-tertiary)',
+                    color: txFilter === 'all' ? '#000' : '#fff',
+                    fontWeight: 'bold',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  All ({allTransactions.length})
+                </button>
+                <button
+                  onClick={() => setTxFilter('pending')}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: txFilter === 'pending' ? '#ff9900' : 'var(--bg-tertiary)',
+                    color: txFilter === 'pending' ? '#000' : '#fff',
+                    fontWeight: 'bold',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Pending Approvals ({pending.length})
+                </button>
+                <button
+                  onClick={() => setTxFilter('completed')}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: txFilter === 'completed' ? '#00ff88' : 'var(--bg-tertiary)',
+                    color: txFilter === 'completed' ? '#000' : '#fff',
+                    fontWeight: 'bold',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Completed ({allTransactions.filter(t => t.status === 'completed').length})
+                </button>
+              </div>
+
               <button onClick={fetchAdminData} style={{ background: 'var(--card)', border: '1px solid var(--border)', color: '#fff', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>
                 🔄 Refresh
               </button>
             </div>
 
             {loading ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: 'var(--muted)' }}>Loading approvals...</div>
-            ) : pending.length === 0 ? (
-              <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '40px', textAlign: 'center', color: 'var(--muted)' }}>
-                ✅ All caught up! No pending deposit or withdrawal requests.
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {pending.map(tx => (
-                  <div key={tx.id} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ 
-                          padding: '3px 8px', 
-                          borderRadius: '4px', 
-                          fontSize: '11px', 
-                          fontWeight: 'bold', 
-                          textTransform: 'uppercase',
-                          background: tx.type === 'deposit' ? '#00ff8822' : '#ff990022',
-                          color: tx.type === 'deposit' ? '#00ff88' : '#ff9900',
-                          border: `1px solid ${tx.type === 'deposit' ? '#00ff8844' : '#ff990044'}`
-                        }}>
-                          {tx.type}
-                        </span>
-                        <strong style={{ fontSize: '16px', color: 'var(--accent)' }}>Pi {parseFloat(tx.amount).toFixed(2)}</strong>
-                        <span style={{ fontSize: '13px', color: 'var(--muted)' }}>via {tx.method}</span>
-                      </div>
+              <div style={{ textAlign: 'center', padding: '40px', color: 'var(--muted)' }}>Loading transactions...</div>
+            ) : (() => {
+              const displayList = allTransactions.filter(t => {
+                if (txFilter === 'pending') return t.status === 'pending';
+                if (txFilter === 'completed') return t.status === 'completed';
+                return true;
+              });
 
-                      <div style={{ fontSize: '13px', color: '#ccc', marginTop: '6px' }}>
-                        <strong>User:</strong> {getEmail(tx.user_id)}
-                      </div>
-
-                      {tx.tx_id && (
-                        <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px', fontFamily: 'monospace' }}>
-                          <strong>TxID / Ref:</strong> {tx.tx_id}
-                        </div>
-                      )}
-
-                      {tx.notes && (
-                        <div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>
-                          <em>{tx.notes}</em>
-                        </div>
-                      )}
-
-                      <div style={{ fontSize: '11px', color: '#555', marginTop: '4px' }}>
-                        {new Date(tx.created_at).toLocaleString()}
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button
-                        onClick={() => handleAction(tx.id, 'approve')}
-                        style={{ padding: '8px 16px', background: '#00cc66', color: '#000', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
-                      >
-                        ✓ Approve
-                      </button>
-                      <button
-                        onClick={() => handleAction(tx.id, 'reject')}
-                        style={{ padding: '8px 16px', background: '#331111', color: '#ff6666', border: '1px solid #ff444444', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
-                      >
-                        ✕ Reject
-                      </button>
-                    </div>
+              if (displayList.length === 0) {
+                return (
+                  <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '40px', textAlign: 'center', color: 'var(--muted)' }}>
+                    No transactions found in this category.
                   </div>
-                ))}
-              </div>
-            )}
+                );
+              }
+
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {displayList.map(tx => {
+                    const isCompleted = tx.status === 'completed';
+                    const isPending = tx.status === 'pending';
+                    return (
+                      <div key={tx.id || tx.tx_id} style={{ background: 'var(--card)', border: `1px solid ${isCompleted ? '#00ff8844' : isPending ? '#ff990044' : 'var(--border)'}`, borderRadius: '12px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ 
+                              padding: '3px 8px', 
+                              borderRadius: '4px', 
+                              fontSize: '11px', 
+                              fontWeight: 'bold', 
+                              textTransform: 'uppercase',
+                              background: tx.type === 'deposit' ? '#00ff8822' : '#ff990022',
+                              color: tx.type === 'deposit' ? '#00ff88' : '#ff9900',
+                              border: `1px solid ${tx.type === 'deposit' ? '#00ff8844' : '#ff990044'}`
+                            }}>
+                              {tx.type}
+                            </span>
+                            <span style={{
+                              padding: '3px 8px',
+                              borderRadius: '4px',
+                              fontSize: '11px',
+                              fontWeight: 'bold',
+                              textTransform: 'uppercase',
+                              background: isCompleted ? '#00ff8822' : isPending ? '#ff990022' : '#ff000022',
+                              color: isCompleted ? '#00ff88' : isPending ? '#ff9900' : '#ff6666',
+                              border: `1px solid ${isCompleted ? '#00ff8844' : isPending ? '#ff990044' : '#ff000044'}`
+                            }}>
+                              {tx.status}
+                            </span>
+                            <strong style={{ fontSize: '16px', color: 'var(--accent)' }}>Pi {parseFloat(tx.amount || 0).toFixed(2)}</strong>
+                            <span style={{ fontSize: '13px', color: 'var(--muted)' }}>via {tx.method}</span>
+                          </div>
+
+                          <div style={{ fontSize: '13px', color: '#ccc', marginTop: '6px' }}>
+                            <strong>User:</strong> {tx.email || getEmail(tx.user_id)} ({tx.user_id})
+                          </div>
+
+                          {(tx.tx_id || tx.id) && (
+                            <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px', fontFamily: 'monospace' }}>
+                              <strong>TxID / Ref:</strong> {tx.tx_id || tx.id}
+                            </div>
+                          )}
+
+                          {tx.notes && (
+                            <div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>
+                              <em>{tx.notes}</em>
+                            </div>
+                          )}
+
+                          <div style={{ fontSize: '11px', color: '#555', marginTop: '4px' }}>
+                            {new Date(tx.created_at).toLocaleString()}
+                          </div>
+                        </div>
+
+                        {isPending && (
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              onClick={() => handleAction(tx.id || tx.tx_id, 'approve')}
+                              style={{ padding: '8px 16px', background: '#00cc66', color: '#000', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+                            >
+                              ✓ Approve
+                            </button>
+                            <button
+                              onClick={() => handleAction(tx.id || tx.tx_id, 'reject')}
+                              style={{ padding: '8px 16px', background: '#331111', color: '#ff6666', border: '1px solid #ff444444', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+                            >
+                              ✕ Reject
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
         )}
 
