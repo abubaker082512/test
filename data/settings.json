@@ -1,0 +1,19 @@
+{
+  "pkr_rate": 1.0,
+  "usd_rate": 280.0,
+  "payin_pkr_rate": 1.0,
+  "payout_pkr_rate": 1.0,
+  "directpay_client_id": "pwa_ci_k1qlq54hv4gw5pr0khux",
+  "directpay_client_secret": "pwa_secret_zp5rai8z02zr3o5sebm1co6uxci58uca",
+  "directpay_enabled": true,
+  "jazzcash_merchant_id": "74584985",
+  "jazzcash_password": "qo38057jbm",
+  "jazzcash_integrity_salt": "z35f76uo0m",
+  "jazzcash_enabled": true,
+  "jazzcash_mode": "directpay",
+  "easypaisa_store_id": "43",
+  "easypaisa_hash_key": "1234567890123456",
+  "easypaisa_enabled": true,
+  "easypaisa_mode": "directpay",
+  "card_mode": "directpay"
+}

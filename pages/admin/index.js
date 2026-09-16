@@ -31,16 +31,16 @@ export default function AdminPanel() {
   const [jazzcashPassword, setJazzcashPassword] = useState('qo38057jbm')
   const [jazzcashIntegritySalt, setJazzcashIntegritySalt] = useState('z35f76uo0m')
   const [jazzcashEnabled, setJazzcashEnabled] = useState(true)
-  const [jazzcashMode, setJazzcashMode] = useState('direct_api')
+  const [jazzcashMode, setJazzcashMode] = useState('directpay')
 
   // EasyPaisa Direct API state
   const [easypaisaStoreId, setEasypaisaStoreId] = useState('43')
   const [easypaisaHashKey, setEasypaisaHashKey] = useState('1234567890123456')
   const [easypaisaEnabled, setEasypaisaEnabled] = useState(true)
-  const [easypaisaMode, setEasypaisaMode] = useState('direct_api')
+  const [easypaisaMode, setEasypaisaMode] = useState('directpay')
 
   // Card Gateway state
-  const [cardMode, setCardMode] = useState('direct_api')
+  const [cardMode, setCardMode] = useState('directpay')
 
   const [ratesLoading, setRatesLoading] = useState(false)
   const [ratesMsg, setRatesMsg] = useState(null)
@@ -109,14 +109,20 @@ export default function AdminPanel() {
         if (data.jazzcash_password) setJazzcashPassword(data.jazzcash_password)
         if (data.jazzcash_integrity_salt) setJazzcashIntegritySalt(data.jazzcash_integrity_salt)
         if (data.jazzcash_enabled !== undefined) setJazzcashEnabled(data.jazzcash_enabled)
-        if (data.jazzcash_mode) setJazzcashMode(data.jazzcash_mode)
+        setJazzcashMode(data.jazzcash_mode || 'directpay')
 
         if (data.easypaisa_store_id) setEasypaisaStoreId(data.easypaisa_store_id)
         if (data.easypaisa_hash_key) setEasypaisaHashKey(data.easypaisa_hash_key)
         if (data.easypaisa_enabled !== undefined) setEasypaisaEnabled(data.easypaisa_enabled)
-        if (data.easypaisa_mode) setEasypaisaMode(data.easypaisa_mode)
+        setEasypaisaMode(data.easypaisa_mode || 'directpay')
 
-        if (data.card_mode) setCardMode(data.card_mode)
+        setCardMode(data.card_mode || 'directpay')
+
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('winxpro_settings', JSON.stringify(data))
+          } catch (e) {}
+        }
       }
     } catch (err) {
       console.error('Error fetching rates:', err)
@@ -267,6 +273,9 @@ export default function AdminPanel() {
       if (data.success) {
         setRatesMsg({ type: 'success', text: 'All exchange rates, DirectPay, JazzCash & EasyPaisa settings updated successfully!' })
         if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('winxpro_settings', JSON.stringify(data))
+          } catch (e) {}
           window.dispatchEvent(new Event('settings-updated'))
         }
       } else {

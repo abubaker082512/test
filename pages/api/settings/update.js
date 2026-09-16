@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { db } from '../../../utils/firebase'
 import { doc, setDoc } from 'firebase/firestore'
+import { savePersistedSettings } from '../../../utils/settingsStore'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -65,15 +66,18 @@ export default async function handler(req, res) {
     jazzcash_password: jazzcash_password ? String(jazzcash_password).trim() : 'qo38057jbm',
     jazzcash_integrity_salt: jazzcash_integrity_salt ? String(jazzcash_integrity_salt).trim() : 'z35f76uo0m',
     jazzcash_enabled: jazzcash_enabled !== undefined ? Boolean(jazzcash_enabled) : true,
-    jazzcash_mode: jazzcash_mode ? String(jazzcash_mode).trim() : 'direct_api',
+    jazzcash_mode: jazzcash_mode ? String(jazzcash_mode).trim() : 'directpay',
     easypaisa_store_id: easypaisa_store_id ? String(easypaisa_store_id).trim() : '43',
     easypaisa_hash_key: easypaisa_hash_key ? String(easypaisa_hash_key).trim() : '1234567890123456',
     easypaisa_enabled: easypaisa_enabled !== undefined ? Boolean(easypaisa_enabled) : true,
-    easypaisa_mode: easypaisa_mode ? String(easypaisa_mode).trim() : 'direct_api',
-    card_mode: card_mode ? String(card_mode).trim() : 'direct_api'
+    easypaisa_mode: easypaisa_mode ? String(easypaisa_mode).trim() : 'directpay',
+    card_mode: card_mode ? String(card_mode).trim() : 'directpay'
   }
 
-  // Update in Firestore and Supabase with bounded timeout
+  // 3. Atomically persist immediately to disk/in-memory store
+  const persisted = savePersistedSettings(extendedConfig)
+
+  // 4. Update in Firestore and Supabase with bounded timeout in background/non-blocking
   const writePromises = []
 
   try {
@@ -92,13 +96,13 @@ export default async function handler(req, res) {
   try {
     await Promise.race([
       Promise.allSettled(writePromises),
-      new Promise((res) => setTimeout(res, 1200))
+      new Promise((res) => setTimeout(res, 800))
     ])
   } catch (e) {}
 
   return res.status(200).json({
     success: true,
     message: 'Settings, DirectPay, JazzCash & EasyPaisa configurations updated successfully!',
-    ...extendedConfig
+    ...persisted
   })
 }

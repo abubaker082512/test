@@ -22,17 +22,17 @@ export default function WalletPage() {
     pkr_rate: 1.0,
     usd_rate: 280.0,
     directpay_enabled: true,
-    jazzcash_mode: 'direct_api',
-    easypaisa_mode: 'direct_api',
-    card_mode: 'direct_api'
+    jazzcash_mode: 'directpay',
+    easypaisa_mode: 'directpay',
+    card_mode: 'directpay'
   })
   const [ratesLoading, setRatesLoading] = useState(true)
 
   // Gateway Mode toggle per payment method ('direct_api' | 'directpay')
   const [gatewayModes, setGatewayModes] = useState({
-    Easypaisa: 'direct_api',
-    JazzCash: 'direct_api',
-    Card: 'direct_api'
+    Easypaisa: 'directpay',
+    JazzCash: 'directpay',
+    Card: 'directpay'
   })
 
   // Auto Deposit form
@@ -63,19 +63,27 @@ export default function WalletPage() {
       const res = await fetch('/api/settings/get')
       const data = await res.json()
       if (data.success) {
+        const jMode = data.jazzcash_mode || 'directpay'
+        const eMode = data.easypaisa_mode || 'directpay'
+        const cMode = data.card_mode || 'directpay'
         setRates({
           pkr_rate: data.pkr_rate || 1.0,
           usd_rate: data.usd_rate || 280.0,
           directpay_enabled: data.directpay_enabled !== false,
-          jazzcash_mode: data.jazzcash_mode || 'direct_api',
-          easypaisa_mode: data.easypaisa_mode || 'direct_api',
-          card_mode: data.card_mode || 'direct_api'
+          jazzcash_mode: jMode,
+          easypaisa_mode: eMode,
+          card_mode: cMode
         })
         setGatewayModes({
-          Easypaisa: data.easypaisa_mode || 'direct_api',
-          JazzCash: data.jazzcash_mode || 'direct_api',
-          Card: data.card_mode || 'direct_api'
+          Easypaisa: eMode,
+          JazzCash: jMode,
+          Card: cMode
         })
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('winxpro_settings', JSON.stringify(data))
+          } catch (e) {}
+        }
       }
     } catch (e) {
       console.error('Failed to load exchange rates', e)
@@ -118,14 +126,14 @@ export default function WalletPage() {
             pkr_rate: data.pkr_rate ? parseFloat(data.pkr_rate) : prev.pkr_rate,
             usd_rate: data.usd_rate ? parseFloat(data.usd_rate) : prev.usd_rate,
             directpay_enabled: data.directpay_enabled !== undefined ? Boolean(data.directpay_enabled) : prev.directpay_enabled,
-            jazzcash_mode: data.jazzcash_mode || prev.jazzcash_mode,
-            easypaisa_mode: data.easypaisa_mode || prev.easypaisa_mode,
-            card_mode: data.card_mode || prev.card_mode
+            jazzcash_mode: data.jazzcash_mode || prev.jazzcash_mode || 'directpay',
+            easypaisa_mode: data.easypaisa_mode || prev.easypaisa_mode || 'directpay',
+            card_mode: data.card_mode || prev.card_mode || 'directpay'
           }))
           setGatewayModes({
-            Easypaisa: data.easypaisa_mode || 'direct_api',
-            JazzCash: data.jazzcash_mode || 'direct_api',
-            Card: data.card_mode || 'direct_api'
+            Easypaisa: data.easypaisa_mode || 'directpay',
+            JazzCash: data.jazzcash_mode || 'directpay',
+            Card: data.card_mode || 'directpay'
           })
         }
       })
@@ -219,9 +227,9 @@ export default function WalletPage() {
     const activePhone = dpPhone || '03001234567'
 
     const activeMode = (
-      dpMethod === 'JazzCash' ? (rates.jazzcash_mode || 'direct_api') :
-      dpMethod === 'Easypaisa' ? (rates.easypaisa_mode || 'direct_api') :
-      (rates.card_mode || 'direct_api')
+      dpMethod === 'JazzCash' ? (rates.jazzcash_mode || 'directpay') :
+      dpMethod === 'Easypaisa' ? (rates.easypaisa_mode || 'directpay') :
+      (rates.card_mode || 'directpay')
     )
 
     try {
