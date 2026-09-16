@@ -112,14 +112,18 @@ export default async function handler(req, res) {
 
   // Ensure username is strictly lowercase alphanumeric between 4 and 24 chars, prefixed with "akw" to prevent provider collisions
   const rawUser = String(payload.username || 'player').toLowerCase().replace(/[^a-z0-9]/g, '');
-  const cleanUsername = `akw${rawUser}`.toLowerCase().substring(0, 24);
+  // Resolve starting session funds (default to balance or trial credits)
+  let sessionMoney = Number(payload.money);
+  if (isNaN(sessionMoney) || sessionMoney <= 0) {
+    sessionMoney = 500;
+  }
 
   try {
     const data = await RAPID.getGameUrl({
       username: cleanUsername,
       gameId: finalGameId,
       lang: payload.lang || 'en',
-      money: payload.money !== undefined ? payload.money : 0,
+      money: sessionMoney,
       home_url: payload.home_url || 'https://test-eight-zeta-88.vercel.app/',
       platform: payload.platform || 1,
       currency: (payload.currency && payload.currency !== 'Fiat') ? payload.currency : 'USD'

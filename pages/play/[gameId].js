@@ -65,6 +65,7 @@ export default function PlayGame() {
         body: JSON.stringify({ 
           gameId, 
           username: user.id || user.email || 'player',
+          money: wallet?.balance ? Math.floor(Number(wallet.balance)) : 500,
           home_url: window.location.origin + '/'
         })
       })
