@@ -184,13 +184,10 @@ export default async function handler(req, res) {
     const rawGameUrl = data?.payload?.game_launch_url || data?.game_launch_url || data?.gameUrl || (data?.data && data?.data?.url);
 
     if (rawGameUrl) {
-      // Unroll to direct unblocked HTML5 game stream
-      const directGameUrl = await unrollBetNexGame(rawGameUrl);
-
       return res.status(200).json({
         success: true,
-        gameUrl: directGameUrl,
-        rawLaunchUrl: directGameUrl,
+        gameUrl: rawGameUrl,
+        rawLaunchUrl: rawGameUrl,
         gameName: data?.payload?.game_name || payload.gameId,
         provider: data?.payload?.provider || 'Casino Provider',
         payload: data?.payload,

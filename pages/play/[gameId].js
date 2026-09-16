@@ -488,55 +488,88 @@ export default function PlayGame() {
               <div style={{ color: '#888', fontSize: '13px' }}>Launching {getGameTitle()} from Official Casino Server</div>
             </div>
           ) : liveGameUrl ? (
-            <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', flexDirection: 'column' }}>
-              <iframe
-                key={streamKey}
-                src={liveGameUrl}
-                title={getGameTitle()}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  border: 'none',
-                  background: '#000',
-                  flex: 1
-                }}
-                allow="autoplay; fullscreen; screen-wake-lock; camera; microphone; payment; accelerometer; gyroscope; xr-spatial-tracking"
-                allowFullScreen
-              />
+            <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'radial-gradient(circle at center, #1e0e38 0%, #07030e 100%)', padding: '20px' }}>
+              {/* Game Live Portal Card */}
+              <div style={{ maxWidth: '440px', width: '100%', background: '#120d22', border: '1px solid rgba(255, 215, 0, 0.35)', borderRadius: '18px', padding: '28px 22px', textAlign: 'center', boxShadow: '0 12px 40px rgba(0,0,0,0.8)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                <div style={{ fontSize: '52px', filter: 'drop-shadow(0 0 16px rgba(255,215,0,0.5))' }}>🎰</div>
+                
+                <div>
+                  <div style={{ fontSize: '22px', fontWeight: '900', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    {getGameTitle()}
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: 'bold', marginTop: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#00e676' }}></span>
+                    <span>Official {apiProvider || 'Live Provider'} Stream Ready</span>
+                  </div>
+                </div>
 
-              {/* Direct Full-Screen Launch Helper Bar */}
-              <div style={{
-                position: 'absolute',
-                bottom: '10px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                background: 'rgba(18, 18, 24, 0.85)',
-                backdropFilter: 'blur(8px)',
-                border: '1px solid rgba(255,215,0,0.3)',
-                borderRadius: '20px',
-                padding: '6px 16px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                zIndex: 10,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.6)'
-              }}>
-                <span style={{ fontSize: '11px', color: '#ccc' }}>Screen blank or not loading?</span>
+                <div style={{ background: 'rgba(255,255,255,0.05)', padding: '10px 16px', borderRadius: '10px', fontSize: '13px', color: '#ccc', width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>Session Balance:</span>
+                  <strong style={{ color: isDemoMode ? '#00e676' : 'var(--accent)', fontSize: '14px' }}>
+                    Pi {activeBalance.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </strong>
+                </div>
+
+                {/* Big Gold Play Button */}
                 <button
                   onClick={openInNewTab}
                   style={{
-                    background: 'linear-gradient(135deg, #00e676 0%, #00897b 100%)',
+                    width: '100%',
+                    padding: '16px 0',
+                    background: 'linear-gradient(135deg, #ffd700 0%, #ff8c00 100%)',
                     color: '#000',
                     border: 'none',
                     borderRadius: '12px',
-                    padding: '3px 10px',
-                    fontSize: '11px',
+                    fontSize: '16px',
                     fontWeight: '900',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    boxShadow: '0 6px 25px rgba(255, 215, 0, 0.45)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    letterSpacing: '0.5px'
                   }}
                 >
-                  ↗ Direct Full View
+                  <span>▶ PLAY LIVE GAME (FULL SCREEN)</span>
                 </button>
+
+                <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+                  <button
+                    onClick={reloadStream}
+                    style={{
+                      flex: 1,
+                      padding: '10px 0',
+                      background: 'rgba(255,255,255,0.08)',
+                      border: '1px solid #333',
+                      color: '#fff',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    🔄 New Token
+                  </button>
+
+                  <Link href="/" style={{ flex: 1, textDecoration: 'none' }}>
+                    <button
+                      style={{
+                        width: '100%',
+                        padding: '10px 0',
+                        background: 'rgba(255,255,255,0.08)',
+                        border: '1px solid #333',
+                        color: '#fff',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ⬅ Lobby
+                    </button>
+                  </Link>
+                </div>
               </div>
             </div>
           ) : (
