@@ -73,19 +73,22 @@ export default async function handler(req, res) {
     card_mode: card_mode ? String(card_mode).trim() : 'direct_api'
   }
 
-  // Update in Firestore
+  // Update in Firestore and Supabase asynchronously / non-blocking
   try {
     const docRef = doc(db, 'settings', 'payment_gateways')
-    await setDoc(docRef, extendedConfig, { merge: true })
+    setDoc(docRef, extendedConfig, { merge: true }).catch(err => {
+      console.warn('Firestore settings update note:', err?.message)
+    })
   } catch (fsErr) {
-    console.warn('Firestore settings update note:', fsErr.message)
+    console.warn('Firestore sync note:', fsErr?.message)
   }
 
-  // Update in Supabase currency_rates table (only base columns)
   try {
-    await supabase.from('currency_rates').upsert(basePayload, { onConflict: 'id' })
+    supabase.from('currency_rates').upsert(basePayload, { onConflict: 'id' }).then(() => {}).catch(err => {
+      console.warn('Supabase update note:', err?.message)
+    })
   } catch (sbErr) {
-    console.warn('Supabase currency_rates update note:', sbErr.message)
+    console.warn('Supabase sync note:', sbErr?.message)
   }
 
   return res.status(200).json({

@@ -23,18 +23,20 @@ export default async function handler(req, res) {
   let firestoreGateways = {}
   try {
     const docRef = doc(db, 'settings', 'payment_gateways')
-    const snap = await getDoc(docRef)
-    if (snap.exists()) {
+    const snap = await Promise.race([
+      getDoc(docRef),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1000))
+    ])
+    if (snap && snap.exists()) {
       firestoreGateways = snap.data() || {}
     }
   } catch (e) {}
 
   try {
-    const { data } = await supabase
-      .from('currency_rates')
-      .select('*')
-      .eq('id', 1)
-      .single()
+    const { data } = await Promise.race([
+      supabase.from('currency_rates').select('*').eq('id', 1).single(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1000))
+    ])
 
     const merged = {
       success: true,

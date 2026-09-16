@@ -4,7 +4,9 @@ import {
   onAuthStateChanged, 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
-  signOut,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut, 
   updateProfile 
 } from 'firebase/auth'
 import { doc, setDoc, getDoc } from 'firebase/firestore'
@@ -41,6 +43,8 @@ export function AuthProvider({ children }) {
     }
     if (msg.includes('auth/email-already-in-use')) return 'An account already exists with this email.'
     if (msg.includes('auth/weak-password')) return 'Password should be at least 6 characters.'
+    if (msg.includes('auth/popup-closed-by-user')) return 'Google Sign-in was cancelled.'
+    if (msg.includes('auth/unauthorized-domain')) return 'Domain not authorized in Firebase Console (Add this domain in Firebase > Authentication > Settings > Authorized domains).'
     return null
   }
 
@@ -116,7 +120,6 @@ export function AuthProvider({ children }) {
       if (friendly) {
         return { data: null, error: { message: friendly } }
       }
-      // If Firebase Auth is not yet enabled or api-key is propagating, fall back to instant local player session
       return await setLocalSession(email, password, referrerEmail)
     }
   }
@@ -131,8 +134,31 @@ export function AuthProvider({ children }) {
       if (friendly) {
         return { data: null, error: { message: friendly } }
       }
-      // If Firebase Auth is propagating, fall back to instant local player session
       return await setLocalSession(email, password)
+    }
+  }
+
+  const signInWithGoogle = async () => {
+    try {
+      const provider = new GoogleAuthProvider()
+      provider.setCustomParameters({ prompt: 'select_account' })
+      const userCredential = await signInWithPopup(auth, provider)
+      const gUser = userCredential.user
+
+      const userDocRef = doc(db, 'users', gUser.uid)
+      await setDoc(userDocRef, {
+        id: gUser.uid,
+        email: gUser.email,
+        displayName: gUser.displayName || gUser.email?.split('@')[0],
+        photoURL: gUser.photoURL || '',
+        updated_at: new Date().toISOString()
+      }, { merge: true }).catch(() => {})
+
+      await ensureWallet(gUser.uid)
+      return { data: { user: gUser }, error: null }
+    } catch (error) {
+      const friendly = formatAuthError(error)
+      return { data: null, error: { message: friendly || error.message || 'Google Sign-in failed' } }
     }
   }
 
@@ -151,7 +177,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, signUp, logIn, logOut }}>
+    <AuthContext.Provider value={{ user, loading, signUp, logIn, signInWithGoogle, logOut }}>
       {children}
     </AuthContext.Provider>
   )
