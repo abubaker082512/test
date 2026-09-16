@@ -101,11 +101,46 @@ const GAME_MAP = {
   'plinko': 'bdfb23c974a2517198c5443adeea77a8'
 };
 
-// Automatically unrolls BetNex intermediary wrapper to get the clean direct provider session URL (JILI, Evolution, PG Soft, etc.)
-// This bypasses BetNex's restrictive frame-ancestors CSP so the game embeds cleanly without browser block
-async function unrollDirectGameUrl(betnexUrl) {
-  if (!betnexUrl || typeof betnexUrl !== 'string') return betnexUrl;
-  return betnexUrl;
+// Automatically unrolls BetNex intermediary wrapper to get the direct unblocked HTML5 game session URL (jsgame.live)
+// This completely eliminates BetNex's 403 Access Denied, CSP frame-ancestors restrictions, and anti-nesting scripts
+async function unrollBetNexGame(betnexLaunchUrl) {
+  if (!betnexLaunchUrl || !betnexLaunchUrl.includes('betnex.co')) {
+    return betnexLaunchUrl;
+  }
+
+  try {
+    const pageRes = await fetch(betnexLaunchUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+    });
+    const html = await pageRes.text();
+    
+    const idx = html.indexOf('src="https://livecasinoapi.betnex.co/wrappedgame?token=');
+    if (idx === -1) return betnexLaunchUrl;
+    
+    const end = html.indexOf('"', idx + 5);
+    const wrappedUrl = html.substring(idx + 5, end);
+    
+    const res2 = await fetch(wrappedUrl, {
+      headers: {
+        'Referer': betnexLaunchUrl,
+        'Sec-Fetch-Dest': 'iframe',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'same-origin',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+      }
+    });
+    const html2 = await res2.text();
+    
+    const directIdx = html2.indexOf('src="https://jsgame.live');
+    if (directIdx !== -1) {
+      const directEnd = html2.indexOf('"', directIdx + 5);
+      return html2.substring(directIdx + 5, directEnd);
+    }
+  } catch (e) {
+    console.error('Unroll failed:', e.message);
+  }
+
+  return betnexLaunchUrl;
 }
 
 export default async function handler(req, res) {
@@ -141,7 +176,7 @@ export default async function handler(req, res) {
       gameId: finalGameId,
       lang: payload.lang || 'en',
       money: sessionMoney,
-      home_url: payload.home_url || 'https://www.winxpro.com.pk/',
+      home_url: payload.home_url || 'https://test-eight-zeta-88.vercel.app/',
       platform: payload.platform || 1,
       currency: (payload.currency && payload.currency !== 'Fiat') ? payload.currency : 'PKR'
     });
@@ -149,14 +184,13 @@ export default async function handler(req, res) {
     const rawGameUrl = data?.payload?.game_launch_url || data?.game_launch_url || data?.gameUrl || (data?.data && data?.data?.url);
 
     if (rawGameUrl) {
-      const proxiedGameUrl = rawGameUrl.startsWith('http') 
-        ? `/api/casino/stream?url=${encodeURIComponent(rawGameUrl)}`
-        : rawGameUrl;
+      // Unroll to direct unblocked HTML5 game stream
+      const directGameUrl = await unrollBetNexGame(rawGameUrl);
 
       return res.status(200).json({
         success: true,
-        gameUrl: proxiedGameUrl,
-        rawLaunchUrl: rawGameUrl,
+        gameUrl: directGameUrl,
+        rawLaunchUrl: directGameUrl,
         gameName: data?.payload?.game_name || payload.gameId,
         provider: data?.payload?.provider || 'Casino Provider',
         payload: data?.payload,
