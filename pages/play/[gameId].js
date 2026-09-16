@@ -41,8 +41,9 @@ export default function PlayGame() {
   const [isFullscreen, setIsFullscreen] = useState(false)
 
   // Live Provider Stream State
-  const [gameMode, setGameMode] = useState('api') // 'api' | 'canvas'
+  const [gameMode, setGameMode] = useState('api')
   const [liveGameUrl, setLiveGameUrl] = useState(null)
+  const [rawLaunchUrl, setRawLaunchUrl] = useState(null)
   const [apiGameName, setApiGameName] = useState(null)
   const [apiProvider, setApiProvider] = useState(null)
   const [apiLoading, setApiLoading] = useState(true)
@@ -80,8 +81,6 @@ export default function PlayGame() {
     balance: activeBalance,
     currency: 'Pi'
   }
-
-  const [rawLaunchUrl, setRawLaunchUrl] = useState(null)
 
   // Fetch official live game launch URL from provider API
   const fetchLiveGameUrl = async () => {
@@ -174,127 +173,79 @@ export default function PlayGame() {
       addDemoBalance
     }
 
-    // 1. JILI & Super Ace
     if (normalizedSlug.includes('super-ace') || normalizedSlug.includes('slots-pg') || normalizedSlug.includes('cq9-slots') || normalizedSlug.includes('gold-slots')) {
       return <SuperAce {...props} />
     }
-
-    // 2. Fortune Gems
     if (normalizedSlug.includes('fortune-gem') || normalizedSlug.includes('fortune-garuda') || normalizedSlug.includes('jili-slots') || normalizedSlug.includes('mg-slots') || normalizedSlug.includes('bng-slots')) {
       return <FortuneGems {...props} />
     }
-
-    // 3. Mahjong Ways
     if (normalizedSlug.includes('mahjong') || normalizedSlug.includes('aztec') || normalizedSlug.includes('wg-slots')) {
       return <MahjongWays {...props} />
     }
-
-    // 4. Wild Bounty
     if (normalizedSlug.includes('wild-bounty') || normalizedSlug.includes('bounty')) {
       return <WildBounty {...props} />
     }
-
-    // 5. Crash & Aviator
     if (normalizedSlug.includes('crash') || normalizedSlug.includes('aviator') || normalizedSlug.includes('spribe')) {
       return <CrashGame {...props} />
     }
-
-    // 6. Fishing Games
     if (normalizedSlug.includes('fishin') || normalizedSlug.includes('fishing-joy') || normalizedSlug.includes('fish')) {
       return <FishingJoy {...props} />
     }
-
-    // 7. Roulette Live & Auto
     if (normalizedSlug.includes('roulette')) {
       return <RouletteGame {...props} />
     }
-
-    // 8. Blackjack
     if (normalizedSlug.includes('blackjack') || normalizedSlug.includes('kingmidas')) {
       return <BlackjackGame {...props} />
     }
-
-    // 9. Baccarat
     if (normalizedSlug.includes('baccarat')) {
       return <BaccaratGame {...props} />
     }
-
-    // 10. Dragon Tiger
     if (normalizedSlug.includes('dragon-tiger') || normalizedSlug.includes('dragon')) {
       return <DragonTigerGame {...props} />
     }
-
-    // 11. Poker Games (Texas Hold'em, Omaha, Caribbean, 3 Card, Video Poker)
     if (normalizedSlug.includes('poker') || normalizedSlug.includes('holdem') || normalizedSlug.includes('omaha') || normalizedSlug.includes('caribbean') || normalizedSlug.includes('sexy-live') || normalizedSlug.includes('jili-cards')) {
       return <VideoPokerGame {...props} />
     }
-
-    // 12. Plinko
     if (normalizedSlug.includes('plinko')) {
       return <PlinkoGame {...props} />
     }
-
-    // 13. Minesweeper / Mines
     if (normalizedSlug.includes('mine')) {
       return <MinesweeperGame {...props} />
     }
-
-    // 14. Dice
     if (normalizedSlug.includes('dice')) {
       return <DiceGame {...props} />
     }
-
-    // 15. Limbo
     if (normalizedSlug.includes('limbo')) {
       return <LimboGame {...props} />
     }
-
-    // 16. Coin Flip
     if (normalizedSlug.includes('coin') || normalizedSlug.includes('flip')) {
       return <CoinFlip {...props} />
     }
-
-    // 17. HiLo
     if (normalizedSlug.includes('hilo')) {
       return <HiloGame {...props} />
     }
-
-    // 18. Keno
     if (normalizedSlug.includes('keno')) {
       return <KenoGame {...props} />
     }
-
-    // 19. SicBo
     if (normalizedSlug.includes('sicbo') || normalizedSlug.includes('sic-bo')) {
       return <SicBoGame {...props} />
     }
-
-    // 20. Penalty Shootout
     if (normalizedSlug.includes('penalty') || normalizedSlug.includes('shootout')) {
       return <PenaltyShootout {...props} />
     }
-
-    // 21. Derby Racing
     if (normalizedSlug.includes('derby') || normalizedSlug.includes('horse') || normalizedSlug.includes('racing')) {
       return <DerbyGame {...props} />
     }
-
-    // 22. Cockfight
     if (normalizedSlug.includes('cockfight')) {
       return <CockfightGame {...props} />
     }
-
-    // 23. Lucky Wheel
     if (normalizedSlug.includes('wheel') || normalizedSlug.includes('spin') || normalizedSlug.includes('crazy_time')) {
       return <WheelGame {...props} />
     }
-
-    // 24. Sportsbook & Live Match Betting
     if (normalizedSlug.includes('sports') || normalizedSlug.includes('betstack') || normalizedSlug.includes('nfl') || normalizedSlug.includes('nba') || normalizedSlug.includes('soccer') || normalizedSlug.includes('mlb')) {
       return <SportsBook {...props} />
     }
 
-    // Default: High-performance Neon Classic Slots
     return <ClassicSlots {...props} gameId={gameId} title={getGameTitle()} />
   }
 
@@ -310,31 +261,31 @@ export default function PlayGame() {
   }
 
   return (
-    <div style={{ width: '100vw', height: '100vh', background: '#0a0a0c', color: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ width: '100vw', height: '100vh', background: '#000', color: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       
       {/* Universal Top Header */}
       <div style={{ 
-        padding: '8px 14px', 
-        background: '#121215', 
+        height: '48px',
+        padding: '0 12px', 
+        background: '#121216', 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
         borderBottom: '1px solid #222',
-        zIndex: 20,
-        gap: '8px',
-        flexWrap: 'nowrap'
+        zIndex: 50,
+        gap: '8px'
       }}>
         {/* Left: Navigation & Game Info */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
           <Link href="/" style={{ textDecoration: 'none' }}>
             <button 
               style={{
                 background: 'rgba(255,255,255,0.08)',
                 border: '1px solid #333',
                 color: '#fff',
-                padding: '5px 10px',
+                padding: '4px 8px',
                 borderRadius: '6px',
-                fontSize: '12px',
+                fontSize: '11px',
                 fontWeight: 'bold',
                 cursor: 'pointer',
                 whiteSpace: 'nowrap'
@@ -347,7 +298,7 @@ export default function PlayGame() {
           <div style={{ 
             fontWeight: '900', 
             color: 'var(--accent)', 
-            fontSize: '13px', 
+            fontSize: '12px', 
             textTransform: 'uppercase', 
             letterSpacing: '0.5px',
             whiteSpace: 'nowrap',
@@ -356,67 +307,30 @@ export default function PlayGame() {
           }}>
             🎮 {getGameTitle()}
           </div>
-
-          {apiProvider && (
-            <span style={{
-              background: 'rgba(255,215,0,0.15)',
-              color: 'var(--accent)',
-              border: '1px solid rgba(255,215,0,0.3)',
-              fontSize: '10px',
-              fontWeight: '900',
-              padding: '2px 6px',
-              borderRadius: '4px'
-            }}>
-              {apiProvider}
-            </span>
-          )}
         </div>
         
-        {/* Right: Mode Switcher, Stream Controls & Wallet */}
+        {/* Right: Controls & Wallet */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
           
-          {/* Mode Switcher (Live API Stream vs Interactive Canvas) */}
+          {/* Reload Stream Button */}
           <button
-            onClick={() => setGameMode(gameMode === 'api' ? 'canvas' : 'api')}
+            onClick={reloadStream}
             style={{
-              background: gameMode === 'api' ? 'rgba(0, 230, 118, 0.15)' : 'rgba(255, 152, 0, 0.15)',
-              border: `1px solid ${gameMode === 'api' ? '#00e676' : '#ff9800'}`,
-              color: gameMode === 'api' ? '#00e676' : '#ff9800',
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid #333',
+              color: '#fff',
               padding: '4px 8px',
               borderRadius: '6px',
               fontSize: '11px',
-              fontWeight: '900',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
+              cursor: 'pointer'
             }}
-            title={gameMode === 'api' ? 'Currently playing Official Provider Stream. Click for Canvas Engine.' : 'Currently in Canvas Engine. Click for Official Provider Stream.'}
+            title="Reload Game Stream"
           >
-            <span>{gameMode === 'api' ? '📡 LIVE API' : '⚡ CANVAS'}</span>
+            🔄
           </button>
 
-          {/* Refresh Stream Button (only in API mode) */}
-          {gameMode === 'api' && (
-            <button
-              onClick={reloadStream}
-              style={{
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid #333',
-                color: '#fff',
-                padding: '4px 8px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                cursor: 'pointer'
-              }}
-              title="Reload Game Stream"
-            >
-              🔄
-            </button>
-          )}
-
           {/* Popout Button (opens in fresh tab for full browser compatibility) */}
-          {gameMode === 'api' && liveGameUrl && (
+          {liveGameUrl && (
             <button
               onClick={openInNewTab}
               style={{
@@ -465,115 +379,38 @@ export default function PlayGame() {
           >
             {isFullscreen ? 'Exit' : '⛶'}
           </button>
-
-          {!user && (
-            <button 
-              onClick={() => setIsAuthModalOpen(true)}
-              className="btn primary"
-              style={{ padding: '4px 10px', fontSize: '11px' }}
-            >
-              Login
-            </button>
-          )}
         </div>
       </div>
 
-      {/* Main Interactive Direct Live Game Stage */}
-      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: '#070709' }}>
+      {/* Main Interactive Direct Live Game Stage (100% Touch & Click Responsive) */}
+      <div style={{ flex: 1, position: 'relative', width: '100%', height: 'calc(100vh - 48px)', background: '#000', overflow: 'hidden' }}>
         {gameMode === 'api' ? (
           apiLoading ? (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', gap: '16px' }}>
+            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', gap: '16px' }}>
               <div style={{ width: '48px', height: '48px', border: '4px solid rgba(255,215,0,0.2)', borderTop: '4px solid var(--accent)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
               <div style={{ fontSize: '18px', fontWeight: 'bold' }}>Connecting to Live Provider Stream...</div>
               <div style={{ color: '#888', fontSize: '13px' }}>Launching {getGameTitle()} from Official Casino Server</div>
             </div>
           ) : liveGameUrl ? (
-            <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'radial-gradient(circle at center, #1e0e38 0%, #07030e 100%)', padding: '20px' }}>
-              {/* Game Live Portal Card */}
-              <div style={{ maxWidth: '440px', width: '100%', background: '#120d22', border: '1px solid rgba(255, 215, 0, 0.35)', borderRadius: '18px', padding: '28px 22px', textAlign: 'center', boxShadow: '0 12px 40px rgba(0,0,0,0.8)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-                <div style={{ fontSize: '52px', filter: 'drop-shadow(0 0 16px rgba(255,215,0,0.5))' }}>🎰</div>
-                
-                <div>
-                  <div style={{ fontSize: '22px', fontWeight: '900', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    {getGameTitle()}
-                  </div>
-                  <div style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: 'bold', marginTop: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                    <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#00e676' }}></span>
-                    <span>Official {apiProvider || 'Live Provider'} Stream Ready</span>
-                  </div>
-                </div>
-
-                <div style={{ background: 'rgba(255,255,255,0.05)', padding: '10px 16px', borderRadius: '10px', fontSize: '13px', color: '#ccc', width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span>Session Balance:</span>
-                  <strong style={{ color: isDemoMode ? '#00e676' : 'var(--accent)', fontSize: '14px' }}>
-                    Pi {activeBalance.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </strong>
-                </div>
-
-                {/* Big Gold Play Button */}
-                <button
-                  onClick={openInNewTab}
-                  style={{
-                    width: '100%',
-                    padding: '16px 0',
-                    background: 'linear-gradient(135deg, #ffd700 0%, #ff8c00 100%)',
-                    color: '#000',
-                    border: 'none',
-                    borderRadius: '12px',
-                    fontSize: '16px',
-                    fontWeight: '900',
-                    cursor: 'pointer',
-                    boxShadow: '0 6px 25px rgba(255, 215, 0, 0.45)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    letterSpacing: '0.5px'
-                  }}
-                >
-                  <span>▶ PLAY LIVE GAME (FULL SCREEN)</span>
-                </button>
-
-                <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
-                  <button
-                    onClick={reloadStream}
-                    style={{
-                      flex: 1,
-                      padding: '10px 0',
-                      background: 'rgba(255,255,255,0.08)',
-                      border: '1px solid #333',
-                      color: '#fff',
-                      borderRadius: '8px',
-                      fontSize: '12px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    🔄 New Token
-                  </button>
-
-                  <Link href="/" style={{ flex: 1, textDecoration: 'none' }}>
-                    <button
-                      style={{
-                        width: '100%',
-                        padding: '10px 0',
-                        background: 'rgba(255,255,255,0.08)',
-                        border: '1px solid #333',
-                        color: '#fff',
-                        borderRadius: '8px',
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      ⬅ Lobby
-                    </button>
-                  </Link>
-                </div>
-              </div>
-            </div>
+            <iframe
+              key={streamKey}
+              src={liveGameUrl}
+              title={getGameTitle()}
+              style={{
+                width: '100%',
+                height: '100%',
+                border: 'none',
+                background: '#000',
+                position: 'absolute',
+                inset: 0,
+                zIndex: 1,
+                touchAction: 'manipulation'
+              }}
+              allow="autoplay; fullscreen; screen-wake-lock; camera; microphone; payment; accelerometer; gyroscope; xr-spatial-tracking"
+              allowFullScreen
+            />
           ) : (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center' }}>
+            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center' }}>
               <div style={{ fontSize: '36px', marginBottom: '12px' }}>⚠️</div>
               <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px' }}>API Stream Connection Offline</div>
               <div style={{ color: '#aaa', fontSize: '13px', maxWidth: '400px', marginBottom: '16px' }}>
