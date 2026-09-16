@@ -81,6 +81,8 @@ export default function PlayGame() {
     currency: 'Pi'
   }
 
+  const [rawLaunchUrl, setRawLaunchUrl] = useState(null)
+
   // Fetch official live game launch URL from provider API
   const fetchLiveGameUrl = async () => {
     if (!gameId) return
@@ -106,8 +108,9 @@ export default function PlayGame() {
       })
 
       const json = await res.json()
-      if (json.success && json.gameUrl && json.gameUrl.startsWith('http')) {
+      if (json.success && json.gameUrl) {
         setLiveGameUrl(json.gameUrl)
+        setRawLaunchUrl(json.rawLaunchUrl || json.gameUrl)
         setApiGameName(json.gameName || null)
         setApiProvider(json.provider || null)
       } else {
@@ -133,8 +136,9 @@ export default function PlayGame() {
   }
 
   const openInNewTab = () => {
-    if (liveGameUrl) {
-      window.open(liveGameUrl, '_blank', 'noopener,noreferrer')
+    const target = rawLaunchUrl || liveGameUrl
+    if (target) {
+      window.open(target, '_blank', 'noopener,noreferrer')
     }
   }
 
@@ -499,6 +503,41 @@ export default function PlayGame() {
                 allow="autoplay; fullscreen; screen-wake-lock; camera; microphone; payment; accelerometer; gyroscope; xr-spatial-tracking"
                 allowFullScreen
               />
+
+              {/* Direct Full-Screen Launch Helper Bar */}
+              <div style={{
+                position: 'absolute',
+                bottom: '10px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                background: 'rgba(18, 18, 24, 0.85)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255,215,0,0.3)',
+                borderRadius: '20px',
+                padding: '6px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                zIndex: 10,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.6)'
+              }}>
+                <span style={{ fontSize: '11px', color: '#ccc' }}>Screen blank or not loading?</span>
+                <button
+                  onClick={openInNewTab}
+                  style={{
+                    background: 'linear-gradient(135deg, #00e676 0%, #00897b 100%)',
+                    color: '#000',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '3px 10px',
+                    fontSize: '11px',
+                    fontWeight: '900',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ↗ Direct Full View
+                </button>
+              </div>
             </div>
           ) : (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center' }}>

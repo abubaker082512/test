@@ -149,12 +149,16 @@ export default async function handler(req, res) {
     const rawGameUrl = data?.payload?.game_launch_url || data?.game_launch_url || data?.gameUrl || (data?.data && data?.data?.url);
 
     if (rawGameUrl) {
+      const proxiedGameUrl = rawGameUrl.startsWith('http') 
+        ? `/api/casino/stream?url=${encodeURIComponent(rawGameUrl)}`
+        : rawGameUrl;
+
       return res.status(200).json({
         success: true,
-        gameUrl: rawGameUrl,
+        gameUrl: proxiedGameUrl,
         rawLaunchUrl: rawGameUrl,
         gameName: data?.payload?.game_name || payload.gameId,
-        provider: data?.payload?.provider,
+        provider: data?.payload?.provider || 'Casino Provider',
         payload: data?.payload,
         raw: data
       });
