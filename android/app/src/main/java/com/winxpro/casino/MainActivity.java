@@ -17,7 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 public class MainActivity extends AppCompatActivity {
     private WebView webView;
     private ProgressBar progressBar;
-    private static final String TARGET_URL = "https://test-eight-zeta-88.vercel.app/";
+    private static final String TARGET_URL = "https://www.winxpro.com.pk/";
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override

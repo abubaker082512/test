@@ -148,7 +148,7 @@ export class RapidApiClient {
       money: payload.money !== undefined ? payload.money : 0,
       currency: (payload.currency && payload.currency !== 'Fiat') ? payload.currency : 'PKR',
       platform: payload.platform || 1,
-      home_url: payload.home_url || 'https://test-eight-zeta-88.vercel.app/'
+      home_url: payload.home_url || 'https://www.winxpro.com.pk/'
     };
 
     const url = this._buildUrl('/casino/getgameurl');

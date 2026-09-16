@@ -42,7 +42,7 @@ export default async function handler(req, res) {
     const clientTransactionId = `TXN-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
     // 3. Determine host origin for redirect URLs
-    const host = req.headers.origin || (req.headers.host ? `https://${req.headers.host}` : 'https://test-eight-zeta-88.vercel.app');
+    const host = req.headers.origin || (req.headers.host ? `https://${req.headers.host}` : 'https://www.winxpro.com.pk');
     const successRedirectUrl = `${host}/wallet?directpay_status=success&txn_id=${encodeURIComponent(clientTransactionId)}&amount=${encodeURIComponent(inGameAmount)}`;
     const failedRedirectUrl = `${host}/wallet?directpay_status=failed&txn_id=${encodeURIComponent(clientTransactionId)}`;
 

@@ -41,7 +41,10 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:scheme="https"
-                    android:host="test-eight-zeta-88.vercel.app" />
+                    android:host="www.winxpro.com.pk" />
+                <data
+                    android:scheme="https"
+                    android:host="winxpro.com.pk" />
             </intent-filter>
         </activity>
 

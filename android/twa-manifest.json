@@ -1,19 +1,19 @@
 {
   "packageId": "com.winxpro.casino",
-  "host": "test-eight-zeta-88.vercel.app",
+  "host": "www.winxpro.com.pk",
   "name": "WinX Pro",
   "launcherName": "WinX Pro",
   "themeColor": "#ffd700",
   "navigationColor": "#0f0a1e",
   "backgroundColor": "#0f0a1e",
   "startUrl": "/",
-  "iconUrl": "https://test-eight-zeta-88.vercel.app/winx-logo.png",
-  "maskableIconUrl": "https://test-eight-zeta-88.vercel.app/winx-logo.png",
+  "iconUrl": "https://www.winxpro.com.pk/winx-logo.png",
+  "maskableIconUrl": "https://www.winxpro.com.pk/winx-logo.png",
   "appVersionName": "1.0.0",
   "appVersionCode": 1,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
-  "webManifestUrl": "https://test-eight-zeta-88.vercel.app/manifest.json",
+  "webManifestUrl": "https://www.winxpro.com.pk/manifest.json",
   "fallbackType": "customtabs",
   "features": {
     "locationDelegation": {

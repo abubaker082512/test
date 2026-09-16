@@ -126,7 +126,7 @@ export default async function handler(req, res) {
       gameId: finalGameId,
       lang: payload.lang || 'en',
       money: sessionMoney,
-      home_url: payload.home_url || 'https://test-eight-zeta-88.vercel.app/',
+      home_url: payload.home_url || 'https://www.winxpro.com.pk/',
       platform: payload.platform || 1,
       currency: (payload.currency && payload.currency !== 'Fiat') ? payload.currency : 'PKR'
     });

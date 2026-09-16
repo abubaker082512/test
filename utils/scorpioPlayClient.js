@@ -1,4 +1,4 @@
-﻿import { globalCache } from './cache.js';
+import { globalCache } from './cache.js';
 
 export const SCORPIO_PROVIDERS = [
   { providerId: 1, providerName: 'Pragmatic Play', category: 'Slots', icon: '⚡', logo: '/games/fortune_gems.png', status: 1 },
@@ -209,8 +209,8 @@ export class ScorpioPlayClient {
     providerId = 1,
     gameCode = 'vswaysdogs',
     language = 'en',
-    currency = 'USD',
-    returnUrl = 'https://test-eight-zeta-88.vercel.app/',
+    currency = 'PKR',
+    returnUrl = 'https://www.winxpro.com.pk/',
     rtp = 0
   }) {
     try {
