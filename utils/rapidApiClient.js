@@ -208,10 +208,10 @@ export class RapidApiClient {
       username: String(payload.username || 'player').toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 20) || 'akwplayer1',
       gameId: rawGameId,
       lang: payload.lang || 'en',
-      money: payload.money !== undefined ? Number(payload.money) : 100,
+      money: payload.money !== undefined && Number(payload.money) > 0 ? Number(payload.money) : 5000,
       currency: (payload.currency && payload.currency !== 'Fiat') ? payload.currency : 'PKR',
       platform: payload.platform || 1,
-      home_url: payload.home_url || 'https://www.winxpro.com.pk/'
+      home_url: payload.home_url || 'https://test-eight-zeta-88.vercel.app/'
     };
 
     try {

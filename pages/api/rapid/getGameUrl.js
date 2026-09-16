@@ -164,10 +164,10 @@ export default async function handler(req, res) {
   const rawUser = String(payload.username || 'player').toLowerCase().replace(/[^a-z0-9]/g, '');
   const cleanUsername = `akw${rawUser || 'player'}`.slice(0, 20);
 
-  // Resolve starting session funds (default to balance or trial credits)
+  // Resolve starting session funds (ensure enough credits for high betting volume)
   let sessionMoney = Number(payload.money);
   if (isNaN(sessionMoney) || sessionMoney <= 0) {
-    sessionMoney = 500;
+    sessionMoney = 10000;
   }
 
   try {
