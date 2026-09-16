@@ -258,3 +258,31 @@ export function failTransaction(txnId, failureReason = "Payment cancelled or fai
   return { success: false, error: "Transaction not found" };
 }
 
+export function getReferralStatsForUser(userId, email = "") {
+  loadData();
+  const cleanEmail = (email || "").toLowerCase().trim();
+  const userTxs = getUserTransactionsList(userId, cleanEmail);
+  const refTxs = userTxs.filter(t => 
+    t.status === 'completed' && 
+    (t.notes?.includes('Referral Reward: Invited') || t.method === 'Referral Bonus')
+  );
+
+  const totalEarnings = refTxs.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+  const invitedList = refTxs.map(t => {
+    const friend = t.notes.replace('Referral Reward: Invited ', '').trim() || 'Player';
+    return {
+      id: t.id,
+      email: friend,
+      amount: parseFloat(t.amount) || 155.55,
+      date: t.created_at || new Date().toISOString()
+    };
+  });
+
+  return {
+    totalInvited: invitedList.length,
+    totalEarnings: parseFloat(totalEarnings.toFixed(2)),
+    referrals: invitedList
+  };
+}
+
+

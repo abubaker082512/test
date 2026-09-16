@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
+import Link from 'next/link'
 import NavBar from '../components/NavBar'
 import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
-import { supabase } from '../utils/supabase'
 import AuthModal from '../components/AuthModal'
 
 export default function Offers() {
@@ -11,12 +11,10 @@ export default function Offers() {
   const [loadingCheckin, setLoadingCheckin] = useState(false)
   const [loadingDepositBonus, setLoadingDepositBonus] = useState(false)
   
-  // Checking user claim status
   const [checkedInToday, setCheckedInToday] = useState(false)
   const [claimedDepositBonus, setClaimedDepositBonus] = useState(false)
   const [depositBonusQualifies, setDepositBonusQualifies] = useState(false)
   const [statusLoading, setStatusLoading] = useState(true)
-
   const [message, setMessage] = useState(null)
 
   const fetchStatus = async () => {
@@ -26,40 +24,24 @@ export default function Offers() {
     }
     
     try {
-      const todayStr = new Date().toISOString().split('T')[0]
-      const checkinNote = `Daily Check-in Bonus - ${todayStr}`
-      const bonusNote = 'First Deposit Match Bonus'
+      const activeUid = user.id || user.uid || ''
+      const activeEmail = user.email || ''
+      const res = await fetch(`/api/wallet/get-balance?user_id=${encodeURIComponent(activeUid)}&email=${encodeURIComponent(activeEmail)}`)
+      const json = await res.json()
 
-      // Check daily check-in
-      const { data: checkins } = await supabase
-        .from('transactions')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('notes', checkinNote)
-        .limit(1)
-      
-      setCheckedInToday(checkins && checkins.length > 0)
+      if (json.success && Array.isArray(json.transactions)) {
+        const txs = json.transactions
+        const todayStr = new Date().toISOString().split('T')[0]
 
-      // Check matched deposit bonus
-      const { data: claimed } = await supabase
-        .from('transactions')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('notes', bonusNote)
-        .limit(1)
+        const hasCheckin = txs.some(t => t.notes && t.notes.includes('Daily Check-in Bonus') && t.created_at && t.created_at.startsWith(todayStr))
+        setCheckedInToday(hasCheckin)
 
-      setClaimedDepositBonus(claimed && claimed.length > 0)
+        const hasBonus = txs.some(t => t.notes && t.notes.includes('First Deposit Match Bonus'))
+        setClaimedDepositBonus(hasBonus)
 
-      // Check if user has a completed deposit
-      const { data: deposits } = await supabase
-        .from('transactions')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('type', 'deposit')
-        .eq('status', 'completed')
-        .limit(1)
-
-      setDepositBonusQualifies(deposits && deposits.length > 0)
+        const hasCompletedDeposit = txs.some(t => t.type === 'deposit' && t.status === 'completed')
+        setDepositBonusQualifies(hasCompletedDeposit)
+      }
     } catch (err) {
       console.error('Failed to fetch offer status', err)
     } finally {
@@ -84,7 +66,7 @@ export default function Offers() {
       })
       const data = await res.json()
       if (data.success) {
-        setMessage({ type: 'success', text: `🎉 Daily Check-in claimed! +Pi 5.00 added to your wallet.` })
+        setMessage({ type: 'success', text: '🎉 Daily Check-in claimed! +Pi 5.00 added to your wallet.' })
         setCheckedInToday(true)
         window.dispatchEvent(new Event('wallet-updated'))
       } else {
@@ -110,7 +92,7 @@ export default function Offers() {
       })
       const data = await res.json()
       if (data.success) {
-        setMessage({ type: 'success', text: `🎉 Match Bonus claimed! +Pi ${data.bonus_amount.toFixed(2)} added to your wallet.` })
+        setMessage({ type: 'success', text: `🎉 Match Bonus claimed! +Pi ${(data.bonus_amount || 0).toFixed(2)} added to your wallet.` })
         setClaimedDepositBonus(true)
         window.dispatchEvent(new Event('wallet-updated'))
       } else {
@@ -126,8 +108,8 @@ export default function Offers() {
   return (
     <div className="app">
       <NavBar />
-      <div style={{ padding: '24px 16px', maxWidth: '600px', margin: '0 auto' }}>
-        <h1 style={{ color: 'var(--accent)', marginTop: 0, fontSize: '28px' }}>🎁 Special Promotions</h1>
+      <div style={{ padding: '24px 16px 80px', maxWidth: '600px', margin: '0 auto' }}>
+        <h1 style={{ color: 'var(--accent)', marginTop: 0, fontSize: '28px' }}>🎁 Special Promotions & Rewards</h1>
         
         {message && (
           <div style={{ 
@@ -142,6 +124,39 @@ export default function Offers() {
             {message.text}
           </div>
         )}
+
+        {/* Universal Referral Bonus Promotion Card */}
+        <Link href="/invite" style={{ textDecoration: 'none' }}>
+          <div style={{
+            background: 'linear-gradient(135deg, #18092a 0%, #3b0764 50%, #09090b 100%)',
+            padding: '22px',
+            borderRadius: '16px',
+            border: '1px solid rgba(0, 230, 118, 0.4)',
+            marginBottom: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            boxShadow: '0 8px 30px rgba(0, 230, 118, 0.15)',
+            cursor: 'pointer'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontSize: '32px' }}>💸</div>
+              <div style={{ padding: '4px 12px', borderRadius: '12px', fontSize: '11px', fontWeight: 900, background: '#00e676', color: '#000' }}>
+                HOT REWARD • RS 600
+              </div>
+            </div>
+            <div>
+              <h2 style={{ margin: '0 0 6px 0', fontSize: '18px', color: '#fff' }}>Referral & Agent Program</h2>
+              <p style={{ margin: 0, color: '#d4d4d8', fontSize: '13px', lineHeight: '1.5' }}>
+                Earn <strong style={{ color: '#00e676' }}>Pi 155.55 Cash</strong> instantly for every friend you invite + <strong style={{ color: '#ffd700' }}>5% lifetime betting commissions</strong>!
+              </p>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '10px' }}>
+              <span style={{ fontSize: '12px', color: '#00e676', fontWeight: 800 }}>👉 Open Referral Center & Share Link</span>
+              <span style={{ color: '#ffd700', fontSize: '16px' }}>➔</span>
+            </div>
+          </div>
+        </Link>
 
         {/* Daily Check-in Card */}
         <div style={{ background: 'var(--card)', padding: '24px', borderRadius: '16px', border: '1px solid var(--border)', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>

@@ -1,7 +1,24 @@
+import React, { useEffect } from 'react'
 import Head from 'next/head'
+import { useRouter } from 'next/router'
 import '../styles/globals.css'
 import { AuthProvider } from '../context/AuthContext'
 import SplashScreen from '../components/SplashScreen'
+import UniversalReferralWidget from '../components/UniversalReferralWidget'
+
+function ReferralTracker() {
+  const router = useRouter()
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const refCode = params.get('ref') || params.get('referral') || params.get('invite') || params.get('code')
+      if (refCode) {
+        localStorage.setItem('winxpro_referrer', refCode)
+      }
+    }
+  }, [router.asPath])
+  return null
+}
 
 function MyApp({ Component, pageProps }) {
   return (
@@ -18,10 +35,13 @@ function MyApp({ Component, pageProps }) {
         <link rel="icon" type="image/png" href="/winx-logo.png" />
         <link rel="apple-touch-icon" href="/winx-logo.png" />
       </Head>
+      <ReferralTracker />
       <SplashScreen />
       <Component {...pageProps} />
+      <UniversalReferralWidget />
     </AuthProvider>
   )
 }
 
 export default MyApp
+

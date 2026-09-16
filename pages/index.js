@@ -367,11 +367,17 @@ export default function Home() {
                 <h2 className="carousel-title">{banner.title}</h2>
                 <p className="carousel-desc">{banner.desc}</p>
                 <button 
-                  onClick={() => user ? alert("VIP Rewards Active!") : setIsAuthModalOpen(true)}
+                  onClick={() => {
+                    if (idx === 0) router.push('/offers')
+                    else if (idx === 1) router.push('/wallet')
+                    else if (idx === 2) router.push('/invite')
+                    else if (!user) setIsAuthModalOpen(true)
+                    else router.push('/offers')
+                  }}
                   className="btn primary" 
                   style={{ alignSelf: 'flex-start', padding: '6px 12px', fontSize: '11px' }}
                 >
-                  Claim Now
+                  {idx === 2 ? 'Invite Friends' : idx === 1 ? 'Deposit Now' : 'Claim Now'}
                 </button>
               </div>
             </div>

@@ -27,24 +27,40 @@ export default async function handler(req, res) {
     })
   } catch (e) {}
 
-  // Process referral reward if referrer email provided
-  if (referrer_email && referrer_email.toLowerCase() !== (email || '').toLowerCase()) {
-    try {
-      const refWallet = getUserWallet('', referrer_email)
-      if (refWallet && refWallet.user_id !== user_id) {
-        creditUserBalance(refWallet.user_id, 155.55, referrer_email, `Referral Reward: Invited ${email || user_id}`)
-        recordTransactionRecord({
-          user_id: refWallet.user_id,
-          email: referrer_email,
-          type: 'payout',
-          amount: 155.55,
-          status: 'completed',
-          method: 'Referral Bonus',
-          notes: `Referral Reward: Invited ${email || user_id}`
-        })
+  // Process referral reward if referrer provided
+  if (referrer_email) {
+    const cleanRef = referrer_email.toString().trim().toLowerCase()
+    const cleanUserEmail = (email || '').toLowerCase().trim()
+    
+    if (cleanRef && cleanRef !== cleanUserEmail && cleanRef !== cleanUserEmail.split('@')[0]) {
+      try {
+        let refWallet = getUserWallet(cleanRef, cleanRef)
+        // If not found directly, search all wallets for matching email prefix
+        if (!refWallet || refWallet.balance === undefined) {
+          const allWallets = require('../../../utils/walletStore').getAllWalletsList()
+          const matched = allWallets.find(w => 
+            w.email?.toLowerCase() === cleanRef ||
+            w.email?.toLowerCase().startsWith(cleanRef + '@') ||
+            w.user_id === cleanRef
+          )
+          if (matched) refWallet = matched
+        }
+
+        if (refWallet && refWallet.user_id !== user_id) {
+          creditUserBalance(refWallet.user_id, 155.55, refWallet.email || cleanRef, `Referral Reward: Invited ${email || user_id}`)
+          recordTransactionRecord({
+            user_id: refWallet.user_id,
+            email: refWallet.email || cleanRef,
+            type: 'payout',
+            amount: 155.55,
+            status: 'completed',
+            method: 'Referral Bonus',
+            notes: `Referral Reward: Invited ${email || user_id}`
+          })
+        }
+      } catch (refErr) {
+        console.error('Referral processing error:', refErr)
       }
-    } catch (refErr) {
-      console.error('Referral processing error:', refErr)
     }
   }
 

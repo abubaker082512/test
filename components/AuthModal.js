@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useRouter } from 'next/router'
 
@@ -15,7 +15,17 @@ export default function AuthModal({ isOpen, onClose }) {
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const cachedRef = localStorage.getItem('winxpro_referrer')
+      if (cachedRef && !referrerEmail) {
+        setReferrerEmail(cachedRef)
+      }
+    }
+  }, [isOpen])
+
   if (!isOpen) return null
+
 
   const handleSubmit = async (e) => {
     e.preventDefault()

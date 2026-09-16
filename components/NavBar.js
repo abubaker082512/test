@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { useAuth } from '../context/AuthContext'
 import AuthModal from './AuthModal'
 import SideDrawer from './SideDrawer'
-import { supabase } from '../utils/supabase'
 
 export default function NavBar() {
   const { user, logOut, isDemoMode, demoBalance, toggleDemoMode } = useAuth()
@@ -17,16 +16,14 @@ export default function NavBar() {
   const fetchBalance = async () => {
     if (!user) return
     try {
-      const res = await fetch(`/api/wallet/get-balance?user_id=${encodeURIComponent(user.id || user.uid || '')}&email=${encodeURIComponent(user.email || '')}`)
+      const activeUid = user.id || user.uid || ''
+      const activeEmail = user.email || ''
+      const res = await fetch(`/api/wallet/get-balance?user_id=${encodeURIComponent(activeUid)}&email=${encodeURIComponent(activeEmail)}`)
       const json = await res.json()
       if (json.success && json.balance !== undefined) {
         setBalance(parseFloat(json.balance))
-        return
       }
     } catch (e) {}
-
-    const { data } = await supabase.from('wallets').select('balance').eq('user_id', user.id).single()
-    if (data) setBalance(parseFloat(data.balance))
   }
 
   useEffect(() => {
@@ -37,30 +34,23 @@ export default function NavBar() {
 
     fetchBalance()
 
-    // Real-time wallet updates
-    const channel = supabase.channel('navbar-wallet')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'wallets', filter: `user_id=eq.${user.id}` }, (payload) => {
-        setBalance(parseFloat(payload.new.balance))
-      })
-      .subscribe()
-
     // Real-time polling every 5 seconds for instant synchronization
     const pollInterval = setInterval(() => {
       fetchBalance()
     }, 5000)
 
-    // Custom client-side event for instant updates without websocket dependency
+    // Custom client-side event for instant updates
     const handleWalletUpdate = () => {
       fetchBalance()
     }
     window.addEventListener('wallet-updated', handleWalletUpdate)
 
     return () => {
-      supabase.removeChannel(channel)
       clearInterval(pollInterval)
       window.removeEventListener('wallet-updated', handleWalletUpdate)
     }
   }, [user])
+
 
   const handleRefresh = async () => {
     if (!user) {
@@ -200,6 +190,11 @@ export default function NavBar() {
                     <Link href="/wallet" style={{ textDecoration: 'none' }}>
                       <div onClick={() => setShowMenu(false)} className="menu-item-hover" style={{ padding: '10px 14px', cursor: 'pointer', color: '#fff', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         💳 Wallet / Deposit
+                      </div>
+                    </Link>
+                    <Link href="/invite" style={{ textDecoration: 'none' }}>
+                      <div onClick={() => setShowMenu(false)} className="menu-item-hover" style={{ padding: '10px 14px', cursor: 'pointer', color: '#00e676', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        💸 Invite & Earn (Rs 600)
                       </div>
                     </Link>
                     <Link href="/profile" style={{ textDecoration: 'none' }}>
