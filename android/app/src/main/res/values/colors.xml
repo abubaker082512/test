@@ -1,0 +1,7 @@
+<resources>
+    <color name="primaryColor">#0f0a1e</color>
+    <color name="primaryDarkColor">#07040f</color>
+    <color name="accentColor">#ffd700</color>
+    <color name="backgroundColor">#0f0a1e</color>
+    <color name="statusBarColor">#0f0a1e</color>
+</resources>

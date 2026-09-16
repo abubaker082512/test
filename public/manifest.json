@@ -1,0 +1,66 @@
+{
+  "name": "WinX Pro - Live Casino & Slots",
+  "short_name": "WinX Pro",
+  "description": "WinX Pro - Premier Live Casino, Slots, Crash Games & Sports Betting Platform in Pakistan",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f0a1e",
+  "theme_color": "#ffd700",
+  "categories": [
+    "games",
+    "entertainment",
+    "sports"
+  ],
+  "icons": [
+    {
+      "src": "/winx-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/winx-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Play Slots",
+      "short_name": "Slots",
+      "description": "Open WinX Pro Slots Lobby",
+      "url": "/casino",
+      "icons": [
+        {
+          "src": "/winx-logo.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Wallet & Deposit",
+      "short_name": "Deposit",
+      "description": "EasyPaisa & JazzCash Instant Deposit",
+      "url": "/wallet",
+      "icons": [
+        {
+          "src": "/winx-logo.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

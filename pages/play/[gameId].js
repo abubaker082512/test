@@ -66,6 +66,7 @@ export default function PlayGame() {
           gameId, 
           username: user.id || user.email || 'player',
           money: wallet?.balance ? Math.floor(Number(wallet.balance)) : 500,
+          currency: 'PKR',
           home_url: window.location.origin + '/'
         })
       })
@@ -149,7 +150,7 @@ export default function PlayGame() {
               fontSize: '12px', 
               fontWeight: '800' 
             }}>
-              💰 <span style={{ color: 'var(--accent)' }}>Pi {parseFloat(wallet.balance).toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              💰 <span style={{ color: 'var(--accent)' }}>PKR {parseFloat(wallet.balance).toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
           )}
 
