@@ -262,7 +262,7 @@ export default function PlayGame() {
 
   if (loading) {
     return (
-      <div style={{ width: '100vw', height: '100vh', background: '#0a0a0c', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: '100%', maxWidth: '480px', height: '100vh', margin: '0 auto', background: '#0a0a0c', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '32px', animation: 'spin 1s linear infinite', marginBottom: '12px' }}>🎰</div>
           <div>Loading Game Environment...</div>
@@ -272,7 +272,7 @@ export default function PlayGame() {
   }
 
   return (
-    <div style={{ width: '100vw', height: '100vh', background: '#000', color: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ width: '100%', maxWidth: '480px', height: '100vh', margin: '0 auto', background: '#000', color: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       
       {/* Universal Top Header */}
       <div style={{ 
