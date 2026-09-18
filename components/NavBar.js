@@ -70,17 +70,36 @@ export default function NavBar() {
             className="menu-toggle" 
             onClick={() => setIsDrawerOpen(true)}
             aria-label="Open Navigation Menu"
+            style={{ position: 'relative' }}
           >
             ☰
+            <span style={{
+              position: 'absolute',
+              top: '-4px',
+              right: '-4px',
+              background: '#ff0055',
+              color: '#fff',
+              fontSize: '9px',
+              fontWeight: '900',
+              width: '14px',
+              height: '14px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 5px rgba(255, 0, 85, 0.5)'
+            }}>
+              5
+            </span>
           </button>
           <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
             <img 
               src="/logo.png" 
               alt="WinX Pro" 
               style={{ 
-                height: '48px', 
+                height: '44px', 
                 width: 'auto', 
-                maxHeight: '50px',
+                maxHeight: '46px',
                 objectFit: 'contain',
                 filter: 'drop-shadow(0 2px 10px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 8px rgba(255, 215, 0, 0.3))'
               }} 
@@ -116,7 +135,7 @@ export default function NavBar() {
           ) : (
             /* Real Wallet Balance Display */
             <div className="wallet-display">
-              <span className="wallet-flag">🌍</span>
+              <span className="wallet-flag">🇵🇰</span>
               <span className="wallet-amount">
                 Pi {user ? balance.toFixed(2) : '0.00'}
               </span>
@@ -138,7 +157,7 @@ export default function NavBar() {
                   <Link href="/wallet" style={{ textDecoration: 'none' }}>
                     <button className="btn-deposit">
                       Deposit <span style={{ fontSize: '10px' }}>▼</span>
-                      <span className="deposit-badge">+4%</span>
+                      <span className="deposit-badge">+5%</span>
                     </button>
                   </Link>
                 </div>

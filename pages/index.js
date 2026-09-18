@@ -72,6 +72,7 @@ export default function Home() {
   // Floating widget states
   const [showLeftWidget, setShowLeftWidget] = useState(true)
   const [showRightWidget, setShowRightWidget] = useState(true)
+  const [showCouponBanner, setShowCouponBanner] = useState(true)
   
   // Interactive mini game popups
   const [showWheelPopup, setShowWheelPopup] = useState(false)
@@ -84,6 +85,14 @@ export default function Home() {
 
   const [apiGames, setApiGames] = useState([])
   const [apiLoaded, setApiLoaded] = useState(false)
+
+  const scrollSection = (catName, direction) => {
+    const el = document.getElementById('grid-' + catName)
+    if (el) {
+      const amount = direction === 'left' ? -260 : 260
+      el.scrollBy({ left: amount, behavior: 'smooth' })
+    }
+  }
 
   // Sync active tab with router query if provided
   useEffect(() => {
@@ -442,22 +451,24 @@ export default function Home() {
       </div>
 
       {/* Games List Container */}
-      <div className="all-games-container" style={{ paddingBottom: '24px' }}>
+      <div className="all-games-container" style={{ paddingBottom: '32px' }}>
         {activeCategory !== 'Hot' ? (
-          <section style={{ padding: '20px 16px 0' }}>
-            <div className="section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <section style={{ padding: '16px 12px 0' }}>
+            <div className="section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', padding: '0 4px' }}>
               <div className="title-left" style={{ fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontWeight: '900' }}>
-                <span>{categoriesList.find(c => c.name === activeCategory)?.icon}</span> {categoriesList.find(c => c.name === activeCategory)?.label} ({activeTabGames.length})
+                <span style={{ fontSize: '22px' }}>{categoriesList.find(c => c.name === activeCategory)?.icon}</span> 
+                <span>{categoriesList.find(c => c.name === activeCategory)?.label} ({activeTabGames.length})</span>
               </div>
               <button 
                 onClick={() => setActiveCategory('Hot')}
-                style={{ background: 'transparent', border: 'none', color: 'var(--accent)', fontSize: '12px', cursor: 'pointer' }}
+                style={{ background: 'transparent', border: 'none', color: 'var(--accent)', fontSize: '12px', cursor: 'pointer', fontWeight: 'bold' }}
               >
-                View All Categories →
+                ← View All Categories
               </button>
             </div>
 
-            <div className="games-grid">
+            {/* 3-Column Grid for Selected Category */}
+            <div className="games-grid-3col">
               {activeTabGames.map(game => (
                 <GameCard 
                   key={game.id}
@@ -471,6 +482,7 @@ export default function Home() {
                   slug={game.slug}
                   imageType={game.imageType}
                   imageUrl={game.imageUrl}
+                  category={game.category}
                 />
               ))}
             </div>
@@ -481,20 +493,41 @@ export default function Home() {
             if (catGames.length === 0) return null;
 
             return (
-              <section key={cat.name} id={'section-' + cat.name} style={{ padding: '24px 16px 0' }} aria-label={`${cat.label || cat.name} Catalog`}>
-                <div className="section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <div className="title-left" style={{ fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontWeight: '900' }}>
-                    <span>{cat.icon}</span> {cat.label || cat.name} ({catGames.length})
+              <section key={cat.name} id={'section-' + cat.name} style={{ padding: '20px 12px 0' }} aria-label={`${cat.label || cat.name} Catalog`}>
+                <div className="section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', padding: '0 4px' }}>
+                  <div className="title-left" style={{ fontSize: '17px', display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontWeight: '900' }}>
+                    <span style={{ fontSize: '20px' }}>{cat.icon}</span> 
+                    <span>{cat.name}</span>
                   </div>
-                  <button 
-                    onClick={() => setActiveCategory(cat.name)}
-                    style={{ background: 'transparent', border: 'none', color: 'var(--accent)', fontSize: '12px', cursor: 'pointer' }}
-                  >
-                    Explore All {cat.label} →
-                  </button>
+
+                  {/* Section Controls matching 666H screenshot layout: [ ← ] [ All ] [ → ] */}
+                  <div className="section-pill-controls">
+                    <button 
+                      className="section-pill-btn"
+                      onClick={() => scrollSection(cat.name, 'left')}
+                      title="Scroll Left"
+                    >
+                      ←
+                    </button>
+                    <button 
+                      className="section-pill-btn"
+                      onClick={() => setActiveCategory(cat.name)}
+                      title="View All"
+                    >
+                      All
+                    </button>
+                    <button 
+                      className="section-pill-btn"
+                      onClick={() => scrollSection(cat.name, 'right')}
+                      title="Scroll Right"
+                    >
+                      →
+                    </button>
+                  </div>
                 </div>
 
-                <div className="games-grid">
+                {/* Horizontal Scrollable Row for Section */}
+                <div className="games-grid-scroll" id={'grid-' + cat.name}>
                   {catGames.map(game => (
                     <GameCard 
                       key={game.id}
@@ -508,6 +541,7 @@ export default function Home() {
                       slug={game.slug}
                       imageType={game.imageType}
                       imageUrl={game.imageUrl}
+                      category={game.category}
                     />
                   ))}
                 </div>
@@ -662,6 +696,25 @@ export default function Home() {
       )}
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+
+      {/* Floating Deposit Coupon Expiring Ticker Banner (matching 666H screenshot layout) */}
+      {showCouponBanner && (
+        <div className="coupon-ticker-banner">
+          <div className="coupon-ticker-text" onClick={() => router.push('/offers')}>
+            <span className="coupon-badge-icon">🎟️</span>
+            <span>You have 2 deposit coupons expiring in 1d 07:20:50</span>
+            <span className="coupon-arrow">›</span>
+          </div>
+          <button 
+            className="coupon-close-btn"
+            onClick={() => setShowCouponBanner(false)}
+            title="Dismiss Coupon Notice"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       <BottomNav />
     </div>
   )
