@@ -1,23 +1,61 @@
-// Universal API endpoint for game catalog across providers
-export default function handler(req, res) {
-  const games = [
-    { id: 'super-ace', name: 'Super Ace Deluxe', title: 'Super Ace Deluxe', category: 'Slots', provider: 'JILI', badge: 'Golden Cards', img: '/games/super_ace.png', rtp: '97.2%' },
-    { id: 'fortune-gems', name: 'Fortune Gems 2', title: 'Fortune Gems 2', category: 'Slots', provider: 'JILI', badge: 'Lucky Wheel', img: '/games/fortune_gems.png', rtp: '97.0%' },
-    { id: 'mahjong-ways-2', name: 'Mahjong Ways 2', title: 'Mahjong Ways 2', category: 'Slots', provider: 'PG Soft', badge: 'Golden Dragon', img: 'https://cdn.betnex.co/images/jiligaming/74.webp', rtp: '96.95%' },
-    { id: 'wild-bounty', name: 'Wild Bounty Showdown', title: 'Wild Bounty Showdown', category: 'Slots', provider: 'PG Soft', badge: '1024 Ways', img: '/games/super_ace.png', rtp: '96.75%' },
-    { id: 'spribe_aviator', name: 'Aviator Crash', title: 'Aviator Crash', category: 'Crash', provider: 'Spribe', badge: '10,000x', img: '/games/crash.png', rtp: '97.0%' },
-    { id: 'fishing-joy', name: 'Royal Fishing Frenzy', title: 'Royal Fishing Frenzy', category: 'Fishing', provider: 'JILI', badge: 'Fish Hunter', img: '/games/fishing.png', rtp: '97.5%' },
-    { id: 'evo_lightning_roulette', name: 'Lightning Roulette Live', title: 'Lightning Roulette Live', category: 'Live', provider: 'Evolution Gaming', badge: '500x Multiplier', img: '/games/live.png', rtp: '97.3%' },
-    { id: 'blackjack-live', name: 'Blackjack VIP Platinum', title: 'Blackjack VIP Platinum', category: 'Live', provider: 'Evolution Gaming', badge: 'VIP Table', img: '/games/super_ace.png', rtp: '99.5%' },
-    { id: 'baccarat', name: 'Speed Baccarat VIP', title: 'Speed Baccarat VIP', category: 'Live', provider: 'Evolution Gaming', badge: 'Zero Commission', img: '/games/live.png', rtp: '98.9%' },
-    { id: 'dragon-tiger', name: 'Live Dragon Tiger', title: 'Live Dragon Tiger', category: 'Live', provider: 'Evolution Gaming', badge: 'Fast Action', img: '/games/super_ace.png', rtp: '96.3%' },
-    { id: 'poker-texas-holdem', name: 'Texas Hold\'em No Limit', title: 'Texas Hold\'em No Limit', category: 'Poker', provider: 'PokerAPI', badge: 'Ring Game', img: '/games/super_ace.png', rtp: '98.6%' },
-    { id: 'plinko', name: 'Neon Plinko Drop', title: 'Neon Plinko Drop', category: 'Mini Games', provider: 'JILI', badge: '1000x Pins', img: '/games/fortune_gems.png', rtp: '99.0%' },
-    { id: 'mines', name: 'Mine Rush VIP', title: 'Mine Rush VIP', category: 'Mini Games', provider: 'JILI', badge: 'Custom Mines', img: '/games/fortune_gems.png', rtp: '98.5%' },
-    { id: 'dice', name: 'Mega Dice Roll', title: 'Mega Dice Roll', category: 'Mini Games', provider: 'Spribe', badge: '99% RTP', img: '/games/crash.png', rtp: '99.0%' },
-    { id: 'betstack-sports', name: 'Live Sports Consensus', title: 'Live Sports Consensus', category: 'Sports', provider: 'BetStack', badge: 'Live 1X2', img: '/games/live.png', rtp: '96.5%' }
-  ];
+import betnexCatalog from '../../data/betnexCatalog.json';
 
-  res.status(200).json({ ok: true, success: true, count: games.length, data: games });
+export default async function handler(req, res) {
+  const { category, provider, search, limit = 100, page = 1 } = req.query;
+
+  let filtered = betnexCatalog;
+
+  if (category) {
+    const catLower = String(category).toLowerCase();
+    if (catLower === 'hot') {
+      filtered = betnexCatalog.filter(g => g.recommended || g.badge === 'Top Pick');
+    } else if (catLower === 'slots') {
+      filtered = betnexCatalog.filter(g => g.category === 'Slots');
+    } else if (catLower === 'live') {
+      filtered = betnexCatalog.filter(g => g.category === 'Live');
+    } else if (catLower === 'crash') {
+      filtered = betnexCatalog.filter(g => g.category === 'Crash');
+    } else if (catLower === 'mini games' || catLower === 'mini') {
+      filtered = betnexCatalog.filter(g => g.category === 'Mini Games' || g.category === 'Crash');
+    } else if (catLower === 'fishing') {
+      filtered = betnexCatalog.filter(g => g.category === 'Fishing');
+    } else if (catLower === 'cards') {
+      filtered = betnexCatalog.filter(g => g.category === 'Cards');
+    } else if (catLower === 'sports') {
+      filtered = betnexCatalog.filter(g => g.category === 'Sports');
+    } else {
+      filtered = betnexCatalog.filter(g => g.category.toLowerCase() === catLower);
+    }
+  }
+
+  if (provider) {
+    const provLower = String(provider).toLowerCase();
+    filtered = filtered.filter(g => 
+      g.provider.toLowerCase().includes(provLower) || 
+      g.rawProvider.toLowerCase().includes(provLower)
+    );
+  }
+
+  if (search) {
+    const q = String(search).toLowerCase();
+    filtered = filtered.filter(g => 
+      g.title.toLowerCase().includes(q) || 
+      g.provider.toLowerCase().includes(q)
+    );
+  }
+
+  const parsedLimit = Math.min(Number(limit) || 100, 500);
+  const parsedPage = Math.max(Number(page) || 1, 1);
+  const startIndex = (parsedPage - 1) * parsedLimit;
+  const paginated = filtered.slice(startIndex, startIndex + parsedLimit);
+
+  res.status(200).json({
+    ok: true,
+    success: true,
+    count: paginated.length,
+    total: filtered.length,
+    page: parsedPage,
+    data: paginated,
+    games: paginated
+  });
 }
-

@@ -6,15 +6,15 @@ import { useAuth } from '../../context/AuthContext'
 import AuthModal from '../../components/AuthModal'
 
 const FEATURED_PROVIDERS = [
-  { id: 'ALL', name: 'All Games', icon: '🔥', count: 'Exclusives' },
-  { id: 'SCORPIO', name: 'ScorpioPlay / Pragmatic', icon: '⚡', count: 'Top Online' },
-  { id: 'POKER', name: 'Poker Room', icon: '♠️', count: 'Texas Hold\'em' },
-  { id: 'RAINBOW', name: 'Rainbow Riches', icon: '🌈', count: 'Casino Series' },
-  { id: 'PADDY', name: 'Paddy Power', icon: '☘️', count: 'Exclusives' },
-  { id: 'SLOTS', name: 'Slots', icon: '🎰', count: 'Jackpots' },
-  { id: 'LIVE', name: 'Live Casino', icon: '🎡', count: 'Live HD' },
-  { id: 'CARDS', name: 'Cards & Table', icon: '🃏', count: 'VIP Tables' },
-  { id: 'JACKPOTS', name: 'Jackpots', icon: '⚡', count: 'Mega Pots' }
+  { id: 'ALL', name: 'All Games', icon: '🔥', count: '2,037 Games' },
+  { id: 'JILI', name: 'JILI Games', icon: '🎰', count: '253 Games' },
+  { id: 'PG', name: 'PG Soft', icon: '🐲', count: '161 Games' },
+  { id: 'PRAGMATIC', name: 'Pragmatic Play', icon: '⚡', count: '694 Games' },
+  { id: 'SPRIBE', name: 'Spribe Crash', icon: '🚀', count: '16 Games' },
+  { id: 'EVOLUTION', name: 'Evolution Live', icon: '💃', count: '420 Games' },
+  { id: 'FACHAI', name: 'Fa Chai', icon: '🏮', count: '76 Games' },
+  { id: 'JDB', name: 'JDB Gaming', icon: '🪙', count: '144 Games' },
+  { id: 'CQ9', name: 'CQ9 Gaming', icon: '💎', count: '269 Games' }
 ]
 
 export default function CasinoLobby() {
@@ -25,83 +25,31 @@ export default function CasinoLobby() {
   const [search, setSearch] = useState('')
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
 
-  // Fetch games from Paddy Power, Rainbow Riches Casino, Poker API, and ScorpioPlay
+  // Fetch official BetNex games catalog
   useEffect(() => {
     let isMounted = true
     setLoading(true)
 
     const fetchGames = async () => {
       try {
-        const [paddyRes, rrRes, pokerRes, scorpioRes] = await Promise.all([
-          fetch('/api/paddypower/games'),
-          fetch('/api/rainbowriches/games'),
-          fetch('/api/poker/games'),
-          fetch('/api/scorpioplay/games')
-        ])
-
-        const combined = []
-
-        if (paddyRes.ok) {
-          const data = await paddyRes.json()
-          if (data.games) {
-            combined.push(...data.games.map(g => ({
+        const res = await fetch('/api/games?limit=500')
+        if (res.ok) {
+          const data = await res.json()
+          const gamesList = data.data || data.games || []
+          if (isMounted) {
+            setAllGames(gamesList.map(g => ({
               id: g.id || g.slug,
-              name: g.name || g.title,
-              img: g.img || g.imageUrl || '/games/fortune_gems.png',
-              provider: 'PaddyPower',
+              name: g.title || g.name,
+              img: g.imageUrl || g.img || 'https://cdn.betnex.co/images/jiligaming/0.webp',
+              provider: g.provider || 'BetNex',
+              rawProvider: g.rawProvider || '',
               category: g.category || 'Slots',
-              badge: g.badge || 'Popular'
+              badge: g.badge || 'Hot'
             })))
           }
-        }
-
-        if (rrRes.ok) {
-          const data = await rrRes.json()
-          if (data.games) {
-            combined.push(...data.games.map(g => ({
-              id: g.id || g.slug,
-              name: g.name || g.title,
-              img: g.img || g.imageUrl || 'https://cdn.betnex.co/images/jiligaming/74.webp',
-              provider: 'RainbowRiches',
-              category: g.category || 'Slots',
-              badge: g.badge || 'Jackpot'
-            })))
-          }
-        }
-
-        if (pokerRes.ok) {
-          const data = await pokerRes.json()
-          if (data.games) {
-            combined.push(...data.games.map(g => ({
-              id: g.id || g.slug,
-              name: g.name || g.title,
-              img: g.img || g.imageUrl || '/games/super_ace.png',
-              provider: 'PokerAPI',
-              category: 'Poker',
-              badge: g.badge || 'Poker Table'
-            })))
-          }
-        }
-
-        if (scorpioRes.ok) {
-          const data = await scorpioRes.json()
-          if (data.games) {
-            combined.push(...data.games.map(g => ({
-              id: g.gameID || g.gameCode || g.id,
-              name: g.gameName || g.name || g.title,
-              img: g.gameImage || g.img || g.imageUrl || '/games/fortune_gems.png',
-              provider: g.provider || 'ScorpioPlay',
-              category: g.category || (g.gameType === 1 ? 'Live' : g.gameType === 2 ? 'Crash' : 'Slots'),
-              badge: g.badge || 'Scorpio Pick'
-            })))
-          }
-        }
-
-        if (isMounted) {
-          setAllGames(combined)
         }
       } catch (e) {
-        console.error('Failed to load casino games:', e)
+        console.error('Failed to load BetNex casino games:', e)
       } finally {
         if (isMounted) setLoading(false)
       }
@@ -116,14 +64,14 @@ export default function CasinoLobby() {
 
   const games = allGames.filter(g => {
     if (selectedProvider === 'ALL') return true
-    if (selectedProvider === 'SCORPIO') return g.provider === 'ScorpioPlay' || g.provider === 'Pragmatic Play' || g.provider === 'Spribe'
-    if (selectedProvider === 'POKER') return g.provider === 'PokerAPI' || g.category.toLowerCase().includes('poker')
-    if (selectedProvider === 'RAINBOW') return g.provider === 'RainbowRiches'
-    if (selectedProvider === 'PADDY') return g.provider === 'PaddyPower'
-    if (selectedProvider === 'SLOTS') return g.category.toLowerCase().includes('slot')
-    if (selectedProvider === 'LIVE') return g.category.toLowerCase().includes('live')
-    if (selectedProvider === 'CARDS') return g.category.toLowerCase().includes('card') || g.category.toLowerCase().includes('table') || g.category.toLowerCase().includes('poker')
-    if (selectedProvider === 'JACKPOTS') return g.category.toLowerCase().includes('jackpot') || g.badge?.toLowerCase().includes('jackpot')
+    if (selectedProvider === 'JILI') return g.provider === 'JILI' || g.rawProvider === 'JILIGAMING'
+    if (selectedProvider === 'PG') return g.provider === 'PG Soft' || g.rawProvider === 'PGSOFT'
+    if (selectedProvider === 'PRAGMATIC') return g.provider === 'Pragmatic Play' || g.rawProvider === 'PRAGMATICSLOTS'
+    if (selectedProvider === 'SPRIBE') return g.provider === 'Spribe' || g.rawProvider === 'SPRIBE'
+    if (selectedProvider === 'EVOLUTION') return g.provider === 'Evolution' || g.rawProvider === 'EVOLUTIONLIVE'
+    if (selectedProvider === 'FACHAI') return g.provider === 'Fa Chai' || g.rawProvider === 'FACHAIGAMING'
+    if (selectedProvider === 'JDB') return g.provider === 'JDB' || g.rawProvider === 'JDB'
+    if (selectedProvider === 'CQ9') return g.provider === 'CQ9' || g.rawProvider === 'CQ9'
     return true
   })
 
@@ -139,7 +87,7 @@ export default function CasinoLobby() {
         
         {/* Hero Header */}
         <div style={{
-          background: 'radial-gradient(circle at center, #004d40 0%, #00120a 100%)',
+          background: 'radial-gradient(circle at center, #1f0a38 0%, #0c0317 100%)',
           border: '1px solid var(--border)',
           borderRadius: '16px',
           padding: '24px 20px',
@@ -147,12 +95,12 @@ export default function CasinoLobby() {
           textAlign: 'center',
           boxShadow: '0 8px 32px rgba(0,0,0,0.5)'
         }}>
-          <span style={{ fontSize: '36px' }}>☘️</span>
+          <span style={{ fontSize: '36px' }}>👑</span>
           <h1 style={{ color: 'var(--accent)', fontSize: '24px', margin: '8px 0 4px', fontWeight: '900' }}>
-            PADDY POWER CASINO LOBBY
+            BETNEX LIVE CASINO LOBBY
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '13px', maxWidth: '500px', margin: '0 auto' }}>
-            Play authentic Paddy Power exclusive slots, live dealer roulette, blackjack tables, and progressive jackpots. Real-time Fiat balances enabled.
+            Play authentic BetNex B2B slots, Spribe Aviator crash, JILI fishing games, and Evolution live tables. Real-time PKR balances synchronized.
           </p>
         </div>
 
@@ -165,9 +113,9 @@ export default function CasinoLobby() {
                 key={p.id}
                 onClick={() => setSelectedProvider(p.id)}
                 style={{
-                  background: active ? 'linear-gradient(135deg, #00e676 0%, #00897b 100%)' : '#131926',
+                  background: active ? 'linear-gradient(135deg, #ffd700 0%, #ff8f00 100%)' : '#131926',
                   color: active ? '#000' : '#fff',
-                  border: '1px solid ' + (active ? '#00e676' : 'rgba(255,255,255,0.08)'),
+                  border: '1px solid ' + (active ? '#ffd700' : 'rgba(255,255,255,0.08)'),
                   borderRadius: '12px',
                   padding: '10px 16px',
                   display: 'flex',
@@ -177,7 +125,7 @@ export default function CasinoLobby() {
                   cursor: 'pointer',
                   fontWeight: 'bold',
                   fontSize: '13px',
-                  boxShadow: active ? '0 4px 12px rgba(0, 230, 118, 0.3)' : 'none',
+                  boxShadow: active ? '0 4px 12px rgba(255, 215, 0, 0.3)' : 'none',
                   transition: 'all 0.2s ease'
                 }}
               >
@@ -223,7 +171,7 @@ export default function CasinoLobby() {
         {loading ? (
           <div style={{ textAlign: 'center', padding: '60px', color: 'var(--muted)' }}>
             <div style={{ fontSize: '32px', marginBottom: '12px', animation: 'spin 1s linear infinite' }}>🎡</div>
-            <p>Fetching official games from {selectedProvider} API...</p>
+            <p>Fetching official games from BetNex API...</p>
           </div>
         ) : filteredGames.length > 0 ? (
           <div style={{
@@ -235,10 +183,10 @@ export default function CasinoLobby() {
               <div 
                 key={game.id || idx}
                 style={{
-                  background: '#131926',
+                  background: '#1f0a38',
                   borderRadius: '12px',
                   overflow: 'hidden',
-                  border: '1px solid rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.08)',
                   display: 'flex',
                   flexDirection: 'column',
                   transition: 'transform 0.2s',
@@ -248,7 +196,7 @@ export default function CasinoLobby() {
                 {/* Game Thumbnail */}
                 <div style={{
                   height: '110px',
-                  background: '#0a0e17',
+                  background: '#0c0317',
                   backgroundImage: game.img ? `url(${game.img})` : 'none',
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
@@ -265,7 +213,7 @@ export default function CasinoLobby() {
                     color: 'var(--accent)',
                     fontWeight: 'bold'
                   }}>
-                    {selectedProvider}
+                    {game.provider}
                   </span>
                 </div>
 
@@ -295,7 +243,7 @@ export default function CasinoLobby() {
                         width: '100%',
                         padding: '6px 0',
                         borderRadius: '6px',
-                        background: 'linear-gradient(135deg, #00e676 0%, #00897b 100%)',
+                        background: 'linear-gradient(135deg, #ffd700 0%, #ff8f00 100%)',
                         color: '#000',
                         border: 'none',
                         fontWeight: '900',
@@ -303,7 +251,7 @@ export default function CasinoLobby() {
                         cursor: 'pointer'
                       }}
                     >
-                      PLAY (Fiat)
+                      PLAY NOW
                     </button>
                   </Link>
                 </div>

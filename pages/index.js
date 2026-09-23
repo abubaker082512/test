@@ -6,59 +6,15 @@ import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
 import AuthModal from '../components/AuthModal'
 import GameCard from '../components/GameCard'
-
-const mockGames = [
-  // Poker API - Complete Texas Hold'em & Tournaments
-  { id: 'poker-texas-holdem', title: "Texas Hold'em No Limit", provider: 'PokerAPI', badge: 'High Stakes', recommended: true, theme: 'linear-gradient(135deg, #0d47a1 0%, #001064 100%)', icon: '♠️', slug: 'poker-texas-holdem', category: 'Poker', imageUrl: 'https://cdn.betnex.co/images/jiligaming/235.png' },
-  { id: 'poker-omaha', title: 'Omaha Hi-Lo Pot Limit', provider: 'PokerAPI', badge: '4 Hole Cards', recommended: true, theme: 'linear-gradient(135deg, #880e4f 0%, #311b92 100%)', icon: '♥️', slug: 'poker-omaha', category: 'Poker', imageUrl: '/games/super_ace.png' },
-  { id: 'poker-caribbean-stud', title: 'Caribbean Stud Poker', provider: 'PokerAPI', badge: '5+1 Bonus', recommended: true, theme: 'linear-gradient(135deg, #004d40 0%, #00251a 100%)', icon: '♦️', slug: 'poker-caribbean-stud', category: 'Poker', imageUrl: '/games/live.png' },
-  { id: 'poker-three-card', title: 'Three Card Poker Deluxe', provider: 'PokerAPI', badge: 'Pair Plus 40:1', recommended: true, theme: 'linear-gradient(135deg, #37474f 0%, #102027 100%)', icon: '♣️', slug: 'poker-three-card', category: 'Poker', imageUrl: '/games/live.png' },
-  { id: 'poker-jacks-or-better', title: 'Video Poker: Jacks or Better', provider: 'PokerAPI', badge: '4,000x Royal Flush', recommended: false, theme: 'linear-gradient(135deg, #bf360c 0%, #4e342e 100%)', icon: '🃏', slug: 'poker-jacks-or-better', category: 'Poker', imageUrl: 'https://cdn.betnex.co/images/jiligaming/74.webp' },
-  { id: 'poker-tournament', title: 'World Series Poker Championship', provider: 'PokerAPI', badge: 'Pi 100,000 GTD', recommended: true, theme: 'linear-gradient(135deg, #f57f17 0%, #b71c1c 100%)', icon: '🏆', slug: 'poker-tournament', category: 'Poker', imageUrl: 'https://cdn.betnex.co/images/jiligaming/48.webp' },
-
-  // Paddy Power Flagships & Exclusives
-  { id: 'Chests-of-Plenty', title: 'Chests of Plenty', provider: 'PaddyPower', badge: 'Jackpot', recommended: true, theme: 'linear-gradient(135deg, #1b5e20 0%, #003300 100%)', icon: '🏴‍☠️', slug: 'Chests-of-Plenty', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/235.png' },
-  { id: 'paddy-fishin-frenzy', title: "Fishin' Frenzy Big Catch", provider: 'PaddyPower', badge: 'Popular', recommended: true, theme: 'linear-gradient(135deg, #01579b 0%, #002f6c 100%)', icon: '🎣', slug: 'paddy-fishin-frenzy', category: 'Slots', imageUrl: '/games/fishing.png' },
-  { id: 'paddy-roulette-live', title: 'Paddy Power Live Roulette', provider: 'PaddyPower', badge: 'Live HD', recommended: true, theme: 'linear-gradient(135deg, #311b92 0%, #12005e 100%)', icon: '🎡', slug: 'paddy-roulette-live', category: 'Live', imageUrl: '/games/live.png' },
-  { id: 'paddy-blackjack-exclusive', title: 'Exclusive Blackjack', provider: 'PaddyPower', badge: 'VIP Table', recommended: true, theme: 'linear-gradient(135deg, #004d40 0%, #00251a 100%)', icon: '🃏', slug: 'paddy-blackjack-exclusive', category: 'Cards', imageUrl: '/games/live.png' },
-  { id: 'paddy-age-of-gods', title: 'Age of the Gods', provider: 'PaddyPower', badge: '4 Jackpots', recommended: true, theme: 'linear-gradient(135deg, #4a148c 0%, #12005e 100%)', icon: '⚡', slug: 'paddy-age-of-gods', category: 'Jackpots', imageUrl: '/games/super_ace.png' },
-  { id: 'paddy-mega-fire-blaze', title: 'Mega Fire Blaze Roulette', provider: 'PaddyPower', badge: '10,000x', recommended: true, theme: 'linear-gradient(135deg, #bf360c 0%, #3e2723 100%)', icon: '🔥', slug: 'paddy-mega-fire-blaze', category: 'Live', imageUrl: '/games/live.png' },
-  { id: 'paddy-rainbow-riches', title: 'Rainbow Riches Leprechauns', provider: 'PaddyPower', badge: 'Mega Wilds', recommended: true, theme: 'linear-gradient(135deg, #2e7d32 0%, #005005 100%)', icon: '🍀', slug: 'paddy-rainbow-riches', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/48.webp' },
-
-  // Rainbow Riches Casino Series
-  { id: 'rr-pots-of-gold', title: 'Rainbow Riches: Pots of Gold', provider: 'RainbowRiches', badge: 'Mega Jackpot', recommended: true, theme: 'linear-gradient(135deg, #1b5e20 0%, #003300 100%)', icon: '🌈', slug: 'rr-pots-of-gold', category: 'Jackpots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/74.webp' },
-  { id: 'rr-megaways', title: 'Rainbow Riches: Megaways', provider: 'RainbowRiches', badge: '117,649 Ways', recommended: true, theme: 'linear-gradient(135deg, #2e7d32 0%, #005005 100%)', icon: '🍀', slug: 'rr-megaways', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/48.webp' },
-  { id: 'rr-reels-of-gold', title: 'Rainbow Riches: Reels of Gold', provider: 'RainbowRiches', badge: 'Colossal Reels', recommended: true, theme: 'linear-gradient(135deg, #f57f17 0%, #bc5100 100%)', icon: '💰', slug: 'rr-reels-of-gold', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/38.webp' },
-  { id: 'rr-pick-n-mix', title: "Rainbow Riches: Pick 'n' Mix", provider: 'RainbowRiches', badge: '5 Bonus Games', recommended: true, theme: 'linear-gradient(135deg, #00838f 0%, #005662 100%)', icon: '🎩', slug: 'rr-pick-n-mix', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/37.png' },
-  { id: 'rr-drop-of-gold', title: 'Rainbow Riches: Drops of Gold', provider: 'RainbowRiches', badge: 'Drop Wilds', recommended: false, theme: 'linear-gradient(135deg, #ff8f00 0%, #c56000 100%)', icon: '🪙', slug: 'rr-drop-of-gold', category: 'Jackpots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/47.webp' },
-  { id: 'rr-live-roulette', title: 'Rainbow Riches: Live Roulette', provider: 'RainbowRiches', badge: 'Live Stream', recommended: true, theme: 'linear-gradient(135deg, #311b92 0%, #12005e 100%)', icon: '🎡', slug: 'rr-live-roulette', category: 'Live', imageUrl: '/games/live.png' },
-
-  // ScorpioPlay / Pragmatic Play & Spribe
-  { id: 'vswaysdogs', title: 'The Dog House Megaways', provider: 'Pragmatic Play', badge: '117,649 Ways', recommended: true, theme: 'linear-gradient(135deg, #b71c1c 0%, #4a148c 100%)', icon: '🐶', slug: 'vswaysdogs', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/48.webp' },
-  { id: 'vs20olympgate', title: 'Gates of Olympus 1000', provider: 'Pragmatic Play', badge: '5,000x Max', recommended: true, theme: 'linear-gradient(135deg, #ffd600 0%, #e65100 100%)', icon: '⚡', slug: 'vs20olympgate', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/74.webp' },
-  { id: 'vs20sweetbonz', title: 'Sweet Bonanza 1000', provider: 'Pragmatic Play', badge: 'Tumble 100x', recommended: true, theme: 'linear-gradient(135deg, #e91e63 0%, #880e4f 100%)', icon: '🍭', slug: 'vs20sweetbonz', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/38.webp' },
-  { id: 'evo_lightning_roulette', title: 'Lightning Roulette Live', provider: 'Evolution Gaming', badge: '500x Multiplier', recommended: true, theme: 'linear-gradient(135deg, #f57f17 0%, #212121 100%)', icon: '⚡', slug: 'evo_lightning_roulette', category: 'Live', imageUrl: '/games/live.png' },
-  { id: 'evo_crazy_time', title: 'Crazy Time Live Show', provider: 'Evolution Gaming', badge: '4 Bonus Games', recommended: true, theme: 'linear-gradient(135deg, #e91e63 0%, #1a237e 100%)', icon: '🎪', slug: 'evo_crazy_time', category: 'Live', imageUrl: '/games/live.png' },
-  { id: 'spribe_aviator', title: 'Aviator Crash Game', provider: 'Spribe', badge: '10,000x Crash', recommended: true, theme: 'linear-gradient(135deg, #d32f2f 0%, #000 100%)', icon: '🚀', slug: 'spribe_aviator', category: 'Crash', imageUrl: '/games/crash.png' },
-
-  // JILI & Flagship Favorites
-  { id: 'super-ace', title: 'Super Ace Deluxe', provider: 'JILI', badge: 'Golden Cards', recommended: true, theme: 'linear-gradient(135deg, #e53935 0%, #b71c1c 100%)', icon: '🃏', slug: 'super-ace', category: 'Slots', imageUrl: '/games/super_ace.png' },
-  { id: 'fortune-gems', title: 'Fortune Gems 2', provider: 'JILI', badge: 'Lucky Wheel', recommended: true, theme: 'linear-gradient(135deg, #ffb300 0%, #f57f17 100%)', icon: '💎', slug: 'fortune-gems', category: 'Slots', imageUrl: '/games/fortune_gems.png' },
-
-  // BetStack Sportsbook Live Matches
-  { id: 'betstack-nfl-live', title: 'NFL Football Live Odds', provider: 'BetStack', badge: 'Consensus', recommended: true, theme: 'linear-gradient(135deg, #0d47a1 0%, #000a12 100%)', icon: '🏈', slug: 'sports', category: 'Sports', imageUrl: '/games/crash.png' },
-  { id: 'betstack-mlb-live', title: 'MLB Baseball Matchups', provider: 'BetStack', badge: 'In-Play', recommended: true, theme: 'linear-gradient(135deg, #b71c1c 0%, #311b92 100%)', icon: '⚾', slug: 'sports', category: 'Sports', imageUrl: '/games/fortune_gems.png' },
-  { id: 'betstack-nba-live', title: 'NBA Basketball Pro Odds', provider: 'BetStack', badge: 'High Limits', recommended: true, theme: 'linear-gradient(135deg, #e65100 0%, #ff8f00 100%)', icon: '🏀', slug: 'sports', category: 'Sports', imageUrl: '/games/super_ace.png' },
-  { id: 'betstack-soccer-live', title: 'Premier League Soccer', provider: 'BetStack', badge: '1X2 Live', recommended: true, theme: 'linear-gradient(135deg, #1b5e20 0%, #003300 100%)', icon: '⚽', slug: 'sports', category: 'Sports', imageUrl: '/games/live.png' }
-]
+import betnexCatalog from '../data/betnexCatalog.json'
 
 // Scrolling live winner events
 const winEvents = [
-  { name: 'ali***77', game: 'Texas Holdem NL', amount: 'Pi 24,150.00', provider: 'PokerAPI', avatar: '♠️' },
-  { name: 'zain***88', game: 'Rainbow Riches Pots', amount: 'Pi 12,850.00', provider: 'RainbowRiches', avatar: '🌈' },
-  { name: 'pak***01', game: 'Chests of Plenty', amount: 'Pi 18,279.20', provider: 'PaddyPower', avatar: '☘️' },
-  { name: 'jill***00', game: 'World Series Poker', amount: 'Pi 48,033.00', provider: 'PokerAPI', avatar: '🏆' },
-  { name: 'asif***99', game: 'Gates of Olympus', amount: 'Pi 15,900.00', provider: 'Pragmatic', avatar: '⚡' },
+  { name: 'ali***77', game: 'Super Ace', amount: 'Pi 24,150.00', provider: 'JILI', avatar: '🃏' },
+  { name: 'zain***88', game: 'Fortune Gems 2', amount: 'Pi 12,850.00', provider: 'JILI', avatar: '💎' },
+  { name: 'pak***01', game: 'Mahjong Ways 2', amount: 'Pi 18,279.20', provider: 'PG Soft', avatar: '🐲' },
+  { name: 'jill***00', game: 'Gates of Olympus', amount: 'Pi 48,033.00', provider: 'Pragmatic', avatar: '⚡' },
+  { name: 'asif***99', game: 'Lightning Roulette', amount: 'Pi 15,900.00', provider: 'Evolution', avatar: '🎡' },
   { name: 'ahmed***10', game: 'Aviator Crash', amount: 'Pi 35,500.00', provider: 'Spribe', avatar: '🚀' },
 ]
 
@@ -108,7 +64,7 @@ export default function Home() {
         'fishing': 'Fishing',
         'live': 'Live',
         'sports': 'Sports',
-        'poker': 'Poker',
+        'poker': 'Cards',
         'crash': 'Crash',
         'recent': 'Recent',
         'favorites': 'Favorites'
@@ -123,120 +79,32 @@ export default function Home() {
     let isMounted = true;
     const fetchCatalogGames = async () => {
       try {
-        const [paddyRes, rrRes, pokerRes, scorpioRes, sportsRes] = await Promise.all([
-          fetch('/api/paddypower/games'),
-          fetch('/api/rainbowriches/games'),
-          fetch('/api/poker/games'),
-          fetch('/api/scorpioplay/games'),
-          fetch('/api/sports/lines?north_american=true')
-        ]);
-        const allFetched = [];
-
-        if (paddyRes.ok) {
-          const data = await paddyRes.json();
-          const gamesList = data.games || data.data;
-          if (gamesList && Array.isArray(gamesList)) {
-            allFetched.push(...gamesList.map(g => ({
+        const res = await fetch('/api/games?limit=300')
+        if (res.ok) {
+          const data = await res.json()
+          const list = data.data || data.games || []
+          if (isMounted) {
+            setApiGames(list.map(g => ({
               id: g.id || g.slug,
-              title: g.name || g.title,
-              provider: 'PaddyPower',
+              title: g.title || g.name,
+              provider: g.provider,
               category: g.category || 'Slots',
-              imageUrl: g.img || g.imageUrl || '/games/fortune_gems.png',
-              badge: g.badge || 'Popular',
+              imageUrl: g.imageUrl || g.img || 'https://cdn.betnex.co/images/jiligaming/0.webp',
+              badge: g.badge || 'Hot',
               recommended: g.recommended || false,
-              theme: g.theme || 'linear-gradient(135deg, #1b5e20 0%, #003300 100%)',
+              theme: g.theme || 'linear-gradient(135deg, #1f0a38 0%, #0c0317 100%)',
               slug: g.id || g.slug
-            })));
+            })))
+            setApiLoaded(true)
           }
-        }
-
-        if (rrRes.ok) {
-          const data = await rrRes.json();
-          const gamesList = data.games || data.data;
-          if (gamesList && Array.isArray(gamesList)) {
-            allFetched.push(...gamesList.map(g => ({
-              id: g.id || g.slug,
-              title: g.name || g.title,
-              provider: 'RainbowRiches',
-              category: g.category || 'Slots',
-              imageUrl: g.img || g.imageUrl || 'https://cdn.betnex.co/images/jiligaming/74.webp',
-              badge: g.badge || 'Popular',
-              recommended: g.recommended || false,
-              theme: g.theme || 'linear-gradient(135deg, #1b5e20 0%, #003300 100%)',
-              slug: g.id || g.slug
-            })));
-          }
-        }
-
-        if (pokerRes.ok) {
-          const data = await pokerRes.json();
-          const gamesList = data.games || data.data;
-          if (gamesList && Array.isArray(gamesList)) {
-            allFetched.push(...gamesList.map(g => ({
-              id: g.id || g.slug,
-              title: g.name || g.title,
-              provider: 'PokerAPI',
-              category: 'Poker',
-              imageUrl: g.img || g.imageUrl || 'https://cdn.betnex.co/images/jiligaming/235.png',
-              badge: g.badge || 'Poker Table',
-              recommended: g.recommended || false,
-              theme: g.theme || 'linear-gradient(135deg, #0d47a1 0%, #001064 100%)',
-              slug: g.id || g.slug
-            })));
-          }
-        }
-
-        if (scorpioRes.ok) {
-          const data = await scorpioRes.json();
-          const gamesList = data.games || data.data;
-          if (gamesList && Array.isArray(gamesList)) {
-            allFetched.push(...gamesList.map(g => ({
-              id: g.gameID || g.gameCode || g.id,
-              title: g.gameName || g.name || g.title,
-              provider: g.provider || 'ScorpioPlay',
-              category: g.category || (g.gameType === 1 ? 'Live' : g.gameType === 2 ? 'Crash' : 'Slots'),
-              imageUrl: g.gameImage || g.img || g.imageUrl || '/games/fortune_gems.png',
-              badge: g.badge || 'Scorpio Pick',
-              recommended: true,
-              theme: 'linear-gradient(135deg, #b71c1c 0%, #311b92 100%)',
-              slug: g.gameID || g.gameCode || g.id
-            })));
-          }
-        }
-
-        if (sportsRes && sportsRes.ok) {
-          const data = await sportsRes.json();
-          const linesList = data.lines || data.data;
-          if (linesList && Array.isArray(linesList)) {
-            allFetched.push(...linesList.slice(0, 15).map(line => {
-              const ev = line.event || {};
-              return {
-                id: 'sports-' + (line.id || ev.id || Math.random()),
-                title: `${ev.home_team || 'Home'} vs ${ev.away_team || 'Away'}`,
-                provider: 'BetStack',
-                category: 'Sports',
-                imageUrl: '/games/crash.png',
-                badge: ev.league?.name || 'Live Match',
-                recommended: true,
-                theme: 'linear-gradient(135deg, #0d47a1 0%, #000a12 100%)',
-                slug: 'sports'
-              };
-            }));
-          }
-        }
-
-        if (isMounted) {
-          setApiGames(allFetched);
-          setApiLoaded(true);
         }
       } catch (err) {
-        console.error('Failed to fetch catalog games for home', err);
+        console.error('Failed to fetch catalog games for home', err)
       }
     };
     fetchCatalogGames();
     return () => { isMounted = false; }
   }, []);
-
 
   // Auto-scrolling promo banners
   const promoBanners = [
@@ -320,14 +188,13 @@ export default function Home() {
     { name: 'Fishing', label: '🦈 Fishing', icon: '🦈' },
     { name: 'Live', label: '💃 Live Casino', icon: '💃' },
     { name: 'Sports', label: '⚽ Sportsbook', icon: '⚽' },
-    { name: 'Poker', label: '♠️ Poker', icon: '♠️' },
     { name: 'Crash', label: '🚀 Crash', icon: '🚀' },
     { name: 'Favorites', label: '⭐ Favorites', icon: '⭐' }
   ]
 
   // Filter games based on selected tab
   const getFilteredGames = (category) => {
-    const combined = [...mockGames, ...apiGames];
+    const combined = apiGames.length > 0 ? apiGames : betnexCatalog;
     const unique = [];
     const seen = new Set();
     for (const g of combined) {
@@ -337,20 +204,16 @@ export default function Home() {
       }
     }
 
-    if (category === 'Hot') return unique;
-    if (category === 'Sports') return unique.filter(g => g.category === 'Sports' || g.provider === 'BetStack' || g.id?.includes('sports') || g.id?.startsWith('betstack-'));
-    if (category === 'Poker') return unique.filter(g => g.category === 'Poker' || g.provider === 'PokerAPI' || g.id?.includes('poker') || g.title?.toLowerCase().includes('poker') || g.title?.toLowerCase().includes('hold\'em') || g.title?.toLowerCase().includes('omaha'));
-    if (category === 'Slots') return unique.filter(g => g.category?.toLowerCase().includes('slot') || g.provider === 'RainbowRiches' || g.provider === 'PaddyPower' || g.provider === 'Pragmatic Play' || g.provider === 'JILI' || g.gameType === 0 || g.gameType === 'slot');
-    if (category === 'Mini Games') return unique.filter(g => g.category?.toLowerCase().includes('mini') || g.category?.toLowerCase().includes('crash') || g.id?.includes('crash') || g.id?.includes('aviator') || g.id?.includes('gems') || g.id?.includes('plinko'));
-    if (category === 'Fishing') return unique.filter(g => g.title?.toLowerCase().includes('fish') || g.id?.toLowerCase().includes('fish') || g.category?.toLowerCase().includes('fish'));
-    if (category === 'Live') return unique.filter(g => g.category?.toLowerCase().includes('live') || g.provider === 'Evolution Gaming' || g.gameType === 1 || g.gameType === 'live');
-    if (category === 'Cards') return unique.filter(g => g.category?.toLowerCase().includes('card') || g.category === 'Poker' || g.provider === 'PokerAPI' || g.title?.toLowerCase().includes('blackjack') || g.category?.toLowerCase().includes('table'));
-    if (category === 'Crash') return unique.filter(g => g.category?.toLowerCase().includes('crash') || g.id?.includes('crash') || g.id?.includes('aviator') || g.gameType === 2);
-    if (category === 'Favorites') return unique.slice(0, 10);
+    if (category === 'Hot') return unique.filter(g => g.recommended || g.badge === 'Top Pick' || g.badge === 'Hot');
+    if (category === 'Sports') return unique.filter(g => g.category === 'Sports' || g.provider === 'BetStack Sports' || g.id?.includes('sports'));
+    if (category === 'Slots') return unique.filter(g => g.category === 'Slots');
+    if (category === 'Mini Games') return unique.filter(g => g.category === 'Mini Games' || g.category === 'Crash');
+    if (category === 'Fishing') return unique.filter(g => g.category === 'Fishing');
+    if (category === 'Live') return unique.filter(g => g.category === 'Live');
+    if (category === 'Cards') return unique.filter(g => g.category === 'Cards');
+    if (category === 'Crash') return unique.filter(g => g.category === 'Crash');
+    if (category === 'Favorites') return unique.slice(0, 12);
     if (category === 'Recent') return unique.slice(0, 8);
-    if (category === 'Rainbow') return unique.filter(g => g.provider === 'RainbowRiches' || g.id?.startsWith('rr-'));
-    if (category === 'Paddy') return unique.filter(g => g.provider === 'PaddyPower' || g.id?.startsWith('paddy-') || g.id === 'Chests-of-Plenty');
-    if (category === 'Jackpots') return unique.filter(g => g.category?.toLowerCase().includes('jackpot') || g.badge?.toLowerCase().includes('jackpot'));
     return unique.filter(g => g.category === category);
   }
 
@@ -408,7 +271,7 @@ export default function Home() {
         <span className="announcement-icon">🔊</span>
         <div className="announcement-marquee">
           <span className="announcement-text">
-            🌟 Welcome to WinX Pro Official! Play Paddy Power exclusive slots, live tables, Poker Room & Rainbow Riches. Withdrawals in under 2 minutes!
+            🌟 Welcome to WinX Pro Official! Play official BetNex B2B slots, Spribe Aviator, JILI fishing & Evolution live tables. Withdrawals in under 2 minutes!
           </span>
         </div>
         <div className="announcement-mail" onClick={() => alert("Inbox: 2 new promotional messages loaded.")}>
@@ -500,7 +363,7 @@ export default function Home() {
                     <span>{cat.name}</span>
                   </div>
 
-                  {/* Section Controls matching 666H screenshot layout: [ ← ] [ All ] [ → ] */}
+                  {/* Section Controls matching 666H layout: [ ← ] [ All ] [ → ] */}
                   <div className="section-pill-controls">
                     <button 
                       className="section-pill-btn"
@@ -551,17 +414,18 @@ export default function Home() {
         )}
       </div>
       
-{/* Partners section */}
+      {/* Partners section */}
       <section style={{ padding: '24px 16px', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
         <div className="partners-title">Verified Platform Partners</div>
         <div className="partners-row">
-          <span className="partner-logo" style={{ color: '#00e676', borderColor: '#00e676', textShadow: '0 0 10px rgba(0,230,118,0.4)' }}>PADDY POWER</span>
-          <span className="partner-logo" style={{ textShadow: '0 0 10px rgba(255,255,255,0.3)' }}>PG SOFT</span>
           <span className="partner-logo" style={{ color: 'var(--accent)', borderColor: 'var(--accent)' }}>JILI</span>
+          <span className="partner-logo" style={{ textShadow: '0 0 10px rgba(255,255,255,0.3)' }}>PG SOFT</span>
           <span className="partner-logo">EVOLUTION</span>
           <span className="partner-logo">PRAGMATIC</span>
+          <span className="partner-logo" style={{ color: '#00e676', borderColor: '#00e676', textShadow: '0 0 10px rgba(0,230,118,0.4)' }}>SPRIBE</span>
           <span className="partner-logo" style={{ opacity: 0.8 }}>JDB</span>
           <span className="partner-logo">FC CASINO</span>
+          <span className="partner-logo">CQ9</span>
         </div>
       </section>
 
@@ -581,7 +445,7 @@ export default function Home() {
         <p className="footer-disclaimer">
           Gambling involves risk. Winnings are not guaranteed. For <strong>21+ only</strong>. Please play responsibly. Gambling can be addictive - visit support for help resources.
           <br /><br />
-          <strong>WinX Pro Group</strong> is one of the most famous international online casino operating companies, providing slots, cards, live dealers, sportsbook, and cockfights. Authorized and regulated by the Government of Curacao under licensing authority Antillephone, issued to 8048/JAZ.
+          <strong>WinX Pro Group</strong> is an international online casino operating company, providing slots, cards, live dealers, sportsbook, and cockfights. Authorized and regulated by the Government of Curacao under licensing authority Antillephone, issued to 8048/JAZ.
         </p>
       </footer>
 
@@ -697,7 +561,7 @@ export default function Home() {
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
 
-      {/* Floating Deposit Coupon Expiring Ticker Banner (matching 666H screenshot layout) */}
+      {/* Floating Deposit Coupon Expiring Ticker Banner */}
       {showCouponBanner && (
         <div className="coupon-ticker-banner">
           <div className="coupon-ticker-text" onClick={() => router.push('/offers')}>
