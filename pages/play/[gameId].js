@@ -42,12 +42,10 @@ export default function PlayGame() {
   // Live Provider Stream State
   const [gameMode, setGameMode] = useState('api')
   const [liveGameUrl, setLiveGameUrl] = useState(null)
-  const [rawLaunchUrl, setRawLaunchUrl] = useState(null)
   const [apiGameName, setApiGameName] = useState(null)
   const [apiProvider, setApiProvider] = useState(null)
   const [apiLoading, setApiLoading] = useState(true)
   const [apiError, setApiError] = useState(null)
-  const [iframeLoaded, setIframeLoaded] = useState(false)
 
   const activeUser = user || {
     id: 'guest_player',
@@ -85,7 +83,6 @@ export default function PlayGame() {
   const fetchLiveGameUrl = async (customMoney) => {
     if (!gameId) return
     setApiLoading(true)
-    setIframeLoaded(false)
     setApiError(null)
 
     try {
@@ -110,13 +107,12 @@ export default function PlayGame() {
       })
 
       const json = await res.json()
-      if (json.success && (json.gameUrl || json.embedUrl)) {
-        setLiveGameUrl(json.gameUrl || json.embedUrl)
-        setRawLaunchUrl(json.rawLaunchUrl || json.gameUrl)
+      if (json.success && json.gameUrl && json.gameUrl.startsWith('http')) {
+        setLiveGameUrl(json.gameUrl)
         setApiGameName(json.gameName || null)
         setApiProvider(json.provider || null)
       } else {
-        setApiError(json.error || 'Direct provider session temporarily unavailable')
+        setApiError(json.error || 'Direct provider stream unavailable')
       }
     } catch (err) {
       console.error('Error fetching live game URL:', err)
@@ -147,12 +143,13 @@ export default function PlayGame() {
     }
   }
 
-  // Determine game title and provider
+  // Determine game title and provider cleanly
   const normalizedSlug = (gameId || '').toLowerCase()
 
   const getGameTitle = () => {
-    if (apiGameName) return apiGameName
+    if (apiGameName && apiGameName.length < 30) return apiGameName
     if (!gameId) return 'Live Casino Game'
+    if (gameId.length === 32) return 'BetNex Live Game'
     const words = gameId.replace(/[-_]/g, ' ').split(' ')
     return words.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
   }
@@ -258,9 +255,9 @@ export default function PlayGame() {
   return (
     <div style={{ width: '100%', maxWidth: '480px', height: '100vh', margin: '0 auto', background: '#0c0317', color: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       
-      {/* Top Fixed Header in Our App Interface */}
+      {/* Top Header Bar in Interface */}
       <div style={{ 
-        height: '52px',
+        height: '48px',
         padding: '0 12px', 
         background: '#120722', 
         display: 'flex', 
@@ -270,7 +267,7 @@ export default function PlayGame() {
         zIndex: 50,
         gap: '8px'
       }}>
-        {/* Left: Lobby Link & Title */}
+        {/* Left: Lobby Link & Clean Title */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
           <Link href="/" style={{ textDecoration: 'none' }}>
             <button 
@@ -278,8 +275,8 @@ export default function PlayGame() {
                 background: 'rgba(255,255,255,0.08)',
                 border: '1px solid rgba(255,215,0,0.3)',
                 color: '#fff',
-                padding: '5px 10px',
-                borderRadius: '8px',
+                padding: '4px 8px',
+                borderRadius: '6px',
                 fontSize: '11px',
                 fontWeight: 'bold',
                 cursor: 'pointer',
@@ -293,7 +290,7 @@ export default function PlayGame() {
           <div style={{ 
             fontWeight: '900', 
             color: 'var(--accent)', 
-            fontSize: '13px', 
+            fontSize: '12px', 
             textTransform: 'uppercase', 
             letterSpacing: '0.5px',
             whiteSpace: 'nowrap',
@@ -314,9 +311,9 @@ export default function PlayGame() {
               background: 'rgba(255,255,255,0.08)',
               border: '1px solid rgba(255,255,255,0.15)',
               color: '#fff',
-              padding: '5px 8px',
-              borderRadius: '8px',
-              fontSize: '12px',
+              padding: '4px 8px',
+              borderRadius: '6px',
+              fontSize: '11px',
               cursor: 'pointer'
             }}
             title="Reload Game Stream"
@@ -349,7 +346,7 @@ export default function PlayGame() {
 
           <button 
             onClick={toggleFullscreen}
-            style={{ padding: '5px 8px', fontSize: '12px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', borderRadius: '8px', cursor: 'pointer' }}
+            style={{ padding: '4px 8px', fontSize: '11px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', borderRadius: '6px', cursor: 'pointer' }}
             title="Toggle Fullscreen"
           >
             {isFullscreen ? 'Exit' : '⛶'}
@@ -358,7 +355,7 @@ export default function PlayGame() {
       </div>
 
       {/* Main Direct Embedded Game Stage Inside Interface */}
-      <div style={{ flex: 1, position: 'relative', width: '100%', height: 'calc(100vh - 52px)', background: '#000', overflow: 'hidden' }}>
+      <div style={{ flex: 1, position: 'relative', width: '100%', height: 'calc(100vh - 48px)', background: '#000', overflow: 'hidden' }}>
         {gameMode === 'api' ? (
           apiLoading ? (
             <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', gap: '16px', background: '#0c0317' }}>
@@ -367,43 +364,19 @@ export default function PlayGame() {
               <div style={{ color: '#888', fontSize: '13px' }}>Connecting to {apiProvider || 'BetNex'} Live Game Engine</div>
             </div>
           ) : liveGameUrl ? (
-            <div style={{ width: '100%', height: '100%', position: 'relative', background: '#000' }}>
-              
-              {/* Sleek inline loading overlay until iframe renders */}
-              {!iframeLoaded && (
-                <div style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: '#0c0317',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 10,
-                  gap: '12px'
-                }}>
-                  <div style={{ fontSize: '36px', animation: 'spin 1s linear infinite' }}>🎰</div>
-                  <div style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '15px' }}>Starting {getGameTitle()} Engine...</div>
-                  <div style={{ color: '#aaa', fontSize: '12px' }}>Preparing live stream in interface</div>
-                </div>
-              )}
-
-              {/* Direct Unblocked HTML5 Live Game Iframe (Embedded Inside App Viewport) */}
-              <iframe 
-                src={liveGameUrl}
-                onLoad={() => setIframeLoaded(true)}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  border: 'none',
-                  display: 'block',
-                  background: '#000'
-                }}
-                allow="autoplay; fullscreen; payment; microphone; camera; geolocation; clipboard-read; clipboard-write"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads allow-orientation-lock allow-pointer-lock allow-presentation allow-popups-to-escape-sandbox"
-                title={getGameTitle()}
-              />
-            </div>
+            <iframe 
+              src={liveGameUrl}
+              style={{
+                width: '100%',
+                height: '100%',
+                border: 'none',
+                display: 'block',
+                background: '#000'
+              }}
+              allow="autoplay; fullscreen; payment; microphone; camera; geolocation; clipboard-read; clipboard-write"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads allow-orientation-lock allow-pointer-lock allow-presentation allow-popups-to-escape-sandbox"
+              title={getGameTitle()}
+            />
           ) : (
             <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center', background: '#0c0317' }}>
               <div style={{ fontSize: '36px', marginBottom: '12px' }}>⚠️</div>

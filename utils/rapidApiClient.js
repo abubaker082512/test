@@ -3,59 +3,15 @@ import { globalCache } from './cache.js';
 import { record } from './telemetry.js';
 
 const FALLBACK_PROVIDERS = [
-  { id: 'JILIGAMING', name: 'JILI Games', provider: 'JILI', icon: '🎰', count: 48, status: 'active' },
-  { id: 'EVOLUTION', name: 'Evolution Gaming', provider: 'Evolution Gaming', icon: '💃', count: 32, status: 'active' },
-  { id: 'PRAGMATIC', name: 'Pragmatic Play', provider: 'Pragmatic Play', icon: '⚡', count: 64, status: 'active' },
-  { id: 'PGSOFT', name: 'PG Soft', provider: 'PG Soft', icon: '🐲', count: 36, status: 'active' },
-  { id: 'SPRIBE', name: 'Spribe Gaming', provider: 'Spribe', icon: '🚀', count: 12, status: 'active' },
-  { id: 'CQ9', name: 'CQ9 Gaming', provider: 'CQ9', icon: '💎', count: 28, status: 'active' },
-  { id: 'JDB', name: 'JDB Gaming', provider: 'JDB', icon: '🪙', count: 24, status: 'active' },
-  { id: 'FC', name: 'FC Gaming (Fa Chai)', provider: 'FC', icon: '🏮', count: 20, status: 'active' },
-  { id: 'MICROGAMING', name: 'Microgaming', provider: 'Microgaming', icon: '👑', count: 40, status: 'active' },
-  { id: 'HABANERO', name: 'Habanero', provider: 'Habanero', icon: '🌶️', count: 26, status: 'active' },
-  { id: 'REDTIGER', name: 'Red Tiger', provider: 'Red Tiger', icon: '🐯', count: 30, status: 'active' },
-  { id: 'PLAYTECH', name: 'Playtech', provider: 'Playtech', icon: '♠️', count: 35, status: 'active' },
-  { id: 'NETENT', name: 'NetEnt', provider: 'NetEnt', icon: '🌟', count: 30, status: 'active' },
-  { id: 'BETSOFT', name: 'Betsoft Gaming', provider: 'Betsoft', icon: '🎲', count: 25, status: 'active' },
-  { id: 'PADDYPOWER', name: 'Paddy Power Exclusives', provider: 'PaddyPower', icon: '☘️', count: 18, status: 'active' },
-  { id: 'RAINBOWRICHES', name: 'Rainbow Riches Series', provider: 'RainbowRiches', icon: '🌈', count: 16, status: 'active' },
-  { id: 'POKERAPI', name: 'Poker Room Pro', provider: 'PokerAPI', icon: '🃏', count: 14, status: 'active' },
-  { id: 'BETSTACK', name: 'BetStack Sportsbook', provider: 'BetStack', icon: '⚽', count: 50, status: 'active' }
+  { id: 'JILIGAMING', name: 'JILI Games', provider: 'JILI', icon: '🎰', count: 253, status: 'active' },
+  { id: 'EVOLUTIONLIVE', name: 'Evolution Gaming', provider: 'Evolution', icon: '💃', count: 420, status: 'active' },
+  { id: 'PRAGMATICSLOTS', name: 'Pragmatic Play', provider: 'Pragmatic Play', icon: '⚡', count: 694, status: 'active' },
+  { id: 'PGSOFT', name: 'PG Soft', provider: 'PG Soft', icon: '🐲', count: 161, status: 'active' },
+  { id: 'SPRIBE', name: 'Spribe Gaming', provider: 'Spribe', icon: '🚀', count: 16, status: 'active' },
+  { id: 'FACHAIGAMING', name: 'FC Gaming (Fa Chai)', provider: 'Fa Chai', icon: '🏮', count: 76, status: 'active' },
+  { id: 'JDB', name: 'JDB Gaming', provider: 'JDB', icon: '🪙', count: 144, status: 'active' },
+  { id: 'CQ9', name: 'CQ9 Gaming', provider: 'CQ9', icon: '💎', count: 269, status: 'active' }
 ];
-
-const FALLBACK_GAMES_BY_PROVIDER = {
-  JILIGAMING: [
-    { gameID: 'super-ace', gameName: 'Super Ace Deluxe', gameImage: '/games/super_ace.png', category: 'Slots', provider: 'JILI', rtp: '97.2%', badge: 'Golden Cards', status: 'active' },
-    { gameID: 'fortune-gems', gameName: 'Fortune Gems 2', gameImage: '/games/fortune_gems.png', category: 'Slots', provider: 'JILI', rtp: '97.0%', badge: 'Lucky Wheel', status: 'active' },
-    { gameID: 'boxing-king', gameName: 'Boxing King Championship', gameImage: 'https://cdn.betnex.co/images/jiligaming/235.png', category: 'Slots', provider: 'JILI', rtp: '96.8%', badge: 'Free Spins', status: 'active' },
-    { gameID: 'fishing-joy', gameName: 'Royal Fishing Frenzy', gameImage: '/games/fishing.png', category: 'Fishing', provider: 'JILI', rtp: '97.5%', badge: 'Fish Hunter', status: 'active' },
-    { gameID: 'plinko', gameName: 'Neon Plinko Drop', gameImage: '/games/fortune_gems.png', category: 'Mini Games', provider: 'JILI', rtp: '99.0%', badge: '1000x', status: 'active' },
-    { gameID: 'mines', gameName: 'Mine Rush VIP', gameImage: '/games/fortune_gems.png', category: 'Mini Games', provider: 'JILI', rtp: '98.5%', badge: 'Custom Mines', status: 'active' }
-  ],
-  SPRIBE: [
-    { gameID: 'spribe_aviator', gameName: 'Aviator Crash', gameImage: '/games/crash.png', category: 'Crash', provider: 'Spribe', rtp: '97.0%', badge: '10,000x', status: 'active' },
-    { gameID: 'dice', gameName: 'Mega Dice Roll', gameImage: '/games/crash.png', category: 'Mini Games', provider: 'Spribe', rtp: '99.0%', badge: '99% RTP', status: 'active' },
-    { gameID: 'limbo', gameName: 'Limbo Rocket Jump', gameImage: '/games/crash.png', category: 'Mini Games', provider: 'Spribe', rtp: '98.0%', badge: 'Multipliers', status: 'active' },
-    { gameID: 'hilo', gameName: 'Hi-Lo Cards', gameImage: '/games/super_ace.png', category: 'Cards', provider: 'Spribe', rtp: '98.0%', badge: 'Instant Payout', status: 'active' }
-  ],
-  EVOLUTION: [
-    { gameID: 'evo_lightning_roulette', gameName: 'Lightning Roulette Live', gameImage: '/games/live.png', category: 'Live', provider: 'Evolution Gaming', rtp: '97.3%', badge: '500x Multiplier', status: 'active' },
-    { gameID: 'evo_crazy_time', gameName: 'Crazy Time Live Show', gameImage: '/games/live.png', category: 'Live', provider: 'Evolution Gaming', rtp: '96.08%', badge: '4 Bonus Games', status: 'active' },
-    { gameID: 'blackjack-live', gameName: 'Blackjack VIP Platinum', gameImage: '/games/super_ace.png', category: 'Live', provider: 'Evolution Gaming', rtp: '99.5%', badge: 'VIP Table', status: 'active' },
-    { gameID: 'baccarat', gameName: 'Speed Baccarat VIP', gameImage: '/games/live.png', category: 'Live', provider: 'Evolution Gaming', rtp: '98.9%', badge: 'Zero Commission', status: 'active' },
-    { gameID: 'dragon-tiger', gameName: 'Live Dragon Tiger', gameImage: '/games/super_ace.png', category: 'Live', provider: 'Evolution Gaming', rtp: '96.3%', badge: 'Fast Action', status: 'active' }
-  ],
-  PGSOFT: [
-    { gameID: 'mahjong-ways-2', gameName: 'Mahjong Ways 2', gameImage: 'https://cdn.betnex.co/images/jiligaming/74.webp', category: 'Slots', provider: 'PG Soft', rtp: '96.95%', badge: 'Golden Dragon', status: 'active' },
-    { gameID: 'wild-bounty', gameName: 'Wild Bounty Showdown', gameImage: '/games/super_ace.png', category: 'Slots', provider: 'PG Soft', rtp: '96.75%', badge: '1024 Ways', status: 'active' },
-    { gameID: 'treasures-of-aztec', gameName: 'Treasures of Aztec', gameImage: 'https://cdn.betnex.co/images/jiligaming/74.webp', category: 'Slots', provider: 'PG Soft', rtp: '96.71%', badge: 'Cascading Reels', status: 'active' }
-  ],
-  PRAGMATIC: [
-    { gameID: 'vs20olympgate', gameName: 'Gates of Olympus', gameImage: '/games/fortune_gems.png', category: 'Slots', provider: 'Pragmatic Play', rtp: '96.5%', badge: 'Tumble Feature', status: 'active' },
-    { gameID: 'vs20sweetbonz', gameName: 'Sweet Bonanza', gameImage: '/games/fortune_gems.png', category: 'Slots', provider: 'Pragmatic Play', rtp: '96.48%', badge: '100x Bombs', status: 'active' },
-    { gameID: 'vswaysdogs', gameName: 'The Dog House Megaways', gameImage: '/games/fortune_gems.png', category: 'Slots', provider: 'Pragmatic Play', rtp: '96.55%', badge: 'Sticky Wilds', status: 'active' }
-  ]
-};
 
 export class RapidApiClient {
   constructor({
@@ -64,8 +20,8 @@ export class RapidApiClient {
     baseUrl = process.env.BETNEX_BASE_URL || 'http://livecasinoapi.betnex.co:8055',
     rapidKey = process.env.RAPIDAPI_KEY,
     rapidHost = process.env.RAPIDAPI_HOST,
-    timeout = 8000,
-    maxRetries = 1,
+    timeout = 10000,
+    maxRetries = 2,
     cacheTtlMs = 60_000
   } = {}) {
     this.key = key;
@@ -152,7 +108,7 @@ export class RapidApiClient {
         return data;
       }
     } catch (err) {
-      // Return guaranteed rich provider catalog
+      // Fallback
     }
 
     const fallbackResult = {
@@ -189,17 +145,10 @@ export class RapidApiClient {
       // Fallback
     }
 
-    const games = FALLBACK_GAMES_BY_PROVIDER[cleanProvider] || FALLBACK_GAMES_BY_PROVIDER['JILIGAMING'];
-    const fallbackResult = {
-      success: true,
-      ok: true,
-      provider: cleanProvider,
-      count: games.length,
-      games: games,
-      data: games
+    return {
+      success: false,
+      error: `Could not fetch games for provider ${cleanProvider}`
     };
-    globalCache.set(cacheKey, fallbackResult, this.cacheTtlMs);
-    return fallbackResult;
   }
 
   async getGameUrl(payload = {}) {
@@ -244,21 +193,12 @@ export class RapidApiClient {
       console.error('RapidApiClient getGameUrl error:', err);
     }
 
-    const directLaunchUrl = `/play/${encodeURIComponent(rawGameId)}`;
     return {
-      success: true,
-      ok: true,
-      gameUrl: directLaunchUrl,
-      game_launch_url: directLaunchUrl,
-      game_name: rawGameId,
-      payload: {
-        game_launch_url: directLaunchUrl,
-        game_name: rawGameId,
-        provider: payload.provider || 'JILI'
-      }
+      success: false,
+      ok: false,
+      error: 'BetNex provider session temporarily unavailable'
     };
   }
 }
 
 export default RapidApiClient;
-

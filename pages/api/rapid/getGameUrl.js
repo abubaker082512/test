@@ -4,7 +4,7 @@ import { isAllowed } from '../../../utils/rateLimiter';
 const RAPID = new RapidApiClient({
   key: process.env.BETNEX_API_KEY || '6aa7f4d40f809768b886e31e',
   host: process.env.BETNEX_HOST || 'livecasinoapi.betnex.co:8055',
-  baseUrl: process.env.BETNEX_BASE_URL || 'http://livecasinoapi.betnex.co/8055',
+  baseUrl: process.env.BETNEX_BASE_URL || 'http://livecasinoapi.betnex.co:8055',
   timeout: 10000,
   maxRetries: 2,
   cacheTtlMs: 60 * 1000
@@ -49,8 +49,7 @@ const GAME_MAP = {
   'wild-bounty': 'ba2adf72179e1ead9e3dae8f0a7d4c07'
 };
 
-// Automatically unrolls BetNex intermediary wrapper to get the direct unblocked HTML5 game session URL (jsgame.live)
-// This enables smooth inline iframe rendering inside our app interface without frame blocking or new windows!
+// Extract wrappedgame iframe URL which passes BetNex iframe security checks
 async function unrollBetNexGame(betnexLaunchUrl) {
   if (!betnexLaunchUrl || !betnexLaunchUrl.includes('betnex.co')) {
     return betnexLaunchUrl;
@@ -63,23 +62,8 @@ async function unrollBetNexGame(betnexLaunchUrl) {
     const html = await pageRes.text();
     
     const tokenMatch = html.match(/wrappedgame\?token=([a-f0-9\-]+)/);
-    if (!tokenMatch) return betnexLaunchUrl;
-
-    const wrappedUrl = `https://livecasinoapi.betnex.co/wrappedgame?token=${tokenMatch[1]}`;
-    const res2 = await fetch(wrappedUrl, {
-      headers: {
-        'Referer': betnexLaunchUrl,
-        'Sec-Fetch-Dest': 'iframe',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'same-origin',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-      }
-    });
-    const html2 = await res2.text();
-
-    const jsgameMatch = html2.match(/src=["'](https:\/\/[^"']+)["']/);
-    if (jsgameMatch && jsgameMatch[1]) {
-      return jsgameMatch[1];
+    if (tokenMatch && tokenMatch[1]) {
+      return `https://livecasinoapi.betnex.co/wrappedgame?token=${tokenMatch[1]}`;
     }
   } catch (e) {
     console.error('Unroll failed:', e.message);
@@ -109,7 +93,7 @@ export default async function handler(req, res) {
   const rawUser = String(payload.username || 'player').toLowerCase().replace(/[^a-z0-9]/g, '');
   const cleanUsername = `akw${rawUser || 'player'}`.slice(0, 20);
 
-  // Resolve starting session funds (ensure enough credits for high betting volume)
+  // Resolve starting session funds
   let sessionMoney = Number(payload.money);
   if (isNaN(sessionMoney) || sessionMoney <= 0) {
     sessionMoney = 10000;
@@ -128,7 +112,7 @@ export default async function handler(req, res) {
 
     const rawGameUrl = data?.payload?.game_launch_url || data?.game_launch_url || data?.gameUrl || (data?.data && data?.data?.url);
 
-    if (rawGameUrl) {
+    if (rawGameUrl && rawGameUrl.startsWith('http')) {
       const embedUrl = await unrollBetNexGame(rawGameUrl);
 
       return res.status(200).json({
