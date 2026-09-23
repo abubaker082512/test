@@ -4,14 +4,13 @@ import Link from 'next/link'
 import { useAuth } from '../../context/AuthContext'
 import AuthModal from '../../components/AuthModal'
 
-// Native Interactive Game Engines (Fallback / Local Mode)
+// Native Interactive Game Engines (Fallback / Canvas Mode)
 import SuperAce from '../../components/games/SuperAce'
 import FortuneGems from '../../components/games/FortuneGems'
 import MahjongWays from '../../components/games/MahjongWays'
 import WildBounty from '../../components/games/WildBounty'
 import CrashGame from '../../components/games/CrashGame'
 import FishingJoy from '../../components/games/FishingJoy'
-import FishHunterGame from '../../components/games/FishHunterGame'
 import RouletteGame from '../../components/games/RouletteGame'
 import BlackjackGame from '../../components/games/BlackjackGame'
 import BaccaratGame from '../../components/games/BaccaratGame'
@@ -48,7 +47,7 @@ export default function PlayGame() {
   const [apiProvider, setApiProvider] = useState(null)
   const [apiLoading, setApiLoading] = useState(true)
   const [apiError, setApiError] = useState(null)
-  const [streamKey, setStreamKey] = useState(Date.now())
+  const [iframeLoaded, setIframeLoaded] = useState(false)
 
   const activeUser = user || {
     id: 'guest_player',
@@ -86,6 +85,7 @@ export default function PlayGame() {
   const fetchLiveGameUrl = async (customMoney) => {
     if (!gameId) return
     setApiLoading(true)
+    setIframeLoaded(false)
     setApiError(null)
 
     try {
@@ -110,8 +110,8 @@ export default function PlayGame() {
       })
 
       const json = await res.json()
-      if (json.success && json.gameUrl) {
-        setLiveGameUrl(json.gameUrl)
+      if (json.success && (json.gameUrl || json.embedUrl)) {
+        setLiveGameUrl(json.gameUrl || json.embedUrl)
         setRawLaunchUrl(json.rawLaunchUrl || json.gameUrl)
         setApiGameName(json.gameName || null)
         setApiProvider(json.provider || null)
@@ -133,23 +133,7 @@ export default function PlayGame() {
   }, [gameId, isDemoMode, user])
 
   const reloadStream = (extraFunds) => {
-    setStreamKey(Date.now())
     fetchLiveGameUrl(extraFunds)
-  }
-
-  // Seamless same-window launch
-  const launchGameDirectly = () => {
-    const target = rawLaunchUrl || liveGameUrl
-    if (target) {
-      window.location.href = target
-    }
-  }
-
-  const openInNewTab = () => {
-    const target = rawLaunchUrl || liveGameUrl
-    if (target) {
-      window.open(target, '_blank', 'noopener,noreferrer')
-    }
   }
 
   const toggleFullscreen = () => {
@@ -262,40 +246,40 @@ export default function PlayGame() {
 
   if (loading) {
     return (
-      <div style={{ width: '100%', maxWidth: '480px', height: '100vh', margin: '0 auto', background: '#0a0a0c', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: '100%', maxWidth: '480px', height: '100vh', margin: '0 auto', background: '#0c0317', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '32px', animation: 'spin 1s linear infinite', marginBottom: '12px' }}>🎰</div>
-          <div>Loading Game Environment...</div>
+          <div>Loading Game Interface...</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div style={{ width: '100%', maxWidth: '480px', height: '100vh', margin: '0 auto', background: '#000', color: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ width: '100%', maxWidth: '480px', height: '100vh', margin: '0 auto', background: '#0c0317', color: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       
-      {/* Universal Top Header */}
+      {/* Top Fixed Header in Our App Interface */}
       <div style={{ 
-        height: '48px',
+        height: '52px',
         padding: '0 12px', 
-        background: '#121216', 
+        background: '#120722', 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
-        borderBottom: '1px solid #222',
+        borderBottom: '1px solid rgba(255, 215, 0, 0.2)',
         zIndex: 50,
         gap: '8px'
       }}>
-        {/* Left: Navigation & Game Info */}
+        {/* Left: Lobby Link & Title */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
           <Link href="/" style={{ textDecoration: 'none' }}>
             <button 
               style={{
                 background: 'rgba(255,255,255,0.08)',
-                border: '1px solid #333',
+                border: '1px solid rgba(255,215,0,0.3)',
                 color: '#fff',
-                padding: '4px 8px',
-                borderRadius: '6px',
+                padding: '5px 10px',
+                borderRadius: '8px',
                 fontSize: '11px',
                 fontWeight: 'bold',
                 cursor: 'pointer',
@@ -309,7 +293,7 @@ export default function PlayGame() {
           <div style={{ 
             fontWeight: '900', 
             color: 'var(--accent)', 
-            fontSize: '12px', 
+            fontSize: '13px', 
             textTransform: 'uppercase', 
             letterSpacing: '0.5px',
             whiteSpace: 'nowrap',
@@ -320,19 +304,19 @@ export default function PlayGame() {
           </div>
         </div>
         
-        {/* Right: Controls & Wallet */}
+        {/* Right: Controls & Wallet Sync */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
           
           {/* Reload Stream Button */}
           <button
-            onClick={reloadStream}
+            onClick={() => reloadStream()}
             style={{
               background: 'rgba(255,255,255,0.08)',
-              border: '1px solid #333',
+              border: '1px solid rgba(255,255,255,0.15)',
               color: '#fff',
-              padding: '4px 8px',
-              borderRadius: '6px',
-              fontSize: '11px',
+              padding: '5px 8px',
+              borderRadius: '8px',
+              fontSize: '12px',
               cursor: 'pointer'
             }}
             title="Reload Game Stream"
@@ -340,33 +324,14 @@ export default function PlayGame() {
             🔄
           </button>
 
-          {/* Popout Button (opens in fresh tab for full browser compatibility) */}
-          {liveGameUrl && (
-            <button
-              onClick={openInNewTab}
-              style={{
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid #333',
-                color: '#fff',
-                padding: '4px 8px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                cursor: 'pointer'
-              }}
-              title="Open Game in Full Window"
-            >
-              ↗
-            </button>
-          )}
-
-          {/* Demo Mode / Real Mode Toggle Badge */}
+          {/* Balance Toggle Badge */}
           <div 
             onClick={() => toggleDemoMode(!isDemoMode)}
             style={{ 
               background: isDemoMode ? 'rgba(0, 230, 118, 0.15)' : 'rgba(255, 215, 0, 0.15)', 
               border: `1px solid ${isDemoMode ? '#00e676' : 'var(--accent)'}`, 
               padding: '4px 8px', 
-              borderRadius: '14px', 
+              borderRadius: '12px', 
               fontSize: '11px', 
               fontWeight: '900',
               cursor: 'pointer',
@@ -378,14 +343,13 @@ export default function PlayGame() {
           >
             <span>{isDemoMode ? '🎮 DEMO' : '💰 REAL'}</span>
             <span style={{ color: isDemoMode ? '#00e676' : 'var(--accent)' }}>
-              Pi {activeBalance.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              Rs {activeBalance.toLocaleString('en-PK', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </span>
           </div>
 
           <button 
             onClick={toggleFullscreen}
-            className="btn"
-            style={{ padding: '4px 8px', fontSize: '11px', background: 'rgba(255,255,255,0.08)' }}
+            style={{ padding: '5px 8px', fontSize: '12px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', borderRadius: '8px', cursor: 'pointer' }}
             title="Toggle Fullscreen"
           >
             {isFullscreen ? 'Exit' : '⛶'}
@@ -393,200 +357,55 @@ export default function PlayGame() {
         </div>
       </div>
 
-      {/* Main Interactive Direct Live Game Stage */}
-      <div style={{ flex: 1, position: 'relative', width: '100%', height: 'calc(100vh - 48px)', background: '#07070a', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      {/* Main Direct Embedded Game Stage Inside Interface */}
+      <div style={{ flex: 1, position: 'relative', width: '100%', height: 'calc(100vh - 52px)', background: '#000', overflow: 'hidden' }}>
         {gameMode === 'api' ? (
           apiLoading ? (
-            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', gap: '16px' }}>
+            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', gap: '16px', background: '#0c0317' }}>
               <div style={{ width: '52px', height: '52px', border: '4px solid rgba(255,215,0,0.2)', borderTop: '4px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-              <div style={{ fontSize: '18px', fontWeight: '900', letterSpacing: '0.5px' }}>Connecting to Live Provider Stream...</div>
-              <div style={{ color: '#888', fontSize: '13px' }}>Generating verified session token for {getGameTitle()}</div>
+              <div style={{ fontSize: '18px', fontWeight: '900', letterSpacing: '0.5px' }}>Loading Game Session...</div>
+              <div style={{ color: '#888', fontSize: '13px' }}>Connecting to {apiProvider || 'BetNex'} Live Game Engine</div>
             </div>
           ) : liveGameUrl ? (
-            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', background: 'radial-gradient(circle at center, #1b122c 0%, #080511 100%)' }}>
+            <div style={{ width: '100%', height: '100%', position: 'relative', background: '#000' }}>
               
-              {/* Sleek Live Game Launch Hub */}
-              <div style={{
-                maxWidth: '460px',
-                width: '100%',
-                background: 'rgba(18, 14, 30, 0.95)',
-                border: '1px solid rgba(255, 215, 0, 0.35)',
-                borderRadius: '20px',
-                padding: '32px 24px',
-                textAlign: 'center',
-                boxShadow: '0 16px 48px rgba(0, 0, 0, 0.85), 0 0 24px rgba(255, 215, 0, 0.1)',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '18px',
-                backdropFilter: 'blur(12px)'
-              }}>
-                
-                {/* Glowing Provider Icon */}
-                <div style={{ 
-                  width: '84px', 
-                  height: '84px', 
-                  borderRadius: '50%', 
-                  background: 'linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(255,140,0,0.1) 100%)',
-                  border: '2px solid rgba(255,215,0,0.5)',
+              {/* Sleek inline loading overlay until iframe renders */}
+              {!iframeLoaded && (
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: '#0c0317',
                   display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '40px',
-                  boxShadow: '0 0 20px rgba(255,215,0,0.25)'
+                  zIndex: 10,
+                  gap: '12px'
                 }}>
-                  🎰
+                  <div style={{ fontSize: '36px', animation: 'spin 1s linear infinite' }}>🎰</div>
+                  <div style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '15px' }}>Starting {getGameTitle()} Engine...</div>
+                  <div style={{ color: '#aaa', fontSize: '12px' }}>Preparing live stream in interface</div>
                 </div>
+              )}
 
-                {/* Game Title & Provider Verification Badge */}
-                <div>
-                  <h1 style={{ fontSize: '24px', fontWeight: '900', color: '#fff', textTransform: 'uppercase', margin: 0, letterSpacing: '0.5px' }}>
-                    {getGameTitle()}
-                  </h1>
-                  <div style={{ fontSize: '13px', color: '#00e676', fontWeight: 'bold', marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00e676', boxShadow: '0 0 8px #00e676' }}></span>
-                    <span>Official {apiProvider || 'Live Provider'} Stream Active</span>
-                  </div>
-                </div>
-
-                {/* Session Active Balance & User Info */}
-                <div style={{ 
-                  background: 'rgba(255, 255, 255, 0.05)', 
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '14px', 
-                  padding: '14px 18px', 
-                  width: '100%', 
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  gap: '8px'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ color: '#aaa', fontSize: '13px', fontWeight: '600' }}>Player Account:</span>
-                    <span style={{ color: '#fff', fontSize: '13px', fontWeight: 'bold' }}>
-                      👤 {user ? (user.displayName || user.email?.split('@')[0] || 'Member') : 'Demo Player'}
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '6px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                    <span style={{ color: '#aaa', fontSize: '13px', fontWeight: '600' }}>Synced In-Game Balance:</span>
-                    <strong style={{ color: isDemoMode ? '#00e676' : 'var(--accent)', fontSize: '17px', fontWeight: '900' }}>
-                      Rs {(isDemoMode ? 10000 : Math.max(activeBalance, 5000)).toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </strong>
-                  </div>
-                </div>
-
-                {/* Primary User Gesture Play Action (Direct Same-Window) */}
-                <button
-                  onClick={launchGameDirectly}
-                  style={{
-                    width: '100%',
-                    padding: '18px 0',
-                    background: 'linear-gradient(135deg, #ffd700 0%, #ff9100 100%)',
-                    color: '#000',
-                    border: 'none',
-                    borderRadius: '14px',
-                    fontSize: '17px',
-                    fontWeight: '900',
-                    cursor: 'pointer',
-                    boxShadow: '0 8px 30px rgba(255, 215, 0, 0.45)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px',
-                    letterSpacing: '0.6px',
-                    transition: 'all 0.2s ease',
-                    textTransform: 'uppercase'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-                  onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                >
-                  <span>▶ PLAY LIVE GAME (INSTANT)</span>
-                </button>
-
-                <div style={{ fontSize: '11px', color: '#888', lineHeight: '1.4' }}>
-                  ⚡ Tap to play with synchronized balance, HD WebGL acceleration & instant spins.
-                </div>
-
-                {/* Session Booster & New Tab Actions */}
-                <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
-                  <button
-                    onClick={() => reloadStream(25000)}
-                    style={{
-                      flex: 1,
-                      padding: '10px 0',
-                      background: 'rgba(0, 230, 118, 0.12)',
-                      border: '1px solid rgba(0, 230, 118, 0.4)',
-                      color: '#00e676',
-                      borderRadius: '10px',
-                      fontSize: '12px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer'
-                    }}
-                    title="Boost In-Game Session Credits"
-                  >
-                    ⚡ Boost +25k Funds
-                  </button>
-
-                  <button
-                    onClick={openInNewTab}
-                    style={{
-                      flex: 1,
-                      padding: '10px 0',
-                      background: 'rgba(255, 255, 255, 0.08)',
-                      border: '1px solid #333',
-                      color: '#fff',
-                      borderRadius: '10px',
-                      fontSize: '12px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer'
-                    }}
-                    title="Open in a new browser tab"
-                  >
-                    ↗ New Tab
-                  </button>
-                </div>
-
-                {/* Secondary Action Controls */}
-                <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
-                  <button
-                    onClick={() => reloadStream()}
-                    style={{
-                      flex: 1,
-                      padding: '10px 0',
-                      background: 'rgba(255,255,255,0.08)',
-                      border: '1px solid #333',
-                      color: '#aaa',
-                      borderRadius: '10px',
-                      fontSize: '12px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    🔄 Refresh Token
-                  </button>
-
-                  <Link href="/" style={{ flex: 1, textDecoration: 'none' }}>
-                    <button
-                      style={{
-                        width: '100%',
-                        padding: '10px 0',
-                        background: 'rgba(255,255,255,0.08)',
-                        border: '1px solid #333',
-                        color: '#aaa',
-                        borderRadius: '10px',
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      ⬅ Back to Lobby
-                    </button>
-                  </Link>
-                </div>
-
-              </div>
+              {/* Direct Unblocked HTML5 Live Game Iframe (Embedded Inside App Viewport) */}
+              <iframe 
+                src={liveGameUrl}
+                onLoad={() => setIframeLoaded(true)}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  border: 'none',
+                  display: 'block',
+                  background: '#000'
+                }}
+                allow="autoplay; fullscreen; payment; microphone; camera; geolocation; clipboard-read; clipboard-write"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads allow-orientation-lock allow-pointer-lock allow-presentation allow-popups-to-escape-sandbox"
+                title={getGameTitle()}
+              />
             </div>
           ) : (
-            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center' }}>
+            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center', background: '#0c0317' }}>
               <div style={{ fontSize: '36px', marginBottom: '12px' }}>⚠️</div>
               <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px' }}>API Stream Connection Offline</div>
               <div style={{ color: '#aaa', fontSize: '13px', maxWidth: '400px', marginBottom: '16px' }}>
@@ -594,7 +413,7 @@ export default function PlayGame() {
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button 
-                  onClick={reloadStream} 
+                  onClick={() => reloadStream()} 
                   className="btn" 
                   style={{ background: 'var(--accent)', color: '#000', fontWeight: 'bold', padding: '8px 16px', borderRadius: '6px' }}
                 >
