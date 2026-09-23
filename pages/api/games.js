@@ -1,14 +1,17 @@
 import betnexCatalog from '../../data/betnexCatalog.json';
 
 export default async function handler(req, res) {
-  const { category, provider, search, limit = 100, page = 1 } = req.query;
+  // Edge cache for 1 hour, stale-while-revalidate for 24 hours
+  res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+
+  const { category, provider, search, limit = 36, page = 1 } = req.query;
 
   let filtered = betnexCatalog;
 
   if (category) {
     const catLower = String(category).toLowerCase();
     if (catLower === 'hot') {
-      filtered = betnexCatalog.filter(g => g.recommended || g.badge === 'Top Pick');
+      filtered = betnexCatalog.filter(g => g.recommended || g.badge === 'Top Pick' || g.badge === 'Hot');
     } else if (catLower === 'slots') {
       filtered = betnexCatalog.filter(g => g.category === 'Slots');
     } else if (catLower === 'live') {
@@ -32,7 +35,7 @@ export default async function handler(req, res) {
     const provLower = String(provider).toLowerCase();
     filtered = filtered.filter(g => 
       g.provider.toLowerCase().includes(provLower) || 
-      g.rawProvider.toLowerCase().includes(provLower)
+      (g.rawProvider && g.rawProvider.toLowerCase().includes(provLower))
     );
   }
 
@@ -44,7 +47,7 @@ export default async function handler(req, res) {
     );
   }
 
-  const parsedLimit = Math.min(Number(limit) || 100, 500);
+  const parsedLimit = Math.min(Math.max(Number(limit) || 36, 1), 200);
   const parsedPage = Math.max(Number(page) || 1, 1);
   const startIndex = (parsedPage - 1) * parsedLimit;
   const paginated = filtered.slice(startIndex, startIndex + parsedLimit);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import NavBar from '../components/NavBar'
@@ -6,7 +6,37 @@ import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
 import AuthModal from '../components/AuthModal'
 import GameCard from '../components/GameCard'
-import betnexCatalog from '../data/betnexCatalog.json'
+
+// Light curated featured list for 0ms instant initial rendering (36 top picks)
+const featuredGames = [
+  // JILI Flagships
+  { id: 'bdfb23c974a2517198c5443adeea77a8', slug: 'super-ace', title: 'Super Ace', provider: 'JILI', category: 'Slots', badge: 'Top Pick', recommended: true, theme: 'linear-gradient(135deg, #1f0a38 0%, #0c0317 100%)', imageUrl: 'https://cdn.betnex.co/images/jiligaming/48.webp' },
+  { id: '664fba4da609ee82b78820b1f570f4ad', slug: 'fortune-gems-2', title: 'Fortune Gems 2', provider: 'JILI', category: 'Slots', badge: 'Top Pick', recommended: true, theme: 'linear-gradient(135deg, #1f0a38 0%, #0c0317 100%)', imageUrl: 'https://cdn.betnex.co/images/jiligaming/74.webp' },
+  { id: 'e794bf5717aca371152df192341fe68b', slug: 'royal-fishing', title: 'Royal Fishing', provider: 'JILI', category: 'Fishing', badge: 'Fish Hunter', recommended: true, theme: 'linear-gradient(135deg, #1f0a38 0%, #0c0317 100%)', imageUrl: 'https://cdn.betnex.co/images/jiligaming/0.webp' },
+  { id: '981f5f9675002fbeaaf24c4128b938d7', slug: 'boxing-king', title: 'Boxing King', provider: 'JILI', category: 'Slots', badge: 'Free Spins', recommended: true, theme: 'linear-gradient(135deg, #1f0a38 0%, #0c0317 100%)', imageUrl: 'https://cdn.betnex.co/images/jiligaming/235.png' },
+
+  // PG Soft Flagships
+  { id: 'ba2adf72179e1ead9e3dae8f0a7d4c07', slug: 'mahjong-ways-2', title: 'Mahjong Ways 2', provider: 'PG Soft', category: 'Slots', badge: 'Golden Dragon', recommended: true, theme: 'linear-gradient(135deg, #1f0a38 0%, #0c0317 100%)', imageUrl: 'https://cdn.betnex.co/images/pgsoft/0.webp' },
+  { id: '2fa9a84d096d6ff0bab53f81b79876c8', slug: 'wild-bounty-showdown', title: 'Wild Bounty Showdown', provider: 'PG Soft', category: 'Slots', badge: '1024 Ways', recommended: true, theme: 'linear-gradient(135deg, #1f0a38 0%, #0c0317 100%)', imageUrl: 'https://cdn.betnex.co/images/pgsoft/1.webp' },
+
+  // Spribe Crash & Mini Games
+  { id: 'a04d1f3eb8ccec8a4823bdf18e3f0e84', slug: 'spribe_aviator', title: 'Aviator', provider: 'Spribe', category: 'Crash', badge: '10,000x', recommended: true, theme: 'linear-gradient(135deg, #1f0a38 0%, #0c0317 100%)', imageUrl: 'https://cdn.betnex.co/images/spribe/0.png' },
+  { id: '5c4a12fb0a9b296d9b0d5f9e1cd41d65', slug: 'mines', title: 'Mines', provider: 'Spribe', category: 'Mini Games', badge: 'Custom Mines', recommended: true, theme: 'linear-gradient(135deg, #1f0a38 0%, #0c0317 100%)', imageUrl: 'https://cdn.betnex.co/images/spribe/6.png' },
+  { id: '6ab7a4fe5161936012d6b06143918223', slug: 'plinko', title: 'Plinko', provider: 'Spribe', category: 'Mini Games', badge: '1000x Pins', recommended: true, theme: 'linear-gradient(135deg, #1f0a38 0%, #0c0317 100%)', imageUrl: 'https://cdn.betnex.co/images/spribe/8.png' },
+
+  // Pragmatic Play Flagships
+  { id: 'e30cd08c54817096e863975e309bb457', slug: 'gates-of-olympus', title: 'Gates of Olympus 1000', provider: 'Pragmatic Play', category: 'Slots', badge: '5000x Max', recommended: true, theme: 'linear-gradient(135deg, #1f0a38 0%, #0c0317 100%)', imageUrl: 'https://cdn.betnex.co/images/pragmaticslots/0.webp' },
+  { id: '8a0b30eb466a8a07027cbddc19369d0f', slug: 'sweet-bonanza', title: 'Sweet Bonanza 1000', provider: 'Pragmatic Play', category: 'Slots', badge: 'Tumble 100x', recommended: true, theme: 'linear-gradient(135deg, #1f0a38 0%, #0c0317 100%)', imageUrl: 'https://cdn.betnex.co/images/pragmaticslots/1.webp' },
+
+  // Evolution Live Dealers
+  { id: '36b1e71c6f51827e24261d06a22b1e31', slug: 'lightning-roulette', title: 'Lightning Roulette Live', provider: 'Evolution', category: 'Live', badge: '500x Multiplier', recommended: true, theme: 'linear-gradient(135deg, #1f0a38 0%, #0c0317 100%)', imageUrl: 'https://cdn.betnex.co/images/evolutionlive/0.webp' },
+  { id: '917c0c51d248c33eb058e3210a2e7371', slug: 'crazy-time', title: 'Crazy Time Live Show', provider: 'Evolution', category: 'Live', badge: '4 Bonus Games', recommended: true, theme: 'linear-gradient(135deg, #1f0a38 0%, #0c0317 100%)', imageUrl: 'https://cdn.betnex.co/images/evolutionlive/1.webp' },
+  { id: '3b502aee6c9e1ef0f698332ee1b76634', slug: 'blackjack-live', title: 'Blackjack VIP Platinum', provider: 'Evolution', category: 'Live', badge: 'VIP Table', recommended: true, theme: 'linear-gradient(135deg, #1f0a38 0%, #0c0317 100%)', imageUrl: 'https://cdn.betnex.co/images/evolutionlive/2.webp' },
+
+  // BetStack Sportsbook
+  { id: 'sports-nfl-live', slug: 'sports-nfl-live', title: 'NFL Football Live Odds', provider: 'BetStack Sports', category: 'Sports', badge: 'Live 1X2', recommended: true, theme: 'linear-gradient(135deg, #0d47a1 0%, #000a12 100%)', imageUrl: '/games/crash.png' },
+  { id: 'sports-soccer-live', slug: 'sports-soccer-live', title: 'Premier League Soccer', provider: 'BetStack Sports', category: 'Sports', badge: '1X2 Live', recommended: true, theme: 'linear-gradient(135deg, #1b5e20 0%, #003300 100%)', imageUrl: '/games/live.png' }
+]
 
 // Scrolling live winner events
 const winEvents = [
@@ -35,12 +65,10 @@ export default function Home() {
   const [spinningWheel, setSpinningWheel] = useState(false)
   const [wheelPrize, setWheelPrize] = useState(null)
   const [wheelError, setWheelError] = useState(null)
-  
-  // Grid expansion state
-  const [expandedCats, setExpandedCats] = useState({})
 
-  const [apiGames, setApiGames] = useState([])
-  const [apiLoaded, setApiLoaded] = useState(false)
+  // Category Cache & Async State
+  const [categoryGames, setCategoryGames] = useState({})
+  const [categoryLoading, setCategoryLoading] = useState(false)
 
   const scrollSection = (catName, direction) => {
     const el = document.getElementById('grid-' + catName)
@@ -50,10 +78,49 @@ export default function Home() {
     }
   }
 
+  // Fetch games lazily per category tab with local in-memory cache
+  const loadCategory = async (catName) => {
+    if (catName === 'Hot') return;
+    if (categoryGames[catName]) return; // Already cached in memory
+
+    setCategoryLoading(true);
+    try {
+      const res = await fetch(`/api/games?category=${encodeURIComponent(catName)}&limit=36`);
+      if (res.ok) {
+        const json = await res.json();
+        const list = json.data || json.games || [];
+        setCategoryGames(prev => ({
+          ...prev,
+          [catName]: list.map(g => ({
+            id: g.id || g.slug,
+            title: g.title || g.name,
+            provider: g.provider,
+            category: g.category || catName,
+            imageUrl: g.imageUrl || g.img || 'https://cdn.betnex.co/images/jiligaming/0.webp',
+            badge: g.badge || 'Hot',
+            recommended: g.recommended || false,
+            theme: g.theme || 'linear-gradient(135deg, #1f0a38 0%, #0c0317 100%)',
+            slug: g.id || g.slug
+          }))
+        }));
+      }
+    } catch (e) {
+      console.error('Failed to load category:', catName, e);
+    } finally {
+      setCategoryLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeCategory !== 'Hot') {
+      loadCategory(activeCategory);
+    }
+  }, [activeCategory]);
+
   // Sync active tab with router query if provided
   useEffect(() => {
     if (!router.isReady) return
-    const { tab, search } = router.query
+    const { tab } = router.query
     if (tab) {
       const tabMap = {
         'hot': 'Hot',
@@ -64,9 +131,7 @@ export default function Home() {
         'fishing': 'Fishing',
         'live': 'Live',
         'sports': 'Sports',
-        'poker': 'Cards',
         'crash': 'Crash',
-        'recent': 'Recent',
         'favorites': 'Favorites'
       }
       if (tabMap[tab.toLowerCase()]) {
@@ -74,37 +139,6 @@ export default function Home() {
       }
     }
   }, [router.isReady, router.query])
-
-  useEffect(() => {
-    let isMounted = true;
-    const fetchCatalogGames = async () => {
-      try {
-        const res = await fetch('/api/games?limit=300')
-        if (res.ok) {
-          const data = await res.json()
-          const list = data.data || data.games || []
-          if (isMounted) {
-            setApiGames(list.map(g => ({
-              id: g.id || g.slug,
-              title: g.title || g.name,
-              provider: g.provider,
-              category: g.category || 'Slots',
-              imageUrl: g.imageUrl || g.img || 'https://cdn.betnex.co/images/jiligaming/0.webp',
-              badge: g.badge || 'Hot',
-              recommended: g.recommended || false,
-              theme: g.theme || 'linear-gradient(135deg, #1f0a38 0%, #0c0317 100%)',
-              slug: g.id || g.slug
-            })))
-            setApiLoaded(true)
-          }
-        }
-      } catch (err) {
-        console.error('Failed to fetch catalog games for home', err)
-      }
-    };
-    fetchCatalogGames();
-    return () => { isMounted = false; }
-  }, []);
 
   // Auto-scrolling promo banners
   const promoBanners = [
@@ -134,13 +168,6 @@ export default function Home() {
     }, 4500)
     return () => clearInterval(slideInt)
   }, [])
-
-  const toggleExpand = (category) => {
-    setExpandedCats(prev => ({
-      ...prev,
-      [category]: !prev[category]
-    }))
-  }
 
   // Interactive Spin Wheel trigger
   const spinWheel = async () => {
@@ -194,27 +221,9 @@ export default function Home() {
 
   // Filter games based on selected tab
   const getFilteredGames = (category) => {
-    const combined = apiGames.length > 0 ? apiGames : betnexCatalog;
-    const unique = [];
-    const seen = new Set();
-    for (const g of combined) {
-      if (!seen.has(g.id)) {
-        seen.add(g.id);
-        unique.push(g);
-      }
-    }
-
-    if (category === 'Hot') return unique.filter(g => g.recommended || g.badge === 'Top Pick' || g.badge === 'Hot');
-    if (category === 'Sports') return unique.filter(g => g.category === 'Sports' || g.provider === 'BetStack Sports' || g.id?.includes('sports'));
-    if (category === 'Slots') return unique.filter(g => g.category === 'Slots');
-    if (category === 'Mini Games') return unique.filter(g => g.category === 'Mini Games' || g.category === 'Crash');
-    if (category === 'Fishing') return unique.filter(g => g.category === 'Fishing');
-    if (category === 'Live') return unique.filter(g => g.category === 'Live');
-    if (category === 'Cards') return unique.filter(g => g.category === 'Cards');
-    if (category === 'Crash') return unique.filter(g => g.category === 'Crash');
-    if (category === 'Favorites') return unique.slice(0, 12);
-    if (category === 'Recent') return unique.slice(0, 8);
-    return unique.filter(g => g.category === category);
+    if (category === 'Hot') return featuredGames;
+    if (categoryGames[category]) return categoryGames[category];
+    return featuredGames.filter(g => g.category === category);
   }
 
   const activeTabGames = getFilteredGames(activeCategory);
@@ -331,24 +340,31 @@ export default function Home() {
             </div>
 
             {/* 3-Column Grid for Selected Category */}
-            <div className="games-grid-3col">
-              {activeTabGames.map(game => (
-                <GameCard 
-                  key={game.id}
-                  id={game.id}
-                  title={game.title}
-                  provider={game.provider}
-                  badge={game.badge}
-                  recommended={game.recommended}
-                  theme={game.theme}
-                  icon={game.icon}
-                  slug={game.slug}
-                  imageType={game.imageType}
-                  imageUrl={game.imageUrl}
-                  category={game.category}
-                />
-              ))}
-            </div>
+            {categoryLoading && activeTabGames.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px', color: 'var(--muted)' }}>
+                <div style={{ fontSize: '28px', animation: 'spin 1s linear infinite', marginBottom: '8px' }}>🎡</div>
+                <div>Loading {activeCategory} catalog...</div>
+              </div>
+            ) : (
+              <div className="games-grid-3col">
+                {activeTabGames.map(game => (
+                  <GameCard 
+                    key={game.id}
+                    id={game.id}
+                    title={game.title}
+                    provider={game.provider}
+                    badge={game.badge}
+                    recommended={game.recommended}
+                    theme={game.theme}
+                    icon={game.icon}
+                    slug={game.slug}
+                    imageType={game.imageType}
+                    imageUrl={game.imageUrl}
+                    category={game.category}
+                  />
+                ))}
+              </div>
+            )}
           </section>
         ) : (
           categoriesList.filter(c => c.name !== 'Hot').map(cat => {
@@ -363,7 +379,7 @@ export default function Home() {
                     <span>{cat.name}</span>
                   </div>
 
-                  {/* Section Controls matching 666H layout: [ ← ] [ All ] [ → ] */}
+                  {/* Section Controls: [ ← ] [ All ] [ → ] */}
                   <div className="section-pill-controls">
                     <button 
                       className="section-pill-btn"

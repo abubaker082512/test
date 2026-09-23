@@ -20,32 +20,38 @@ const FEATURED_PROVIDERS = [
 export default function CasinoLobby() {
   const { user } = useAuth()
   const [selectedProvider, setSelectedProvider] = useState('ALL')
-  const [allGames, setAllGames] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [gamesCache, setGamesCache] = useState({})
+  const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
 
-  // Fetch official BetNex games catalog
+  // Fetch official BetNex games per provider lazily with cache
   useEffect(() => {
     let isMounted = true
+    if (gamesCache[selectedProvider]) return; // Instant 0ms cache hit
+
     setLoading(true)
 
     const fetchGames = async () => {
       try {
-        const res = await fetch('/api/games?limit=500')
+        const provQuery = selectedProvider !== 'ALL' ? `&provider=${encodeURIComponent(selectedProvider)}` : ''
+        const res = await fetch(`/api/games?limit=48${provQuery}`)
         if (res.ok) {
           const data = await res.json()
           const gamesList = data.data || data.games || []
           if (isMounted) {
-            setAllGames(gamesList.map(g => ({
-              id: g.id || g.slug,
-              name: g.title || g.name,
-              img: g.imageUrl || g.img || 'https://cdn.betnex.co/images/jiligaming/0.webp',
-              provider: g.provider || 'BetNex',
-              rawProvider: g.rawProvider || '',
-              category: g.category || 'Slots',
-              badge: g.badge || 'Hot'
-            })))
+            setGamesCache(prev => ({
+              ...prev,
+              [selectedProvider]: gamesList.map(g => ({
+                id: g.id || g.slug,
+                name: g.title || g.name,
+                img: g.imageUrl || g.img || 'https://cdn.betnex.co/images/jiligaming/0.webp',
+                provider: g.provider || 'BetNex',
+                rawProvider: g.rawProvider || '',
+                category: g.category || 'Slots',
+                badge: g.badge || 'Hot'
+              }))
+            }))
           }
         }
       } catch (e) {
@@ -60,22 +66,10 @@ export default function CasinoLobby() {
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [selectedProvider])
 
-  const games = allGames.filter(g => {
-    if (selectedProvider === 'ALL') return true
-    if (selectedProvider === 'JILI') return g.provider === 'JILI' || g.rawProvider === 'JILIGAMING'
-    if (selectedProvider === 'PG') return g.provider === 'PG Soft' || g.rawProvider === 'PGSOFT'
-    if (selectedProvider === 'PRAGMATIC') return g.provider === 'Pragmatic Play' || g.rawProvider === 'PRAGMATICSLOTS'
-    if (selectedProvider === 'SPRIBE') return g.provider === 'Spribe' || g.rawProvider === 'SPRIBE'
-    if (selectedProvider === 'EVOLUTION') return g.provider === 'Evolution' || g.rawProvider === 'EVOLUTIONLIVE'
-    if (selectedProvider === 'FACHAI') return g.provider === 'Fa Chai' || g.rawProvider === 'FACHAIGAMING'
-    if (selectedProvider === 'JDB') return g.provider === 'JDB' || g.rawProvider === 'JDB'
-    if (selectedProvider === 'CQ9') return g.provider === 'CQ9' || g.rawProvider === 'CQ9'
-    return true
-  })
-
-  const filteredGames = games.filter(g => 
+  const currentGames = gamesCache[selectedProvider] || []
+  const filteredGames = currentGames.filter(g => 
     g.name && g.name.toLowerCase().includes(search.toLowerCase())
   )
 
@@ -148,7 +142,7 @@ export default function CasinoLobby() {
         {/* Search & Counter */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', gap: '12px' }}>
           <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>
-            {selectedProvider} ({filteredGames.length} Available)
+            {selectedProvider} ({filteredGames.length} Loaded)
           </div>
           <input 
             type="text"
@@ -168,7 +162,7 @@ export default function CasinoLobby() {
         </div>
 
         {/* Live Provider Games Grid */}
-        {loading ? (
+        {loading && filteredGames.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px', color: 'var(--muted)' }}>
             <div style={{ fontSize: '32px', marginBottom: '12px', animation: 'spin 1s linear infinite' }}>🎡</div>
             <p>Fetching official games from BetNex API...</p>
