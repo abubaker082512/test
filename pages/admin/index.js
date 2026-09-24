@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import Link from 'next/link'
 
 const ADMIN_PASSWORD = 'Admin@123'
 
@@ -423,6 +424,11 @@ export default function AdminPanel() {
           <button style={tabStyle(activeTab === 'users')} onClick={() => setActiveTab('users')}>
             👥 User Accounts & Balances ({users.length})
           </button>
+          <Link href="/admin/apps" style={{ textDecoration: 'none' }}>
+            <button style={{ ...tabStyle(false), background: 'linear-gradient(135deg, #ffd700 0%, #ff8f00 100%)', color: '#000', border: 'none' }}>
+              📱 App Manager & OTA Themes
+            </button>
+          </Link>
         </div>
 
         {/* ==========================================

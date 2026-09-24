@@ -16,6 +16,28 @@ android {
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
+    flavorDimensions "app"
+    productFlavors {
+        n999 {
+            dimension "app"
+            applicationId "com.winxpro.n999"
+            resValue "string", "app_name", "N999"
+            resValue "string", "app_id", "n999"
+        }
+        y999 {
+            dimension "app"
+            applicationId "com.winxpro.y999"
+            resValue "string", "app_name", "Y999"
+            resValue "string", "app_id", "y999"
+        }
+        winpkr {
+            dimension "app"
+            applicationId "com.winxpro.winpkr"
+            resValue "string", "app_name", "WinPkr"
+            resValue "string", "app_id", "winpkr"
+        }
+    }
+
     buildTypes {
         release {
             signingConfig signingConfigs.debug

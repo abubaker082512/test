@@ -73,7 +73,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        webView.loadUrl(TARGET_URL);
+        String appId = "winxpro";
+        try {
+            int appIdRes = getResources().getIdentifier("app_id", "string", getPackageName());
+            if (appIdRes != 0) {
+                appId = getString(appIdRes);
+            }
+        } catch (Exception ignored) {}
+
+        String targetUrl = TARGET_URL + "?appId=" + appId;
+        webView.loadUrl(targetUrl);
     }
 
     @Override
