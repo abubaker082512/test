@@ -90,6 +90,16 @@ export function AuthProvider({ children }) {
         }
       }
     }
+    if (enable && !user) {
+      const demoUser = {
+        id: 'demo_player',
+        uid: 'demo_player',
+        email: 'demo@winxpro.com.pk',
+        displayName: 'Demo Player (Trial)',
+        isDemo: true
+      }
+      setUser(demoUser)
+    }
   }
 
   const resetDemoBalance = () => {

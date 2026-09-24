@@ -47,7 +47,12 @@ export default function PlayGame() {
   const [apiLoading, setApiLoading] = useState(true)
   const [apiError, setApiError] = useState(null)
 
-  const activeUser = user
+  const activeUser = user || {
+    id: 'guest_player',
+    uid: 'guest_player',
+    email: 'guest@winxpro.com.pk',
+    displayName: 'Guest'
+  }
 
   // Fetch real wallet balance
   const fetchWallet = async () => {
@@ -76,7 +81,7 @@ export default function PlayGame() {
 
   // Fetch official live game launch URL from provider API with synchronized high-balance session
   const fetchLiveGameUrl = async (customMoney) => {
-    if (!gameId || !user) return
+    if (!gameId) return
     setApiLoading(true)
     setApiError(null)
 
@@ -238,34 +243,11 @@ export default function PlayGame() {
 
   if (loading) {
     return (
-      <div style={{ width: '100%', maxWidth: '480px', height: '100vh', margin: '0 auto', background: 'var(--bg)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: '100%', maxWidth: '480px', height: '100vh', margin: '0 auto', background: '#0c0317', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '32px', animation: 'spin 1s linear infinite', marginBottom: '12px' }}>🎰</div>
           <div>Loading Game Interface...</div>
         </div>
-      </div>
-    )
-  }
-
-  if (!user && !loading) {
-    return (
-      <div style={{ width: '100%', maxWidth: '480px', minHeight: '100vh', margin: '0 auto', background: 'var(--bg)', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', boxSizing: 'border-box' }}>
-        <div style={{ fontSize: '56px', marginBottom: '16px' }}>🔒</div>
-        <h2 style={{ color: 'var(--accent)', marginBottom: '8px', textAlign: 'center' }}>Login Required</h2>
-        <p style={{ color: 'var(--muted)', fontSize: '14px', textAlign: 'center', marginBottom: '24px', lineHeight: '1.5' }}>
-          Account authentication is required to access games or trial demo mode. Please log in or register a free account to continue.
-        </p>
-        <button
-          onClick={() => setIsAuthModalOpen(true)}
-          className="btn primary"
-          style={{ width: '100%', padding: '14px', fontSize: '16px', fontWeight: 'bold', borderRadius: '10px' }}
-        >
-          🔐 Login / Register Now
-        </button>
-        <Link href="/" style={{ marginTop: '20px', color: 'var(--accent)', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold' }}>
-          ← Return to Lobby
-        </Link>
-        <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       </div>
     )
   }

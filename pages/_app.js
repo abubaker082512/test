@@ -6,8 +6,6 @@ import { AuthProvider } from '../context/AuthContext'
 import SplashScreen from '../components/SplashScreen'
 import UniversalReferralWidget from '../components/UniversalReferralWidget'
 
-import { ConfigProvider } from '../context/ConfigContext'
-
 function ReferralTracker() {
   const router = useRouter()
   useEffect(() => {
@@ -24,26 +22,24 @@ function ReferralTracker() {
 
 function MyApp({ Component, pageProps }) {
   return (
-    <ConfigProvider>
-      <AuthProvider>
-        <Head>
-          <title>WinX Pro - Premier Live Gaming</title>
-          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
-          <meta name="application-name" content="WinX Pro" />
-          <meta name="apple-mobile-web-app-title" content="WinX Pro" />
-          <meta name="theme-color" content="#0f0a1e" />
-          <meta name="apple-mobile-web-app-capable" content="yes" />
-          <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-          <link rel="manifest" href="/manifest.json" />
-          <link rel="icon" type="image/png" href="/winx-logo.png" />
-          <link rel="apple-touch-icon" href="/winx-logo.png" />
-        </Head>
-        <ReferralTracker />
-        <SplashScreen />
-        <Component {...pageProps} />
-        <UniversalReferralWidget />
-      </AuthProvider>
-    </ConfigProvider>
+    <AuthProvider>
+      <Head>
+        <title>WinX Pro - Premier Live Casino, Slots & Sports</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+        <meta name="application-name" content="WinX Pro" />
+        <meta name="apple-mobile-web-app-title" content="WinX Pro" />
+        <meta name="theme-color" content="#0f0a1e" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" type="image/png" href="/winx-logo.png" />
+        <link rel="apple-touch-icon" href="/winx-logo.png" />
+      </Head>
+      <ReferralTracker />
+      <SplashScreen />
+      <Component {...pageProps} />
+      <UniversalReferralWidget />
+    </AuthProvider>
   )
 }
 

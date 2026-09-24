@@ -5,7 +5,6 @@
   --card: #1f0a38; /* Card Royal Purple */
   --card-hover: #2c0f4f;
   --text: #ffffff;
-  --text-main: #ffffff;
   --text-primary: #0c0317;
   --muted: #c4b5fd;
   --accent: #ffd700; /* 24K Metallic Gold */
@@ -29,55 +28,6 @@
   --twitter: #000000;
 }
 
-/* Standalone App Dynamic Theme Overrides */
-[data-app-id="n999"], [data-theme="bluish"] {
-  --bg: #0d2240 !important;
-  --bg-secondary: #0b1a30 !important;
-  --bg-tertiary: #071224 !important;
-  --card: #13305b !important;
-  --card-hover: #193d73 !important;
-  --primary: #1877f2 !important;
-  --secondary: #0d6efd !important;
-  --accent: #ffd700 !important;
-  --header-bg: linear-gradient(135deg, #1877f2 0%, #0b5ed7 100%) !important;
-  --text: #ffffff !important;
-  --text-main: #ffffff !important;
-  --muted: #94a3b8 !important;
-  --border: #1d4ed8 !important;
-}
-
-[data-app-id="y999"], [data-theme="whitish"] {
-  --bg: #f4f6f8 !important;
-  --bg-secondary: #ffffff !important;
-  --bg-tertiary: #e2e8f0 !important;
-  --card: #ffffff !important;
-  --card-hover: #f8fafc !important;
-  --primary: #0e9f6e !important;
-  --secondary: #057a55 !important;
-  --accent: #ff9800 !important;
-  --header-bg: linear-gradient(135deg, #0e9f6e 0%, #046c4e 100%) !important;
-  --text: #1a202c !important;
-  --text-main: #1a202c !important;
-  --muted: #4a5568 !important;
-  --border: #cbd5e1 !important;
-}
-
-[data-app-id="winpkr"], [data-theme="blackish"] {
-  --bg: #0a0a0a !important;
-  --bg-secondary: #121212 !important;
-  --bg-tertiary: #050505 !important;
-  --card: #181818 !important;
-  --card-hover: #222222 !important;
-  --primary: #121212 !important;
-  --secondary: #1e1e1e !important;
-  --accent: #00e676 !important;
-  --header-bg: linear-gradient(135deg, #1f1f1f 0%, #121212 100%) !important;
-  --text: #ffffff !important;
-  --text-main: #ffffff !important;
-  --muted: #a1a1aa !important;
-  --border: #27272a !important;
-}
-
 * {
   box-sizing: border-box;
   margin: 0;
@@ -85,7 +35,7 @@
 }
 
 html {
-  background-color: var(--bg);
+  background-color: #040108;
   min-height: 100%;
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -95,7 +45,7 @@ body {
   color: var(--text);
   font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
-  background-color: var(--bg);
+  background-color: #040108;
   min-height: 100vh;
   margin: 0;
   padding: 0;
