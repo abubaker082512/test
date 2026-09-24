@@ -247,7 +247,7 @@ export default function BlackjackGame({ user, wallet, fetchWallet }) {
           color: '#00e676',
           textShadow: '0 0 15px rgba(0, 230, 118, 0.6), 0 2px 4px #000'
         }}>
-          🃏 BETPK BLACKJACK
+          🃏 WINXPRO BLACKJACK
         </h2>
 
         {/* Main Table Hands Grid */}

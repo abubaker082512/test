@@ -1,6 +1,6 @@
-# Deployment Guide (Next.js Retro BetPK Clone)
+# Deployment Guide (Next.js Retro WinXPro)
 
-This guide covers deploying the BetPK Clone project to a production environment with RapidAPI/Jili integration.
+This guide covers deploying the WinXPro project to a production environment with RapidAPI/Jili integration.
 
 Prerequisites
 - Node.js 18+ in production

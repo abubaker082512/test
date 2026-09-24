@@ -1,4 +1,4 @@
--- Schema setup for BetPK Clone on Supabase PostgreSQL
+-- Schema setup for WinXPro on Supabase PostgreSQL
 
 -- 1. Create a table for wallets linked to Supabase Auth users
 CREATE TABLE public.wallets (

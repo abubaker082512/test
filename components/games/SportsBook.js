@@ -188,7 +188,7 @@ export default function SportsBook({ user, wallet, fetchWallet }) {
         WebkitTextFillColor: 'transparent',
         marginBottom: '14px'
       }}>
-        BETPK SPORTSBOOK
+        WINXPRO SPORTSBOOK
       </h2>
 
       {/* Main sports display split view */}

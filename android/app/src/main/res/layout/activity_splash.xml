@@ -28,7 +28,7 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="32dp"
-        android:text="WINX PRO • PREMIER CASINO"
+        android:text="WINX PRO"
         android:textColor="#ffd700"
         android:letterSpacing="0.15"
         android:textSize="12sp"

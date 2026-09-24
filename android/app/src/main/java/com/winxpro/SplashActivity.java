@@ -1,4 +1,4 @@
-package com.winxpro.casino;
+package com.winxpro;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;

@@ -1,4 +1,4 @@
-# Website Structure (BetPK‑Clone)
+# Website Structure (WinXPro)
 
 - Frontend: React (Next.js) SPA with server-side routing for SEO and fast loads.
 - Backend/API: Node.js (Next API routes or separate Express) in the same Next.js app for simplicity, plus mock endpoints for initial data.

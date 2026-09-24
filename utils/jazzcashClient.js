@@ -58,7 +58,7 @@ export async function initiateJazzCashPayment({
   amountInPKR,
   mobileNumber,
   billReference,
-  description = 'BetPK Wallet Deposit',
+  description = 'WinXPro Wallet Deposit',
   returnUrl = '',
   merchantId = JAZZCASH_DEFAULT_MERCHANT_ID,
   password = JAZZCASH_DEFAULT_PASSWORD,

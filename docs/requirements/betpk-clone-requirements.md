@@ -1,11 +1,11 @@
-# BetPK Clone – Requirements Document (Jili API Integration)</br>
+# WinXPro – Requirements Document (Jili API Integration)</br>
 
-This document outlines a comprehensive requirements baseline for building a BetPK‑style online betting and iGaming platform, with integration points for the Jili game API. It aims to establish a clear, shared understanding of product scope, regulatory considerations, architecture, data models, and milestones to guide design, implementation, and QA.
+This document outlines a comprehensive requirements baseline for building a WinXPro‑style online betting and iGaming platform, with integration points for the Jili game API. It aims to establish a clear, shared understanding of product scope, regulatory considerations, architecture, data models, and milestones to guide design, implementation, and QA.
 
 Note: The target jurisdiction(s) and regulatory licenses must be defined early. This document presents a robust, risk‑aware blueprint suitable for markets where online sports betting and casino games are legally permitted and regulated.
 
 ## 1. Executive Summary
-- Build a BetPK‑style platform offering sportsbook, live betting, and casino games (including Jili‑powered titles) with a unified wallet, promotions engine, and comprehensive admin tooling.
+- Build a WinXPro‑style platform offering sportsbook, live betting, and casino games (including Jili‑powered titles) with a unified wallet, promotions engine, and comprehensive admin tooling.
 - Core aim: deliver a scalable, secure, compliant, and localizable user experience across multiple regions, with a modular architecture enabling rapid feature delivery and third‑party integrations.
 - Primary success metrics: activation rate, average revenue per user (ARPU), bettor retention, time‑to‑balance/withdrawal, uptime, and fraud detection efficiency.
 
@@ -183,7 +183,7 @@ Note: The above is a schematic; implement detailed schemas in alignment with cho
 - D. API Contract Skeleton (endpoint names, request/response shapes)
 
 References:
-- BetPK public site notes and typical online betting features inferred from the domain.
+- WinXPro public site notes and typical online betting features inferred from the domain.
 - General industry patterns for sportsbook and casino platform architectures.
 - Jili API integration patterns (publicly discussed patterns in industry literature).
 

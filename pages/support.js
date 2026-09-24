@@ -80,7 +80,7 @@ export default function Support() {
                 </button>
               </a>
 
-              <a href="https://t.me/betpk_official" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', width: '100%' }}>
+              <a href="https://t.me/winxpro_official" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', width: '100%' }}>
                 <button className="btn" style={{ padding: '16px', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', width: '100%' }}>
                   <span>📱</span> Connect on Telegram
                 </button>

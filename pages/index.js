@@ -449,12 +449,12 @@ export default function Home() {
       <footer className="footer">
         <div className="social-channels-title">Official Community Channels</div>
         <div className="social-icons-row">
-          <button className="social-icon-btn fb" onClick={() => alert("FB community: facebook.com/betpk")}>📘</button>
-          <button className="social-icon-btn tg" onClick={() => alert("Telegram support: t.me/betpk_official")}>✈️</button>
-          <button className="social-icon-btn wa" onClick={() => alert("WhatsApp channel: chat.whatsapp.com/betpk")}>💬</button>
-          <button className="social-icon-btn yt" onClick={() => alert("YouTube streams: youtube.com/betpk")}>🎬</button>
-          <button className="social-icon-btn ig" onClick={() => alert("Instagram photos: instagram.com/betpk")}>📸</button>
-          <button className="social-icon-btn tw" onClick={() => alert("X community: twitter.com/betpk")}>𝕏</button>
+          <button className="social-icon-btn fb" onClick={() => alert("FB community: facebook.com/winxpro")}>📘</button>
+          <button className="social-icon-btn tg" onClick={() => alert("Telegram support: t.me/winxpro_official")}>✈️</button>
+          <button className="social-icon-btn wa" onClick={() => alert("WhatsApp channel: chat.whatsapp.com/winxpro")}>💬</button>
+          <button className="social-icon-btn yt" onClick={() => alert("YouTube streams: youtube.com/winxpro")}>🎬</button>
+          <button className="social-icon-btn ig" onClick={() => alert("Instagram photos: instagram.com/winxpro")}>📸</button>
+          <button className="social-icon-btn tw" onClick={() => alert("X community: twitter.com/winxpro")}>𝕏</button>
           <div className="social-icon-btn r21" title="Responsible Gaming: 21+ only">21+</div>
         </div>
 

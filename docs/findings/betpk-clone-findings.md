@@ -1,8 +1,8 @@
-# BetPK Clone – Findings & Observations
+# WinXPro – Findings & Observations
 
-This document captures key findings from preliminary research on building a BetPK‑style wagering site and integrating a Jili game API. It highlights market/UX signals, technical feasibility notes, compliance implications, data considerations, risks, and recommended next steps.
+This document captures key findings from preliminary research on building a WinXPro‑style wagering site and integrating a Jili game API. It highlights market/UX signals, technical feasibility notes, compliance implications, data considerations, risks, and recommended next steps.
 
-## 1) Public site observations (BetPK)
+## 1) Public site observations (WinXPro)
 - Public branding and landing content suggest a sportsbook + casino model, but public content is limited in initial checks.
 - The site exposes a simple welcome banner and a game/image asset reference, with no readily visible feature catalog or API docs from the public surface.
 - Implication: the actual feature surface and data flows must be clarified via stakeholder discovery and direct vendor/partner communications. A formal requirements baseline should assume a sportsbook+casino catalog with live odds, wallet, and game integrations.
@@ -29,7 +29,7 @@ This document captures key findings from preliminary research on building a BetP
 - UX: a clean, responsive interface for sportsbook events alongside a casino lobby; Jili game integration must be seamless and compliant with localizations.
 
 ## 6) Gaps & assumptions
-- Gap: Publicly available BetPK feature docs or API docs are not visible; assumption: a BetPK‑like MVP will include sportsbook + casino via Jili.
+- Gap: Publicly available WinXPro feature docs or API docs are not visible; assumption: a WinXPro‑like MVP will include sportsbook + casino via Jili.
 - Gap: Regulatory requirements per jurisdiction are undefined; assumption: start with a compliant, license‑backed approach in a single or few markets.
 - Assumption: Jili adapter will support catalog fetch, session creation, and settlement callbacks; further details to be confirmed with provider docs.
 
