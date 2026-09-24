@@ -12,4 +12,6 @@ public/uploads/
 android/.gradle/
 android/app/build/
 android/build/
+out/
+android/app/src/main/assets/
 

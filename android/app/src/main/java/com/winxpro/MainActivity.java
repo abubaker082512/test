@@ -8,16 +8,18 @@ import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.webkit.WebViewAssetLoader;
+import androidx.webkit.WebViewAssetLoader.AssetsPathHandler;
 
 public class MainActivity extends AppCompatActivity {
     private WebView webView;
     private ProgressBar progressBar;
-    private static final String TARGET_URL = "https://www.winxpro.com.pk/";
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -38,11 +40,17 @@ public class MainActivity extends AppCompatActivity {
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        settings.setUserAgentString(settings.getUserAgentString() + " WinXProMobileApp/1.0");
+        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        settings.setUserAgentString(settings.getUserAgentString() + " StandaloneCasinoApp/1.0");
 
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
         cookieManager.setAcceptThirdPartyCookies(webView, true);
+
+        // Serve internal APK assets locally without relying on external web hosting
+        final WebViewAssetLoader assetLoader = new WebViewAssetLoader.Builder()
+                .addPathHandler("/", new AssetsPathHandler(this))
+                .build();
 
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -57,6 +65,11 @@ public class MainActivity extends AppCompatActivity {
         });
 
         webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                return assetLoader.shouldInterceptRequest(request.getUrl());
+            }
+
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 return false;
@@ -81,8 +94,9 @@ public class MainActivity extends AppCompatActivity {
             }
         } catch (Exception ignored) {}
 
-        String targetUrl = TARGET_URL + "?appId=" + appId;
-        webView.loadUrl(targetUrl);
+        // Load self-contained app directly from internal APK bundle
+        String localAppUrl = "https://appassets.androidplatform.net/index.html?appId=" + appId;
+        webView.loadUrl(localAppUrl);
     }
 
     @Override
