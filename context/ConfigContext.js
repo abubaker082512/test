@@ -62,6 +62,9 @@ export function ConfigProvider({ children }) {
 
       const finalId = (detectedId || 'winxpro').toLowerCase();
       setAppId(finalId);
+      const fallback = DEFAULT_APP_CONFIGS[finalId] || DEFAULT_APP_CONFIGS.winxpro;
+      setAppConfig(fallback);
+      applyThemeToDOM(fallback);
       fetchConfig(finalId);
     }
   }, []);
