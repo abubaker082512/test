@@ -11,7 +11,7 @@
         android:layout_height="220dp"
         android:layout_centerInParent="true"
         android:src="@drawable/app_logo"
-        android:contentDescription="WinX Pro Logo" />
+        android:contentDescription="App Logo" />
 
     <ProgressBar
         android:layout_width="36dp"
@@ -28,8 +28,8 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="32dp"
-        android:text="WINX PRO"
-        android:textColor="#ffd700"
+        android:text="@string/splash_subtitle"
+        android:textColor="@color/accentColor"
         android:letterSpacing="0.15"
         android:textSize="12sp"
         android:textStyle="bold" />
