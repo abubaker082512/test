@@ -36,6 +36,9 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.GameViewHolder
         holder.tvTitle.setText(item.getTitle());
         holder.tvProvider.setText(item.getProvider());
 
+        // Asynchronously load thumbnail image via LruCache ImageLoader
+        ImageLoader.getInstance().loadImage(item.getImageUrl(), holder.imgIcon, R.drawable.app_logo);
+
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onGameClick(item);

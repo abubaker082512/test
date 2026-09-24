@@ -96,134 +96,77 @@
         </LinearLayout>
     </RelativeLayout>
 
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:fillViewport="true">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <LinearLayout
+        <!-- Search Input Bar -->
+        <EditText
+            android:id="@+id/et_search_game"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:layout_marginHorizontal="12dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="4dp"
+            android:background="@color/cardColor"
+            android:hint="🔍 Search 2,037+ games or providers..."
+            android:textColorHint="@color/textMutedColor"
+            android:textColor="@color/textColor"
+            android:paddingHorizontal="14dp"
+            android:textSize="13sp"
+            android:singleLine="true" />
+
+        <!-- Native Category Tabs Bar -->
+        <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:scrollbars="none"
+            android:paddingHorizontal="8dp"
+            android:layout_marginBottom="6dp">
 
-            <!-- Banner Card -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="140dp"
-                android:layout_margin="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="6dp"
-                app:cardBackgroundColor="@color/cardColor">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="16dp">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/banner_title"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="WELCOME BONUS 200%"
-                            android:textColor="@color/accentColor"
-                            android:textSize="18sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/banner_desc"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="Deposit Rs 500 and get Rs 1,000 Extra Credits!"
-                            android:textColor="@color/textMutedColor"
-                            android:textSize="12sp" />
-
-                        <Button
-                            android:id="@+id/btn_banner_claim"
-                            android:layout_width="wrap_content"
-                            android:layout_height="32dp"
-                            android:layout_marginTop="8dp"
-                            android:text="CLAIM BONUS"
-                            android:textColor="@color/btnPrimaryText"
-                            android:backgroundTint="@color/btnPrimary"
-                            android:textSize="10sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-                </RelativeLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Announcement Marquee Bar -->
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="36dp"
-                android:background="@color/cardColor"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:paddingHorizontal="16dp"
-                android:layout_marginBottom="8dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="📢 "
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/tv_marquee"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="🔥 Congratulations User ****8492 won Rs 48,500 on Super Ace! Instant Withdrawals Active 24/7!"
-                    android:textColor="@color/textColor"
-                    android:textSize="12sp"
-                    android:singleLine="true"
-                    android:ellipsize="marquee"
-                    android:marqueeRepeatLimit="marquee_forever"
-                    android:focusable="true"
-                    android:focusableInTouchMode="true" />
-            </LinearLayout>
-
-            <!-- Native Category Tabs Bar -->
-            <HorizontalScrollView
-                android:layout_width="match_parent"
+                android:id="@+id/category_chips_container"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:scrollbars="none"
-                android:paddingHorizontal="8dp"
-                android:layout_marginBottom="12dp">
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
 
-                <LinearLayout
-                    android:id="@+id/category_chips_container"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal" />
-            </HorizontalScrollView>
+        <!-- Games Section Header -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="4dp">
 
-            <!-- Games Section Header -->
             <TextView
                 android:id="@+id/tv_category_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginBottom="8dp"
-                android:text="🎰 Hot Casino Games"
+                android:layout_alignParentStart="true"
+                android:text="🎰 All Casino Games"
                 android:textColor="@color/textColor"
-                android:textSize="16sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
-            <!-- Native 3-Column Games Grid -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_games"
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/tv_game_count"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                android:paddingHorizontal="8dp"
-                android:clipToPadding="false" />
-        </LinearLayout>
-    </ScrollView>
+                android:layout_alignParentEnd="true"
+                android:text="2,037 Games"
+                android:textColor="@color/accentColor"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <!-- Native 3-Column Games Grid -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_games"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:paddingHorizontal="6dp"
+            android:clipToPadding="false" />
+    </LinearLayout>
 </LinearLayout>

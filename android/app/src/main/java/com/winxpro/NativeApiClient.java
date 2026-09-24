@@ -1,5 +1,6 @@
 package com.winxpro;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import org.json.JSONArray;
@@ -20,67 +21,97 @@ public class NativeApiClient {
     public static final String BASE_URL = "https://www.winxpro.com.pk";
     private static final ExecutorService executor = Executors.newFixedThreadPool(4);
     private static final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private static final List<GameItem> allCatalogCache = new ArrayList<>();
+    private static boolean isCatalogLoaded = false;
 
     public interface ApiCallback<T> {
         void onSuccess(T result);
         void onError(String errorMessage);
     }
 
-    public static void fetchGameCatalog(String category, ApiCallback<List<GameItem>> callback) {
+    public static void fetchGameCatalog(Context context, String category, String searchQuery, ApiCallback<List<GameItem>> callback) {
         executor.execute(() -> {
             try {
-                URL url = new URL(BASE_URL + "/api/games");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("GET");
-                conn.setConnectTimeout(8000);
-                conn.setReadTimeout(8000);
+                if (!isCatalogLoaded) {
+                    loadCatalogFromAssets(context);
+                }
 
-                int responseCode = conn.getResponseCode();
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    InputStream is = conn.getInputStream();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-                    StringBuilder sb = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        sb.append(line);
-                    }
-                    reader.close();
+                List<GameItem> filtered = new ArrayList<>();
+                String catLower = category == null ? "all" : category.toLowerCase();
+                String queryLower = searchQuery == null ? "" : searchQuery.toLowerCase().trim();
 
-                    JSONObject json = new JSONObject(sb.toString());
-                    JSONArray gamesArray = json.optJSONArray("games");
-                    List<GameItem> gameList = new ArrayList<>();
+                for (GameItem item : allCatalogCache) {
+                    boolean matchesCategory = catLower.equals("all");
 
-                    if (gamesArray != null) {
-                        for (int i = 0; i < gamesArray.length(); i++) {
-                            JSONObject item = gamesArray.getJSONObject(i);
-                            String id = item.optString("id", "game_" + i);
-                            String title = item.optString("name", item.optString("title", "Casino Game"));
-                            String provider = item.optString("provider", "JILI");
-                            String cat = item.optString("category", "slots");
-                            String image = item.optString("image", item.optString("thumbnail", ""));
-                            String badge = item.optString("badge", "HOT");
+                    if (!matchesCategory) {
+                        String itemCat = item.getCategory().toLowerCase();
+                        String itemTitle = item.getTitle().toLowerCase();
 
-                            if (category == null || category.equalsIgnoreCase("all") || cat.equalsIgnoreCase(category)) {
-                                gameList.add(new GameItem(id, title, provider, cat, image, badge));
-                            }
+                        if (catLower.equals("slots")) {
+                            matchesCategory = itemCat.contains("slot") || itemCat.contains("slots");
+                        } else if (catLower.equals("live")) {
+                            matchesCategory = itemCat.contains("live") || itemCat.contains("casino") || itemTitle.contains("roulette") || itemTitle.contains("baccarat") || itemTitle.contains("blackjack");
+                        } else if (catLower.equals("cards")) {
+                            matchesCategory = itemCat.contains("card") || itemCat.contains("poker") || itemCat.contains("table");
+                        } else if (catLower.equals("fishing")) {
+                            matchesCategory = itemCat.contains("fish") || itemCat.contains("fishing");
+                        } else if (catLower.equals("crash")) {
+                            matchesCategory = itemCat.contains("crash") || itemTitle.contains("aviator") || itemTitle.contains("spribe");
+                        } else if (catLower.equals("sports")) {
+                            matchesCategory = itemCat.contains("sport") || itemCat.contains("sports") || itemTitle.contains("soccer") || itemTitle.contains("cricket");
+                        } else {
+                            matchesCategory = itemCat.contains(catLower);
                         }
                     }
 
-                    if (gameList.isEmpty()) {
-                        gameList = getFallbackGames(category);
-                    }
+                    boolean matchesSearch = queryLower.isEmpty() ||
+                            item.getTitle().toLowerCase().contains(queryLower) ||
+                            item.getProvider().toLowerCase().contains(queryLower);
 
-                    List<GameItem> finalResult = gameList;
-                    mainHandler.post(() -> callback.onSuccess(finalResult));
-                } else {
-                    List<GameItem> fallbacks = getFallbackGames(category);
-                    mainHandler.post(() -> callback.onSuccess(fallbacks));
+                    if (matchesCategory && matchesSearch) {
+                        filtered.add(item);
+                    }
                 }
+
+                mainHandler.post(() -> callback.onSuccess(filtered));
             } catch (Exception e) {
-                List<GameItem> fallbacks = getFallbackGames(category);
-                mainHandler.post(() -> callback.onSuccess(fallbacks));
+                mainHandler.post(() -> callback.onError("Failed to load catalog: " + e.getLocalizedMessage()));
             }
         });
+    }
+
+    private synchronized static void loadCatalogFromAssets(Context context) {
+        if (isCatalogLoaded) return;
+        try {
+            InputStream is = context.getAssets().open("betnexCatalog.json");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+            reader.close();
+
+            JSONArray jsonArray = new JSONArray(sb.toString());
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject obj = jsonArray.getJSONObject(i);
+                String id = obj.optString("id", obj.optString("slug", "game_" + i));
+                String title = obj.optString("title", obj.optString("name", "Casino Game"));
+                String provider = obj.optString("provider", obj.optString("rawProvider", "BETNEX"));
+                String category = obj.optString("category", "Slots");
+                String imageUrl = obj.optString("imageUrl", obj.optString("image", ""));
+                String badge = obj.optString("badge", "HOT");
+
+                allCatalogCache.add(new GameItem(id, title, provider, category, imageUrl, badge));
+            }
+            isCatalogLoaded = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static int getTotalGameCount() {
+        return allCatalogCache.size();
     }
 
     public static void fetchGameUrl(String gameId, String username, double money, ApiCallback<String> callback) {
@@ -91,8 +122,8 @@ public class NativeApiClient {
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json");
                 conn.setDoOutput(true);
-                conn.setConnectTimeout(8000);
-                conn.setReadTimeout(8000);
+                conn.setConnectTimeout(6000);
+                conn.setReadTimeout(6000);
 
                 JSONObject payload = new JSONObject();
                 payload.put("gameId", gameId);
@@ -121,29 +152,12 @@ public class NativeApiClient {
                     String gameUrl = resJson.getString("gameUrl");
                     mainHandler.post(() -> callback.onSuccess(gameUrl));
                 } else {
-                    String err = resJson.optString("error", "Failed to retrieve game URL");
+                    String err = resJson.optString("error", "Failed to retrieve game stream URL");
                     mainHandler.post(() -> callback.onError(err));
                 }
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError("Network error: " + e.getLocalizedMessage()));
+                mainHandler.post(() -> callback.onError("Network connection issue: " + e.getLocalizedMessage()));
             }
         });
-    }
-
-    private static List<GameItem> getFallbackGames(String category) {
-        List<GameItem> list = new ArrayList<>();
-        list.add(new GameItem("super-ace", "Super Ace", "JILI", "slots", "", "HOT"));
-        list.add(new GameItem("fortune-gems", "Fortune Gems", "JILI", "slots", "", "TOP"));
-        list.add(new GameItem("mahjong-ways-2", "Mahjong Ways 2", "PG SOFT", "slots", "", "POPULAR"));
-        list.add(new GameItem("wild-bounty-showdown", "Wild Bounty", "PG SOFT", "slots", "", "HOT"));
-        list.add(new GameItem("crash-aviator", "Aviator Crash", "SPRIBE", "crash", "", "VIP"));
-        list.add(new GameItem("fishing-joy", "Fishing Joy", "CQ9", "fishing", "", "HOT"));
-        list.add(new GameItem("roulette-royal", "Royal Roulette", "EVOLUTION", "live", "", "LIVE"));
-        list.add(new GameItem("blackjack-vip", "VIP Blackjack", "EVOLUTION", "live", "", "VIP"));
-        list.add(new GameItem("baccarat-dragon", "Dragon Baccarat", "SEXY LIVE", "live", "", "LIVE"));
-        list.add(new GameItem("poker-texas", "Texas Hold'em", "KINGMIDAS", "cards", "", "POPULAR"));
-        list.add(new GameItem("plinko-multiplier", "Plinko", "BGAMING", "mini", "", "HOT"));
-        list.add(new GameItem("minesweeper-pro", "Mines Gold", "SPRIBE", "mini", "", "TOP"));
-        return list;
     }
 }
