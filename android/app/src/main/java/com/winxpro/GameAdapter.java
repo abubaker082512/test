@@ -36,7 +36,13 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.GameViewHolder
         holder.tvTitle.setText(item.getTitle());
         holder.tvProvider.setText(item.getProvider());
 
-        // Asynchronously load thumbnail image via LruCache ImageLoader
+        if (item.getBadge() != null && !item.getBadge().isEmpty()) {
+            holder.tvBadge.setText("🔥 " + item.getBadge());
+            holder.tvBadge.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvBadge.setVisibility(View.GONE);
+        }
+
         ImageLoader.getInstance().loadImage(item.getImageUrl(), holder.imgIcon, R.drawable.app_logo);
 
         holder.itemView.setOnClickListener(v -> {
@@ -54,12 +60,14 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.GameViewHolder
     static class GameViewHolder extends RecyclerView.ViewHolder {
         ImageView imgIcon;
         TextView tvProvider;
+        TextView tvBadge;
         TextView tvTitle;
 
         public GameViewHolder(@NonNull View itemView) {
             super(itemView);
             imgIcon = itemView.findViewById(R.id.img_game_icon);
             tvProvider = itemView.findViewById(R.id.tv_provider_badge);
+            tvBadge = itemView.findViewById(R.id.tv_badge_tag);
             tvTitle = itemView.findViewById(R.id.tv_game_title);
         }
     }
