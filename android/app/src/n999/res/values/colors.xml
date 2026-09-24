@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="primaryColor">#1877f2</color>
+    <color name="primaryDarkColor">#0b1a30</color>
     <color name="backgroundColor">#0d2240</color>
+    <color name="cardColor">#13305b</color>
     <color name="statusBarColor">#1877f2</color>
     <color name="accentColor">#ffd700</color>
+    <color name="textColor">#ffffff</color>
+    <color name="textMutedColor">#94a3b8</color>
+    <color name="headerBg">#0b1a30</color>
+    <color name="btnPrimary">#ffd700</color>
+    <color name="btnPrimaryText">#000000</color>
 </resources>

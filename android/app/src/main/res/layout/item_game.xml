@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="145dp"
+    android:layout_margin="4dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@color/cardColor"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- Game Icon / Cover Image -->
+        <ImageView
+            android:id="@+id/img_game_icon"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/app_logo"
+            android:contentDescription="Game Cover" />
+
+        <!-- Provider Badge Tag -->
+        <TextView
+            android:id="@+id/tv_provider_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:layout_margin="6dp"
+            android:background="@drawable/bg_provider_tag"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="2dp"
+            android:text="JILI"
+            android:textColor="#000000"
+            android:textSize="9sp"
+            android:textStyle="bold" />
+
+        <!-- Bottom Gradient Title Overlay -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:layout_alignParentBottom="true"
+            android:background="#D9000000"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingHorizontal="4dp">
+
+            <TextView
+                android:id="@+id/tv_game_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Super Ace"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+        </LinearLayout>
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>

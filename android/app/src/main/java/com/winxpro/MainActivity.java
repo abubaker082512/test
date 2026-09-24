@@ -1,99 +1,165 @@
 package com.winxpro;
 
-import android.annotation.SuppressLint;
-import android.graphics.Bitmap;
-import android.net.Uri;
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
-import android.webkit.CookieManager;
-import android.webkit.WebChromeClient;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import android.widget.ProgressBar;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import java.util.ArrayList;
+import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
-    private WebView webView;
-    private ProgressBar progressBar;
+public class MainActivity extends AppCompatActivity implements GameAdapter.OnGameClickListener {
 
-    @SuppressLint({"SetJavaScriptEnabled", "SdCardPath"})
+    private UserSessionManager sessionManager;
+    private TextView tvWalletBalance;
+    private TextView tvModeTag;
+    private Button btnLoginAuth;
+    private RecyclerView rvGames;
+    private GameAdapter gameAdapter;
+    private List<GameItem> currentGames = new ArrayList<>();
+    private String selectedCategory = "all";
+    private LinearLayout categoryContainer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        progressBar = findViewById(R.id.web_progress);
-        webView = findViewById(R.id.webview);
+        sessionManager = new UserSessionManager(this);
 
-        WebSettings settings = webView.getSettings();
-        settings.setJavaScriptEnabled(true);
-        settings.setDomStorageEnabled(true);
-        settings.setDatabaseEnabled(true);
-        settings.setMediaPlaybackRequiresUserGesture(false);
-        settings.setAllowFileAccess(true);
-        settings.setAllowContentAccess(true);
-        settings.setAllowFileAccessFromFileURLs(true);
-        settings.setAllowUniversalAccessFromFileURLs(true);
-        settings.setSupportZoom(false);
-        settings.setBuiltInZoomControls(false);
-        settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
-        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-        settings.setUserAgentString(settings.getUserAgentString() + " StandaloneCasinoApp/1.0");
+        tvWalletBalance = findViewById(R.id.tv_wallet_balance);
+        tvModeTag = findViewById(R.id.tv_mode_tag);
+        btnLoginAuth = findViewById(R.id.btn_login_auth);
+        rvGames = findViewById(R.id.rv_games);
+        categoryContainer = findViewById(R.id.category_chips_container);
+        View btnWalletToggle = findViewById(R.id.btn_wallet_toggle);
 
-        CookieManager cookieManager = CookieManager.getInstance();
-        cookieManager.setAcceptCookie(true);
-        cookieManager.setAcceptThirdPartyCookies(webView, true);
+        rvGames.setLayoutManager(new GridLayoutManager(this, 3));
+        gameAdapter = new GameAdapter(currentGames, this);
+        rvGames.setAdapter(gameAdapter);
 
-        webView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public void onProgressChanged(WebView view, int newProgress) {
-                if (newProgress < 100) {
-                    progressBar.setVisibility(View.VISIBLE);
-                    progressBar.setProgress(newProgress);
-                } else {
-                    progressBar.setVisibility(View.GONE);
-                }
-            }
+        updateUserHeader();
+
+        btnWalletToggle.setOnClickListener(v -> {
+            boolean isDemo = sessionManager.isDemoMode();
+            sessionManager.setDemoMode(!isDemo);
+            updateUserHeader();
+            Toast.makeText(this, !isDemo ? "Switched to DEMO Mode" : "Switched to REAL Mode", Toast.LENGTH_SHORT).show();
         });
 
-        webView.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                return false;
-            }
+        btnLoginAuth.setOnClickListener(v -> showAuthModal());
 
-            @Override
-            public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                progressBar.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                progressBar.setVisibility(View.GONE);
-            }
-        });
-
-        String appId = "winxpro";
-        try {
-            int appIdRes = getResources().getIdentifier("app_id", "string", getPackageName());
-            if (appIdRes != 0) {
-                appId = getString(appIdRes);
-            }
-        } catch (Exception ignored) {}
-
-        // Load 100% self-contained standalone app from local APK asset bundle
-        String localAppUrl = "file:///android_asset/index.html?appId=" + appId;
-        webView.loadUrl(localAppUrl);
+        setupCategoryChips();
+        loadGames("all");
     }
 
     @Override
-    public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) {
-            webView.goBack();
+    protected void onResume() {
+        super.onResume();
+        updateUserHeader();
+    }
+
+    private void updateUserHeader() {
+        boolean loggedIn = sessionManager.isLoggedIn();
+        if (loggedIn) {
+            btnLoginAuth.setText(sessionManager.getUsername());
+            btnLoginAuth.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.cardColor));
+            btnLoginAuth.setTextColor(ContextCompat.getColor(this, R.color.accentColor));
         } else {
-            super.onBackPressed();
+            btnLoginAuth.setText("Login");
+            btnLoginAuth.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.btnPrimary));
+            btnLoginAuth.setTextColor(ContextCompat.getColor(this, R.color.btnPrimaryText));
         }
+
+        boolean isDemo = sessionManager.isDemoMode();
+        tvModeTag.setText(isDemo ? "🎮 DEMO" : "💰 REAL");
+        double bal = sessionManager.getBalance();
+        tvWalletBalance.setText("Rs " + (int)bal);
+    }
+
+    private void showAuthModal() {
+        AuthDialogFragment dialog = AuthDialogFragment.newInstance(this::updateUserHeader);
+        dialog.show(getSupportFragmentManager(), "AuthDialog");
+    }
+
+    private void setupCategoryChips() {
+        String[] categories = {"ALL", "SLOTS", "LIVE", "CARDS", "FISHING", "CRASH", "MINI"};
+        categoryContainer.removeAllViews();
+
+        for (String cat : categories) {
+            Button chip = new Button(this);
+            chip.setText(cat);
+            chip.setTextSize(11f);
+            chip.setPadding(20, 0, 20, 0);
+
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    dpToPx(36)
+            );
+            params.setMargins(6, 0, 6, 0);
+            chip.setLayoutParams(params);
+
+            styleCategoryChip(chip, cat.equalsIgnoreCase(selectedCategory));
+
+            chip.setOnClickListener(v -> {
+                selectedCategory = cat.toLowerCase();
+                setupCategoryChips();
+                loadGames(selectedCategory);
+            });
+
+            categoryContainer.addView(chip);
+        }
+    }
+
+    private void styleCategoryChip(Button chip, boolean isSelected) {
+        if (isSelected) {
+            chip.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.btnPrimary));
+            chip.setTextColor(ContextCompat.getColor(this, R.color.btnPrimaryText));
+        } else {
+            chip.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.cardColor));
+            chip.setTextColor(ContextCompat.getColor(this, R.color.textColor));
+        }
+    }
+
+    private void loadGames(String category) {
+        NativeApiClient.fetchGameCatalog(category, new NativeApiClient.ApiCallback<List<GameItem>>() {
+            @Override
+            public void onSuccess(List<GameItem> result) {
+                currentGames.clear();
+                currentGames.addAll(result);
+                gameAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(MainActivity.this, "Failed to update catalog", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void onGameClick(GameItem item) {
+        if (!sessionManager.isLoggedIn()) {
+            Toast.makeText(this, "🔐 Please log in to play " + item.getTitle(), Toast.LENGTH_SHORT).show();
+            showAuthModal();
+            return;
+        }
+
+        Intent intent = new Intent(this, GameActivity.class);
+        intent.putExtra("game_id", item.getId());
+        intent.putExtra("game_title", item.getTitle());
+        startActivity(intent);
+    }
+
+    private int dpToPx(int dp) {
+        float density = getResources().getDisplayMetrics().density;
+        return Math.round(dp * density);
     }
 }

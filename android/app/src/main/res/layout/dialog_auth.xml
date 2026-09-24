@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/cardColor"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/tv_auth_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="🔐 Mandatory Login Required"
+        android:textColor="@color/accentColor"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="16dp"
+        android:text="Please log in to play games or access demo mode."
+        android:textColor="@color/textMutedColor"
+        android:textSize="12sp"
+        android:gravity="center" />
+
+    <!-- Username / Phone Field -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        app:boxStrokeColor="@color/accentColor"
+        app:hintTextColor="@color/accentColor">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Mobile Phone or Username"
+            android:textColor="@color/textColor"
+            android:textColorHint="@color/textMutedColor"
+            android:inputType="text" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Password Field -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        app:passwordToggleEnabled="true"
+        app:boxStrokeColor="@color/accentColor"
+        app:hintTextColor="@color/accentColor">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:textColor="@color/textColor"
+            android:textColorHint="@color/textMutedColor"
+            android:inputType="textPassword" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Action Buttons -->
+    <Button
+        android:id="@+id/btn_submit_login"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="🔐 LOGIN TO ACCOUNT"
+        android:textColor="@color/btnPrimaryText"
+        android:backgroundTint="@color/btnPrimary"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        style="@style/Widget.MaterialComponents.Button" />
+
+    <Button
+        android:id="@+id/btn_quick_guest"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginTop="8dp"
+        android:text="✨ REGISTER NEW ACCOUNT"
+        android:textColor="@color/textColor"
+        android:backgroundTint="@color/primaryDarkColor"
+        android:textSize="13sp"
+        style="@style/Widget.MaterialComponents.Button" />
+</LinearLayout>
