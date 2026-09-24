@@ -112,6 +112,39 @@ export default function Home() {
   };
 
   useEffect(() => {
+    // Preload all categories so all homepage sections display 3-column vertical grids on top-to-bottom scroll
+    const preloadAllCategories = async () => {
+      const catsToLoad = ['Slots', 'Mini Games', 'Cards', 'Fishing', 'Live', 'Sports', 'Crash'];
+      for (const cat of catsToLoad) {
+        try {
+          const res = await fetch(`/api/games?category=${encodeURIComponent(cat)}&limit=18`);
+          if (res.ok) {
+            const json = await res.json();
+            const list = json.data || json.games || [];
+            if (list.length > 0) {
+              setCategoryGames(prev => ({
+                ...prev,
+                [cat]: list.map(g => ({
+                  id: g.id || g.slug,
+                  title: g.title || g.name,
+                  provider: g.provider,
+                  category: g.category || cat,
+                  imageUrl: g.imageUrl || g.image || 'https://cdn.betnex.co/images/jiligaming/0.webp',
+                  badge: g.badge || 'Hot',
+                  recommended: g.recommended || false,
+                  theme: g.theme || 'linear-gradient(135deg, #1f0a38 0%, #0c0317 100%)',
+                  slug: g.id || g.slug
+                }))
+              }));
+            }
+          }
+        } catch (e) {}
+      }
+    };
+    preloadAllCategories();
+  }, []);
+
+  useEffect(() => {
     if (activeCategory !== 'Hot') {
       loadCategory(activeCategory);
     }
@@ -379,34 +412,16 @@ export default function Home() {
                     <span>{cat.name}</span>
                   </div>
 
-                  {/* Section Controls: [ ← ] [ All ] [ → ] */}
-                  <div className="section-pill-controls">
-                    <button 
-                      className="section-pill-btn"
-                      onClick={() => scrollSection(cat.name, 'left')}
-                      title="Scroll Left"
-                    >
-                      ←
-                    </button>
-                    <button 
-                      className="section-pill-btn"
-                      onClick={() => setActiveCategory(cat.name)}
-                      title="View All"
-                    >
-                      All
-                    </button>
-                    <button 
-                      className="section-pill-btn"
-                      onClick={() => scrollSection(cat.name, 'right')}
-                      title="Scroll Right"
-                    >
-                      →
-                    </button>
-                  </div>
+                  <button 
+                    onClick={() => setActiveCategory(cat.name)}
+                    style={{ background: 'rgba(255, 215, 0, 0.1)', border: '1px solid var(--accent)', color: 'var(--accent)', fontSize: '11px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '12px', cursor: 'pointer' }}
+                  >
+                    View All {cat.name} →
+                  </button>
                 </div>
 
-                {/* Horizontal Scrollable Row for Section */}
-                <div className="games-grid-scroll" id={'grid-' + cat.name}>
+                {/* Vertical 3-Column Grid for Section (3 Games Listed per Row on Scroll Down) */}
+                <div className="games-grid-3col">
                   {catGames.map(game => (
                     <GameCard 
                       key={game.id}
