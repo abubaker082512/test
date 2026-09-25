@@ -1,4 +1,7 @@
-import { getAllTransactionsList, getAllWalletsList } from '../../../utils/walletStore'
+import { getAllTransactionsList, getAllWalletsList, completeAndCreditTransaction, failTransaction } from '../../../utils/walletStore'
+import { updateWalletBalance } from '../../../utils/firebaseDb'
+
+const DEFAULT_CLIENT_ID = process.env.DIRECTPAY_CLIENT_ID || 'pwa_ci_k1qlq54hv4gw5pr0khux'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
@@ -7,7 +10,64 @@ export default async function handler(req, res) {
   if (password !== 'Admin@123') return res.status(401).json({ error: 'Unauthorized' })
 
   try {
-    // 1. Get transactions & wallets from primary persistent store
+    // 0. Auto-sync any pending DirectPay transactions live against DirectPay status API
+    const initialTxs = getAllTransactionsList()
+    const pendingDirectPayTxs = initialTxs.filter(t => 
+      t.status === 'pending' && 
+      (
+        (t.method && t.method.toLowerCase().includes('directpay')) ||
+        (t.tx_id && String(t.tx_id).toUpperCase().startsWith('TXN-')) ||
+        t.metadata?.gateway === 'DirectPay'
+      )
+    )
+
+    for (const tx of pendingDirectPayTxs) {
+      const searchId = tx.tx_id || tx.id
+      if (!searchId) continue
+      try {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 1500)
+
+        const dpResponse = await fetch(
+          `https://payin-pwa.directpay.pro/pay/status?client_id=${DEFAULT_CLIENT_ID}&client_transaction_id=${encodeURIComponent(searchId)}`,
+          {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            signal: controller.signal
+          }
+        ).catch(() => null)
+
+        clearTimeout(timeoutId)
+
+        if (dpResponse && dpResponse.ok) {
+          const contentType = dpResponse.headers.get('content-type') || ''
+          if (contentType.includes('json')) {
+            const details = await dpResponse.json()
+            const gwStatus = String(details.status || details.state || details.payment_status || '').toLowerCase()
+
+            if (['completed', 'success', 'paid', '0000'].includes(gwStatus)) {
+              const result = completeAndCreditTransaction(searchId, {
+                amount: tx.amount,
+                amountInPKR: tx.amount,
+                method: tx.method || 'DirectPay',
+                notes: `DirectPay Live Auto-Sync: PKR ${tx.amount}`
+              })
+              if (result && result.transaction) {
+                try {
+                  await updateWalletBalance(result.transaction.user_id, result.wallet.balance)
+                } catch (e) {}
+              }
+            } else if (['failed', 'cancelled', 'declined', 'expired', 'failure'].includes(gwStatus)) {
+              failTransaction(searchId, `DirectPay live status: ${gwStatus}`)
+            }
+          }
+        }
+      } catch (e) {
+        console.warn(`DirectPay live sync error for ${searchId}:`, e.message)
+      }
+    }
+
+    // 1. Get updated transactions & wallets from primary persistent store
     const localTxs = getAllTransactionsList()
     const localWallets = getAllWalletsList()
 
@@ -84,3 +144,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: `Failed to fetch admin data: ${err.message}` })
   }
 }
+
