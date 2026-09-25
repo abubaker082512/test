@@ -66,6 +66,26 @@ export default function AdminPanel() {
   const [adjustLoading, setAdjustLoading] = useState(false)
   const [adjustMsg, setAdjustMsg] = useState(null)
 
+  // DirectPay Inquiry state
+  const [dpSearchId, setDpSearchId] = useState('')
+  const [dpInquireData, setDpInquireData] = useState(null)
+  const [dpInquireLoading, setDpInquireLoading] = useState(false)
+
+  const handleDirectPayInquire = async (searchId = '') => {
+    setDpInquireLoading(true)
+    try {
+      const targetId = searchId || dpSearchId
+      const q = targetId ? `?txn_id=${encodeURIComponent(targetId)}` : '?all=true'
+      const res = await fetch(`/api/payments/directpay/inquire${q}`)
+      const data = await res.json()
+      setDpInquireData(data)
+    } catch (err) {
+      alert('DirectPay inquiry error: ' + err.message)
+    } finally {
+      setDpInquireLoading(false)
+    }
+  }
+
   const login = (e) => {
     e.preventDefault()
     if (password === ADMIN_PASSWORD) setAuthed(true)
@@ -933,6 +953,114 @@ export default function AdminPanel() {
                       required
                     />
                   </div>
+                </div>
+
+                {/* DirectPay Live Inquiry & All Transactions Console */}
+                <div style={{ marginTop: '16px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
+                  <h4 style={{ margin: '0 0 10px', color: '#00e676', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    🔍 DirectPay Live Inquiry & All Transactions Console
+                  </h4>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                    <input
+                      type="text"
+                      placeholder="Enter Client TxID, Gateway ID, or Mobile #..."
+                      value={dpSearchId}
+                      onChange={e => setDpSearchId(e.target.value)}
+                      style={{ flex: 1, minWidth: '220px', padding: '10px', borderRadius: '6px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '13px' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleDirectPayInquire(dpSearchId)}
+                      disabled={dpInquireLoading}
+                      style={{ background: '#00e676', color: '#000', border: 'none', padding: '10px 16px', borderRadius: '6px', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
+                    >
+                      {dpInquireLoading ? 'Searching...' : '🔍 Search Specific TxID'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDirectPayInquire('')}
+                      disabled={dpInquireLoading}
+                      style={{ background: 'var(--accent)', color: '#000', border: 'none', padding: '10px 16px', borderRadius: '6px', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
+                    >
+                      📋 View ALL DirectPay Transactions (Completed/Failed/Pending)
+                    </button>
+                  </div>
+
+                  {/* DirectPay Inquire Results Display */}
+                  {dpInquireData && (
+                    <div style={{ background: '#0d111a', border: '1px solid #00e67644', borderRadius: '10px', padding: '14px', marginTop: '10px' }}>
+                      {dpInquireData.summary && (
+                        <div style={{ display: 'flex', gap: '12px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                          <div style={{ background: '#1a2333', padding: '8px 12px', borderRadius: '6px', fontSize: '12px' }}>
+                            📊 Total DirectPay: <strong>{dpInquireData.summary.total_count}</strong>
+                          </div>
+                          <div style={{ background: '#00ff8822', color: '#00ff88', border: '1px solid #00ff8844', padding: '8px 12px', borderRadius: '6px', fontSize: '12px' }}>
+                            🟢 Completed: <strong>{dpInquireData.summary.completed_count}</strong> (PKR {dpInquireData.summary.total_volume_pkr?.toFixed(2)})
+                          </div>
+                          <div style={{ background: '#ff990022', color: '#ff9900', border: '1px solid #ff990044', padding: '8px 12px', borderRadius: '6px', fontSize: '12px' }}>
+                            ⏳ Pending: <strong>{dpInquireData.summary.pending_count}</strong>
+                          </div>
+                          <div style={{ background: '#ff000022', color: '#ff6666', border: '1px solid #ff000044', padding: '8px 12px', borderRadius: '6px', fontSize: '12px' }}>
+                            🔴 Failed/Cancelled: <strong>{dpInquireData.summary.failed_count}</strong>
+                          </div>
+                        </div>
+                      )}
+
+                      {dpInquireData.transactions && Array.isArray(dpInquireData.transactions) ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '360px', overflowY: 'auto' }}>
+                          {dpInquireData.transactions.length === 0 ? (
+                            <div style={{ color: 'var(--muted)', fontSize: '13px', textAlign: 'center', padding: '16px' }}>No DirectPay transactions found.</div>
+                          ) : (
+                            dpInquireData.transactions.map(t => {
+                              const isComp = t.status === 'completed';
+                              const isPend = t.status === 'pending';
+                              return (
+                                <div key={t.id || t.tx_id} style={{ background: '#141c2b', border: `1px solid ${isComp ? '#00ff8844' : isPend ? '#ff990044' : '#ff000044'}`, borderRadius: '8px', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', fontSize: '12px' }}>
+                                  <div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                      <span style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', background: isComp ? '#00ff8822' : isPend ? '#ff990022' : '#ff000022', color: isComp ? '#00ff88' : isPend ? '#ff9900' : '#ff6666' }}>
+                                        {t.status.toUpperCase()}
+                                      </span>
+                                      <strong style={{ color: 'var(--accent)', fontSize: '14px' }}>PKR {parseFloat(t.amount || 0).toFixed(2)}</strong>
+                                      <span style={{ color: '#00e5ff' }}>📱 {t.account_number}</span>
+                                    </div>
+                                    <div style={{ color: '#aaa', marginTop: '4px', fontFamily: 'monospace' }}>
+                                      Client TxID: {t.tx_id} | Gateway ID: {t.gateway_transaction_id}
+                                    </div>
+                                    <div style={{ color: 'var(--muted)', marginTop: '2px', fontSize: '11px' }}>
+                                      Account: {t.email} | 📅 {new Date(t.created_at).toLocaleString()}
+                                    </div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDirectPayInquire(t.tx_id)}
+                                    style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', color: '#fff', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer' }}
+                                  >
+                                    🔍 Sync Live Status
+                                  </button>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+                      ) : (
+                        /* Single Transaction Inquiry Details */
+                        <div style={{ fontSize: '13px', lineHeight: '1.6' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <strong style={{ color: 'var(--accent)' }}>Transaction Inquiry Found:</strong>
+                            <span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', background: dpInquireData.status === 'completed' ? '#00ff8822' : '#ff990022', color: dpInquireData.status === 'completed' ? '#00ff88' : '#ff9900' }}>
+                              {String(dpInquireData.status || dpInquireData.gateway_status).toUpperCase()}
+                            </span>
+                          </div>
+                          <div><strong>Client TxID:</strong> <code style={{ color: '#00e5ff' }}>{dpInquireData.client_transaction_id}</code></div>
+                          <div><strong>Gateway TxID:</strong> <code style={{ color: '#ffb300' }}>{dpInquireData.gateway_transaction_id}</code></div>
+                          <div><strong>Amount:</strong> PKR {dpInquireData.amountInPKR}</div>
+                          <div><strong>Account Number / Phone:</strong> {dpInquireData.account_number}</div>
+                          <div><strong>Gateway Live Status:</strong> {dpInquireData.gateway_status}</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 

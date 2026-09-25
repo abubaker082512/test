@@ -198,14 +198,36 @@ export function getUserTransactionsList(userId, email = "") {
   }).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 }
 
+export function getDirectPayTransactionsList() {
+  loadData();
+  return memoryTransactions.filter(t => {
+    if (t.method && t.method.toLowerCase().includes('directpay')) return true;
+    if (t.metadata?.gateway === 'DirectPay') return true;
+    if (t.tx_id && String(t.tx_id).toUpperCase().startsWith('TXN-')) return true;
+    if (t.id && String(t.id).toLowerCase().includes('directpay')) return true;
+    if (t.notes && t.notes.toLowerCase().includes('directpay')) return true;
+    return false;
+  }).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+}
+
 export function findTransaction(txnId) {
   loadData();
   if (!txnId) return null;
-  return memoryTransactions.find(t => 
-    t.tx_id === txnId || 
-    t.id === txnId || 
-    t.metadata?.clientTransactionId === txnId
-  ) || null;
+  const cleanId = String(txnId).trim();
+  const lowerId = cleanId.toLowerCase();
+
+  return memoryTransactions.find(t => {
+    if (t.tx_id && String(t.tx_id).trim() === cleanId) return true;
+    if (t.id && String(t.id).trim() === cleanId) return true;
+    if (t.metadata?.clientTransactionId && String(t.metadata.clientTransactionId).trim() === cleanId) return true;
+    if (t.metadata?.gateway_transaction_id && String(t.metadata.gateway_transaction_id).trim() === cleanId) return true;
+    if (t.metadata?.dp_txn_id && String(t.metadata.dp_txn_id).trim() === cleanId) return true;
+    if (t.metadata?.bank_ref && String(t.metadata.bank_ref).trim() === cleanId) return true;
+    if (t.metadata?.account_number && String(t.metadata.account_number).trim() === cleanId) return true;
+    if (t.metadata?.msisdn && String(t.metadata.msisdn).trim() === cleanId) return true;
+    if (t.notes && String(t.notes).toLowerCase().includes(lowerId)) return true;
+    return false;
+  }) || null;
 }
 
 export function completeAndCreditTransaction(txnId, fallbackData = {}) {
