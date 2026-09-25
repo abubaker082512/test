@@ -3,22 +3,59 @@ import CurrencyFlag from '../../components/CurrencyFlag'
 
 const ADMIN_PASSWORD = 'Admin@123'
 
+const AVAILABLE_PERMISSIONS = [
+  { id: 'view_payments', label: '⚡ View Auto Payments & Inquire API', icon: '💳' },
+  { id: 'manage_deposits', label: '📥 Approve / Reject Manual Deposits', icon: '📥' },
+  { id: 'manage_withdrawals', label: '📤 Process Withdrawal Payouts', icon: '📤' },
+  { id: 'manage_balances', label: '✏️ Adjust User Balances & Bonuses', icon: '💰' },
+  { id: 'manage_rates', label: '💵 Edit Exchange Rates & Gateway Keys', icon: '🔑' },
+  { id: 'manage_risk', label: '🎯 Control RTP & Anti-Win Governor', icon: '🛡️' },
+  { id: 'manage_team', label: '👑 Team Member & Role Management', icon: '👥' }
+]
+
+const PREDEFINED_ROLES = [
+  {
+    name: 'Super Admin',
+    permissions: ['view_payments', 'manage_deposits', 'manage_withdrawals', 'manage_balances', 'manage_rates', 'manage_risk', 'manage_team']
+  },
+  {
+    name: 'Payment & Payout Operator',
+    permissions: ['view_payments', 'manage_deposits', 'manage_withdrawals']
+  },
+  {
+    name: 'Risk & Game Controller',
+    permissions: ['manage_risk', 'manage_balances']
+  },
+  {
+    name: 'Customer Support Specialist',
+    permissions: ['view_payments', 'manage_balances']
+  },
+  {
+    name: 'Custom Task-Based Role',
+    permissions: []
+  }
+]
+
 export default function AdminPanel() {
   const [password, setPassword] = useState('')
   const [authed, setAuthed] = useState(false)
   const [pending, setPending] = useState([])
   const [allTransactions, setAllTransactions] = useState([])
-  const [txFilter, setTxFilter] = useState('all') // 'all' | 'pending' | 'completed'
   const [users, setUsers] = useState([])
   const [wallets, setWallets] = useState([])
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState(null)
 
-  // Tabs
-  const [activeTab, setActiveTab] = useState('transactions') // 'transactions' | 'rates' | 'users' | 'risk'
+  // Tabs: 'autopayments' | 'manual_deposits' | 'withdrawals' | 'users' | 'team' | 'risk' | 'rates'
+  const [activeTab, setActiveTab] = useState('autopayments')
 
-  // Search filter
+  // Search query
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Transaction Category Sub-Filters
+  const [autoTxFilter, setAutoTxFilter] = useState('all') // 'all' | 'completed' | 'failed' | 'pending'
+  const [manualTxFilter, setManualTxFilter] = useState('all') // 'all' | 'pending' | 'completed' | 'failed'
+  const [withdrawalTxFilter, setWithdrawalTxFilter] = useState('all') // 'all' | 'pending' | 'completed' | 'failed'
 
   // Exchange rates state
   const [pkrRate, setPkrRate] = useState('1.00')
@@ -60,7 +97,7 @@ export default function AdminPanel() {
   const [riskMsg, setRiskMsg] = useState(null)
 
   // Adjust balance state
-  const [selectedUser, setSelectedUser] = useState(null) // { id, email }
+  const [selectedUser, setSelectedUser] = useState(null)
   const [adjustAmount, setAdjustAmount] = useState('')
   const [adjustNote, setAdjustNote] = useState('')
   const [adjustLoading, setAdjustLoading] = useState(false)
@@ -70,6 +107,18 @@ export default function AdminPanel() {
   const [dpSearchId, setDpSearchId] = useState('')
   const [dpInquireData, setDpInquireData] = useState(null)
   const [dpInquireLoading, setDpInquireLoading] = useState(false)
+
+  // Team & Role Management state
+  const [teamList, setTeamList] = useState([])
+  const [teamMsg, setTeamMsg] = useState(null)
+  const [teamLoading, setTeamLoading] = useState(false)
+  const [editingMember, setEditingMember] = useState(null) // null = new member mode
+  const [memberName, setMemberName] = useState('')
+  const [memberUsername, setMemberUsername] = useState('')
+  const [memberEmail, setMemberEmail] = useState('')
+  const [memberPin, setMemberPin] = useState('')
+  const [memberRole, setMemberRole] = useState('Payment Operator')
+  const [memberPermissions, setMemberPermissions] = useState(['view_payments', 'manage_deposits', 'manage_withdrawals'])
 
   const handleDirectPayInquire = async (searchId = '') => {
     setDpInquireLoading(true)
@@ -141,12 +190,6 @@ export default function AdminPanel() {
         setEasypaisaMode(data.easypaisa_mode || 'directpay')
 
         setCardMode(data.card_mode || 'directpay')
-
-        if (typeof window !== 'undefined') {
-          try {
-            localStorage.setItem('winxpro_settings', JSON.stringify(data))
-          } catch (e) {}
-        }
       }
     } catch (err) {
       console.error('Error fetching rates:', err)
@@ -157,9 +200,7 @@ export default function AdminPanel() {
     try {
       const res = await fetch('/api/admin/live-analytics')
       const data = await res.json()
-      if (data.success) {
-        setRiskAnalytics(data)
-      }
+      if (data.success) setRiskAnalytics(data)
     } catch (err) {
       console.error('Error fetching live analytics:', err)
     }
@@ -169,11 +210,19 @@ export default function AdminPanel() {
     try {
       const res = await fetch('/api/admin/risk-settings')
       const data = await res.json()
-      if (data.success && data.config) {
-        setRiskConfig(data.config)
-      }
+      if (data.success && data.config) setRiskConfig(data.config)
     } catch (err) {
       console.error('Error fetching risk config:', err)
+    }
+  }
+
+  const fetchTeamData = async () => {
+    try {
+      const res = await fetch('/api/admin/team')
+      const data = await res.json()
+      if (data.success) setTeamList(data.team || [])
+    } catch (err) {
+      console.error('Error fetching team data:', err)
     }
   }
 
@@ -187,6 +236,7 @@ export default function AdminPanel() {
       fetchRates()
       fetchRiskConfig()
       fetchLiveAnalytics()
+      fetchTeamData()
 
       // Silent background poll every 5s without screen blinking or loading indicator
       const interval = setInterval(() => {
@@ -196,6 +246,130 @@ export default function AdminPanel() {
       return () => clearInterval(interval)
     }
   }, [authed])
+
+  // Team Form Handlers
+  const handleSaveMember = async (e) => {
+    e.preventDefault()
+    setTeamLoading(true)
+    setTeamMsg(null)
+    try {
+      const res = await fetch('/api/admin/team', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password: ADMIN_PASSWORD,
+          action: editingMember ? 'update' : 'add',
+          member: {
+            id: editingMember?.id,
+            name: memberName,
+            username: memberUsername,
+            email: memberEmail,
+            pin: memberPin,
+            role: memberRole,
+            permissions: memberPermissions
+          }
+        })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setTeamMsg({ type: 'success', text: data.message })
+        setTeamList(data.team)
+        resetMemberForm()
+      } else {
+        setTeamMsg({ type: 'error', text: data.error })
+      }
+    } catch (err) {
+      setTeamMsg({ type: 'error', text: err.message })
+    } finally {
+      setTeamLoading(false)
+    }
+  }
+
+  const resetMemberForm = () => {
+    setEditingMember(null)
+    setMemberName('')
+    setMemberUsername('')
+    setMemberEmail('')
+    setMemberPin('')
+    setMemberRole('Payment Operator')
+    setMemberPermissions(['view_payments', 'manage_deposits', 'manage_withdrawals'])
+  }
+
+  const editMember = (m) => {
+    setEditingMember(m)
+    setMemberName(m.name || '')
+    setMemberUsername(m.username || '')
+    setMemberEmail(m.email || '')
+    setMemberPin(m.pin || '')
+    setMemberRole(m.role || 'Custom Task-Based Role')
+    setMemberPermissions(m.permissions || [])
+    setTeamMsg(null)
+  }
+
+  const deleteMember = async (m) => {
+    if (!confirm(`Are you sure you want to remove team member '${m.name}'?`)) return
+    try {
+      const res = await fetch('/api/admin/team', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password: ADMIN_PASSWORD,
+          action: 'delete',
+          member: { id: m.id }
+        })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setTeamList(data.team)
+        setTeamMsg({ type: 'success', text: data.message })
+      } else {
+        alert(data.error)
+      }
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
+  const toggleMemberStatus = async (m) => {
+    try {
+      const res = await fetch('/api/admin/team', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password: ADMIN_PASSWORD,
+          action: 'toggle_status',
+          member: { id: m.id }
+        })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setTeamList(data.team)
+      } else {
+        alert(data.error)
+      }
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
+  const handleRoleSelect = (roleName) => {
+    setMemberRole(roleName)
+    const found = PREDEFINED_ROLES.find(r => r.name === roleName)
+    if (found && roleName !== 'Custom Task-Based Role') {
+      setMemberPermissions(found.permissions)
+    }
+  }
+
+  const togglePermission = (permId) => {
+    setMemberPermissions(prev => {
+      if (prev.includes(permId)) {
+        return prev.filter(p => p !== permId)
+      } else {
+        return [...prev, permId]
+      }
+    })
+    setMemberRole('Custom Task-Based Role')
+  }
 
   const handleSaveRiskConfig = async (e) => {
     if (e) e.preventDefault()
@@ -297,12 +471,6 @@ export default function AdminPanel() {
       const data = await res.json()
       if (data.success) {
         setRatesMsg({ type: 'success', text: 'All exchange rates, DirectPay, JazzCash & EasyPaisa settings updated successfully!' })
-        if (typeof window !== 'undefined') {
-          try {
-            localStorage.setItem('winxpro_settings', JSON.stringify(data))
-          } catch (e) {}
-          window.dispatchEvent(new Event('settings-updated'))
-        }
       } else {
         setRatesMsg({ type: 'error', text: data.error })
       }
@@ -334,7 +502,7 @@ export default function AdminPanel() {
         setAdjustMsg({ type: 'success', text: data.message })
         setAdjustAmount('')
         setAdjustNote('')
-        fetchAdminData() // Refresh balances
+        fetchAdminData()
       } else {
         setAdjustMsg({ type: 'error', text: data.error })
       }
@@ -365,6 +533,25 @@ export default function AdminPanel() {
     return found ? parseFloat(found.balance || 0).toFixed(2) : '0.00'
   }
 
+  // Categories of Transactions:
+  // 1. Auto Payments (DirectPay & Gateway)
+  const autoPaymentsList = allTransactions.filter(t => 
+    (t.method && t.method.toLowerCase().includes('directpay')) ||
+    (t.tx_id && String(t.tx_id).toUpperCase().startsWith('TXN-')) ||
+    t.metadata?.gateway === 'DirectPay'
+  )
+
+  // 2. Manual Deposits
+  const manualDepositsList = allTransactions.filter(t => 
+    t.type === 'deposit' && 
+    !(t.method && t.method.toLowerCase().includes('directpay')) &&
+    !(t.tx_id && String(t.tx_id).toUpperCase().startsWith('TXN-')) &&
+    t.metadata?.gateway !== 'DirectPay'
+  )
+
+  // 3. Withdrawals
+  const withdrawalsList = allTransactions.filter(t => t.type === 'withdrawal')
+
   // Filtered users list
   const filteredUsers = users.filter(u => 
     u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -375,7 +562,7 @@ export default function AdminPanel() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ background: 'var(--card)', border: '2px solid var(--accent)', borderRadius: '16px', padding: '40px', width: '90%', maxWidth: '360px', textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔐</div>
-        <h2 style={{ color: 'var(--accent)', marginTop: 0 }}>WinX Pro Admin Panel</h2>
+        <h2 style={{ color: 'var(--accent)', marginTop: 0 }}>WinX Pro Admin Console</h2>
         {msg && <div style={{ color: '#ff4444', marginBottom: '12px', fontSize: '14px' }}>{msg}</div>}
         <form onSubmit={login} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <input
@@ -393,26 +580,29 @@ export default function AdminPanel() {
   )
 
   const tabStyle = (active) => ({
-    padding: '12px 20px',
+    padding: '10px 16px',
     background: active ? 'var(--accent)' : 'var(--card)',
     color: active ? '#000' : '#fff',
     border: '1px solid var(--border)',
     borderRadius: '8px',
     fontWeight: 'bold',
     cursor: 'pointer',
-    fontSize: '13px',
-    transition: 'all 0.2s'
+    fontSize: '12px',
+    transition: 'all 0.2s',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px'
   })
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', color: '#fff', padding: '24px 16px', boxSizing: 'border-box' }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
         
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
             <h1 style={{ color: 'var(--accent)', margin: 0, fontSize: '24px' }}>🛡️ WinX Pro Management Console</h1>
-            <p style={{ margin: '4px 0 0', color: 'var(--muted)', fontSize: '13px' }}>Manage transactions, DirectPay gateway, exchange rates, and user balances</p>
+            <p style={{ margin: '4px 0 0', color: 'var(--muted)', fontSize: '13px' }}>Organized auto payments, manual deposits, withdrawals, users & team role management</p>
           </div>
           <button 
             onClick={() => { setAuthed(false); setPassword('') }}
@@ -430,110 +620,342 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {/* Tabs Bar */}
+        {/* Primary Dashboard Navigation Tabs */}
         <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
-          <button style={tabStyle(activeTab === 'risk')} onClick={() => setActiveTab('risk')}>
-            🎯 Real-Time Engine & Risk Governor
+          <button style={tabStyle(activeTab === 'autopayments')} onClick={() => setActiveTab('autopayments')}>
+            ⚡ Auto Payments ({autoPaymentsList.length})
           </button>
-          <button style={tabStyle(activeTab === 'transactions')} onClick={() => setActiveTab('transactions')}>
-            💳 Transactions & Payments ({allTransactions.length})
+          <button style={tabStyle(activeTab === 'manual_deposits')} onClick={() => setActiveTab('manual_deposits')}>
+            📥 Manual Deposits ({manualDepositsList.length})
           </button>
-          <button style={tabStyle(activeTab === 'rates')} onClick={() => setActiveTab('rates')}>
-            💵 Rates & Payment Gateway
+          <button style={tabStyle(activeTab === 'withdrawals')} onClick={() => setActiveTab('withdrawals')}>
+            📤 Withdrawals ({withdrawalsList.length})
           </button>
           <button style={tabStyle(activeTab === 'users')} onClick={() => setActiveTab('users')}>
-            👥 User Accounts & Balances ({users.length})
+            👥 Accounts ({users.length})
+          </button>
+          <button style={tabStyle(activeTab === 'team')} onClick={() => setActiveTab('team')}>
+            🔑 Team & Roles ({teamList.length})
+          </button>
+          <button style={tabStyle(activeTab === 'risk')} onClick={() => setActiveTab('risk')}>
+            🎯 Real-Time Engine
+          </button>
+          <button style={tabStyle(activeTab === 'rates')} onClick={() => setActiveTab('rates')}>
+            💵 Gateway Settings
           </button>
         </div>
 
         {/* ==========================================
-            TAB 1: TRANSACTIONS & PAYMENTS
+            TAB 1: ⚡ AUTO PAYMENTS (DIRECTPAY & GATEWAYS)
             ========================================== */}
-        {activeTab === 'transactions' && (
+        {activeTab === 'autopayments' && (
           <div>
+            {/* Auto Payments Summary Statistics */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+              <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
+                <div style={{ color: 'var(--muted)', fontSize: '11px', textTransform: 'uppercase' }}>Total Auto Payment Volume</div>
+                <div style={{ fontSize: '22px', fontWeight: '900', color: 'var(--accent)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <CurrencyFlag size={18} />
+                  {autoPaymentsList.filter(t => t.status === 'completed').reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0).toFixed(2)}
+                </div>
+              </div>
+
+              <div style={{ background: 'var(--card)', border: '1px solid #00ff8844', borderRadius: '12px', padding: '16px' }}>
+                <div style={{ color: '#00ff88', fontSize: '11px', textTransform: 'uppercase' }}>Successful Payments</div>
+                <div style={{ fontSize: '22px', fontWeight: '900', color: '#00ff88', marginTop: '4px' }}>
+                  {autoPaymentsList.filter(t => t.status === 'completed').length} Completed
+                </div>
+              </div>
+
+              <div style={{ background: 'var(--card)', border: '1px solid #ff000044', borderRadius: '12px', padding: '16px' }}>
+                <div style={{ color: '#ff6666', fontSize: '11px', textTransform: 'uppercase' }}>Failed / Cancelled</div>
+                <div style={{ fontSize: '22px', fontWeight: '900', color: '#ff6666', marginTop: '4px' }}>
+                  {autoPaymentsList.filter(t => t.status === 'failed' || t.status === 'cancelled').length} Failed
+                </div>
+              </div>
+
+              <div style={{ background: 'var(--card)', border: '1px solid #ff990044', borderRadius: '12px', padding: '16px' }}>
+                <div style={{ color: '#ff9900', fontSize: '11px', textTransform: 'uppercase' }}>Pending Gateways</div>
+                <div style={{ fontSize: '22px', fontWeight: '900', color: '#ff9900', marginTop: '4px' }}>
+                  {autoPaymentsList.filter(t => t.status === 'pending').length} Pending
+                </div>
+              </div>
+            </div>
+
+            {/* Filter & Live Search Toolbar */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <button
-                  onClick={() => setTxFilter('all')}
+                  onClick={() => setAutoTxFilter('all')}
                   style={{
                     padding: '6px 14px',
                     borderRadius: '6px',
                     border: 'none',
-                    background: txFilter === 'all' ? 'var(--accent)' : 'var(--bg-tertiary)',
-                    color: txFilter === 'all' ? '#000' : '#fff',
+                    background: autoTxFilter === 'all' ? 'var(--accent)' : 'var(--bg-tertiary)',
+                    color: autoTxFilter === 'all' ? '#000' : '#fff',
                     fontWeight: 'bold',
                     fontSize: '12px',
                     cursor: 'pointer'
                   }}
                 >
-                  All ({allTransactions.length})
+                  All Auto Payments ({autoPaymentsList.length})
                 </button>
                 <button
-                  onClick={() => setTxFilter('pending')}
+                  onClick={() => setAutoTxFilter('completed')}
                   style={{
                     padding: '6px 14px',
                     borderRadius: '6px',
                     border: 'none',
-                    background: txFilter === 'pending' ? '#ff9900' : 'var(--bg-tertiary)',
-                    color: txFilter === 'pending' ? '#000' : '#fff',
+                    background: autoTxFilter === 'completed' ? '#00ff88' : 'var(--bg-tertiary)',
+                    color: autoTxFilter === 'completed' ? '#000' : '#fff',
                     fontWeight: 'bold',
                     fontSize: '12px',
                     cursor: 'pointer'
                   }}
                 >
-                  Pending Approvals ({pending.length})
+                  🟢 Success Tags ({autoPaymentsList.filter(t => t.status === 'completed').length})
                 </button>
                 <button
-                  onClick={() => setTxFilter('completed')}
+                  onClick={() => setAutoTxFilter('failed')}
                   style={{
                     padding: '6px 14px',
                     borderRadius: '6px',
                     border: 'none',
-                    background: txFilter === 'completed' ? '#00ff88' : 'var(--bg-tertiary)',
-                    color: txFilter === 'completed' ? '#000' : '#fff',
+                    background: autoTxFilter === 'failed' ? '#ff4444' : 'var(--bg-tertiary)',
+                    color: autoTxFilter === 'failed' ? '#fff' : '#fff',
                     fontWeight: 'bold',
                     fontSize: '12px',
                     cursor: 'pointer'
                   }}
                 >
-                  Completed ({allTransactions.filter(t => t.status === 'completed').length})
+                  🔴 Failed Tags ({autoPaymentsList.filter(t => t.status === 'failed' || t.status === 'cancelled').length})
                 </button>
                 <button
-                  onClick={() => setTxFilter('failed')}
+                  onClick={() => setAutoTxFilter('pending')}
                   style={{
                     padding: '6px 14px',
                     borderRadius: '6px',
                     border: 'none',
-                    background: txFilter === 'failed' ? '#ff4444' : 'var(--bg-tertiary)',
-                    color: txFilter === 'failed' ? '#fff' : '#fff',
+                    background: autoTxFilter === 'pending' ? '#ff9900' : 'var(--bg-tertiary)',
+                    color: autoTxFilter === 'pending' ? '#000' : '#fff',
                     fontWeight: 'bold',
                     fontSize: '12px',
                     cursor: 'pointer'
                   }}
                 >
-                  Failed ({allTransactions.filter(t => t.status === 'failed').length})
+                  ⏳ Pending ({autoPaymentsList.filter(t => t.status === 'pending').length})
                 </button>
               </div>
 
-              <button onClick={fetchAdminData} style={{ background: 'var(--card)', border: '1px solid var(--border)', color: '#fff', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>
-                🔄 Refresh
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={() => fetchAdminData(false)} style={{ background: 'var(--card)', border: '1px solid var(--border)', color: '#fff', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
+                  🔄 Sync DirectPay Live
+                </button>
+              </div>
             </div>
 
-            {loading ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: 'var(--muted)' }}>Loading transactions...</div>
-            ) : (() => {
-              const displayList = allTransactions.filter(t => {
-                if (txFilter === 'pending') return t.status === 'pending';
-                if (txFilter === 'completed') return t.status === 'completed';
-                if (txFilter === 'failed') return t.status === 'failed';
+            {/* List of Automated Payments */}
+            {(() => {
+              const displayList = autoPaymentsList.filter(t => {
+                if (autoTxFilter === 'completed') return t.status === 'completed';
+                if (autoTxFilter === 'failed') return t.status === 'failed' || t.status === 'cancelled';
+                if (autoTxFilter === 'pending') return t.status === 'pending';
                 return true;
               });
 
               if (displayList.length === 0) {
                 return (
                   <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '40px', textAlign: 'center', color: 'var(--muted)' }}>
-                    No transactions found in this category.
+                    No automated gateway payments match this filter.
+                  </div>
+                );
+              }
+
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {displayList.map(tx => {
+                    const isCompleted = tx.status === 'completed';
+                    const isPending = tx.status === 'pending';
+                    const isFailed = tx.status === 'failed' || tx.status === 'cancelled';
+
+                    return (
+                      <div key={tx.id || tx.tx_id} style={{ background: 'var(--card)', border: `1px solid ${isCompleted ? '#00ff8855' : isPending ? '#ff990055' : '#ff000055'}`, borderRadius: '12px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <span style={{ 
+                              padding: '4px 10px', 
+                              borderRadius: '6px', 
+                              fontSize: '11px', 
+                              fontWeight: '900', 
+                              textTransform: 'uppercase',
+                              background: isCompleted ? '#00ff8822' : isPending ? '#ff990022' : '#ff000022',
+                              color: isCompleted ? '#00ff88' : isPending ? '#ff9900' : '#ff6666',
+                              border: `1px solid ${isCompleted ? '#00ff8844' : isPending ? '#ff990044' : '#ff000044'}`
+                            }}>
+                              {isCompleted ? '✓ SUCCESS' : isFailed ? '✕ FAILED' : '⏳ PENDING'}
+                            </span>
+                            <strong style={{ fontSize: '18px', color: 'var(--accent)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <CurrencyFlag size={16} />{parseFloat(tx.amount || 0).toFixed(2)}
+                            </strong>
+                            <span style={{ fontSize: '13px', color: '#00e5ff', fontWeight: 'bold' }}>via {tx.method}</span>
+                          </div>
+
+                          <div style={{ fontSize: '13px', color: '#ccc', marginTop: '6px' }}>
+                            <strong>Player Account:</strong> {tx.email || getEmail(tx.user_id)} <span style={{ color: 'var(--muted)', fontSize: '11px', fontFamily: 'monospace' }}>({tx.user_id})</span>
+                          </div>
+
+                          {(() => {
+                            const paymentPhone = tx.metadata?.account_number || tx.metadata?.msisdn || (tx.notes && tx.notes.match(/(?:Phone\/Account|Phone|Account):\s*(\d+)/i)?.[1]);
+                            return paymentPhone ? (
+                              <div style={{ fontSize: '13px', color: '#00ff88', marginTop: '2px' }}>
+                                <strong>📱 Payment Account / Mobile:</strong> {paymentPhone}
+                              </div>
+                            ) : null;
+                          })()}
+
+                          {(tx.tx_id || tx.id) && (
+                            <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px', fontFamily: 'monospace' }}>
+                              <strong>Merchant TxID:</strong> {tx.tx_id || tx.id}
+                            </div>
+                          )}
+
+                          {tx.metadata?.gateway_transaction_id && (
+                            <div style={{ fontSize: '12px', color: '#ffb300', marginTop: '2px', fontFamily: 'monospace' }}>
+                              <strong>⚡ DirectPay Gateway Ref:</strong> {tx.metadata.gateway_transaction_id}
+                            </div>
+                          )}
+
+                          {tx.notes && (
+                            <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
+                              <em>📝 {tx.notes}</em>
+                            </div>
+                          )}
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px' }}>
+                            <span style={{ fontSize: '11px', color: '#888' }}>📅 {new Date(tx.created_at).toLocaleString()}</span>
+                            <button
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                try {
+                                  const res = await fetch(`/api/payments/directpay/inquire?txn_id=${encodeURIComponent(tx.tx_id || tx.id)}`);
+                                  const data = await res.json();
+                                  alert(`DirectPay Transaction Details:\n\nMerchant TxID: ${data.client_transaction_id || tx.tx_id}\nGateway ID: ${data.gateway_transaction_id || 'N/A'}\nStatus: ${data.gateway_status || tx.status}\nAmount: PKR ${data.amountInPKR}\nAccount: ${data.account_number}`);
+                                } catch (err) {
+                                  alert('Failed to inquire DirectPay details: ' + err.message);
+                                }
+                              }}
+                              style={{
+                                background: 'rgba(255, 215, 0, 0.1)',
+                                border: '1px solid var(--accent)',
+                                color: 'var(--accent)',
+                                padding: '3px 8px',
+                                borderRadius: '4px',
+                                fontSize: '10px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              🔍 Inquire DirectPay API
+                            </button>
+                          </div>
+                        </div>
+
+                        {isPending && (
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              onClick={() => handleAction(tx.id || tx.tx_id, 'approve')}
+                              style={{ padding: '8px 16px', background: '#00cc66', color: '#000', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+                            >
+                              ✓ Force Approve
+                            </button>
+                            <button
+                              onClick={() => handleAction(tx.id || tx.tx_id, 'reject')}
+                              style={{ padding: '8px 16px', background: '#331111', color: '#ff6666', border: '1px solid #ff444444', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+                            >
+                              ✕ Mark Failed
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* ==========================================
+            TAB 2: 📥 MANUAL DEPOSITS
+            ========================================== */}
+        {activeTab === 'manual_deposits' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => setManualTxFilter('all')}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: manualTxFilter === 'all' ? 'var(--accent)' : 'var(--bg-tertiary)',
+                    color: manualTxFilter === 'all' ? '#000' : '#fff',
+                    fontWeight: 'bold',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  All Manual Deposits ({manualDepositsList.length})
+                </button>
+                <button
+                  onClick={() => setManualTxFilter('pending')}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: manualTxFilter === 'pending' ? '#ff9900' : 'var(--bg-tertiary)',
+                    color: manualTxFilter === 'pending' ? '#000' : '#fff',
+                    fontWeight: 'bold',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ⏳ Pending Approvals ({manualDepositsList.filter(t => t.status === 'pending').length})
+                </button>
+                <button
+                  onClick={() => setManualTxFilter('completed')}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: manualTxFilter === 'completed' ? '#00ff88' : 'var(--bg-tertiary)',
+                    color: manualTxFilter === 'completed' ? '#000' : '#fff',
+                    fontWeight: 'bold',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🟢 Approved ({manualDepositsList.filter(t => t.status === 'completed').length})
+                </button>
+              </div>
+
+              <button onClick={() => fetchAdminData(false)} style={{ background: 'var(--card)', border: '1px solid var(--border)', color: '#fff', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
+                🔄 Refresh
+              </button>
+            </div>
+
+            {(() => {
+              const displayList = manualDepositsList.filter(t => {
+                if (manualTxFilter === 'pending') return t.status === 'pending';
+                if (manualTxFilter === 'completed') return t.status === 'completed';
+                if (manualTxFilter === 'failed') return t.status === 'failed';
+                return true;
+              });
+
+              if (displayList.length === 0) {
+                return (
+                  <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '40px', textAlign: 'center', color: 'var(--muted)' }}>
+                    No manual deposit requests in this view.
                   </div>
                 );
               }
@@ -551,18 +973,6 @@ export default function AdminPanel() {
                               padding: '3px 8px', 
                               borderRadius: '4px', 
                               fontSize: '11px', 
-                              fontWeight: 'bold', 
-                              textTransform: 'uppercase',
-                              background: tx.type === 'deposit' ? '#00ff8822' : '#ff990022',
-                              color: tx.type === 'deposit' ? '#00ff88' : '#ff9900',
-                              border: `1px solid ${tx.type === 'deposit' ? '#00ff8844' : '#ff990044'}`
-                            }}>
-                              {tx.type}
-                            </span>
-                            <span style={{
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontSize: '11px',
                               fontWeight: 'bold',
                               textTransform: 'uppercase',
                               background: isCompleted ? '#00ff8822' : isPending ? '#ff990022' : '#ff000022',
@@ -571,32 +981,19 @@ export default function AdminPanel() {
                             }}>
                               {tx.status}
                             </span>
-                            <strong style={{ fontSize: '16px', color: 'var(--accent)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><CurrencyFlag size={14} />{parseFloat(tx.amount || 0).toFixed(2)}</strong>
+                            <strong style={{ fontSize: '16px', color: 'var(--accent)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <CurrencyFlag size={14} />{parseFloat(tx.amount || 0).toFixed(2)}
+                            </strong>
                             <span style={{ fontSize: '13px', color: 'var(--muted)' }}>via {tx.method}</span>
                           </div>
 
                           <div style={{ fontSize: '13px', color: '#ccc', marginTop: '6px' }}>
-                            <strong>Player Account:</strong> {tx.email || getEmail(tx.user_id)} <span style={{ color: 'var(--muted)', fontSize: '11px', fontFamily: 'monospace' }}>({tx.user_id})</span>
+                            <strong>Player Account:</strong> {tx.email || getEmail(tx.user_id)}
                           </div>
 
-                          {(() => {
-                            const paymentPhone = tx.metadata?.account_number || tx.metadata?.msisdn || (tx.notes && tx.notes.match(/(?:Phone\/Account|Phone|Account):\s*(\d+)/i)?.[1]);
-                            return paymentPhone ? (
-                              <div style={{ fontSize: '13px', color: '#00e5ff', marginTop: '2px' }}>
-                                <strong>📱 Payment Mobile/Account:</strong> {paymentPhone}
-                              </div>
-                            ) : null;
-                          })()}
-
-                          {(tx.tx_id || tx.id) && (
-                            <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px', fontFamily: 'monospace' }}>
-                              <strong>Merchant TxID:</strong> {tx.tx_id || tx.id}
-                            </div>
-                          )}
-
-                          {tx.metadata?.gateway_transaction_id && (
-                            <div style={{ fontSize: '12px', color: '#ffb300', marginTop: '2px', fontFamily: 'monospace' }}>
-                              <strong>⚡ DirectPay Gateway ID:</strong> {tx.metadata.gateway_transaction_id}
+                          {tx.tx_id && (
+                            <div style={{ fontSize: '12px', color: '#00e5ff', marginTop: '2px', fontFamily: 'monospace' }}>
+                              <strong>TxID / Reference:</strong> {tx.tx_id}
                             </div>
                           )}
 
@@ -606,34 +1003,8 @@ export default function AdminPanel() {
                             </div>
                           )}
 
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px' }}>
-                            <span style={{ fontSize: '11px', color: '#888' }}>📅 {new Date(tx.created_at).toLocaleString()}</span>
-                            {tx.method?.toLowerCase().includes('directpay') && (
-                              <button
-                                onClick={async (e) => {
-                                  e.stopPropagation();
-                                  try {
-                                    const res = await fetch(`/api/payments/directpay/inquire?txn_id=${encodeURIComponent(tx.tx_id || tx.id)}`);
-                                    const data = await res.json();
-                                    alert(`DirectPay Transaction Details:\n\nMerchant TxID: ${data.client_transaction_id || tx.tx_id}\nGateway ID: ${data.gateway_transaction_id || 'N/A'}\nStatus: ${data.gateway_status || tx.status}\nAmount: PKR ${data.amountInPKR}\nAccount: ${data.account_number}`);
-                                  } catch (err) {
-                                    alert('Failed to inquire DirectPay details: ' + err.message);
-                                  }
-                                }}
-                                style={{
-                                  background: 'rgba(255, 215, 0, 0.1)',
-                                  border: '1px solid var(--accent)',
-                                  color: 'var(--accent)',
-                                  padding: '2px 8px',
-                                  borderRadius: '4px',
-                                  fontSize: '10px',
-                                  fontWeight: 'bold',
-                                  cursor: 'pointer'
-                                }}
-                              >
-                                🔍 Inquire DirectPay API
-                              </button>
-                            )}
+                          <div style={{ fontSize: '11px', color: '#888', marginTop: '4px' }}>
+                            📅 {new Date(tx.created_at).toLocaleString()}
                           </div>
                         </div>
 
@@ -663,468 +1034,428 @@ export default function AdminPanel() {
         )}
 
         {/* ==========================================
-            TAB 2: RATES & PAYMENT GATEWAY
+            TAB 3: 📤 WITHDRAWALS
             ========================================== */}
-        {activeTab === 'rates' && (
-          <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px' }}>
-            <h2 style={{ color: 'var(--accent)', marginTop: 0 }}>💵 Conversion Rates & DirectPay Gateway</h2>
-            <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '24px', lineHeight: '1.6' }}>
-              Configure Pay-In/Pay-Out currency conversion rates and connect your <strong>DirectPay API</strong> credentials (Easypaisa, JazzCash, Card PWA Landing Page).
-            </p>
-
-            {ratesMsg && (
-              <div style={{ 
-                padding: '12px', 
-                borderRadius: '8px', 
-                marginBottom: '20px', 
-                fontSize: '14px', 
-                background: ratesMsg.type === 'error' ? '#ff000022' : '#00ff8822', 
-                color: ratesMsg.type === 'error' ? '#ff6666' : '#00ff88',
-                border: `1px solid ${ratesMsg.type === 'error' ? '#ff000044' : '#00ff8844'}`
-              }}>
-                {ratesMsg.text}
-              </div>
-            )}
-
-            <form onSubmit={handleSaveRates} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              
-              {/* Currency Rates */}
-              <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                <h3 style={{ margin: '0 0 12px', fontSize: '15px', color: 'var(--accent)' }}>📈 Exchange Rates</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-                  <div>
-                    <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>
-                      🌍 1 Fiat (PKR) =
-                    </label>
-                    <input
-                      type="number"
-                      step="0.0001"
-                      min="0.0001"
-                      value={pkrRate}
-                      onChange={e => setPkrRate(e.target.value)}
-                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px' }}
-                      required
-                    />
-                    <small style={{ color: 'var(--muted)', display: 'block', marginTop: '4px' }}>Balance per Fiat</small>
-                  </div>
-
-                  <div>
-                    <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>
-                      🇺🇸 1 USD ($) =
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0.01"
-                      value={usdRate}
-                      onChange={e => setUsdRate(e.target.value)}
-                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px' }}
-                      required
-                    />
-                    <small style={{ color: 'var(--muted)', display: 'block', marginTop: '4px' }}>Balance per USD</small>
-                  </div>
-                </div>
+        {activeTab === 'withdrawals' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => setWithdrawalTxFilter('all')}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: withdrawalTxFilter === 'all' ? 'var(--accent)' : 'var(--bg-tertiary)',
+                    color: withdrawalTxFilter === 'all' ? '#000' : '#fff',
+                    fontWeight: 'bold',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  All Withdrawals ({withdrawalsList.length})
+                </button>
+                <button
+                  onClick={() => setWithdrawalTxFilter('pending')}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: withdrawalTxFilter === 'pending' ? '#ff9900' : 'var(--bg-tertiary)',
+                    color: withdrawalTxFilter === 'pending' ? '#000' : '#fff',
+                    fontWeight: 'bold',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ⏳ Pending Payouts ({withdrawalsList.filter(t => t.status === 'pending').length})
+                </button>
+                <button
+                  onClick={() => setWithdrawalTxFilter('completed')}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: withdrawalTxFilter === 'completed' ? '#00ff88' : 'var(--bg-tertiary)',
+                    color: withdrawalTxFilter === 'completed' ? '#000' : '#fff',
+                    fontWeight: 'bold',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🟢 Processed ({withdrawalsList.filter(t => t.status === 'completed').length})
+                </button>
               </div>
 
-              {/* JazzCash Direct REST API Settings */}
-              <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '12px', border: '1px solid #d5000066' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <h3 style={{ margin: 0, fontSize: '15px', color: '#ff5252', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    🔴 JazzCash MWallet REST API v1.1 (Direct API)
-                  </h3>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', cursor: 'pointer' }}>
-                      <input 
-                        type="checkbox" 
-                        checked={jazzcashEnabled} 
-                        onChange={e => setJazzcashEnabled(e.target.checked)} 
-                      />
-                      Enable JazzCash
-                    </label>
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', marginBottom: '12px' }}>
-                  <div>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>
-                      Merchant ID:
-                    </label>
-                    <input
-                      type="text"
-                      value={jazzcashMerchantId}
-                      onChange={e => setJazzcashMerchantId(e.target.value)}
-                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px', fontFamily: 'monospace' }}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>
-                      Password:
-                    </label>
-                    <input
-                      type="text"
-                      value={jazzcashPassword}
-                      onChange={e => setJazzcashPassword(e.target.value)}
-                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px', fontFamily: 'monospace' }}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>
-                      Integrity Salt (Secret Key):
-                    </label>
-                    <input
-                      type="text"
-                      value={jazzcashIntegritySalt}
-                      onChange={e => setJazzcashIntegritySalt(e.target.value)}
-                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px', fontFamily: 'monospace' }}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.3)', padding: '10px 12px', borderRadius: '8px' }}>
-                  <span style={{ fontSize: '12px', color: '#ccc' }}>Default Player Gateway Route for JazzCash:</span>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <button
-                      type="button"
-                      onClick={() => setJazzcashMode('direct_api')}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '6px',
-                        border: 'none',
-                        background: jazzcashMode === 'direct_api' ? '#d50000' : '#222',
-                        color: '#fff',
-                        fontWeight: 'bold',
-                        fontSize: '11px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      ⚡ Direct API (REST)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setJazzcashMode('directpay')}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '6px',
-                        border: 'none',
-                        background: jazzcashMode === 'directpay' ? 'var(--accent)' : '#222',
-                        color: jazzcashMode === 'directpay' ? '#000' : '#fff',
-                        fontWeight: 'bold',
-                        fontSize: '11px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      🔗 Direct Pay Gateway
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* EasyPaisa Direct API Settings */}
-              <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '12px', border: '1px solid #00c85366' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <h3 style={{ margin: 0, fontSize: '15px', color: '#00e676', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    🟢 EasyPaisa Easypay API (Direct API)
-                  </h3>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', cursor: 'pointer' }}>
-                      <input 
-                        type="checkbox" 
-                        checked={easypaisaEnabled} 
-                        onChange={e => setEasypaisaEnabled(e.target.checked)} 
-                      />
-                      Enable EasyPaisa
-                    </label>
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', marginBottom: '12px' }}>
-                  <div>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>
-                      Store ID:
-                    </label>
-                    <input
-                      type="text"
-                      value={easypaisaStoreId}
-                      onChange={e => setEasypaisaStoreId(e.target.value)}
-                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px', fontFamily: 'monospace' }}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>
-                      Hash Key / AES Secret:
-                    </label>
-                    <input
-                      type="text"
-                      value={easypaisaHashKey}
-                      onChange={e => setEasypaisaHashKey(e.target.value)}
-                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px', fontFamily: 'monospace' }}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.3)', padding: '10px 12px', borderRadius: '8px' }}>
-                  <span style={{ fontSize: '12px', color: '#ccc' }}>Default Player Gateway Route for EasyPaisa:</span>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <button
-                      type="button"
-                      onClick={() => setEasypaisaMode('direct_api')}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '6px',
-                        border: 'none',
-                        background: easypaisaMode === 'direct_api' ? '#00c853' : '#222',
-                        color: '#fff',
-                        fontWeight: 'bold',
-                        fontSize: '11px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      ⚡ Direct API (Easypay)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setEasypaisaMode('directpay')}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '6px',
-                        border: 'none',
-                        background: easypaisaMode === 'directpay' ? 'var(--accent)' : '#222',
-                        color: easypaisaMode === 'directpay' ? '#000' : '#fff',
-                        fontWeight: 'bold',
-                        fontSize: '11px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      🔗 Direct Pay Gateway
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* DirectPay Gateway API Settings */}
-              <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <h3 style={{ margin: 0, fontSize: '15px', color: '#00e676', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    ⚡ DirectPay Landing Page API (Payin PWA)
-                  </h3>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', cursor: 'pointer' }}>
-                    <input 
-                      type="checkbox" 
-                      checked={directpayEnabled} 
-                      onChange={e => setDirectpayEnabled(e.target.checked)} 
-                    />
-                    Enable Gateway
-                  </label>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <div>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>
-                      DirectPay Client ID:
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. pwa_ci_test123"
-                      value={directpayClientId}
-                      onChange={e => setDirectpayClientId(e.target.value)}
-                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px', fontFamily: 'monospace' }}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>
-                      DirectPay Client Secret (HMAC-SHA256 Key):
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Your secret key from DirectPay"
-                      value={directpayClientSecret}
-                      onChange={e => setDirectpayClientSecret(e.target.value)}
-                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px', fontFamily: 'monospace' }}
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* DirectPay Live Inquiry & All Transactions Console */}
-                <div style={{ marginTop: '16px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
-                  <h4 style={{ margin: '0 0 10px', color: '#00e676', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    🔍 DirectPay Live Inquiry & All Transactions Console
-                  </h4>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
-                    <input
-                      type="text"
-                      placeholder="Enter Client TxID, Gateway ID, or Mobile #..."
-                      value={dpSearchId}
-                      onChange={e => setDpSearchId(e.target.value)}
-                      style={{ flex: 1, minWidth: '220px', padding: '10px', borderRadius: '6px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '13px' }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleDirectPayInquire(dpSearchId)}
-                      disabled={dpInquireLoading}
-                      style={{ background: '#00e676', color: '#000', border: 'none', padding: '10px 16px', borderRadius: '6px', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
-                    >
-                      {dpInquireLoading ? 'Searching...' : '🔍 Search Specific TxID'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDirectPayInquire('')}
-                      disabled={dpInquireLoading}
-                      style={{ background: 'var(--accent)', color: '#000', border: 'none', padding: '10px 16px', borderRadius: '6px', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
-                    >
-                      📋 View ALL DirectPay Transactions (Completed/Failed/Pending)
-                    </button>
-                  </div>
-
-                  {/* DirectPay Inquire Results Display */}
-                  {dpInquireData && (
-                    <div style={{ background: '#0d111a', border: '1px solid #00e67644', borderRadius: '10px', padding: '14px', marginTop: '10px' }}>
-                      {dpInquireData.summary && (
-                        <div style={{ display: 'flex', gap: '12px', marginBottom: '12px', flexWrap: 'wrap' }}>
-                          <div style={{ background: '#1a2333', padding: '8px 12px', borderRadius: '6px', fontSize: '12px' }}>
-                            📊 Total DirectPay: <strong>{dpInquireData.summary.total_count}</strong>
-                          </div>
-                          <div style={{ background: '#00ff8822', color: '#00ff88', border: '1px solid #00ff8844', padding: '8px 12px', borderRadius: '6px', fontSize: '12px' }}>
-                            🟢 Completed: <strong>{dpInquireData.summary.completed_count}</strong> (PKR {dpInquireData.summary.total_volume_pkr?.toFixed(2)})
-                          </div>
-                          <div style={{ background: '#ff990022', color: '#ff9900', border: '1px solid #ff990044', padding: '8px 12px', borderRadius: '6px', fontSize: '12px' }}>
-                            ⏳ Pending: <strong>{dpInquireData.summary.pending_count}</strong>
-                          </div>
-                          <div style={{ background: '#ff000022', color: '#ff6666', border: '1px solid #ff000044', padding: '8px 12px', borderRadius: '6px', fontSize: '12px' }}>
-                            🔴 Failed/Cancelled: <strong>{dpInquireData.summary.failed_count}</strong>
-                          </div>
-                        </div>
-                      )}
-
-                      {dpInquireData.transactions && Array.isArray(dpInquireData.transactions) ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '360px', overflowY: 'auto' }}>
-                          {dpInquireData.transactions.length === 0 ? (
-                            <div style={{ color: 'var(--muted)', fontSize: '13px', textAlign: 'center', padding: '16px' }}>No DirectPay transactions found.</div>
-                          ) : (
-                            dpInquireData.transactions.map(t => {
-                              const isComp = t.status === 'completed';
-                              const isPend = t.status === 'pending';
-                              return (
-                                <div key={t.id || t.tx_id} style={{ background: '#141c2b', border: `1px solid ${isComp ? '#00ff8844' : isPend ? '#ff990044' : '#ff000044'}`, borderRadius: '8px', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', fontSize: '12px' }}>
-                                  <div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                      <span style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', background: isComp ? '#00ff8822' : isPend ? '#ff990022' : '#ff000022', color: isComp ? '#00ff88' : isPend ? '#ff9900' : '#ff6666' }}>
-                                        {t.status.toUpperCase()}
-                                      </span>
-                                      <strong style={{ color: 'var(--accent)', fontSize: '14px' }}>PKR {parseFloat(t.amount || 0).toFixed(2)}</strong>
-                                      <span style={{ color: '#00e5ff' }}>📱 {t.account_number}</span>
-                                    </div>
-                                    <div style={{ color: '#aaa', marginTop: '4px', fontFamily: 'monospace' }}>
-                                      Client TxID: {t.tx_id} | Gateway ID: {t.gateway_transaction_id}
-                                    </div>
-                                    <div style={{ color: 'var(--muted)', marginTop: '2px', fontSize: '11px' }}>
-                                      Account: {t.email} | 📅 {new Date(t.created_at).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDirectPayInquire(t.tx_id)}
-                                    style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', color: '#fff', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer' }}
-                                  >
-                                    🔍 Sync Live Status
-                                  </button>
-                                </div>
-                              );
-                            })
-                          )}
-                        </div>
-                      ) : (
-                        /* Single Transaction Inquiry Details */
-                        <div style={{ fontSize: '13px', lineHeight: '1.6' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                            <strong style={{ color: 'var(--accent)' }}>Transaction Inquiry Found:</strong>
-                            <span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', background: dpInquireData.status === 'completed' ? '#00ff8822' : '#ff990022', color: dpInquireData.status === 'completed' ? '#00ff88' : '#ff9900' }}>
-                              {String(dpInquireData.status || dpInquireData.gateway_status).toUpperCase()}
-                            </span>
-                          </div>
-                          <div><strong>Client TxID:</strong> <code style={{ color: '#00e5ff' }}>{dpInquireData.client_transaction_id}</code></div>
-                          <div><strong>Gateway TxID:</strong> <code style={{ color: '#ffb300' }}>{dpInquireData.gateway_transaction_id}</code></div>
-                          <div><strong>Amount:</strong> PKR {dpInquireData.amountInPKR}</div>
-                          <div><strong>Account Number / Phone:</strong> {dpInquireData.account_number}</div>
-                          <div><strong>Gateway Live Status:</strong> {dpInquireData.gateway_status}</div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Card Gateway Preference */}
-              <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '12px', border: '1px solid #2979ff66' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <h3 style={{ margin: 0, fontSize: '15px', color: '#2979ff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      💳 Card Payment Route Preference
-                    </h3>
-                    <p style={{ margin: '4px 0 0', color: 'var(--muted)', fontSize: '12px' }}>Select the default processor for Debit / Credit Card deposits</p>
-                  </div>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <button
-                      type="button"
-                      onClick={() => setCardMode('direct_api')}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '6px',
-                        border: 'none',
-                        background: cardMode === 'direct_api' ? '#2979ff' : '#222',
-                        color: '#fff',
-                        fontWeight: 'bold',
-                        fontSize: '11px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      ⚡ Direct API (JazzCash / EasyPay CC)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setCardMode('directpay')}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '6px',
-                        border: 'none',
-                        background: cardMode === 'directpay' ? 'var(--accent)' : '#222',
-                        color: cardMode === 'directpay' ? '#000' : '#fff',
-                        fontWeight: 'bold',
-                        fontSize: '11px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      🔗 Direct Pay Gateway
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <button 
-                type="submit" 
-                className="btn primary" 
-                disabled={ratesLoading} 
-                style={{ width: '100%', padding: '16px', fontSize: '15px', background: 'var(--accent)', color: '#000', fontWeight: 'bold', borderRadius: '8px', marginTop: '8px' }}
-              >
-                {ratesLoading ? '💾 Saving settings...' : '💾 Save Rates & All Gateway Credentials'}
+              <button onClick={() => fetchAdminData(false)} style={{ background: 'var(--card)', border: '1px solid var(--border)', color: '#fff', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
+                🔄 Refresh
               </button>
+            </div>
 
-            </form>
+            {(() => {
+              const displayList = withdrawalsList.filter(t => {
+                if (withdrawalTxFilter === 'pending') return t.status === 'pending';
+                if (withdrawalTxFilter === 'completed') return t.status === 'completed';
+                if (withdrawalTxFilter === 'failed') return t.status === 'failed';
+                return true;
+              });
+
+              if (displayList.length === 0) {
+                return (
+                  <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '40px', textAlign: 'center', color: 'var(--muted)' }}>
+                    No withdrawal requests in this category.
+                  </div>
+                );
+              }
+
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {displayList.map(tx => {
+                    const isCompleted = tx.status === 'completed';
+                    const isPending = tx.status === 'pending';
+                    const targetAccount = tx.metadata?.account_number || (tx.notes && tx.notes.match(/(?:account|phone)\s*(\d+)/i)?.[1]) || 'N/A';
+
+                    return (
+                      <div key={tx.id || tx.tx_id} style={{ background: 'var(--card)', border: `1px solid ${isCompleted ? '#00ff8844' : isPending ? '#ff990044' : 'var(--border)'}`, borderRadius: '12px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ 
+                              padding: '3px 8px', 
+                              borderRadius: '4px', 
+                              fontSize: '11px', 
+                              fontWeight: 'bold',
+                              textTransform: 'uppercase',
+                              background: '#ff990022',
+                              color: '#ff9900',
+                              border: '1px solid #ff990044'
+                            }}>
+                              WITHDRAWAL
+                            </span>
+                            <span style={{
+                              padding: '3px 8px',
+                              borderRadius: '4px',
+                              fontSize: '11px',
+                              fontWeight: 'bold',
+                              textTransform: 'uppercase',
+                              background: isCompleted ? '#00ff8822' : isPending ? '#ff990022' : '#ff000022',
+                              color: isCompleted ? '#00ff88' : isPending ? '#ff9900' : '#ff6666',
+                              border: `1px solid ${isCompleted ? '#00ff8844' : isPending ? '#ff990044' : '#ff000044'}`
+                            }}>
+                              {tx.status}
+                            </span>
+                            <strong style={{ fontSize: '16px', color: '#ff9900', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <CurrencyFlag size={14} />{parseFloat(tx.amount || 0).toFixed(2)}
+                            </strong>
+                            <span style={{ fontSize: '13px', color: 'var(--muted)' }}>via {tx.method}</span>
+                          </div>
+
+                          <div style={{ fontSize: '13px', color: '#ccc', marginTop: '6px' }}>
+                            <strong>Player Account:</strong> {tx.email || getEmail(tx.user_id)}
+                          </div>
+
+                          <div style={{ fontSize: '13px', color: '#00e5ff', marginTop: '2px' }}>
+                            <strong>🏦 Payout Mobile/Account Number:</strong> {targetAccount}
+                          </div>
+
+                          {tx.notes && (
+                            <div style={{ fontSize: '12px', color: '#ffb300', marginTop: '2px' }}>
+                              <em>📝 {tx.notes}</em>
+                            </div>
+                          )}
+
+                          <div style={{ fontSize: '11px', color: '#888', marginTop: '4px' }}>
+                            📅 {new Date(tx.created_at).toLocaleString()}
+                          </div>
+                        </div>
+
+                        {isPending && (
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              onClick={() => handleAction(tx.id || tx.tx_id, 'approve')}
+                              style={{ padding: '8px 16px', background: '#00cc66', color: '#000', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+                            >
+                              ✓ Approve Payout
+                            </button>
+                            <button
+                              onClick={() => handleAction(tx.id || tx.tx_id, 'reject')}
+                              style={{ padding: '8px 16px', background: '#331111', color: '#ff6666', border: '1px solid #ff444444', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+                            >
+                              ✕ Reject & Refund
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
         )}
 
         {/* ==========================================
-            TAB 3: USERS & BALANCES
+            TAB 4: 🔑 TEAM ROLES & TASK-BASED ACCESS
+            ========================================== */}
+        {activeTab === 'team' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h2 style={{ margin: 0, color: 'var(--accent)', fontSize: '20px' }}>🔑 Team & Task-Based Role Management</h2>
+                <p style={{ margin: '4px 0 0', color: 'var(--muted)', fontSize: '13px' }}>
+                  Add team operators and delegate specific task-based permissions (Deposits, Payouts, Balances, Risk Control)
+                </p>
+              </div>
+              <button 
+                onClick={resetMemberForm}
+                style={{ background: 'var(--accent)', color: '#000', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+              >
+                ➕ Add New Team Member
+              </button>
+            </div>
+
+            {teamMsg && (
+              <div style={{ padding: '12px 16px', borderRadius: '8px', fontSize: '13px', background: teamMsg.type === 'error' ? '#ff000022' : '#00ff8822', color: teamMsg.type === 'error' ? '#ff6666' : '#00ff88', border: `1px solid ${teamMsg.type === 'error' ? '#ff444444' : '#00ff8844'}` }}>
+                {teamMsg.text}
+              </div>
+            )}
+
+            {/* Member Form Card */}
+            <div style={{ background: 'var(--card)', border: '2px solid var(--border)', borderRadius: '16px', padding: '24px' }}>
+              <h3 style={{ margin: '0 0 16px', color: '#fff', fontSize: '16px' }}>
+                {editingMember ? `✏️ Edit Team Member: ${editingMember.name}` : '👤 Create New Task-Based Team Member'}
+              </h3>
+
+              <form onSubmit={handleSaveMember} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Full Name:</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Ali Hassan"
+                      value={memberName}
+                      onChange={e => setMemberName(e.target.value)}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-tertiary)', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Username:</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. ali_operator"
+                      value={memberUsername}
+                      onChange={e => setMemberUsername(e.target.value)}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-tertiary)', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Email Address:</label>
+                    <input
+                      type="email"
+                      placeholder="e.g. ali@winxpro.com"
+                      value={memberEmail}
+                      onChange={e => setMemberEmail(e.target.value)}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-tertiary)', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Access PIN / Password:</label>
+                    <input
+                      type="text"
+                      placeholder="Access PIN e.g. 123456"
+                      value={memberPin}
+                      onChange={e => setMemberPin(e.target.value)}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-tertiary)', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Role Preset Selector */}
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '6px' }}>Select Preset Role:</label>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {PREDEFINED_ROLES.map(r => (
+                      <button
+                        key={r.name}
+                        type="button"
+                        onClick={() => handleRoleSelect(r.name)}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '6px',
+                          border: '1px solid ' + (memberRole === r.name ? 'var(--accent)' : 'var(--border)'),
+                          background: memberRole === r.name ? 'var(--accent)' : 'var(--bg-tertiary)',
+                          color: memberRole === r.name ? '#000' : '#fff',
+                          fontWeight: 'bold',
+                          fontSize: '12px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {r.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Granular Task Access Permissions Checkboxes */}
+                <div style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
+                  <label style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--accent)', display: 'block', marginBottom: '10px' }}>
+                    🎯 Task-Based Access Permissions:
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px' }}>
+                    {AVAILABLE_PERMISSIONS.map(p => {
+                      const isChecked = memberPermissions.includes(p.id)
+                      return (
+                        <label
+                          key={p.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            background: isChecked ? 'rgba(0,255,136,0.1)' : 'rgba(0,0,0,0.3)',
+                            border: `1px solid ${isChecked ? '#00ff8844' : 'var(--border)'}`,
+                            padding: '10px 12px',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            color: isChecked ? '#00ff88' : '#ccc'
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => togglePermission(p.id)}
+                            style={{ accentColor: 'var(--accent)', cursor: 'pointer' }}
+                          />
+                          <span>{p.icon} {p.label}</span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                  <button
+                    type="submit"
+                    disabled={teamLoading}
+                    style={{ background: 'var(--accent)', color: '#000', border: 'none', padding: '12px 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}
+                  >
+                    {teamLoading ? 'Saving...' : editingMember ? '💾 Update Member Permissions' : '🚀 Add Team Member'}
+                  </button>
+                  {editingMember && (
+                    <button
+                      type="button"
+                      onClick={resetMemberForm}
+                      style={{ background: 'var(--bg-tertiary)', color: '#fff', border: '1px solid var(--border)', padding: '12px 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}
+                    >
+                      Cancel Edit
+                    </button>
+                  )}
+                </div>
+
+              </form>
+            </div>
+
+            {/* Active Team Members List */}
+            <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px' }}>
+              <h3 style={{ margin: '0 0 16px', color: '#fff', fontSize: '16px' }}>
+                📋 Active Team Members & Assigned Tasks ({teamList.length})
+              </h3>
+
+              {teamList.length === 0 ? (
+                <div style={{ padding: '32px', textAlign: 'center', color: 'var(--muted)' }}>No team members configured yet.</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {teamList.map(m => {
+                    const isSuspended = m.status === 'suspended'
+                    return (
+                      <div
+                        key={m.id}
+                        style={{
+                          background: isSuspended ? 'rgba(255,68,68,0.08)' : 'var(--bg-tertiary)',
+                          border: `1px solid ${isSuspended ? '#ff444444' : 'var(--border)'}`,
+                          borderRadius: '12px',
+                          padding: '16px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          flexWrap: 'wrap',
+                          gap: '12px'
+                        }}
+                      >
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <strong style={{ fontSize: '16px', color: '#fff' }}>{m.name}</strong>
+                            <span style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: 'bold', fontFamily: 'monospace' }}>@{m.username}</span>
+                            <span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', background: 'rgba(255,215,0,0.15)', color: 'var(--accent)', border: '1px solid var(--accent)' }}>
+                              {m.role}
+                            </span>
+                            {isSuspended ? (
+                              <span style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', background: '#ff4444', color: '#fff' }}>
+                                SUSPENDED
+                              </span>
+                            ) : (
+                              <span style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', background: '#00ff8822', color: '#00ff88', border: '1px solid #00ff8844' }}>
+                                ACTIVE
+                              </span>
+                            )}
+                          </div>
+
+                          <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>
+                            {m.email && <span>Email: {m.email} | </span>}
+                            <span>PIN / Key: <code style={{ color: '#00e5ff' }}>{m.pin}</code></span>
+                          </div>
+
+                          {/* Task Badges */}
+                          <div style={{ display: 'flex', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
+                            {(m.permissions || []).map(pId => {
+                              const pObj = AVAILABLE_PERMISSIONS.find(ap => ap.id === pId)
+                              return (
+                                <span key={pId} style={{ background: 'rgba(0,229,255,0.1)', color: '#00e5ff', border: '1px solid rgba(0,229,255,0.3)', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', fontWeight: 'bold' }}>
+                                  {pObj ? `${pObj.icon} ${pObj.id}` : pId}
+                                </span>
+                              )
+                            })}
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            onClick={() => editMember(m)}
+                            style={{ background: 'var(--card)', border: '1px solid var(--border)', color: '#fff', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            onClick={() => toggleMemberStatus(m)}
+                            style={{ background: isSuspended ? '#00cc66' : '#332211', color: isSuspended ? '#000' : '#ff9900', border: '1px solid #ff990044', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                          >
+                            {isSuspended ? 'Activate' : 'Suspend'}
+                          </button>
+                          <button
+                            onClick={() => deleteMember(m)}
+                            style={{ background: '#331111', color: '#ff6666', border: '1px solid #ff444444', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                          >
+                            🗑️ Delete
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+          </div>
+        )}
+
+        {/* ==========================================
+            TAB 5: 👥 USERS & ACCOUNTS
             ========================================== */}
         {activeTab === 'users' && (
           <div>
@@ -1217,11 +1548,10 @@ export default function AdminPanel() {
         )}
 
         {/* ==========================================
-            TAB 4: REAL-TIME ENGINE & RISK GOVERNOR
+            TAB 6: REAL-TIME ENGINE & RISK GOVERNOR
             ========================================== */}
         {activeTab === 'risk' && (
           <div>
-            {/* Action Bar */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
               <div>
                 <h2 style={{ margin: 0, fontSize: '20px', color: 'var(--accent)' }}>🎯 Real-Time Engine & Risk Governor</h2>
@@ -1235,110 +1565,42 @@ export default function AdminPanel() {
               </button>
             </div>
 
-            {/* Notification */}
             {riskMsg && (
               <div style={{ padding: '12px 16px', borderRadius: '8px', marginBottom: '20px', fontSize: '13px', background: riskMsg.type === 'error' ? '#ff000022' : '#00ff8822', color: riskMsg.type === 'error' ? '#ff6666' : '#00ff88', border: `1px solid ${riskMsg.type === 'error' ? '#ff444444' : '#00ff8844'}` }}>
                 {riskMsg.text}
               </div>
             )}
 
-            {/* Real-Time KPIs */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', marginBottom: '24px' }}>
-              
-              {/* Total Wagered */}
               <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
-                <div style={{ color: 'var(--muted)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Wagered</div>
+                <div style={{ color: 'var(--muted)', fontSize: '12px', textTransform: 'uppercase' }}>Total Wagered</div>
                 <div style={{ fontSize: '24px', fontWeight: '900', color: '#fff', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <CurrencyFlag size={20} />{riskAnalytics?.summary?.totalWagered?.toFixed(2) || '0.00'}
                 </div>
-                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
-                  {riskAnalytics?.summary?.totalBets || 0} Total Bets Placed
-                </div>
               </div>
 
-              {/* Total Paid Out */}
               <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
-                <div style={{ color: 'var(--muted)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Paid Out</div>
+                <div style={{ color: 'var(--muted)', fontSize: '12px', textTransform: 'uppercase' }}>Total Paid Out</div>
                 <div style={{ fontSize: '24px', fontWeight: '900', color: '#ff9900', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <CurrencyFlag size={20} />{riskAnalytics?.summary?.totalPayout?.toFixed(2) || '0.00'}
                 </div>
-                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
-                  Current Realized RTP: {riskAnalytics?.summary?.realizedRTP || '0.0%'}
-                </div>
               </div>
 
-              {/* Net House Profit */}
               <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
-                <div style={{ color: 'var(--muted)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Net House Profit</div>
+                <div style={{ color: 'var(--muted)', fontSize: '12px', textTransform: 'uppercase' }}>Net House Profit</div>
                 <div style={{ fontSize: '24px', fontWeight: '900', color: (riskAnalytics?.summary?.grossProfit || 0) >= 0 ? 'var(--accent)' : '#ff4444', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <CurrencyFlag size={20} />{riskAnalytics?.summary?.grossProfit?.toFixed(2) || '0.00'}
                 </div>
-                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
-                  House Margin: {riskAnalytics?.summary?.margin || '0.0%'}
-                </div>
               </div>
-
-              {/* Winners vs Losers */}
-              <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
-                <div style={{ color: 'var(--muted)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Winners vs Losers</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px' }}>
-                  <div style={{ color: '#00e676', fontWeight: 'bold', fontSize: '18px' }}>
-                    🟢 {riskAnalytics?.summary?.winnersCount || 0} Wins
-                  </div>
-                  <div style={{ color: '#ff5252', fontWeight: 'bold', fontSize: '18px' }}>
-                    🔴 {riskAnalytics?.summary?.losersCount || 0} Losses
-                  </div>
-                </div>
-                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
-                  Win Rate: {riskAnalytics?.summary?.totalBets ? ((riskAnalytics.summary.winnersCount / riskAnalytics.summary.totalBets) * 100).toFixed(1) : 0}%
-                </div>
-              </div>
-
             </div>
 
-            {/* Risk Control Settings Form */}
             <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '14px', padding: '24px', marginBottom: '28px' }}>
-              <h3 style={{ margin: '0 0 16px', color: 'var(--accent)', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                ⚙️ Global Anti-Win & RTP Risk Controls
-              </h3>
-
+              <h3 style={{ margin: '0 0 16px', color: 'var(--accent)', fontSize: '16px' }}>⚙️ Global Anti-Win & RTP Risk Controls</h3>
               <form onSubmit={handleSaveRiskConfig} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-                
-                {/* Global Target RTP */}
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
-                    <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#eee' }}>
-                      Global Target RTP (Return to Player)
-                    </label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <input
-                        type="number"
-                        min="50"
-                        max="99"
-                        value={riskConfig.global_rtp}
-                        onChange={e => {
-                          const val = Math.max(50, Math.min(99, Number(e.target.value) || 50));
-                          setRiskConfig(prev => ({ ...prev, global_rtp: val }));
-                        }}
-                        style={{
-                          width: '60px',
-                          padding: '4px 8px',
-                          borderRadius: '6px',
-                          border: '1px solid var(--border)',
-                          background: '#000',
-                          color: 'var(--accent)',
-                          fontWeight: '900',
-                          fontSize: '14px',
-                          textAlign: 'center'
-                        }}
-                      />
-                      <span style={{ fontSize: '14px', fontWeight: '900', color: 'var(--accent)' }}>%</span>
-                      <span style={{ fontSize: '11px', color: 'var(--muted)', marginLeft: '4px' }}>
-                        (House Edge: {100 - (riskConfig.global_rtp || 92)}%)
-                      </span>
-                    </div>
-                  </div>
-
+                  <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#eee', display: 'block', marginBottom: '8px' }}>
+                    Global Target RTP (Return to Player): {riskConfig.global_rtp}%
+                  </label>
                   <input
                     type="range"
                     min="50"
@@ -1346,231 +1608,73 @@ export default function AdminPanel() {
                     step="1"
                     value={riskConfig.global_rtp || 92}
                     onChange={e => setRiskConfig(prev => ({ ...prev, global_rtp: Number(e.target.value) }))}
-                    style={{ width: '100%', accentColor: 'var(--accent)', cursor: 'pointer', height: '8px' }}
+                    style={{ width: '100%', accentColor: 'var(--accent)', cursor: 'pointer' }}
                   />
-
-                  {/* Quick Preset Buttons */}
-                  <div style={{ display: 'flex', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
-                    {[80, 85, 90, 92, 95, 98].map(pct => (
-                      <button
-                        key={pct}
-                        type="button"
-                        onClick={() => setRiskConfig(prev => ({ ...prev, global_rtp: pct }))}
-                        style={{
-                          background: riskConfig.global_rtp === pct ? 'var(--accent)' : 'rgba(255,255,255,0.06)',
-                          color: riskConfig.global_rtp === pct ? '#000' : '#fff',
-                          border: '1px solid ' + (riskConfig.global_rtp === pct ? 'var(--accent)' : 'rgba(255,255,255,0.1)'),
-                          borderRadius: '6px',
-                          padding: '4px 10px',
-                          fontSize: '11px',
-                          fontWeight: 'bold',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {pct}% RTP
-                      </button>
-                    ))}
-                  </div>
-
-                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '6px' }}>
-                    Recommended: 90% - 94% for healthy house margin while maintaining high player retention.
-                  </div>
                 </div>
 
-                {/* Max Single Win Cap */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#eee', marginBottom: '6px' }}>
-                    Max Single Win Cap (Pi)
-                  </label>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#eee', marginBottom: '6px' }}>Max Single Win Cap</label>
                   <input
                     type="number"
-                    min="100"
-                    step="50"
                     value={riskConfig.max_win_cap}
                     onChange={e => setRiskConfig(prev => ({ ...prev, max_win_cap: Number(e.target.value) }))}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-tertiary)', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}
-                    required
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-tertiary)', color: '#fff', fontSize: '14px' }}
                   />
-                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
-                    Any single game payout exceeding this threshold is automatically capped to protect house reserves.
-                  </div>
                 </div>
 
-                {/* Force House Edge Toggle */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <input
-                    type="checkbox"
-                    id="forceHouseEdge"
-                    checked={riskConfig.force_house_edge}
-                    onChange={e => setRiskConfig(prev => ({ ...prev, force_house_edge: e.target.checked }))}
-                    style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent)' }}
-                  />
-                  <label htmlFor="forceHouseEdge" style={{ cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>
-                    🛡️ Enforce Anti-Streak House Protection (Prevent runaway user winning streaks)
-                  </label>
-                </div>
-
-                {/* Save Button */}
-                <button
-                  type="submit"
-                  disabled={riskLoading}
-                  style={{ background: 'linear-gradient(135deg, #00e676 0%, #00897b 100%)', color: '#000', border: 'none', padding: '14px', borderRadius: '8px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,230,118,0.3)' }}
-                >
-                  {riskLoading ? '💾 Saving Risk Settings...' : '💾 Apply & Save Risk Controls'}
+                <button type="submit" disabled={riskLoading} style={{ background: 'var(--accent)', color: '#000', border: 'none', padding: '14px', borderRadius: '8px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}>
+                  {riskLoading ? 'Saving...' : '💾 Apply & Save Risk Controls'}
                 </button>
-
               </form>
             </div>
+          </div>
+        )}
 
-            {/* Top Winning Players with Stop Win Toggles */}
-            <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '14px', padding: '20px', marginBottom: '28px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h3 style={{ margin: 0, color: '#fff', fontSize: '16px' }}>
-                  🏆 High Winning Players (Anti-Win Governor)
-                </h3>
-                <span style={{ fontSize: '12px', color: 'var(--muted)' }}>
-                  Click &quot;Stop Wins&quot; to halt excessive winning streaks
-                </span>
+        {/* ==========================================
+            TAB 7: 💵 GATEWAY SETTINGS & RATES
+            ========================================== */}
+        {activeTab === 'rates' && (
+          <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px' }}>
+            <h2 style={{ color: 'var(--accent)', marginTop: 0 }}>💵 Conversion Rates & DirectPay Gateway Credentials</h2>
+
+            {ratesMsg && (
+              <div style={{ padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '14px', background: ratesMsg.type === 'error' ? '#ff000022' : '#00ff8822', color: ratesMsg.type === 'error' ? '#ff6666' : '#00ff88' }}>
+                {ratesMsg.text}
+              </div>
+            )}
+
+            <form onSubmit={handleSaveRates} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                <h3 style={{ margin: '0 0 12px', fontSize: '15px', color: 'var(--accent)' }}>⚡ DirectPay Landing Page API Credentials</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>DirectPay Client ID:</label>
+                    <input
+                      type="text"
+                      value={directpayClientId}
+                      onChange={e => setDirectpayClientId(e.target.value)}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px', fontFamily: 'monospace' }}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>DirectPay Client Secret:</label>
+                    <input
+                      type="text"
+                      value={directpayClientSecret}
+                      onChange={e => setDirectpayClientSecret(e.target.value)}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px', fontFamily: 'monospace' }}
+                      required
+                    />
+                  </div>
+                </div>
               </div>
 
-              {(!riskAnalytics?.topWinners || riskAnalytics.topWinners.length === 0) ? (
-                <div style={{ padding: '32px', textAlign: 'center', color: 'var(--muted)' }}>
-                  No player win activity recorded yet.
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {riskAnalytics.topWinners.map((w, idx) => {
-                    const isRestricted = riskConfig.restricted_users?.includes(w.user_id)
-                    return (
-                      <div 
-                        key={w.user_id || idx}
-                        style={{
-                          background: isRestricted ? 'rgba(255,68,68,0.08)' : '#131926',
-                          border: `1px solid ${isRestricted ? '#ff444466' : 'var(--border)'}`,
-                          borderRadius: '10px',
-                          padding: '12px 16px',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          flexWrap: 'wrap',
-                          gap: '12px'
-                        }}
-                      >
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontWeight: 'bold', fontSize: '14px', color: '#fff' }}>{w.email}</span>
-                            {isRestricted ? (
-                              <span style={{ background: '#ff4444', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px' }}>
-                                🛑 WINS STOPPED
-                              </span>
-                            ) : (
-                              <span style={{ background: '#00e67622', color: '#00e676', border: '1px solid #00e67644', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px' }}>
-                                🟢 ACTIVE
-                              </span>
-                            )}
-                          </div>
-                          <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px', fontFamily: 'monospace' }}>
-                            ID: {w.user_id}
-                          </div>
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
-                          <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: '11px', color: 'var(--muted)' }}>Total Won</div>
-                            <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#00e676', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <CurrencyFlag size={14} />{w.totalWon?.toFixed(2) || '0.00'}
-                            </div>
-                          </div>
-
-                          <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: '11px', color: 'var(--muted)' }}>Net Profit</div>
-                            <div style={{ fontSize: '14px', fontWeight: 'bold', color: w.netProfit > 0 ? '#ff9900' : '#fff', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <CurrencyFlag size={14} />{w.netProfit?.toFixed(2) || '0.00'}
-                            </div>
-                          </div>
-
-                          <button
-                            onClick={() => toggleUserRestriction(w.user_id)}
-                            style={{
-                              background: isRestricted ? '#1b5e20' : '#b71c1c',
-                              color: '#fff',
-                              border: 'none',
-                              padding: '8px 14px',
-                              borderRadius: '6px',
-                              fontSize: '12px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s'
-                            }}
-                          >
-                            {isRestricted ? '✅ Allow Wins' : '🛑 Stop Wins'}
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Live Bet Feed */}
-            <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '14px', padding: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                <h3 style={{ margin: 0, color: '#fff', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  ⚡ Live Real-Time Bets Feed
-                </h3>
-                <span style={{ fontSize: '12px', color: 'var(--muted)' }}>Auto-updating stream</span>
-              </div>
-
-              {(!riskAnalytics?.recentBets || riskAnalytics.recentBets.length === 0) ? (
-                <div style={{ padding: '28px', textAlign: 'center', color: 'var(--muted)' }}>
-                  No recent bets placed in this session yet.
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {riskAnalytics.recentBets.map(bet => {
-                    const isWin = (bet.payout_amount || 0) > (bet.bet_amount || 0)
-                    return (
-                      <div 
-                        key={bet.id}
-                        style={{
-                          background: '#131926',
-                          border: '1px solid rgba(255,255,255,0.06)',
-                          borderRadius: '8px',
-                          padding: '10px 14px',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          fontSize: '13px'
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <span style={{ fontSize: '16px' }}>{isWin ? '🟢' : '⚪'}</span>
-                          <div>
-                            <div style={{ fontWeight: 'bold', color: '#fff' }}>
-                              {bet.user_email}
-                            </div>
-                            <div style={{ fontSize: '11px', color: 'var(--muted)' }}>
-                              Game: {bet.game_id} | {new Date(bet.created_at).toLocaleTimeString()}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontWeight: 'bold', color: isWin ? '#00e676' : '#fff', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end' }}>
-                            Bet: <CurrencyFlag size={14} />{bet.bet_amount?.toFixed(2)} → Payout: <CurrencyFlag size={14} />{bet.payout_amount?.toFixed(2)}
-                          </div>
-                          <div style={{ fontSize: '11px', color: isWin ? '#00e676' : '#ff4444', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end' }}>
-                            {isWin ? <>+<CurrencyFlag size={12} />{(bet.payout_amount - bet.bet_amount).toFixed(2)} Win</> : <>-<CurrencyFlag size={12} />{bet.bet_amount?.toFixed(2)} Loss</>}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-
+              <button type="submit" disabled={ratesLoading} style={{ width: '100%', padding: '16px', fontSize: '15px', background: 'var(--accent)', color: '#000', fontWeight: 'bold', borderRadius: '8px' }}>
+                {ratesLoading ? 'Saving...' : '💾 Save Rates & Gateway Credentials'}
+              </button>
+            </form>
           </div>
         )}
 
