@@ -110,7 +110,7 @@ export function getUserWallet(userId, email = "") {
       user_id: key,
       email: cleanEmail,
       balance: 100.0, // Rs 100 welcome starting bonus
-      currency: "Pi",
+      currency: "PKR",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -212,7 +212,22 @@ export function completeAndCreditTransaction(txnId, fallbackData = {}) {
   loadData();
   let tx = findTransaction(txnId);
 
-  const amount = parseFloat(fallbackData.amount || (tx ? tx.amount : 0)) || 0;
+  // CRITICAL FIX: Prioritize original tx.amount in PKR saved at initiation time (1 PKR = 1 Balance Unit)
+  let amount = 0;
+  if (tx && typeof tx.amount === 'number' && tx.amount > 0) {
+    amount = tx.amount;
+  } else if (fallbackData.amountInPKR && parseFloat(fallbackData.amountInPKR) > 0) {
+    amount = parseFloat(fallbackData.amountInPKR);
+  } else if (fallbackData.amount) {
+    const rawVal = parseFloat(fallbackData.amount) || 0;
+    // Normalize Paisa amount if rawVal is >= 1000 and is integer 100x multiplier from payment gateway
+    if (rawVal >= 1000 && rawVal % 100 === 0 && !fallbackData.isExactPKR) {
+      amount = rawVal / 100;
+    } else {
+      amount = rawVal;
+    }
+  }
+
   const userId = fallbackData.user_id || (tx ? tx.user_id : "anonymous");
   const email = fallbackData.email || (tx ? tx.email : "");
 
@@ -227,18 +242,18 @@ export function completeAndCreditTransaction(txnId, fallbackData = {}) {
       status: "completed",
       method: fallbackData.method || "DirectPay",
       tx_id: txnId,
-      notes: fallbackData.notes || `DirectPay Payment Verified: Pi ${amount.toFixed(2)}`,
+      notes: fallbackData.notes || `Payment Verified: ${amount.toFixed(2)}`,
       metadata: fallbackData.metadata || { clientTransactionId: txnId }
     });
   } else {
     tx.status = "completed";
     tx.updated_at = new Date().toISOString();
-    if (amount > 0 && tx.amount <= 0) tx.amount = amount;
+    tx.amount = amount;
     persistData();
   }
 
-  // Credit balance immediately
-  const creditedWallet = creditUserBalance(userId, tx.amount || amount, email, `Payment completed: ${txnId}`);
+  // Credit balance immediately (1 PKR = 1 Balance unit)
+  const creditedWallet = creditUserBalance(userId, tx.amount, email, `Payment completed: ${txnId}`);
 
   return { success: true, transaction: tx, wallet: creditedWallet };
 }

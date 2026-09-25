@@ -21,9 +21,7 @@ export default async function handler(req, res) {
       });
 
       try {
-        const fWallet = await getOrCreateWallet(result.transaction.user_id);
-        const curBal = Number(fWallet?.balance || 0);
-        await updateWalletBalance(result.transaction.user_id, curBal + result.transaction.amount);
+        await updateWalletBalance(result.transaction.user_id, result.wallet.balance);
       } catch (fErr) {}
     } else {
       failTransaction(pp_TxnRefNo, pp_ResponseMessage || 'JazzCash payment declined');

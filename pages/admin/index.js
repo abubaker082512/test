@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import CurrencyFlag from '../../components/CurrencyFlag'
 
 const ADMIN_PASSWORD = 'Admin@123'
 
@@ -71,8 +72,8 @@ export default function AdminPanel() {
     else setMsg('Wrong password')
   }
 
-  const fetchAdminData = async () => {
-    setLoading(true)
+  const fetchAdminData = async (showLoading = false) => {
+    if (showLoading && allTransactions.length === 0) setLoading(true)
     try {
       const res = await fetch('/api/wallet/pending', {
         method: 'POST',
@@ -162,15 +163,15 @@ export default function AdminPanel() {
 
   useEffect(() => {
     if (authed) {
-      fetchAdminData()
+      fetchAdminData(true)
       fetchRates()
       fetchRiskConfig()
       fetchLiveAnalytics()
 
-      // Poll live transactions and wager analytics every 5s in real time
+      // Silent background poll every 5s without screen blinking or loading indicator
       const interval = setInterval(() => {
         fetchLiveAnalytics()
-        fetchAdminData()
+        fetchAdminData(false)
       }, 5000)
       return () => clearInterval(interval)
     }
@@ -550,7 +551,7 @@ export default function AdminPanel() {
                             }}>
                               {tx.status}
                             </span>
-                            <strong style={{ fontSize: '16px', color: 'var(--accent)' }}>Pi {parseFloat(tx.amount || 0).toFixed(2)}</strong>
+                            <strong style={{ fontSize: '16px', color: 'var(--accent)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><CurrencyFlag size={14} />{parseFloat(tx.amount || 0).toFixed(2)}</strong>
                             <span style={{ fontSize: '13px', color: 'var(--muted)' }}>via {tx.method}</span>
                           </div>
 
@@ -684,7 +685,7 @@ export default function AdminPanel() {
                       style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px' }}
                       required
                     />
-                    <small style={{ color: 'var(--muted)', display: 'block', marginTop: '4px' }}>Pi Points per Fiat</small>
+                    <small style={{ color: 'var(--muted)', display: 'block', marginTop: '4px' }}>Balance per Fiat</small>
                   </div>
 
                   <div>
@@ -700,7 +701,7 @@ export default function AdminPanel() {
                       style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px' }}
                       required
                     />
-                    <small style={{ color: 'var(--muted)', display: 'block', marginTop: '4px' }}>Pi Points per USD</small>
+                    <small style={{ color: 'var(--muted)', display: 'block', marginTop: '4px' }}>Balance per USD</small>
                   </div>
                 </div>
               </div>
@@ -1067,8 +1068,8 @@ export default function AdminPanel() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                         <div style={{ textAlign: 'right' }}>
                           <div style={{ fontSize: '11px', color: 'var(--muted)' }}>Current Balance</div>
-                          <div style={{ fontWeight: 'bold', color: 'var(--accent)', fontSize: '15px' }}>
-                            Pi {bal}
+                          <div style={{ fontWeight: 'bold', color: 'var(--accent)', fontSize: '15px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <CurrencyFlag size={14} />{bal}
                           </div>
                         </div>
 
@@ -1119,8 +1120,8 @@ export default function AdminPanel() {
               {/* Total Wagered */}
               <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
                 <div style={{ color: 'var(--muted)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Wagered</div>
-                <div style={{ fontSize: '24px', fontWeight: '900', color: '#fff', marginTop: '6px' }}>
-                  Pi {riskAnalytics?.summary?.totalWagered?.toFixed(2) || '0.00'}
+                <div style={{ fontSize: '24px', fontWeight: '900', color: '#fff', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <CurrencyFlag size={20} />{riskAnalytics?.summary?.totalWagered?.toFixed(2) || '0.00'}
                 </div>
                 <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
                   {riskAnalytics?.summary?.totalBets || 0} Total Bets Placed
@@ -1130,8 +1131,8 @@ export default function AdminPanel() {
               {/* Total Paid Out */}
               <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
                 <div style={{ color: 'var(--muted)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Paid Out</div>
-                <div style={{ fontSize: '24px', fontWeight: '900', color: '#ff9900', marginTop: '6px' }}>
-                  Pi {riskAnalytics?.summary?.totalPayout?.toFixed(2) || '0.00'}
+                <div style={{ fontSize: '24px', fontWeight: '900', color: '#ff9900', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <CurrencyFlag size={20} />{riskAnalytics?.summary?.totalPayout?.toFixed(2) || '0.00'}
                 </div>
                 <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
                   Current Realized RTP: {riskAnalytics?.summary?.realizedRTP || '0.0%'}
@@ -1141,8 +1142,8 @@ export default function AdminPanel() {
               {/* Net House Profit */}
               <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
                 <div style={{ color: 'var(--muted)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Net House Profit</div>
-                <div style={{ fontSize: '24px', fontWeight: '900', color: (riskAnalytics?.summary?.grossProfit || 0) >= 0 ? 'var(--accent)' : '#ff4444', marginTop: '6px' }}>
-                  Pi {riskAnalytics?.summary?.grossProfit?.toFixed(2) || '0.00'}
+                <div style={{ fontSize: '24px', fontWeight: '900', color: (riskAnalytics?.summary?.grossProfit || 0) >= 0 ? 'var(--accent)' : '#ff4444', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <CurrencyFlag size={20} />{riskAnalytics?.summary?.grossProfit?.toFixed(2) || '0.00'}
                 </div>
                 <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
                   House Margin: {riskAnalytics?.summary?.margin || '0.0%'}
@@ -1348,15 +1349,15 @@ export default function AdminPanel() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
                           <div style={{ textAlign: 'right' }}>
                             <div style={{ fontSize: '11px', color: 'var(--muted)' }}>Total Won</div>
-                            <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#00e676' }}>
-                              Pi {w.totalWon?.toFixed(2) || '0.00'}
+                            <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#00e676', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <CurrencyFlag size={14} />{w.totalWon?.toFixed(2) || '0.00'}
                             </div>
                           </div>
 
                           <div style={{ textAlign: 'right' }}>
                             <div style={{ fontSize: '11px', color: 'var(--muted)' }}>Net Profit</div>
-                            <div style={{ fontSize: '14px', fontWeight: 'bold', color: w.netProfit > 0 ? '#ff9900' : '#fff' }}>
-                              Pi {w.netProfit?.toFixed(2) || '0.00'}
+                            <div style={{ fontSize: '14px', fontWeight: 'bold', color: w.netProfit > 0 ? '#ff9900' : '#fff', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <CurrencyFlag size={14} />{w.netProfit?.toFixed(2) || '0.00'}
                             </div>
                           </div>
 
@@ -1428,11 +1429,11 @@ export default function AdminPanel() {
                         </div>
 
                         <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontWeight: 'bold', color: isWin ? '#00e676' : '#fff' }}>
-                            Bet: Pi {bet.bet_amount?.toFixed(2)} → Payout: Pi {bet.payout_amount?.toFixed(2)}
+                          <div style={{ fontWeight: 'bold', color: isWin ? '#00e676' : '#fff', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end' }}>
+                            Bet: <CurrencyFlag size={14} />{bet.bet_amount?.toFixed(2)} → Payout: <CurrencyFlag size={14} />{bet.payout_amount?.toFixed(2)}
                           </div>
-                          <div style={{ fontSize: '11px', color: isWin ? '#00e676' : '#ff4444' }}>
-                            {isWin ? `+Pi ${(bet.payout_amount - bet.bet_amount).toFixed(2)} Win` : `-Pi ${bet.bet_amount?.toFixed(2)} Loss`}
+                          <div style={{ fontSize: '11px', color: isWin ? '#00e676' : '#ff4444', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end' }}>
+                            {isWin ? <>+<CurrencyFlag size={12} />{(bet.payout_amount - bet.bet_amount).toFixed(2)} Win</> : <>-<CurrencyFlag size={12} />{bet.bet_amount?.toFixed(2)} Loss</>}
                           </div>
                         </div>
                       </div>

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useAuth } from '../context/AuthContext'
 import AuthModal from './AuthModal'
 import SideDrawer from './SideDrawer'
+import CurrencyFlag from './CurrencyFlag'
 
 export default function NavBar() {
   const { user, logOut, isDemoMode, demoBalance, toggleDemoMode } = useAuth()
@@ -125,8 +126,8 @@ export default function NavBar() {
               title="Click to switch to Real Account"
             >
               <span style={{ fontSize: '13px' }}>🎮</span>
-              <span style={{ fontSize: '12px', fontWeight: 900, color: '#00e676' }}>
-                DEMO Pi {demoBalance.toFixed(2)}
+              <span style={{ fontSize: '12px', fontWeight: 900, color: '#00e676', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                DEMO <CurrencyFlag size={14} /> {demoBalance.toFixed(2)}
               </span>
               <span style={{ fontSize: '9px', background: '#00e676', color: '#000', padding: '1px 5px', borderRadius: '4px', fontWeight: 900 }}>
                 TRIAL
@@ -135,9 +136,9 @@ export default function NavBar() {
           ) : (
             /* Real Wallet Balance Display */
             <div className="wallet-display">
-              <span className="wallet-flag">🇵🇰</span>
+              <CurrencyFlag size={18} />
               <span className="wallet-amount">
-                Pi {user ? balance.toFixed(2) : '0.00'}
+                {user ? balance.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
               </span>
               <button 
                 className={`wallet-refresh ${refreshing ? 'coin-spin' : ''}`} 

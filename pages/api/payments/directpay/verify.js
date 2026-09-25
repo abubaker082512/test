@@ -13,8 +13,15 @@ export default async function handler(req, res) {
   }
 
   try {
-    const numAmount = parseFloat(amount) || 0;
-    const targetUserId = user_id || 'player_' + Date.now();
+    let numAmount = parseFloat(amount) || 0;
+    const existingTx = findTransaction(txn_id);
+    if (existingTx && existingTx.amount > 0) {
+      numAmount = existingTx.amount;
+    } else if (numAmount >= 1000 && numAmount % 100 === 0) {
+      numAmount = numAmount / 100;
+    }
+
+    const targetUserId = user_id || (existingTx ? existingTx.user_id : 'player_' + Date.now());
     const resolvedGatewayId = gateway_transaction_id || dp_txn_id || transaction_id || bank_ref || ('DP-GW-' + Date.now().toString(36).toUpperCase());
 
     if (status === 'failed' || status === 'cancelled') {
@@ -37,10 +44,11 @@ export default async function handler(req, res) {
     // 1. Complete transaction and credit balance atomically in persistent store
     const result = completeAndCreditTransaction(txn_id, {
       amount: numAmount,
+      amountInPKR: numAmount,
       user_id: targetUserId,
       email: email || '',
       method: 'DirectPay',
-      notes: `DirectPay Payment Verified: Pi ${numAmount.toFixed(2)} | TxID: ${txn_id} | Gateway ID: ${resolvedGatewayId}`,
+      notes: `DirectPay Payment Verified: ${numAmount.toFixed(2)} PKR | TxID: ${txn_id} | Gateway ID: ${resolvedGatewayId}`,
       metadata: {
         clientTransactionId: txn_id,
         gateway_transaction_id: resolvedGatewayId,
@@ -57,12 +65,10 @@ export default async function handler(req, res) {
       recordTransactionRecord(result.transaction);
     }
 
-    // 2. Background sync to Firestore (non-blocking)
+    // 2. Background sync to Firestore (sync exact balance)
     Promise.resolve().then(async () => {
       try {
-        const fWallet = await getOrCreateWallet(targetUserId);
-        const curBal = Number(fWallet?.balance || 0);
-        await updateWalletBalance(targetUserId, curBal + (result.transaction.amount || numAmount));
+        await updateWalletBalance(targetUserId, result.wallet.balance);
       } catch (fErr) {}
     });
 
@@ -73,7 +79,7 @@ export default async function handler(req, res) {
       gateway_transaction_id: resolvedGatewayId,
       creditedAmount: result.transaction.amount || numAmount,
       balance: result.wallet.balance,
-      message: `🎉 Successfully credited Pi ${(result.transaction.amount || numAmount).toFixed(2)} to your balance!`
+      message: `🎉 Successfully credited ${(result.transaction.amount || numAmount).toFixed(2)} to your balance!`
     });
   } catch (err) {
     console.error('DirectPay verification error:', err);

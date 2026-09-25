@@ -6,6 +6,7 @@ import { supabase } from '../utils/supabase'
 import { db } from '../utils/firebase'
 import { doc, onSnapshot } from 'firebase/firestore'
 import AuthModal from '../components/AuthModal'
+import CurrencyFlag from '../components/CurrencyFlag'
 
 export default function WalletPage() {
   const router = useRouter()
@@ -567,8 +568,8 @@ export default function WalletPage() {
         {/* Balance Card */}
         <div style={{ ...cardStyle, background: 'linear-gradient(135deg, var(--bg-secondary) 0%, var(--card) 100%)', border: '2px solid var(--accent)', textAlign: 'center', boxShadow: '0 8px 32px rgba(255, 215, 0, 0.15)' }}>
           <div style={{ fontSize: '13px', color: 'var(--muted)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px' }}>AVAILABLE IN-GAME BALANCE</div>
-          <div style={{ fontSize: '52px', fontWeight: 900, color: 'var(--accent)', textShadow: '0 0 20px rgba(255, 215, 0, 0.4)' }}>
-            Pi {wallet ? parseFloat(wallet.balance).toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+          <div style={{ fontSize: '48px', fontWeight: 900, color: 'var(--accent)', textShadow: '0 0 20px rgba(255, 215, 0, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <CurrencyFlag size={42} /> {wallet ? parseFloat(wallet.balance).toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
           </div>
         </div>
 
@@ -673,12 +674,12 @@ export default function WalletPage() {
                   </span>
                 </div>
                 <p style={{ color: 'var(--muted)', fontSize: '11px', margin: 0, lineHeight: '1.4' }}>
-                  {dpMethod === 'Easypaisa' && 'Fast and secure Easypaisa payment with instant in-game Pi point crediting.'}
-                  {dpMethod === 'JazzCash' && 'Fast and secure JazzCash payment with instant in-game Pi point crediting.'}
+                  {dpMethod === 'Easypaisa' && 'Fast and secure Easypaisa payment with instant account crediting.'}
+                  {dpMethod === 'JazzCash' && 'Fast and secure JazzCash payment with instant account crediting.'}
                   {dpMethod === 'Card' && 'Secure Visa / Mastercard 3D-Secure payment.'}
                 </p>
                 <div style={{ marginTop: '6px', fontSize: '11px', color: 'var(--accent)' }}>
-                  Exchange Rate: <strong>1 Fiat = {rates.pkr_rate} Pi</strong> (Instant Credit)
+                  Exchange Rate: <strong>1 PKR = 1 Balance Unit</strong> (Instant Credit)
                 </div>
               </div>
 
@@ -686,7 +687,7 @@ export default function WalletPage() {
 
               <form onSubmit={handleAutoPaySubmit}>
                 <label style={{ fontSize: '12px', color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>
-                  Deposit Amount in Fiat (PKR / Local):
+                  Deposit Amount in PKR:
                 </label>
                 <input 
                   type="number" 
@@ -728,8 +729,8 @@ export default function WalletPage() {
                 />
 
                 {dpAmount && (
-                  <div style={{ background: 'rgba(0, 230, 118, 0.1)', border: '1px solid rgba(0, 230, 118, 0.3)', borderRadius: '8px', padding: '12px', color: '#00e676', fontSize: '14px', fontWeight: 'bold', marginBottom: '16px', textAlign: 'center' }}>
-                    🎉 You will receive: Pi {computedDpCreditedVal} in-game balance
+                  <div style={{ background: 'rgba(0, 230, 118, 0.1)', border: '1px solid rgba(0, 230, 118, 0.3)', borderRadius: '8px', padding: '12px', color: '#00e676', fontSize: '14px', fontWeight: 'bold', marginBottom: '16px', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    🎉 You will receive: <CurrencyFlag size={18} /> {computedDpCreditedVal} balance
                   </div>
                 )}
 
@@ -773,7 +774,7 @@ export default function WalletPage() {
                 <strong style={{ color: '#fff' }}>🔴 JazzCash:</strong> 0300-0000000 (WinX Pro Official)<br />
                 <strong style={{ color: '#fff' }}>🌐 Binance / USDT:</strong> usd-official-wallet-address<br />
                 <div style={{ borderTop: '1px solid var(--border)', marginTop: '8px', paddingTop: '8px', color: 'var(--accent)' }}>
-                  Rates: <strong>1 Fiat = {rates.pkr_rate} Pi</strong> | <strong>1 USD = {rates.usd_rate} Pi</strong>
+                  Rates: <strong>1 PKR = 1 Balance Unit</strong>
                 </div>
               </div>
 
@@ -804,8 +805,8 @@ export default function WalletPage() {
                 />
 
                 {depAmount && (
-                  <div style={{ background: 'rgba(0, 230, 118, 0.1)', border: '1px solid rgba(0, 230, 118, 0.3)', borderRadius: '8px', padding: '12px', color: '#00e676', fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', textAlign: 'center' }}>
-                    🎉 You will receive: Pi {computedCreditedVal} in-game currency
+                  <div style={{ background: 'rgba(0, 230, 118, 0.1)', border: '1px solid rgba(0, 230, 118, 0.3)', borderRadius: '8px', padding: '12px', color: '#00e676', fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    🎉 You will receive: <CurrencyFlag size={18} /> {computedCreditedVal} balance
                   </div>
                 )}
 
@@ -822,7 +823,7 @@ export default function WalletPage() {
             🏧 Request Payout / Withdrawal
           </h2>
           <div style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px', marginBottom: '16px', fontSize: '12px', color: 'var(--muted)', lineHeight: '1.5' }}>
-            Minimum withdrawal: <strong>500 Pi</strong>. Fast 24/7 processing to Easypaisa, JazzCash, Bank, or USDT.
+            Minimum withdrawal: <strong>500 PKR</strong>. Fast 24/7 processing to Easypaisa, JazzCash, Bank, or USDT.
           </div>
 
           {witMsg && <div style={msgStyle(witMsg.type)}>{witMsg.text}</div>}
@@ -846,7 +847,7 @@ export default function WalletPage() {
             
             <input 
               type="number" 
-              placeholder="Withdrawal Amount (in Pi, min 500)" 
+              placeholder="Withdrawal Amount (in PKR, min 500)" 
               value={witAmount} 
               onChange={e => setWitAmount(e.target.value)} 
               style={inputStyle} 
@@ -856,7 +857,7 @@ export default function WalletPage() {
 
             {witAmount && (
               <div style={{ background: 'rgba(255, 170, 0, 0.1)', border: '1px solid rgba(255, 170, 0, 0.3)', borderRadius: '8px', padding: '12px', color: '#ffaa00', fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', textAlign: 'center' }}>
-                💰 Net Payout: {witCurrency === 'pkr' ? 'Fiat ' : '$'} {computedWithdrawVal} {witCurrency.toUpperCase()}
+                💰 Net Payout: {witCurrency === 'pkr' ? 'Rs ' : '$'} {computedWithdrawVal} {witCurrency.toUpperCase()}
               </div>
             )}
 
@@ -882,8 +883,8 @@ export default function WalletPage() {
                 {tx.notes && <div style={{ fontSize: '10px', color: '#888', marginTop: '2px' }}>{tx.notes}</div>}
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontWeight: 'bold', color: tx.type === 'deposit' ? '#00e676' : '#ff5555', fontSize: '15px' }}>
-                  {tx.type === 'deposit' ? '+' : '-'}Pi {parseFloat(tx.amount).toFixed(2)}
+                <div style={{ fontWeight: 'bold', color: tx.type === 'deposit' ? '#00e676' : '#ff5555', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end' }}>
+                  {tx.type === 'deposit' ? '+' : '-'}<CurrencyFlag size={14} />{parseFloat(tx.amount).toFixed(2)}
                 </div>
                 <span style={{ 
                   fontSize: '10px', 

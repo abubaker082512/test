@@ -4,7 +4,7 @@
     "user_id": "23b47415-5592-4a87-a5ef-3a537cc31b27",
     "email": "abtandco18@gmail.com",
     "balance": 1011.90,
-    "currency": "Pi",
+    "currency": "PKR",
     "created_at": "2026-09-15T12:00:00.000Z",
     "updated_at": "2026-09-16T13:10:30.000Z"
   },
@@ -12,17 +12,17 @@
     "id": "d3fd1e06-7d45-498a-8ce7-1a812e962b3d",
     "user_id": "d3fd1e06-7d45-498a-8ce7-1a812e962b3d",
     "email": "akhuwat.com.pk@gmail.com",
-    "balance": 5000.0,
-    "currency": "Pi",
+    "balance": 150.0,
+    "currency": "PKR",
     "created_at": "2026-09-15T10:00:00.000Z",
-    "updated_at": "2026-09-15T10:00:00.000Z"
+    "updated_at": "2026-09-25T17:15:00.000Z"
   },
   "ca7adc60-4f05-42f2-8025-6ebf04b84fa6": {
     "id": "ca7adc60-4f05-42f2-8025-6ebf04b84fa6",
     "user_id": "ca7adc60-4f05-42f2-8025-6ebf04b84fa6",
     "email": "jajsjsjsjssjjsjsjs@gmail.com",
     "balance": 0.0,
-    "currency": "Pi",
+    "currency": "PKR",
     "created_at": "2026-09-15T11:00:00.000Z",
     "updated_at": "2026-09-15T11:00:00.000Z"
   },
@@ -31,7 +31,7 @@
     "user_id": "7a90c640-010a-4dd0-bc38-fda2f4cfbfd1",
     "email": "akhuwatfoundation1@gmail.com",
     "balance": 0.0,
-    "currency": "Pi",
+    "currency": "PKR",
     "created_at": "2026-09-15T11:30:00.000Z",
     "updated_at": "2026-09-15T11:30:00.000Z"
   },
@@ -40,7 +40,7 @@
     "user_id": "6b653721-01dd-4a1b-9fac-c179624227b6",
     "email": "fabvisaconsultancy@gmail.com",
     "balance": 0.0,
-    "currency": "Pi",
+    "currency": "PKR",
     "created_at": "2026-09-15T12:30:00.000Z",
     "updated_at": "2026-09-15T12:30:00.000Z"
   },
@@ -49,7 +49,7 @@
     "user_id": "sheikhabubaker082512@gmail.com",
     "email": "sheikhabubaker082512@gmail.com",
     "balance": 1000.0,
-    "currency": "Pi",
+    "currency": "PKR",
     "created_at": "2026-09-16T12:50:00.000Z",
     "updated_at": "2026-09-16T13:10:30.000Z"
   }

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useAuth } from '../context/AuthContext'
+import CurrencyFlag from './CurrencyFlag'
 
 export default function SideDrawer({ isOpen, onClose, balance = 0, onOpenAuth }) {
   const router = useRouter()
@@ -205,8 +206,8 @@ export default function SideDrawer({ isOpen, onClose, balance = 0, onOpenAuth })
               <div style={{ fontSize: '11px', color: '#888' }}>
                 {isDemoMode ? '🎮 PRACTICE MODE' : '💰 REAL ACCOUNT'}
               </div>
-              <div style={{ fontSize: '15px', fontWeight: 900, color: isDemoMode ? '#00e676' : 'var(--accent)' }}>
-                Pi {isDemoMode ? demoBalance.toFixed(2) : parseFloat(balance).toFixed(2)}
+              <div style={{ fontSize: '15px', fontWeight: 900, color: isDemoMode ? '#00e676' : 'var(--accent)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <CurrencyFlag size={16} /> {isDemoMode ? demoBalance.toFixed(2) : parseFloat(balance).toFixed(2)}
               </div>
             </div>
             <button
