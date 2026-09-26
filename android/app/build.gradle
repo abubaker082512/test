@@ -16,8 +16,23 @@ android {
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
+    signingConfigs {
+        release {
+            storeFile file('winxpro-release-key.jks')
+            storePassword 'WinXProReleaseKey2026!'
+            keyAlias 'winxpro'
+            keyPassword 'WinXProReleaseKey2026!'
+        }
+    }
+
     flavorDimensions "app"
     productFlavors {
+        winxpro {
+            dimension "app"
+            applicationId "com.winxpro"
+            resValue "string", "app_name", "WinX Pro"
+            resValue "string", "app_id", "winxpro"
+        }
         n999 {
             dimension "app"
             applicationId "com.winxpro.n999"
@@ -40,7 +55,7 @@ android {
 
     buildTypes {
         release {
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }

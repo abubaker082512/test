@@ -1,5 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">WinX Pro</string>
+    <string name="app_id">winxpro</string>
     <string name="target_url">https://www.winxpro.com.pk/</string>
     <string name="host_name">www.winxpro.com.pk</string>
+    <string name="splash_subtitle">WinX Pro • PREMIER GAMING</string>
 </resources>
