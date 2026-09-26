@@ -14,6 +14,8 @@ android {
         versionName '1.0.0'
 
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        resValue "string", "app_name", "WinX Pro"
+        resValue "string", "app_id", "winxpro"
     }
 
     signingConfigs {
@@ -25,41 +27,17 @@ android {
         }
     }
 
-    flavorDimensions "app"
-    productFlavors {
-        winxpro {
-            dimension "app"
-            applicationId "com.winxpro"
-            resValue "string", "app_name", "WinX Pro"
-            resValue "string", "app_id", "winxpro"
-        }
-        n999 {
-            dimension "app"
-            applicationId "com.winxpro.n999"
-            resValue "string", "app_name", "N999"
-            resValue "string", "app_id", "n999"
-        }
-        y999 {
-            dimension "app"
-            applicationId "com.winxpro.y999"
-            resValue "string", "app_name", "Y999"
-            resValue "string", "app_id", "y999"
-        }
-        winpkr {
-            dimension "app"
-            applicationId "com.winxpro.winpkr"
-            resValue "string", "app_name", "WinPkr"
-            resValue "string", "app_id", "winpkr"
-        }
-    }
-
     buildTypes {
+        debug {
+            signingConfig signingConfigs.release
+        }
         release {
             signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -74,3 +52,4 @@ dependencies {
     implementation 'androidx.webkit:webkit:1.10.0'
     implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
 }
+
