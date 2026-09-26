@@ -1,186 +1,217 @@
 package com.winxpro;
 
+import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.os.Message;
+import android.view.View;
+import android.webkit.CookieManager;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import java.util.ArrayList;
-import java.util.List;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-public class MainActivity extends AppCompatActivity implements GameAdapter.OnGameClickListener {
+public class MainActivity extends AppCompatActivity {
 
-    private UserSessionManager sessionManager;
-    private TextView tvWalletBalance;
-    private TextView tvModeTag;
-    private TextView tvCategoryTitle;
-    private TextView tvGameCount;
-    private EditText etSearchGame;
-    private Button btnLoginAuth;
-    private RecyclerView rvGames;
-    private GameAdapter gameAdapter;
-    private final List<GameItem> currentGames = new ArrayList<>();
-    private String selectedCategory = "all";
-    private String currentSearchQuery = "";
-    private LinearLayout categoryContainer;
+    public static final String TARGET_URL = "https://www.winxpro.com.pk/";
 
+    private WebView webView;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private ProgressBar progressBar;
+    private ValueCallback<Uri[]> filePathCallback;
+    private static final int FILE_CHOOSER_REQUEST_CODE = 1001;
+
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        sessionManager = new UserSessionManager(this);
+        webView = findViewById(R.id.webview);
+        swipeRefreshLayout = findViewById(R.id.swipe_refresh);
+        progressBar = findViewById(R.id.progress_bar);
 
-        tvWalletBalance = findViewById(R.id.tv_wallet_balance);
-        tvModeTag = findViewById(R.id.tv_mode_tag);
-        tvCategoryTitle = findViewById(R.id.tv_category_title);
-        tvGameCount = findViewById(R.id.tv_game_count);
-        etSearchGame = findViewById(R.id.et_search_game);
-        btnLoginAuth = findViewById(R.id.btn_login_auth);
-        rvGames = findViewById(R.id.rv_games);
-        categoryContainer = findViewById(R.id.category_chips_container);
-        android.view.View btnWalletToggle = findViewById(R.id.btn_wallet_toggle);
-
-        rvGames.setLayoutManager(new GridLayoutManager(this, 3));
-        rvGames.setHasFixedSize(true);
-        gameAdapter = new GameAdapter(currentGames, this);
-        rvGames.setAdapter(gameAdapter);
-
-        updateUserHeader();
-
-        btnWalletToggle.setOnClickListener(v -> {
-            boolean isDemo = sessionManager.isDemoMode();
-            sessionManager.setDemoMode(!isDemo);
-            updateUserHeader();
-            Toast.makeText(this, !isDemo ? "Switched to DEMO Mode" : "Switched to REAL Mode", Toast.LENGTH_SHORT).show();
-        });
-
-        btnLoginAuth.setOnClickListener(v -> showAuthModal());
-
-        etSearchGame.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                currentSearchQuery = s.toString();
-                loadGames(selectedCategory, currentSearchQuery);
-            }
-            @Override public void afterTextChanged(Editable s) {}
-        });
-
-        setupCategoryChips();
-        loadGames("all", "");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        updateUserHeader();
-    }
-
-    private void updateUserHeader() {
-        boolean loggedIn = sessionManager.isLoggedIn();
-        if (loggedIn) {
-            btnLoginAuth.setText(sessionManager.getUsername());
-            btnLoginAuth.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.cardColor));
-            btnLoginAuth.setTextColor(ContextCompat.getColor(this, R.color.accentColor));
-        } else {
-            btnLoginAuth.setText("Login");
-            btnLoginAuth.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.btnPrimary));
-            btnLoginAuth.setTextColor(ContextCompat.getColor(this, R.color.btnPrimaryText));
+        // Configure Cookie Manager
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.setAcceptCookie(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            cookieManager.setAcceptThirdPartyCookies(webView, true);
         }
 
-        boolean isDemo = sessionManager.isDemoMode();
-        tvModeTag.setText(isDemo ? "🎮 DEMO" : "💰 REAL");
-        double bal = sessionManager.getBalance();
-        tvWalletBalance.setText("Rs " + (int)bal);
-    }
+        // Configure WebSettings for optimal HTML5 Web App Performance & Gaming
+        WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
+        settings.setDatabaseEnabled(true);
+        settings.setAllowFileAccess(true);
+        settings.setAllowContentAccess(true);
+        settings.setUseWideViewPort(true);
+        settings.setLoadWithOverviewMode(true);
+        settings.setSupportZoom(false);
+        settings.setBuiltInZoomControls(false);
+        settings.setDisplayZoomControls(false);
+        settings.setSupportMultipleWindows(true);
+        settings.setJavaScriptCanOpenWindowsAutomatically(true);
 
-    private void showAuthModal() {
-        AuthDialogFragment dialog = AuthDialogFragment.newInstance(this::updateUserHeader);
-        dialog.show(getSupportFragmentManager(), "AuthDialog");
-    }
-
-    private void setupCategoryChips() {
-        String[] categories = {"ALL", "SLOTS", "LIVE", "CARDS", "FISHING", "CRASH", "SPORTS"};
-        categoryContainer.removeAllViews();
-
-        for (String cat : categories) {
-            Button chip = new Button(this);
-            chip.setText(cat);
-            chip.setTextSize(11f);
-            chip.setPadding(16, 0, 16, 0);
-
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    dpToPx(34)
-            );
-            params.setMargins(4, 0, 4, 0);
-            chip.setLayoutParams(params);
-
-            styleCategoryChip(chip, cat.equalsIgnoreCase(selectedCategory));
-
-            chip.setOnClickListener(v -> {
-                selectedCategory = cat.toLowerCase();
-                setupCategoryChips();
-                loadGames(selectedCategory, currentSearchQuery);
-            });
-
-            categoryContainer.addView(chip);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            settings.setMediaPlaybackRequiresUserGesture(false);
         }
-    }
 
-    private void styleCategoryChip(Button chip, boolean isSelected) {
-        if (isSelected) {
-            chip.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.btnPrimary));
-            chip.setTextColor(ContextCompat.getColor(this, R.color.btnPrimaryText));
-        } else {
-            chip.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.cardColor));
-            chip.setTextColor(ContextCompat.getColor(this, R.color.textColor));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
-    }
 
-    private void loadGames(String category, String searchQuery) {
-        tvCategoryTitle.setText("🎰 " + category.toUpperCase() + " Games");
+        // Enable Hardware Acceleration for smooth casino games & WebGL
+        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
 
-        NativeApiClient.fetchGameCatalog(this, category, searchQuery, new NativeApiClient.ApiCallback<List<GameItem>>() {
+        // WebView Client navigation
+        webView.setWebViewClient(new WebViewClient() {
+
             @Override
-            public void onSuccess(List<GameItem> result) {
-                currentGames.clear();
-                currentGames.addAll(result);
-                gameAdapter.notifyDataSetChanged();
-                tvGameCount.setText(result.size() + " Games");
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return handleUrlNavigation(view, url);
             }
 
             @Override
-            public void onError(String errorMessage) {
-                Toast.makeText(MainActivity.this, "Error loading catalog", Toast.LENGTH_SHORT).show();
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    return handleUrlNavigation(view, request.getUrl().toString());
+                }
+                return false;
+            }
+
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                progressBar.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                progressBar.setVisibility(View.GONE);
+                swipeRefreshLayout.setRefreshing(false);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    CookieManager.getInstance().flush();
+                }
             }
         });
+
+        // WebChromeClient for File Uploads, Windows & Progress Bar
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onProgressChanged(WebView view, int newProgress) {
+                if (newProgress < 100) {
+                    progressBar.setVisibility(View.VISIBLE);
+                    progressBar.setProgress(newProgress);
+                } else {
+                    progressBar.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
+                WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
+                transport.setWebView(webView);
+                resultMsg.sendToTarget();
+                return true;
+            }
+
+            @Override
+            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+                if (MainActivity.this.filePathCallback != null) {
+                    MainActivity.this.filePathCallback.onReceiveValue(null);
+                }
+                MainActivity.this.filePathCallback = filePathCallback;
+
+                Intent intent = fileChooserParams.createIntent();
+                try {
+                    startActivityForResult(intent, FILE_CHOOSER_REQUEST_CODE);
+                } catch (ActivityNotFoundException e) {
+                    MainActivity.this.filePathCallback = null;
+                    Toast.makeText(MainActivity.this, "Cannot Open File Chooser", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+                return true;
+            }
+        });
+
+        // Pull to refresh support
+        swipeRefreshLayout.setOnRefreshListener(() -> webView.reload());
+        swipeRefreshLayout.setColorSchemeResources(R.color.accentColor, R.color.primaryColor);
+
+        // Modern OnBackPressed handling
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (webView.canGoBack()) {
+                    webView.goBack();
+                } else {
+                    finish();
+                }
+            }
+        });
+
+        // Load Main WinXPro Web Application
+        if (savedInstanceState == null) {
+            webView.loadUrl(TARGET_URL);
+        } else {
+            webView.restoreState(savedInstanceState);
+        }
+    }
+
+    private boolean handleUrlNavigation(WebView view, String url) {
+        if (url == null) return false;
+
+        // Custom Schemes (WhatsApp, Telephony, Mail, Deep Links)
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            try {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                startActivity(intent);
+                return true;
+            } catch (Exception e) {
+                Toast.makeText(this, "Application not installed for this action", Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        }
+
+        // Keep HTTP/HTTPS within the WebView (WinXPro & Payment Gateways)
+        view.loadUrl(url);
+        return true;
     }
 
     @Override
-    public void onGameClick(GameItem item) {
-        if (!sessionManager.isLoggedIn()) {
-            Toast.makeText(this, "🔐 Login required to play " + item.getTitle(), Toast.LENGTH_SHORT).show();
-            showAuthModal();
-            return;
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == FILE_CHOOSER_REQUEST_CODE) {
+            if (filePathCallback == null) return;
+            Uri[] results = null;
+            if (resultCode == RESULT_OK && data != null) {
+                String dataString = data.getDataString();
+                if (dataString != null) {
+                    results = new Uri[]{Uri.parse(dataString)};
+                }
+            }
+            filePathCallback.onReceiveValue(results);
+            filePathCallback = null;
         }
-
-        Intent intent = new Intent(this, GameActivity.class);
-        intent.putExtra("game_id", item.getId());
-        intent.putExtra("game_title", item.getTitle());
-        startActivity(intent);
     }
 
-    private int dpToPx(int dp) {
-        float density = getResources().getDisplayMetrics().density;
-        return Math.round(dp * density);
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        webView.saveState(outState);
     }
 }
