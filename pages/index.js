@@ -40,12 +40,12 @@ const featuredGames = [
 
 // Scrolling live winner events
 const winEvents = [
-  { name: 'ali***77', game: 'Super Ace', amount: 'Pi 24,150.00', provider: 'JILI', avatar: '🃏' },
-  { name: 'zain***88', game: 'Fortune Gems 2', amount: 'Pi 12,850.00', provider: 'JILI', avatar: '💎' },
-  { name: 'pak***01', game: 'Mahjong Ways 2', amount: 'Pi 18,279.20', provider: 'PG Soft', avatar: '🐲' },
-  { name: 'jill***00', game: 'Gates of Olympus', amount: 'Pi 48,033.00', provider: 'Pragmatic', avatar: '⚡' },
-  { name: 'asif***99', game: 'Lightning Roulette', amount: 'Pi 15,900.00', provider: 'Evolution', avatar: '🎡' },
-  { name: 'ahmed***10', game: 'Aviator Crash', amount: 'Pi 35,500.00', provider: 'Spribe', avatar: '🚀' },
+  { name: 'ali***77', game: 'Super Ace', amount: 'Rs 24,150.00', provider: 'JILI', avatar: '🃏' },
+  { name: 'zain***88', game: 'Fortune Gems 2', amount: 'Rs 12,850.00', provider: 'JILI', avatar: '💎' },
+  { name: 'pak***01', game: 'Mahjong Ways 2', amount: 'Rs 18,279.20', provider: 'PG Soft', avatar: '🐲' },
+  { name: 'jill***00', game: 'Gates of Olympus', amount: 'Rs 48,033.00', provider: 'Pragmatic', avatar: '⚡' },
+  { name: 'asif***99', game: 'Lightning Roulette', amount: 'Rs 15,900.00', provider: 'Evolution', avatar: '🎡' },
+  { name: 'ahmed***10', game: 'Aviator Crash', amount: 'Rs 35,500.00', provider: 'Spribe', avatar: '🚀' },
 ]
 
 export default function Home() {
@@ -241,15 +241,15 @@ export default function Home() {
 
   // Categories list covering all integrated providers matching Drawer
   const categoriesList = [
-    { name: 'Hot', label: '🔥 Hot', icon: '🔥' },
-    { name: 'Slots', label: '🎰 Slots', icon: '🎰' },
-    { name: 'Mini Games', label: '💠 Mini Games', icon: '💠' },
-    { name: 'Cards', label: '🃏 Cards', icon: '🃏' },
-    { name: 'Fishing', label: '🦈 Fishing', icon: '🦈' },
-    { name: 'Live', label: '💃 Live Casino', icon: '💃' },
-    { name: 'Sports', label: '⚽ Sportsbook', icon: '⚽' },
-    { name: 'Crash', label: '🚀 Crash', icon: '🚀' },
-    { name: 'Favorites', label: '⭐ Favorites', icon: '⭐' }
+    { name: 'Hot', label: 'Hot', icon: '🔥' },
+    { name: 'Slots', label: 'Slots', icon: '🎰' },
+    { name: 'Mini Games', label: 'Mini Games', icon: '💎' },
+    { name: 'Cards', label: 'Cards', icon: '🃏' },
+    { name: 'Fishing', label: 'Fishing', icon: '🐟' },
+    { name: 'Live', label: 'Live Casino', icon: '🎲' },
+    { name: 'Sports', label: 'Sports', icon: '⚽' },
+    { name: 'Crash', label: 'Crash', icon: '🚀' },
+    { name: 'Favorites', label: 'Favorites', icon: '⭐' }
   ]
 
   // Filter games based on selected tab
@@ -342,7 +342,7 @@ export default function Home() {
       </div>
 
       {/* Category Tabs chip navigation */}
-      <div className="category-bar" style={{ position: 'sticky', top: '60px', zIndex: 40, background: 'var(--bg-tertiary)', paddingBottom: '10px' }}>
+      <div className="category-bar" style={{ position: 'sticky', top: '64px', zIndex: 40, background: 'rgba(11, 14, 20, 0.94)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', paddingBottom: '10px' }}>
         {categoriesList.map(cat => (
           <button 
             key={cat.name}

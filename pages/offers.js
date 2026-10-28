@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import NavBar from '../components/NavBar'
 import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
 import AuthModal from '../components/AuthModal'
 
 export default function Offers() {
+  const router = useRouter()
   const { user } = useAuth()
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [loadingCheckin, setLoadingCheckin] = useState(false)
@@ -16,6 +18,20 @@ export default function Offers() {
   const [depositBonusQualifies, setDepositBonusQualifies] = useState(false)
   const [statusLoading, setStatusLoading] = useState(true)
   const [message, setMessage] = useState(null)
+  const [refreshing, setRefreshing] = useState(false)
+
+  // 9 First Recharge Bonus Tiers matching Screenshot 2
+  const bonusTiers = [
+    { depositReq: 200, bonus: 20 },
+    { depositReq: 1000, bonus: 50 },
+    { depositReq: 3000, bonus: 100 },
+    { depositReq: 10000, bonus: 500 },
+    { depositReq: 30000, bonus: 1000 },
+    { depositReq: 50000, bonus: 2000 },
+    { depositReq: 100000, bonus: 5000 },
+    { depositReq: 50000, bonus: 20000 },
+    { depositReq: 1000000, bonus: 50000 },
+  ]
 
   const fetchStatus = async () => {
     if (!user) {
@@ -53,6 +69,12 @@ export default function Offers() {
     fetchStatus()
   }, [user])
 
+  const handleRefresh = async () => {
+    setRefreshing(true)
+    await fetchStatus()
+    setTimeout(() => setRefreshing(false), 800)
+  }
+
   const handleCheckIn = async () => {
     if (!user) return setIsAuthModalOpen(true)
     setLoadingCheckin(true)
@@ -66,7 +88,7 @@ export default function Offers() {
       })
       const data = await res.json()
       if (data.success) {
-        setMessage({ type: 'success', text: '🎉 Daily Check-in claimed! +Pi 5.00 added to your wallet.' })
+        setMessage({ type: 'success', text: '🎉 Daily Check-in claimed! +Rs 5.00 added to your balance.' })
         setCheckedInToday(true)
         window.dispatchEvent(new Event('wallet-updated'))
       } else {
@@ -79,166 +101,227 @@ export default function Offers() {
     }
   }
 
-  const handleClaimDepositBonus = async () => {
-    if (!user) return setIsAuthModalOpen(true)
-    setLoadingDepositBonus(true)
-    setMessage(null)
-
-    try {
-      const res = await fetch('/api/wallet/claim-deposit-bonus', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id || user.uid, email: user.email })
-      })
-      const data = await res.json()
-      if (data.success) {
-        setMessage({ type: 'success', text: `🎉 Match Bonus claimed! +Pi ${(data.bonus_amount || 0).toFixed(2)} added to your wallet.` })
-        setClaimedDepositBonus(true)
-        window.dispatchEvent(new Event('wallet-updated'))
-      } else {
-        setMessage({ type: 'error', text: data.error })
-      }
-    } catch (err) {
-      setMessage({ type: 'error', text: err.message })
-    } finally {
-      setLoadingDepositBonus(false)
-    }
-  }
-
   return (
     <div className="app">
-      <NavBar />
-      <div style={{ padding: '24px 16px 80px', maxWidth: '600px', margin: '0 auto' }}>
-        <h1 style={{ color: 'var(--accent)', marginTop: 0, fontSize: '28px' }}>🎁 Special Promotions & Rewards</h1>
+      {/* Top Header matching Screenshot 2 */}
+      <div style={{
+        padding: '12px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        background: 'rgba(11, 14, 20, 0.92)',
+        backdropFilter: 'blur(16px)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 50
+      }}>
+        <button 
+          onClick={() => router.back()} 
+          style={{ background: 'none', border: 'none', color: '#94A3B8', fontSize: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+        >
+          ‹
+        </button>
+        <div style={{ fontSize: '15px', fontWeight: 800, color: '#fff', letterSpacing: '0.3px' }}>First recharge bonus</div>
+        <button 
+          onClick={() => router.push('/wallet')} 
+          style={{ background: 'none', border: 'none', color: '#94A3B8', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+        >
+          History
+        </button>
+      </div>
+
+      <div style={{ padding: '14px 16px 90px', maxWidth: '480px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
         
+        {/* Top Hero Banner matching Screenshot 2 */}
+        <div style={{
+          background: 'radial-gradient(circle at 10% 50%, rgba(0, 230, 91, 0.25) 0%, rgba(20, 26, 36, 0.95) 70%)',
+          borderRadius: '20px',
+          border: '1px solid rgba(0, 230, 91, 0.35)',
+          padding: '18px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          boxShadow: '0 8px 30px rgba(0, 230, 91, 0.15)',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          {/* Badge */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            background: 'linear-gradient(90deg, #00E65B 0%, #00B345 100%)',
+            color: '#07090D',
+            fontSize: '9.5px',
+            fontWeight: 900,
+            padding: '3px 12px 3px 10px',
+            borderBottomRightRadius: '12px',
+            boxShadow: '0 2px 6px rgba(0, 230, 91, 0.3)'
+          }}>
+            First deposit reward
+          </div>
+
+          <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={{ fontSize: '42px', filter: 'drop-shadow(0 4px 12px rgba(0, 230, 91, 0.4))' }}>
+              🎁
+            </div>
+            <div>
+              <div style={{ fontSize: '12px', fontWeight: 800, color: '#00E65B', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span>🎁</span> Maximum bonus <span>🎁</span>
+              </div>
+              <div style={{ fontSize: '32px', fontWeight: 900, color: '#FFB800', textShadow: '0 0 16px rgba(255, 184, 0, 0.4)', marginTop: '2px' }}>
+                50,000
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Rewards Section Header (Screenshot 2) */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>🎁</span> Rewards
+            </div>
+            <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px' }}>
+              First deposit reward after registration
+            </div>
+          </div>
+
+          <button 
+            onClick={handleRefresh}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#00E65B',
+              fontSize: '11px',
+              fontWeight: 800,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            <span className={refreshing ? 'coin-spin' : ''}>🔄</span> Refresh
+          </button>
+        </div>
+
+        {/* Reward Tiers List (Screenshot 2) */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {bonusTiers.map((tier, idx) => (
+            <div
+              key={idx}
+              className="glass-panel"
+              style={{
+                borderRadius: '14px',
+                padding: '12px 14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                transition: 'all 0.15s'
+              }}
+            >
+              {/* Left requirement */}
+              <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#E2E8F0' }}>
+                First Deposit ≥ <strong style={{ color: '#fff' }}>{tier.depositReq.toLocaleString()}</strong>
+              </div>
+
+              {/* Middle bonus badge */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ fontSize: '14px' }}>🪙</span>
+                <span style={{
+                  fontSize: '10px',
+                  fontWeight: 900,
+                  color: '#FFB800',
+                  background: 'rgba(255, 184, 0, 0.12)',
+                  padding: '2px 6px',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(255, 184, 0, 0.3)'
+                }}>
+                  {tier.bonus.toLocaleString()} Bonus
+                </span>
+              </div>
+
+              {/* Right Deposit CTA Button */}
+              <button 
+                onClick={() => router.push('/wallet')}
+                style={{
+                  background: 'var(--cta-deposit)',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '6px 14px',
+                  borderRadius: '10px',
+                  fontSize: '11.5px',
+                  fontWeight: 900,
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 10px rgba(255, 87, 34, 0.35)',
+                  transition: 'all 0.15s'
+                }}
+              >
+                Deposit
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Daily Check-in Glass Card */}
+        <div className="glass-panel" style={{ borderRadius: '16px', padding: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ fontSize: '13px', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>📅</span> Daily Check-in Reward
+            </div>
+            <span style={{
+              fontSize: '9.5px',
+              fontWeight: 900,
+              padding: '2px 8px',
+              borderRadius: '6px',
+              background: checkedInToday ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 230, 91, 0.15)',
+              color: checkedInToday ? '#64748B' : '#00E65B',
+              border: checkedInToday ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 230, 91, 0.4)'
+            }}>
+              {checkedInToday ? 'CLAIMED TODAY' : 'AVAILABLE NOW'}
+            </span>
+          </div>
+
+          <div style={{ fontSize: '11px', color: '#94A3B8', marginBottom: '12px' }}>
+            Check-in daily to claim <strong>Rs 5.00 free</strong> into your gaming balance.
+          </div>
+
+          <button 
+            onClick={handleCheckIn}
+            disabled={loadingCheckin || checkedInToday}
+            style={{
+              width: '100%',
+              padding: '11px',
+              borderRadius: '12px',
+              border: 'none',
+              background: checkedInToday ? 'rgba(255, 255, 255, 0.05)' : 'var(--cta-claim)',
+              color: checkedInToday ? '#64748B' : '#07090D',
+              fontSize: '13px',
+              fontWeight: 900,
+              cursor: checkedInToday ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {loadingCheckin ? 'Processing...' : checkedInToday ? 'Checked in today' : 'Claim Daily Rs 5.00'}
+          </button>
+        </div>
+
         {message && (
-          <div style={{ 
-            padding: '14px', 
-            borderRadius: '10px', 
-            marginBottom: '20px', 
-            fontSize: '14px', 
-            background: message.type === 'success' ? '#00ff8822' : '#ff444422',
-            color: message.type === 'success' ? '#00ff88' : '#ff6666',
-            border: `1px solid ${message.type === 'success' ? '#00ff8844' : '#ff444444'}`
+          <div style={{
+            padding: '10px 14px',
+            borderRadius: '10px',
+            fontSize: '12px',
+            fontWeight: 700,
+            background: message.type === 'success' ? 'rgba(0, 230, 91, 0.15)' : 'rgba(255, 51, 102, 0.15)',
+            border: `1px solid ${message.type === 'success' ? '#00E65B' : '#FF3366'}`,
+            color: message.type === 'success' ? '#00E65B' : '#FF3366'
           }}>
             {message.text}
           </div>
         )}
 
-        {/* Universal Referral Bonus Promotion Card */}
-        <Link href="/invite" style={{ textDecoration: 'none' }}>
-          <div style={{
-            background: 'linear-gradient(135deg, #18092a 0%, #3b0764 50%, #09090b 100%)',
-            padding: '22px',
-            borderRadius: '16px',
-            border: '1px solid rgba(0, 230, 118, 0.4)',
-            marginBottom: '20px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
-            boxShadow: '0 8px 30px rgba(0, 230, 118, 0.15)',
-            cursor: 'pointer'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ fontSize: '32px' }}>💸</div>
-              <div style={{ padding: '4px 12px', borderRadius: '12px', fontSize: '11px', fontWeight: 900, background: '#00e676', color: '#000' }}>
-                HOT REWARD • RS 600
-              </div>
-            </div>
-            <div>
-              <h2 style={{ margin: '0 0 6px 0', fontSize: '18px', color: '#fff' }}>Referral & Agent Program</h2>
-              <p style={{ margin: 0, color: '#d4d4d8', fontSize: '13px', lineHeight: '1.5' }}>
-                Earn <strong style={{ color: '#00e676' }}>Pi 155.55 Cash</strong> instantly for every friend you invite + <strong style={{ color: '#ffd700' }}>5% lifetime betting commissions</strong>!
-              </p>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '10px' }}>
-              <span style={{ fontSize: '12px', color: '#00e676', fontWeight: 800 }}>👉 Open Referral Center & Share Link</span>
-              <span style={{ color: '#ffd700', fontSize: '16px' }}>➔</span>
-            </div>
-          </div>
-        </Link>
-
-        {/* Daily Check-in Card */}
-        <div style={{ background: 'var(--card)', padding: '24px', borderRadius: '16px', border: '1px solid var(--border)', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ fontSize: '32px' }}>📅</div>
-            <div style={{ 
-              padding: '4px 10px', 
-              borderRadius: '12px', 
-              fontSize: '12px', 
-              fontWeight: 'bold', 
-              background: checkedInToday ? '#222' : '#00ff8822', 
-              color: checkedInToday ? '#555' : '#00ff88' 
-            }}>
-              {checkedInToday ? 'CLAIMED TODAY' : 'AVAILABLE NOW'}
-            </div>
-          </div>
-          <div>
-            <h2 style={{ margin: '0 0 6px 0', fontSize: '18px', color: '#fff' }}>Daily Loyalty Check-in</h2>
-            <p style={{ margin: 0, color: 'var(--muted)', fontSize: '14px', lineHeight: '1.5' }}>
-              Check-in once every day to receive <strong>Pi 5.00</strong> absolutely free. Keep playing to earn more rewards.
-            </p>
-          </div>
-          <button 
-            className="btn primary" 
-            onClick={handleCheckIn} 
-            disabled={loadingCheckin || checkedInToday || (user && statusLoading)}
-            style={{ width: '100%', padding: '14px', fontSize: '15px', marginTop: '10px', background: checkedInToday ? '#222' : 'var(--accent)', color: checkedInToday ? '#555' : '#000', borderColor: checkedInToday ? '#333' : 'var(--accent)', cursor: checkedInToday ? 'not-allowed' : 'pointer' }}
-          >
-            {loadingCheckin ? '⏳ Processing check-in...' : checkedInToday ? '✅ Checked In Today' : '📅 Check In Now & Claim Pi 5'}
-          </button>
-        </div>
-
-        {/* First Deposit Match Card */}
-        <div style={{ background: 'var(--card)', padding: '24px', borderRadius: '16px', border: '1px solid var(--border)', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ fontSize: '32px' }}>🔥</div>
-            <div style={{ 
-              padding: '4px 10px', 
-              borderRadius: '12px', 
-              fontSize: '12px', 
-              fontWeight: 'bold', 
-              background: claimedDepositBonus ? '#222' : depositBonusQualifies ? '#00ff8822' : '#ff444422', 
-              color: claimedDepositBonus ? '#555' : depositBonusQualifies ? '#00ff88' : '#ff6666' 
-            }}>
-              {claimedDepositBonus ? 'CLAIMED' : depositBonusQualifies ? 'QUALIFIED' : 'PENDING DEPOSIT'}
-            </div>
-          </div>
-          <div>
-            <h2 style={{ margin: '0 0 6px 0', fontSize: '18px', color: '#fff' }}>First Deposit 100% Match</h2>
-            <p style={{ margin: 0, color: 'var(--muted)', fontSize: '14px', lineHeight: '1.5' }}>
-              Get a **100% matched deposit bonus** on your first completed deposit up to **Pi 5,000.00**. 
-              Double your funds to start playing with double the power!
-            </p>
-          </div>
-          
-          {user && !statusLoading && !depositBonusQualifies && !claimedDepositBonus && (
-            <div style={{ background: '#ff444411', border: '1px solid #ff444422', borderRadius: '8px', padding: '10px', color: '#ff6666', fontSize: '13px' }}>
-              ⚠️ You do not have a completed deposit yet. Go to your wallet to make a deposit first!
-            </div>
-          )}
-
-          <button 
-            className="btn primary" 
-            onClick={handleClaimDepositBonus} 
-            disabled={loadingDepositBonus || claimedDepositBonus || (user && statusLoading) || (user && !depositBonusQualifies)}
-            style={{ 
-              width: '100%', 
-              padding: '14px', 
-              fontSize: '15px', 
-              marginTop: '10px', 
-              background: claimedDepositBonus ? '#222' : (user && !depositBonusQualifies) ? '#1a1a1a' : 'var(--accent)', 
-              color: claimedDepositBonus ? '#555' : (user && !depositBonusQualifies) ? '#555' : '#000', 
-              borderColor: claimedDepositBonus ? '#333' : (user && !depositBonusQualifies) ? '#222' : 'var(--accent)', 
-              cursor: (claimedDepositBonus || (user && !depositBonusQualifies)) ? 'not-allowed' : 'pointer' 
-            }}
-          >
-            {loadingDepositBonus ? '⏳ Processing bonus...' : claimedDepositBonus ? '✅ Bonus Claimed' : '🔥 Claim 100% Matched Bonus'}
-          </button>
-        </div>
-
       </div>
-      
+
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       <BottomNav />
     </div>
