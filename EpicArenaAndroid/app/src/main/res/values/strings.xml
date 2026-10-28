@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">EpicArena</string>
+    <string name="app_id">epicarena</string>
+    <string name="target_url">https://www.epicarena.games/</string>
+    <string name="host_name">www.epicarena.games</string>
+    <string name="splash_subtitle">EpicArena • ESPORTS &amp; CASUAL GAMING</string>
+</resources>

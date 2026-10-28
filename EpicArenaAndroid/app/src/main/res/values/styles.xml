@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.EpicArena" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primaryColor</item>
+        <item name="colorPrimaryDark">@color/primaryDarkColor</item>
+        <item name="colorAccent">@color/accentColor</item>
+        <item name="android:windowBackground">@color/backgroundColor</item>
+        <item name="android:statusBarColor">@color/statusBarColor</item>
+        <item name="android:navigationBarColor">@color/primaryDarkColor</item>
+    </style>
+
+    <style name="Theme.EpicArena.Splash" parent="Theme.EpicArena">
+        <item name="android:windowBackground">@color/backgroundColor</item>
+        <item name="android:windowFullscreen">false</item>
+    </style>
+</resources>

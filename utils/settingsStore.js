@@ -21,7 +21,11 @@ const DEFAULT_SETTINGS = {
   easypaisa_hash_key: process.env.EASYPAISA_HASH_KEY || '1234567890123456',
   easypaisa_enabled: true,
   easypaisa_mode: 'directpay',
-  card_mode: 'directpay'
+  card_mode: 'directpay',
+  epicarena_mode: 'casual',
+  is_pro_mode: false,
+  epicarena_featured_banner: 'EpicArena Global Gaming Hub',
+  epicarena_active_theme: 'cyber_dark'
 };
 
 // Global in-memory cache to survive module re-evaluations
