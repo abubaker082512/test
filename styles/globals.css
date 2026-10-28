@@ -236,69 +236,146 @@ body {
   transform: rotate(360deg);
 }
 
-/* Deposit CTA Pill Button */
+/* =========================================================
+   GLASS EFFECT BUTTONS (Specular Reflection, Sheen, Blur)
+   ========================================================= */
+
+/* High-Converting Glass Deposit CTA Button */
 .btn-deposit {
-  background: var(--cta-deposit);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.15) 100%),
+              linear-gradient(135deg, #FF9800 0%, #FF5722 100%);
   color: #FFFFFF;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.28);
   font-weight: 800;
   font-size: 12px;
-  padding: 7px 14px;
+  padding: 7px 15px;
   border-radius: 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 4px;
-  box-shadow: 0 4px 14px rgba(255, 87, 34, 0.35);
-  transition: all 0.2s ease;
+  gap: 5px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6),
+              inset 0 -1px 2px rgba(0, 0, 0, 0.3),
+              0 4px 16px rgba(255, 87, 34, 0.45);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 .btn-deposit:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(255, 87, 34, 0.5);
+  transform: translateY(-1.5px);
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.8),
+              inset 0 -1px 2px rgba(0, 0, 0, 0.25),
+              0 6px 22px rgba(255, 87, 34, 0.6);
 }
-.deposit-badge {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  background: #FF3366;
-  color: #fff;
-  font-size: 9px;
-  padding: 1px 4px;
-  border-radius: 6px;
-  font-weight: 900;
-  box-shadow: 0 2px 6px rgba(255, 51, 102, 0.6);
+.btn-deposit:active {
+  transform: scale(0.96);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
-/* Generic Buttons */
+.deposit-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #FF3366;
+  color: #fff;
+  font-size: 8.5px;
+  padding: 1px 5px;
+  border-radius: 6px;
+  font-weight: 900;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 2px 8px rgba(255, 51, 102, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* Frosted Glass Base Button */
 .btn {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(10px);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 60%, rgba(0, 0, 0, 0.1) 100%),
+              rgba(20, 26, 36, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   color: #E2E8F0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   padding: 9px 18px;
   border-radius: 12px;
   cursor: pointer;
   font-weight: 700;
   font-size: 13px;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   outline: none;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25),
+              inset 0 -1px 1px rgba(0, 0, 0, 0.2),
+              0 4px 12px rgba(0, 0, 0, 0.3);
 }
 .btn:hover {
-  border-color: rgba(0, 230, 91, 0.5);
+  border-color: rgba(0, 230, 91, 0.6);
   color: #FFFFFF;
-  background: rgba(0, 230, 91, 0.1);
+  background: linear-gradient(180deg, rgba(0, 230, 91, 0.2) 0%, rgba(0, 230, 91, 0.05) 100%),
+              rgba(20, 26, 36, 0.85);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4),
+              0 0 16px rgba(0, 230, 91, 0.35);
+  transform: translateY(-1px);
 }
+.btn:active {
+  transform: scale(0.97);
+}
+
+/* Glassy Primary Action Button (Neon Emerald) */
 .btn.primary {
-  background: var(--cta-claim);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.15) 100%),
+              linear-gradient(135deg, #00E65B 0%, #00B345 100%);
   color: #07090D;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.35);
   font-weight: 900;
-  box-shadow: 0 4px 16px rgba(0, 230, 91, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.7),
+              inset 0 -1px 2px rgba(0, 0, 0, 0.3),
+              0 4px 18px rgba(0, 230, 91, 0.45);
 }
 .btn.primary:hover {
+  transform: translateY(-1.5px);
+  border-color: rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.9),
+              0 6px 24px rgba(0, 230, 91, 0.6);
+}
+.btn.primary:active {
+  transform: scale(0.96);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Glass Utility Button Classes */
+.glass-btn-emerald {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 55%, rgba(0, 0, 0, 0.15) 100%),
+              linear-gradient(135deg, #00E65B 0%, #00B345 100%);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.7), 0 4px 14px rgba(0, 230, 91, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #07090D;
+  font-weight: 900;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-btn-emerald:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0, 230, 91, 0.5);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.9), 0 6px 20px rgba(0, 230, 91, 0.55);
+}
+
+.glass-btn-orange {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.15) 100%),
+              linear-gradient(135deg, #FF9800 0%, #FF5722 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), 0 4px 14px rgba(255, 87, 34, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #FFFFFF;
+  font-weight: 800;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-btn-orange:hover {
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.8), 0 6px 20px rgba(255, 87, 34, 0.55);
 }
 
 /* Banner Carousel */
@@ -373,16 +450,179 @@ body {
   box-shadow: 0 0 8px var(--accent);
 }
 
-/* Announcement Ticker Bar */
+/* =========================================================
+   GLASS EFFECT STRIPS & RIBBONS (Frosted Blur & Specular Edges)
+   ========================================================= */
+
+/* Top Header Strip */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  min-height: 64px;
+  width: 100%;
+  max-width: 480px;
+  background: rgba(11, 14, 20, 0.82);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+  margin: 0 auto;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 6px 25px rgba(0, 0, 0, 0.55);
+}
+
+/* Glassy Announcement / Marquee Strip */
 .announcement-bar {
   display: flex;
   align-items: center;
-  background: rgba(20, 26, 36, 0.65);
-  backdrop-filter: blur(14px);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: linear-gradient(90deg, rgba(20, 26, 36, 0.75) 0%, rgba(14, 18, 26, 0.85) 50%, rgba(20, 26, 36, 0.75) 100%);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   padding: 8px 14px;
   gap: 10px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+/* Top Winners Glass Ribbon Ticker Strip */
+.winners-ticker-container {
+  background: linear-gradient(180deg, rgba(16, 22, 32, 0.6) 0%, rgba(11, 14, 20, 0.75) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 10px 14px;
+  overflow: hidden;
+  position: relative;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.winner-card {
+  background: linear-gradient(135deg, rgba(28, 36, 50, 0.75) 0%, rgba(18, 24, 34, 0.85) 100%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 7px 13px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 175px;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.18), 0 4px 14px rgba(0, 0, 0, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.winner-card:hover {
+  border-color: rgba(0, 230, 91, 0.55);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), 0 6px 18px rgba(0, 230, 91, 0.25);
+  transform: translateY(-1.5px);
+}
+
+/* Category Tabs Glass Strip */
+.category-bar {
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  position: relative;
+  background: rgba(11, 14, 20, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.category-chip {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%),
+              rgba(20, 26, 36, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  padding: 8px 15px;
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.12), 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+.category-chip:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+  transform: translateY(-1px);
+}
+.category-chip.active {
+  background: linear-gradient(180deg, rgba(0, 230, 91, 0.25) 0%, rgba(0, 230, 91, 0.08) 100%),
+              rgba(14, 22, 18, 0.9);
+  color: var(--accent);
+  border: 1px solid rgba(0, 230, 91, 0.75);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.4),
+              0 0 18px rgba(0, 230, 91, 0.35);
+  transform: translateY(-1px);
+}
+
+/* Floating Deposit Coupon Glass Strip */
+.coupon-ticker-banner {
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.15) 100%),
+              linear-gradient(90deg, #FF5722 0%, #FF9800 100%);
+  color: #fff;
+  padding: 9px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 95;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.45), 0 -4px 20px rgba(255, 87, 34, 0.45);
+  font-size: 11px;
+  font-weight: 800;
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+/* Floating Bottom Navigation Dock Strip */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  height: calc(60px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: rgba(11, 14, 20, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  display: flex;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  z-index: 100;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08), 0 -8px 30px rgba(0, 0, 0, 0.65);
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Reusable Glass Strip Utility */
+.glass-strip {
+  background: rgba(20, 26, 36, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 .announcement-icon {
   color: var(--accent);

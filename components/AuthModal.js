@@ -184,8 +184,11 @@ export default function AuthModal({ isOpen, onClose }) {
                   width: '100%',
                   padding: '12px 8px',
                   borderRadius: '12px',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(0, 230, 91, 0.4)',
+                  background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.02) 60%, rgba(0, 0, 0, 0.1) 100%), rgba(20, 26, 36, 0.75)',
+                  border: '1px solid rgba(0, 230, 91, 0.45)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  boxShadow: 'inset 0 1px 1px rgba(255, 255, 255, 0.25), 0 4px 14px rgba(0, 0, 0, 0.4)',
                   color: '#fff',
                   fontSize: '12.5px',
                   fontWeight: 800,
@@ -220,21 +223,17 @@ export default function AuthModal({ isOpen, onClose }) {
 
               <button
                 onClick={() => { handleModalClose(); router.push('/wallet') }}
+                className="glass-btn-emerald"
                 style={{
                   width: '100%',
                   padding: '12px 8px',
                   borderRadius: '12px',
-                  background: 'var(--cta-claim)',
-                  color: '#07090D',
-                  border: 'none',
                   fontSize: '12.5px',
-                  fontWeight: 900,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '6px',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 16px rgba(0, 230, 91, 0.35)'
+                  cursor: 'pointer'
                 }}
               >
                 <span>👛</span> Deposit Now

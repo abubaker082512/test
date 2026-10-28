@@ -245,17 +245,12 @@ export default function Offers() {
               {/* Right Deposit CTA Button */}
               <button 
                 onClick={() => router.push('/wallet')}
+                className="glass-btn-orange"
                 style={{
-                  background: 'var(--cta-deposit)',
-                  color: '#fff',
-                  border: 'none',
-                  padding: '6px 14px',
+                  padding: '6px 16px',
                   borderRadius: '10px',
                   fontSize: '11.5px',
-                  fontWeight: 900,
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 10px rgba(255, 87, 34, 0.35)',
-                  transition: 'all 0.15s'
+                  cursor: 'pointer'
                 }}
               >
                 Deposit
@@ -290,13 +285,14 @@ export default function Offers() {
           <button 
             onClick={handleCheckIn}
             disabled={loadingCheckin || checkedInToday}
+            className={checkedInToday ? '' : 'glass-btn-emerald'}
             style={{
               width: '100%',
               padding: '11px',
               borderRadius: '12px',
               border: 'none',
-              background: checkedInToday ? 'rgba(255, 255, 255, 0.05)' : 'var(--cta-claim)',
-              color: checkedInToday ? '#64748B' : '#07090D',
+              background: checkedInToday ? 'rgba(255, 255, 255, 0.05)' : undefined,
+              color: checkedInToday ? '#64748B' : undefined,
               fontSize: '13px',
               fontWeight: 900,
               cursor: checkedInToday ? 'not-allowed' : 'pointer'

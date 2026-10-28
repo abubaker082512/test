@@ -610,17 +610,13 @@ export default function WalletPage() {
             <button 
               onClick={handleDepositSubmit}
               disabled={dpLoading}
+              className="glass-btn-orange"
               style={{
-                background: 'var(--cta-deposit)',
-                color: '#fff',
-                border: 'none',
+                width: '100%',
                 padding: '13px',
                 borderRadius: '14px',
                 fontSize: '14px',
-                fontWeight: 900,
                 cursor: 'pointer',
-                boxShadow: '0 4px 18px rgba(255, 87, 34, 0.4)',
-                transition: 'all 0.2s',
                 marginTop: '4px'
               }}
             >
@@ -725,17 +721,14 @@ export default function WalletPage() {
 
               <button 
                 type="submit"
+                className="glass-btn-emerald"
                 style={{
-                  background: 'var(--cta-claim)',
-                  color: '#07090D',
-                  border: 'none',
-                  padding: '12px',
+                  width: '100%',
+                  padding: '13px',
                   borderRadius: '12px',
                   fontSize: '14px',
-                  fontWeight: 900,
                   cursor: 'pointer',
-                  marginTop: '8px',
-                  boxShadow: '0 4px 16px rgba(0, 230, 91, 0.3)'
+                  marginTop: '8px'
                 }}
               >
                 Submit Payout Request

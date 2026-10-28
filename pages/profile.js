@@ -447,15 +447,17 @@ export default function Profile() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Link href="/wallet" style={{ textDecoration: 'none' }}>
                 <div style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.02) 60%, rgba(0, 0, 0, 0.15) 100%), rgba(20, 26, 36, 0.75)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
                   borderRadius: '14px',
-                  padding: '8px 14px',
+                  padding: '9px 15px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+                  backdropFilter: 'blur(14px)',
+                  WebkitBackdropFilter: 'blur(14px)',
+                  boxShadow: 'inset 0 1px 1px rgba(255, 255, 255, 0.35), 0 4px 14px rgba(0, 0, 0, 0.4)',
                   transition: 'all 0.2s'
                 }}>
                   <span style={{ fontSize: '16px' }}>👛</span>
@@ -465,15 +467,17 @@ export default function Profile() {
 
               <Link href="/wallet" style={{ textDecoration: 'none' }}>
                 <div style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.02) 60%, rgba(0, 0, 0, 0.15) 100%), rgba(20, 26, 36, 0.75)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
                   borderRadius: '14px',
-                  padding: '8px 14px',
+                  padding: '9px 15px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+                  backdropFilter: 'blur(14px)',
+                  WebkitBackdropFilter: 'blur(14px)',
+                  boxShadow: 'inset 0 1px 1px rgba(255, 255, 255, 0.25), 0 4px 14px rgba(0, 0, 0, 0.4)',
                   transition: 'all 0.2s'
                 }}>
                   <span style={{ fontSize: '16px' }}>💳</span>
@@ -521,16 +525,12 @@ export default function Profile() {
                   if (!user) setIsAuthModalOpen(true)
                   else alert('Welcome reward already claimed into balance!')
                 }}
+                className="glass-btn-emerald"
                 style={{
-                  background: 'var(--cta-claim)',
-                  color: '#07090D',
-                  border: 'none',
-                  padding: '6px 16px',
+                  padding: '7px 18px',
                   borderRadius: '10px',
-                  fontSize: '11.5px',
-                  fontWeight: 900,
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 10px rgba(0, 230, 91, 0.3)'
+                  fontSize: '12px',
+                  cursor: 'pointer'
                 }}
               >
                 Claim
@@ -566,16 +566,12 @@ export default function Profile() {
 
               <button 
                 onClick={() => router.push('/wallet')}
+                className="glass-btn-emerald"
                 style={{
-                  background: 'var(--cta-claim)',
-                  color: '#07090D',
-                  border: 'none',
-                  padding: '6px 18px',
+                  padding: '7px 20px',
                   borderRadius: '10px',
-                  fontSize: '11.5px',
-                  fontWeight: 900,
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 10px rgba(0, 230, 91, 0.3)'
+                  fontSize: '12px',
+                  cursor: 'pointer'
                 }}
               >
                 Go
