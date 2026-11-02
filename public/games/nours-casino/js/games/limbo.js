@@ -332,7 +332,7 @@ export class LimboGame {
             </div>
             <div class="limbo-stat limbo-stat--payout">
               <span class="limbo-stat__label">Profit on Win</span>
-              <span class="limbo-stat__value limbo-payout">$${this.getPayout().toFixed(2)}</span>
+              <span class="limbo-stat__value limbo-payout">Rs ${this.getPayout().toFixed(2)}</span>
             </div>
           </div>
 
@@ -827,7 +827,7 @@ export class LimboGame {
     const winChanceEl = this.container.querySelector('.limbo-win-chance');
     const payoutEl = this.container.querySelector('.limbo-payout');
     if (winChanceEl) winChanceEl.textContent = `${this.winChance}%`;
-    if (payoutEl) payoutEl.textContent = `$${this.getPayout().toFixed(2)}`;
+    if (payoutEl) payoutEl.textContent = `Rs ${this.getPayout().toFixed(2)}`;
     if (this.targetStatEl) this.targetStatEl.textContent = `${this.targetMultiplier.toFixed(2)}x`;
     if (this.state === 'idle') this.setSubtext(`TARGET ${this.targetMultiplier.toFixed(2)}x`);
     this._dirty = true;
@@ -887,7 +887,7 @@ export class LimboGame {
     // History & UI Updates
     this.pushHistory(finalOutcomeMult, win);
     this.setStateClass(win ? 'is-win' : 'is-loss');
-    this.setSubtext(win ? `TARGET ${this.targetMultiplier.toFixed(2)}x · WIN +$${payout.toFixed(2)}` : `TARGET ${this.targetMultiplier.toFixed(2)}x · ROLLED ${finalOutcomeMult.toFixed(2)}x`);
+    this.setSubtext(win ? `TARGET ${this.targetMultiplier.toFixed(2)}x · WIN +Rs ${payout.toFixed(2)}` : `TARGET ${this.targetMultiplier.toFixed(2)}x · ROLLED ${finalOutcomeMult.toFixed(2)}x`);
 
     this.audio?.play?.('limbo', win ? 'win' : 'lose');
 

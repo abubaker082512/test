@@ -1618,7 +1618,7 @@ export class MinesGame {
     const p = g.pay;
     const banked = live && this.revealedGems > 0;
     const tone = banked ? T.PALETTE.mint : T.PALETTE.textDim;
-    const amount = `$${(banked ? this.payout : 0).toFixed(2)}`;
+    const amount = `Rs ${(banked ? this.payout : 0).toFixed(2)}`;
     const capSize = this.fitSize('POTENTIAL PAYOUT', p.w - 12, clamp(p.h * 0.2, 6.5, 14), 700, 'Inter, sans-serif');
     const amtSize = this.fitSize(amount, p.w - 16, clamp(p.h * 0.36, 11, TYPE_MAX), 800, MONO);
 
@@ -1664,7 +1664,7 @@ export class MinesGame {
     const tone = won ? (this.currentMultiplier >= 10 ? T.PALETTE.gold : T.PALETTE.mint) : T.PALETTE.red;
     const hero = won ? `${this.currentMultiplier.toFixed(2)}x` : 'BUSTED';
     const sub = won
-      ? `$${this.payout.toFixed(2)} \u00b7 ${this.revealedGems} gems`
+      ? `Rs ${this.payout.toFixed(2)} \u00b7 ${this.revealedGems} gems`
       : `${this.revealedGems} gems banked`;
     const heroSize = this.fitSize(
       hero,

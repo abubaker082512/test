@@ -4,16 +4,139 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="./favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <link rel="stylesheet" href="./style.css">
-    <title>Diamond 777 Slot - Phaser 3</title>
+    <title>WinX • Royal Diamond 777 Slot</title>
     <script src="/games/winx-bridge.js"></script>
-  <script type="module" crossorigin src="./assets/index-DV5qPYN8.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/phaser-epkdELU5.js">
+    <script type="module" crossorigin src="./assets/index-DV5qPYN8.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/phaser-epkdELU5.js">
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body {
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at 50% 20%, #241604 0%, #070912 75%);
+        color: #fff;
+        font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+      .winx-cabinet {
+        width: 100%;
+        min-height: 100dvh;
+        padding: 12px 10px 18px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .cabinet-marquee {
+        background: linear-gradient(180deg, rgba(16, 185, 129, 0.16) 0%, rgba(8, 15, 26, 0.92) 100%);
+        border: 1px solid rgba(16, 185, 129, 0.35);
+        border-radius: 16px;
+        padding: 10px 12px;
+        text-align: center;
+      }
+      .marquee-badge {
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        color: #34d399;
+        margin-bottom: 8px;
+      }
+      .jackpot-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+      .jp-box {
+        padding: 6px 4px;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border: 1px solid rgba(255,255,255,0.12);
+      }
+      .jp-box span { font-size: 9px; font-weight: 800; opacity: 0.85; }
+      .jp-box strong { font-size: 13px; font-weight: 900; margin-top: 2px; }
+      .jp-grand { background: rgba(245, 158, 11, 0.2); border-color: rgba(251, 191, 36, 0.5); color: #fde68a; }
+      .jp-major { background: rgba(16, 185, 129, 0.2); border-color: rgba(52, 211, 153, 0.45); color: #6ee7b7; }
+      .jp-minor { background: rgba(56, 189, 248, 0.18); border-color: rgba(56, 189, 248, 0.4); color: #bae6fd; }
+      #app, #game-container {
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 16 / 9;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 2px solid rgba(16, 185, 129, 0.45);
+        box-shadow: 0 0 32px rgba(16, 185, 129, 0.2);
+        background: #070510;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #game-container canvas {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain;
+      }
+      .cabinet-footer {
+        background: rgba(11, 18, 30, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .pay-pills {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+      }
+      .pay-pill {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        padding: 6px 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .pay-pill span { color: #94a3b8; font-size: 10px; font-weight: 700; }
+      .pay-pill b { color: #fbbf24; font-size: 13px; font-weight: 900; margin-top: 2px; }
+      .cabinet-tip {
+        text-align: center;
+        font-size: 11px;
+        color: #94a3b8;
+        background: rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        padding: 8px 10px;
+        border-radius: 10px;
+      }
+      .cabinet-tip b { color: #34d399; }
+    </style>
 </head>
-
 <body>
-    <div id="app">
-        <div id="game-container"></div>
+    <div class="winx-cabinet">
+        <div class="cabinet-marquee">
+            <div class="marquee-badge">💎 ROYAL DIAMOND 777 • PHASER 3 WEBGL</div>
+            <div class="jackpot-grid">
+                <div class="jp-box jp-grand"><span>ROYAL 777</span><strong>Rs 300,000</strong></div>
+                <div class="jp-box jp-major"><span>DIAMOND</span><strong>Rs 75,000</strong></div>
+                <div class="jp-box jp-minor"><span>CROWN</span><strong>Rs 15,000</strong></div>
+            </div>
+        </div>
+        <div id="app">
+            <div id="game-container"></div>
+        </div>
+        <div class="cabinet-footer">
+            <div class="pay-pills">
+                <div class="pay-pill"><span>💎 Diamond</span><b>150x</b></div>
+                <div class="pay-pill"><span>7️⃣ Seven</span><b>80x</b></div>
+                <div class="pay-pill"><span>🔔 Bell</span><b>40x</b></div>
+                <div class="pay-pill"><span>🍒 Cherry</span><b>15x</b></div>
+            </div>
+            <div class="cabinet-tip">Pull the <b>Slot Lever</b> or tap <b>SPIN</b> inside the cabinet above!</div>
+        </div>
     </div>
 </body>
 </html>

@@ -120,7 +120,7 @@ export default function Home() {
       const catsToLoad = ['Our Games', 'Free Games', 'Slots', 'Mini Games', 'Cards', 'Fishing', 'Live', 'Sports', 'Crash'];
       for (const cat of catsToLoad) {
         try {
-          const res = await fetch(`/api/games?category=${encodeURIComponent(cat)}&limit=30`);
+          const res = await fetch(`/api/games?category=${encodeURIComponent(cat)}&limit=40`);
           if (res.ok) {
             const json = await res.json();
             const list = json.data || json.games || [];

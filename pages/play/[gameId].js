@@ -4,6 +4,33 @@ import Link from 'next/link'
 import { useAuth } from '../../context/AuthContext'
 import AuthModal from '../../components/AuthModal'
 
+// WinX Custom Mobile-Theme Game Engines (480px Native Portrait Editions)
+import SuperAce from '../../components/games/SuperAce'
+import FortuneGems from '../../components/games/FortuneGems'
+import MahjongWays from '../../components/games/MahjongWays'
+import WildBounty from '../../components/games/WildBounty'
+import CrashGame from '../../components/games/CrashGame'
+import FishingJoy from '../../components/games/FishingJoy'
+import RouletteGame from '../../components/games/RouletteGame'
+import BlackjackGame from '../../components/games/BlackjackGame'
+import BaccaratGame from '../../components/games/BaccaratGame'
+import DragonTigerGame from '../../components/games/DragonTigerGame'
+import VideoPokerGame from '../../components/games/VideoPokerGame'
+import PlinkoGame from '../../components/games/PlinkoGame'
+import MinesweeperGame from '../../components/games/MinesweeperGame'
+import DiceGame from '../../components/games/DiceGame'
+import LimboGame from '../../components/games/LimboGame'
+import CoinFlip from '../../components/games/CoinFlip'
+import HiloGame from '../../components/games/HiloGame'
+import KenoGame from '../../components/games/KenoGame'
+import SicBoGame from '../../components/games/SicBoGame'
+import PenaltyShootout from '../../components/games/PenaltyShootout'
+import DerbyGame from '../../components/games/DerbyGame'
+import CockfightGame from '../../components/games/CockfightGame'
+import WheelGame from '../../components/games/WheelGame'
+import ClassicSlots from '../../components/games/ClassicSlots'
+import SportsBook from '../../components/games/SportsBook'
+
 export default function PlayGame() {
   const router = useRouter()
   const { gameId } = router.query
@@ -32,8 +59,12 @@ export default function PlayGame() {
     displayName: 'Guest'
   }
 
-  //Effective wallet balance (Real or Demo)
+  // Effective wallet balance (Real or Demo)
   const activeBalance = isDemoMode ? demoBalance : (wallet && wallet.balance !== undefined ? parseFloat(wallet.balance) : 150.0)
+  const activeWalletObj = {
+    balance: activeBalance,
+    currency: 'PKR'
+  }
 
   if (bootBalanceRef.current === null || (wallet && bootBalanceRef.current === 150.0 && parseFloat(wallet.balance) !== 150.0)) {
     bootBalanceRef.current = activeBalance
@@ -54,7 +85,7 @@ export default function PlayGame() {
     } catch (e) {}
   }
 
-  // Fetch real wallet balance
+  // Fetch real wallet balance (works for both authenticated users and guest_player)
   const fetchWallet = async () => {
     const uid = user ? (user.id || user.uid || '') : 'guest_player'
     const email = user ? (user.email || '') : ''
@@ -107,30 +138,82 @@ export default function PlayGame() {
     return () => window.removeEventListener('message', handleBridgeMessage)
   }, [demoBalance, spendDemoBalance, addDemoBalance])
 
+  // Check if slug belongs to our custom WinX Mobile-Theme React Engines (`components/games/*`)
+  const isWinXThemeReactSlug = (rawSlug) => {
+    const s = String(rawSlug || '').toLowerCase()
+    if (s.startsWith('winx-theme-')) return true
+    const reactThemeSlugs = [
+      'baccarat-royale',
+      'video-poker',
+      'dragon-tiger-pro',
+      'penalty-shootout-pro',
+      'royal-derby',
+      'fishing-joy-cannon',
+      'mahjong-ways-gold',
+      'wild-bounty-gold',
+      'cockfight-arena',
+      'sports-nfl-live',
+      'sports-soccer-live'
+    ]
+    return reactThemeSlugs.includes(s) || reactThemeSlugs.includes(s.replace(/^winx-/, ''))
+  }
+
+  // Render our native 480px WinX Mobile-Theme React Game Component
+  const renderWinXThemeReactEngine = () => {
+    const slug = String(gameId || '').toLowerCase().replace(/^winx-theme-/, '').replace(/^winx-/, '')
+    const props = {
+      user: activeUser,
+      wallet: activeWalletObj,
+      fetchWallet,
+      isDemoMode,
+      demoBalance,
+      spendDemoBalance,
+      addDemoBalance
+    }
+
+    if (slug.includes('super-ace')) return <SuperAce {...props} />
+    if (slug.includes('fortune-gem')) return <FortuneGems {...props} />
+    if (slug.includes('mahjong')) return <MahjongWays {...props} />
+    if (slug.includes('wild-bounty') || slug.includes('bounty')) return <WildBounty {...props} />
+    if (slug.includes('baccarat')) return <BaccaratGame {...props} />
+    if (slug.includes('dragon-tiger') || slug.includes('dragon')) return <DragonTigerGame {...props} />
+    if (slug.includes('video-poker') || slug.includes('poker')) return <VideoPokerGame {...props} />
+    if (slug.includes('fishing') || slug.includes('fish')) return <FishingJoy {...props} />
+    if (slug.includes('penalty') || slug.includes('shootout')) return <PenaltyShootout {...props} />
+    if (slug.includes('derby') || slug.includes('horse')) return <DerbyGame {...props} />
+    if (slug.includes('cockfight') || slug.includes('rooster')) return <CockfightGame {...props} />
+    if (slug.includes('sic-bo') || slug.includes('sicbo')) return <SicBoGame {...props} />
+    if (slug.includes('coin-flip') || slug.includes('coinflip')) return <CoinFlip {...props} />
+    if (slug.includes('wheel')) return <WheelGame {...props} />
+    if (slug.includes('roulette')) return <RouletteGame {...props} />
+    if (slug.includes('blackjack')) return <BlackjackGame {...props} />
+    if (slug.includes('plinko')) return <PlinkoGame {...props} />
+    if (slug.includes('mine')) return <MinesweeperGame {...props} />
+    if (slug.includes('crash') || slug.includes('jetx')) return <CrashGame {...props} />
+    if (slug.includes('limbo')) return <LimboGame {...props} />
+    if (slug.includes('hilo')) return <HiloGame {...props} />
+    if (slug.includes('keno')) return <KenoGame {...props} />
+    if (slug.includes('dice')) return <DiceGame {...props} />
+    if (slug.includes('sport') || slug.includes('nfl') || slug.includes('soccer')) return <SportsBook {...props} />
+
+    return <ClassicSlots {...props} gameId={gameId} title={getGameTitle()} />
+  }
+
   // Map slug to our self-hosted GitHub open-source engines in /public/games/
-  // IMPORTANT: Do NOT interpolate live `activeBalance` into the iframe src, or React will reload the iframe on every bet!
   const resolveOpenSourceEngineUrl = (rawSlug) => {
     const slug = String(rawSlug || '').toLowerCase().replace(/^winx-/, '')
     const initialBal = Math.round(bootBalanceRef.current ?? activeBalance)
     const baseQuery = `user_id=${encodeURIComponent(activeUser.id || activeUser.uid || 'guest_player')}&email=${encodeURIComponent(activeUser.email || '')}&demo=${isDemoMode ? 'true' : 'false'}&balance=${encodeURIComponent(initialBal)}`
 
-    if (slug.includes('euro-roulette') || slug.includes('european-roulette') || slug.includes('vip-roulette')) {
+    if (slug.includes('euro-roulette') || slug.includes('european-roulette')) {
       return `/games/euro-roulette/index.html?${baseQuery}&game=euro-roulette`
     }
 
-    if (slug.includes('baccarat')) {
-      return `/games/baccarat-royale/index.html?${baseQuery}&game=baccarat-royale`
-    }
-
-    if (slug.includes('video-poker') || slug.includes('jacks-or-better') || slug.includes('poker')) {
-      return `/games/video-poker/index.html?${baseQuery}&game=video-poker`
-    }
-
-    if (slug.includes('mega-fortune-wheel') || slug.includes('wheel-of-fortune') || slug.includes('fortune-wheel')) {
+    if (slug.includes('wheel-of-fortune') || slug.includes('fortune-wheel')) {
       return `/games/wheel-of-fortune/index.html?${baseQuery}&game=mega-fortune-wheel`
     }
 
-    if (slug.includes('vegas-slot') || slug.includes('20-line') || slug.includes('pharaoh') || slug.includes('olympus')) {
+    if (slug.includes('vegas-slot') || slug.includes('20-line')) {
       return `/games/vegas-slots/index.html?${baseQuery}&game=vegas-slots`
     }
 
@@ -138,25 +221,19 @@ export default function PlayGame() {
       return `/games/galaxy-slots/index.html?${baseQuery}&game=galaxy-slots`
     }
 
-    if (
-      slug.includes('mystical') ||
-      slug.includes('forest') ||
-      slug.includes('mahjong') ||
-      slug.includes('bounty') ||
-      slug.includes('fishing')
-    ) {
+    if (slug.includes('mystical') || slug.includes('forest')) {
       return `/games/mystical-slot/index.html?${baseQuery}&game=${encodeURIComponent(slug)}`
     }
 
-    if (slug.includes('super-ace') || slug.includes('diamond')) {
+    if (slug.includes('super-ace-deluxe') || slug.includes('diamond')) {
       return `/games/sibaxi-slot/index.html?${baseQuery}&game=${encodeURIComponent(slug)}`
     }
 
-    if (slug.includes('fortune-gem') || slug.includes('lucky-seven')) {
+    if (slug.includes('fortune-gems-2') || slug.includes('lucky-seven')) {
       return `/games/lucky-sevens/index.html?${baseQuery}&game=${encodeURIComponent(slug)}`
     }
 
-    if (slug.includes('classic-slot') || slug.includes('lucky-reel') || slug.includes('slots')) {
+    if (slug.includes('classic-slots-neon') || slug.includes('lucky-reel')) {
       return `/games/phaser-slot/index.html?${baseQuery}&game=${encodeURIComponent(slug)}`
     }
 
@@ -176,7 +253,7 @@ export default function PlayGame() {
     if (slug.includes('roulette')) {
       return `/games/nours-casino/index.html?${baseQuery}&game=roulette#/roulette`
     }
-    if (slug.includes('blackjack') || slug.includes('dragon')) {
+    if (slug.includes('blackjack')) {
       return `/games/nours-casino/index.html?${baseQuery}&game=blackjack#/blackjack`
     }
     if (slug.includes('limbo')) {
@@ -188,17 +265,17 @@ export default function PlayGame() {
     if (slug.includes('keno')) {
       return `/games/nours-casino/index.html?${baseQuery}&game=keno#/keno`
     }
-    if (slug.includes('wheel') || slug.includes('twist') || slug.includes('penalty') || slug.includes('derby')) {
+    if (slug.includes('mega-fortune-wheel') || slug.includes('twist')) {
       return `/games/nours-casino/index.html?${baseQuery}&game=twist#/twist`
     }
-    if (slug.includes('sic-bo') || slug.includes('sicbo') || slug.includes('pocket-dice')) {
+    if (slug.includes('sic-bo-macau') || slug.includes('pocket-dice')) {
       return `/games/nours-casino/index.html?${baseQuery}&game=pocket-dice#/pocket-dice`
     }
-    if (slug.includes('dice') || slug.includes('coin')) {
+    if (slug.includes('dice') || slug.includes('coin-flip-3d')) {
       return `/games/nours-casino/index.html?${baseQuery}&game=dice#/dice`
     }
 
-    return `/games/mystical-slot/index.html?${baseQuery}&game=${encodeURIComponent(slug)}`
+    return `/games/nours-casino/index.html?${baseQuery}&game=plinko#/plinko`
   }
 
   const fetchLiveGameUrl = async (customMoney) => {
@@ -228,70 +305,10 @@ export default function PlayGame() {
     }
 
     const cleanSlug = String(gameId).toLowerCase().replace(/^winx-/, '')
-    const nativeSelfHostedSlugs = [
-      'mystical-forest-slot',
-      'super-ace',
-      'super-ace-deluxe',
-      'fortune-gems',
-      'fortune-gems-2',
-      'vegas-slots',
-      'galaxy-slots',
-      'euro-roulette',
-      'baccarat-royale',
-      'wheel-of-fortune',
-      'crash',
-      'stake-crash',
-      'aviator',
-      'aviator-pro',
-      'spribe_aviator',
-      'mines',
-      'stake-mines',
-      'minesweeper',
-      'plinko',
-      'stake-plinko',
-      'roulette',
-      'roulette-pro',
-      'blackjack',
-      'blackjack-pro',
-      'limbo',
-      'limbo-rocket',
-      'dragon-tiger',
-      'dragon-tiger-pro',
-      'baccarat',
-      'baccarat-pro',
-      'classic-slots',
-      'classic-slots-neon',
-      'hilo',
-      'hilo-streak',
-      'coin-flip',
-      'coin-flip-3d',
-      'keno',
-      'keno-neon',
-      'sic-bo-macau',
-      'sicbo',
-      'sic-bo',
-      'penalty',
-      'penalty-shootout',
-      'penalty-shootout-pro',
-      'royal-derby',
-      'derby',
-      'mega-fortune-wheel',
-      'wheel',
-      'twist',
-      'pocket-dice',
-      'dice',
-      'video-poker',
-      'video-poker-pro',
-      'fishing-joy',
-      'fishing-joy-cannon',
-      'mahjong-ways-gold',
-      'wild-bounty-gold'
-    ]
-
     if (
       String(gameId).toLowerCase().startsWith('winx-') ||
-      nativeSelfHostedSlugs.includes(cleanSlug) ||
-      nativeSelfHostedSlugs.includes(String(gameId).toLowerCase())
+      isWinXThemeReactSlug(gameId) ||
+      ! (/^[a-f0-9]{32}$/i.test(String(gameId)))
     ) {
       setGameMode('canvas')
       setApiLoading(false)
@@ -361,11 +378,18 @@ export default function PlayGame() {
     if (apiGameName && apiGameName.length < 30) return apiGameName
     if (!gameId) return 'Live Casino Game'
     if (gameId.length === 32) return 'BetNex Live Game'
-    const words = String(gameId).replace(/^winx-/, '').replace(/[-_]/g, ' ').split(' ')
+    const words = String(gameId).replace(/^winx-theme-/, '').replace(/^winx-/, '').replace(/[-_]/g, ' ').split(' ')
     return words.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
   }
 
   const renderOpenSourceEngine = () => {
+    if (isWinXThemeReactSlug(gameId)) {
+      return (
+        <div style={{ width: '100%', height: '100%', overflowY: 'auto', overflowX: 'hidden', background: '#070a14' }}>
+          {renderWinXThemeReactEngine()}
+        </div>
+      )
+    }
     const engineSrc = resolveOpenSourceEngineUrl(gameId)
     return (
       <iframe
@@ -629,7 +653,7 @@ export default function PlayGame() {
         </div>
       </header>
 
-      {/* Main Embedded Open-Source Game Stage */}
+      {/* Main Embedded Game Stage Inside 480px Mobile Frame */}
       <div style={{ flex: 1, position: 'relative', width: '100%', height: 'calc(100dvh - 52px)', background: '#070a14', overflow: 'hidden' }}>
         {ftgData ? renderFtgStage() : gameMode === 'api' && liveGameUrl ? (
           <iframe 

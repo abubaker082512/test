@@ -1210,7 +1210,7 @@ export class RouletteGame {
     ctx.save();
     ctx.globalAlpha = 0.15 + 0.85 * ease;
     const heroText = res.totalBet > 0
-      ? `$${res.payout.toFixed(2)}`
+      ? `Rs ${res.payout.toFixed(2)}`
       : `${res.multiplier.toFixed(2)}x`;
     T.heroText(ctx, heroText, cx, m.heroY + lift, { size, color: heroColor, blur: size * 0.46 });
     this._label(

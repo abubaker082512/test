@@ -3,8 +3,8 @@ import Boot from './base_scenes/Boot.js';
 import Game from './base_scenes/Game.js';
 
 export default {
-    type: Phaser.WEBGL,
-    parent: "slot-game-phaser3",
+    type: Phaser.AUTO,
+    parent: "vegasStage",
     width: 1280,
     height: 720,
     physics : {

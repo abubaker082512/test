@@ -1143,13 +1143,13 @@ export class CrashGame {
       // now. Display only — the credited amount is still whatever cashout() returns.
       if (stacked && this.betAmount > 0) {
         const live = Math.floor(this.betAmount * this.currentMult * 100) / 100;
-        subText = `BET $${this.betAmount.toFixed(2)} \u00b7 CASH OUT $${live.toFixed(2)}`;
+        subText = `BET Rs ${this.betAmount.toFixed(2)} \u00b7 CASH OUT Rs ${live.toFixed(2)}`;
       }
     } else if (this.state === 'cashed_out') {
       fontColor = '#fbbf24';
       const multVal = this.cashedOutMult ? this.cashedOutMult.toFixed(2) : this.currentMult.toFixed(2);
       text = `x${multVal}`;
-      subText = `CASHED OUT +$${(this.payout || 0).toFixed(2)}`;
+      subText = `CASHED OUT +Rs ${(this.payout || 0).toFixed(2)}`;
     } else if (this.state === 'crashed') {
       fontColor = '#ef4444';
       if (!stacked) {

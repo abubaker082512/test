@@ -57,7 +57,7 @@ const pct = (n) => `${Number(n).toFixed(2)}%`;
 function cash(c, raw) {
   const scaled = raw * (Number.isFinite(c.payoutScale) ? c.payoutScale : 1);
   const capped = c.maxWin > 0 ? Math.min(scaled, c.maxWin) : scaled;
-  return `$${Math.max(0, capped).toFixed(2)}`;
+  return `Rs ${Math.max(0, capped).toFixed(2)}`;
 }
 
 

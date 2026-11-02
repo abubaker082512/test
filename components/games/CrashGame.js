@@ -436,7 +436,7 @@ export default function CrashGame({ user, wallet, fetchWallet }) {
                       border: betAmount === amt ? '2px solid #ffea00' : '2.5px dashed rgba(255,255,255,0.2)'
                     }}
                   >
-                    Pi {amt}
+                    Rs {amt}
                   </button>
                 ))}
               </div>
@@ -450,7 +450,7 @@ export default function CrashGame({ user, wallet, fetchWallet }) {
                   color: '#fff !important'
                 }}
               >
-                {processing ? 'CHARGING ENGINES...' : `BET Pi ${betAmount} & LAUNCH`}
+                {processing ? 'CHARGING ENGINES...' : `BET Rs ${betAmount} & LAUNCH`}
               </button>
             </>
           ) : (
@@ -462,7 +462,7 @@ export default function CrashGame({ user, wallet, fetchWallet }) {
                 boxShadow: '0 4px 20px rgba(0, 230, 118, 0.4)'
               }}
             >
-              CASH OUT : Pi {(betAmount * multiplier).toFixed(2)}
+              CASH OUT : Rs {(betAmount * multiplier).toFixed(2)}
             </button>
           )}
         </div>
@@ -495,7 +495,7 @@ export default function CrashGame({ user, wallet, fetchWallet }) {
                 >
                   <span style={{ color: p.cashedOut ? '#00e676' : '#fff' }}>{p.name}</span>
                   <span style={{ fontWeight: 'bold', color: p.cashedOut ? '#00e676' : '#ffea00' }}>
-                    {p.cashedOut ? `${p.cashOutMult.toFixed(2)}x` : `Pi ${p.bet}`}
+                    {p.cashedOut ? `${p.cashOutMult.toFixed(2)}x` : `Rs ${p.bet}`}
                   </span>
                 </div>
               ))}

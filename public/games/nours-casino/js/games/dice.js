@@ -1279,7 +1279,7 @@ export class DiceGame {
 
     let sub;
     if (rolling) sub = 'Rolling';
-    else if (won) sub = `Win  ${this.getMultiplier().toFixed(2)}x  +$${Math.max(0, this.getProfit()).toFixed(2)}`;
+    else if (won) sub = `Win  ${this.getMultiplier().toFixed(2)}x  +Rs ${Math.max(0, this.getProfit()).toFixed(2)}`;
     else if (lost) sub = `Loss  ·  Roll ${this.condition} ${this.target.toFixed(2)}`;
     else sub = `Roll ${this.condition} ${this.target.toFixed(2)}`;
 
@@ -1319,7 +1319,7 @@ export class DiceGame {
 
     const chance = `${this.getWinChance().toFixed(2)}%`;
     const mult = `${this.getMultiplier().toFixed(valueBudget >= 118 ? 4 : 2)}x`;
-    const profit = `$${this.getProfit().toFixed(2)}`;
+    const profit = `Rs ${this.getProfit().toFixed(2)}`;
 
     const cells = [
       ['Win Chance', chance, T.PALETTE.cyan],

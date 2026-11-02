@@ -48,7 +48,7 @@ const speedToDelay = (s) => Math.round(1150 - (clamp(s, 1, 10) - 1) * 108); // 1
 /* ------------------------------- Helpers ------------------------------- */
 
 const $  = (sel, root = document) => root.querySelector(sel);
-const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+const Rs $ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
 const clamp   = (n, lo, hi) => (n < lo ? lo : n > hi ? hi : n);
 const round2  = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
@@ -361,7 +361,7 @@ let stopThemeStorageSync = () => {};
 
 /** Keep the canonical Appearance radio group aligned with the active theme. */
 function syncThemeControls({ announce = false } = {}) {
-  $$('input[name="application-theme"]').forEach((input) => {
+  Rs $('input[name="application-theme"]').forEach((input) => {
     input.checked = input.value === activeTheme;
   });
 
@@ -754,7 +754,7 @@ function renderBet() {
 function renderRisk() {
   el.riskSeg.dataset.risk = state.risk;
   el.riskSeg.style.setProperty('--i', RISKS.indexOf(state.risk));
-  $$('[data-risk]', el.riskSeg).forEach((b) => {
+  Rs $('[data-risk]', el.riskSeg).forEach((b) => {
     const on = b.dataset.risk === state.risk;
     b.classList.toggle('is-active', on);
     b.setAttribute('aria-checked', String(on));
@@ -774,7 +774,7 @@ function renderRows() {
 
 function renderMode() {
   el.modeSeg.style.setProperty('--i', MODES.indexOf(state.mode));
-  $$('[data-mode]', el.modeSeg).forEach((b) => {
+  Rs $('[data-mode]', el.modeSeg).forEach((b) => {
     const on = b.dataset.mode === state.mode;
     b.classList.toggle('is-active', on);
     b.setAttribute('aria-selected', String(on));
@@ -1104,7 +1104,7 @@ function applyLobbyFilter() {
   const activeFilterBtn = document.querySelector('.lobby-filter.is-active');
   const filter = activeFilterBtn?.dataset.filter || 'all';
 
-  const cards = $$('.game-card');
+  const cards = Rs $('.game-card');
   let visibleCount = 0;
 
   cards.forEach((card) => {
@@ -2038,7 +2038,7 @@ async function playLimbo(manual = false) {
       state.balance = round2(state.balance + payout);
       renderBalance(1);
       recordGenericRound(bet > 0 ? round2(payout / bet) : 0, bet, payout);
-      toast(`Win! ${fmtMult(res.result)} (+$${(payout - bet).toFixed(2)})`, 'ok');
+      toast(`Win! ${fmtMult(res.result)} (+Rs ${(payout - bet).toFixed(2)})`, 'ok');
     } else {
       recordGenericRound(0, bet, 0);
       toast(`Loss! Rolled ${fmtMult(res.result)}`, 'error');
@@ -2268,7 +2268,7 @@ function applyBoardConfig({ rows, risk }) {
 
 let lastFocused = null;
 
-function openModals() { return $$('.modal').filter((m) => !m.hidden); }
+function openModals() { return Rs $('.modal').filter((m) => !m.hidden); }
 
 function syncOverlayScrollLock() {
   const locked = openModals().length > 0 || document.body.classList.contains('tools-open') || document.body.classList.contains('bet-controls-open');
@@ -2276,7 +2276,7 @@ function syncOverlayScrollLock() {
 }
 
 function focusableItems(container) {
-  return $$('a[href], button:not(:disabled), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])', container)
+  return Rs $('a[href], button:not(:disabled), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])', container)
     .filter((node) => node.offsetParent !== null && !node.closest('[inert]'));
 }
 
@@ -2741,7 +2741,7 @@ function bindCompositeControlKeys() {
   const itemSelector = '[role="radio"], [role="tab"]';
   const groupSelector = '[role="radiogroup"], [role="tablist"]';
 
-  const itemsFor = (group) => $$(itemSelector, group).filter((item) => !item.disabled && !item.hidden);
+  const itemsFor = (group) => Rs $(itemSelector, group).filter((item) => !item.disabled && !item.hidden);
   const isSelected = (item) => item.getAttribute(item.getAttribute('role') === 'tab' ? 'aria-selected' : 'aria-checked') === 'true';
   const syncGroup = (group) => {
     const items = itemsFor(group);
@@ -2750,7 +2750,7 @@ function bindCompositeControlKeys() {
     items.forEach((item) => { item.tabIndex = item === selected ? 0 : -1; });
   };
 
-  $$(groupSelector).forEach(syncGroup);
+  Rs $(groupSelector).forEach(syncGroup);
 
   document.addEventListener('click', (event) => {
     const item = event.target.closest?.(itemSelector);
@@ -2885,7 +2885,7 @@ function bindEvents() {
   });
   el.betInput.addEventListener('change', () => setBet(parseFloat(el.betInput.value)));
   el.betInput.addEventListener('blur', () => setBet(parseFloat(el.betInput.value)));
-  $$('[data-bet-op]').forEach((b) => b.addEventListener('click', () => adjustBet(b.dataset.betOp)));
+  Rs $('[data-bet-op]').forEach((b) => b.addEventListener('click', () => adjustBet(b.dataset.betOp)));
 
   /* rows */
   el.rowsRange.addEventListener('input', () => {
@@ -2904,7 +2904,7 @@ function bindEvents() {
     const cleaned = el.autoCount.value.replace(/[^0-9]/g, '');
     if (cleaned !== el.autoCount.value) el.autoCount.value = cleaned;
     state.autoCount = clamp(parseInt(cleaned, 10) || 0, 0, 100000);
-    $$('[data-auto-count]').forEach((b) => b.classList.toggle('is-active', Number(b.dataset.autoCount) === state.autoCount));
+    Rs $('[data-auto-count]').forEach((b) => b.classList.toggle('is-active', Number(b.dataset.autoCount) === state.autoCount));
     renderDropButton();
     save();
   });
@@ -2932,7 +2932,7 @@ function bindEvents() {
     rouletteSeg.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-color]');
       if (!btn) return;
-      $$('[data-color]', rouletteSeg).forEach((b) => {
+      Rs $('[data-color]', rouletteSeg).forEach((b) => {
         const on = b === btn;
         b.classList.toggle('is-active', on);
         b.setAttribute('aria-checked', String(on));
@@ -2984,10 +2984,10 @@ function bindEvents() {
   /* Mines cashout button */
   $('#btn-mines-cashout')?.addEventListener('click', () => { cashoutMines(); });
 
-  $$('[data-auto-count]').forEach((b) => b.addEventListener('click', () => {
+  Rs $('[data-auto-count]').forEach((b) => b.addEventListener('click', () => {
     state.autoCount = Number(b.dataset.autoCount);
     el.autoCount.value = String(state.autoCount);
-    $$('[data-auto-count]').forEach((o) => o.classList.toggle('is-active', o === b));
+    Rs $('[data-auto-count]').forEach((o) => o.classList.toggle('is-active', o === b));
     renderDropButton();
     save();
     audio?.playButtonClick();
@@ -3004,11 +3004,11 @@ function bindEvents() {
   /* modals */
   el.btnStats.addEventListener('click', () => { openModal(el.modalStats); renderDist(); });
   el.btnFair.addEventListener('click', () => { renderFair(); prefillVerify(); openModal(el.modalFair); });
-  $$('[data-close]').forEach((n) => n.addEventListener('click', () => closeModal(n.closest('.modal'))));
+  Rs $('[data-close]').forEach((n) => n.addEventListener('click', () => closeModal(n.closest('.modal'))));
   el.btnResetStats.addEventListener('click', () => { resetStatsOnly(); toast('Statistics cleared', 'info'); });
 
   /* customize */
-  $$('input[name="application-theme"]').forEach((input) => {
+  Rs $('input[name="application-theme"]').forEach((input) => {
     input.addEventListener('change', () => {
       if (!input.checked) return;
       setTheme(input.value, { persist: true, announce: true });
@@ -3153,7 +3153,7 @@ function bindEvents() {
   $('#account-import-mode')?.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-mode]');
     if (!btn) return;
-    $$('[data-mode]', $('#account-import-mode')).forEach((b) => {
+    Rs $('[data-mode]', $('#account-import-mode')).forEach((b) => {
       const on = b === btn;
       b.classList.toggle('is-active', on);
       b.setAttribute('aria-checked', String(on));
@@ -3221,7 +3221,7 @@ function bindEvents() {
   });
   el.btnRotate.addEventListener('click', () => { rotateServerSeed(); });
   el.btnVerify.addEventListener('click', () => { runVerify(); });
-  $$('[data-copy]').forEach((b) => b.addEventListener('click', () => copyValue(b.dataset.copy, b)));
+  Rs $('[data-copy]').forEach((b) => b.addEventListener('click', () => copyValue(b.dataset.copy, b)));
 
   /* audio */
   el.btnMute.addEventListener('click', () => {
@@ -3446,7 +3446,7 @@ async function init() {
 
   el.betInput.value = state.bet.toFixed(2);
   el.autoCount.value = String(state.autoCount);
-  $$('[data-auto-count]').forEach((b) => b.classList.toggle('is-active', Number(b.dataset.autoCount) === state.autoCount));
+  Rs $('[data-auto-count]').forEach((b) => b.classList.toggle('is-active', Number(b.dataset.autoCount) === state.autoCount));
 
   const muted = Boolean(audio?.muted);
   el.btnMute.setAttribute('aria-pressed', String(muted));
@@ -3561,18 +3561,18 @@ async function init() {
     if (!GAMES.includes(g)) return false;
     state.activeGame = g;
     limbo?.setAudioActive?.(document.body.dataset.route === 'game' && g === 'limbo');
-    $$('.game-tab').forEach((t) => {
+    Rs $('.game-tab').forEach((t) => {
       const active = t.dataset.game === g;
       t.classList.toggle('is-active', active);
       if (active) t.setAttribute('aria-current', 'page');
       else t.removeAttribute('aria-current');
     });
-    $$('.game-stage-view').forEach((view) => {
+    Rs $('.game-stage-view').forEach((view) => {
       const active = view.id === `view-${g}`;
       view.classList.toggle('is-active', active);
       view.style.display = active ? 'flex' : 'none';
     });
-    $$('.game-ctrl-pane').forEach((pane) => {
+    Rs $('.game-ctrl-pane').forEach((pane) => {
       const active = pane.id === `pane-ctrl-${g}`;
       pane.classList.toggle('is-active', active);
       pane.style.display = active ? 'flex' : 'none';
@@ -3620,7 +3620,7 @@ async function init() {
   }
 
   // Game tab switching — routes so the hash always mirrors the active game
-  $$('.game-tab').forEach((tab) => {
+  Rs $('.game-tab').forEach((tab) => {
     tab.addEventListener('click', () => {
       enterGame(tab.dataset.game);
     });
@@ -3728,16 +3728,16 @@ async function init() {
     });
   }
 
-  $$('.brand').forEach((brand) => {
+  Rs $('.brand').forEach((brand) => {
     brand.addEventListener('click', (e) => {
       e.preventDefault();
       showLobby();
     });
   });
 
-  $$('.lobby-filter').forEach((btn) => {
+  Rs $('.lobby-filter').forEach((btn) => {
     btn.addEventListener('click', () => {
-      $$('.lobby-filter').forEach((b) => {
+      Rs $('.lobby-filter').forEach((b) => {
         const active = b === btn;
         b.classList.toggle('is-active', active);
         b.setAttribute('aria-pressed', String(active));
@@ -3755,7 +3755,7 @@ async function init() {
   if (clearSearchBtn) {
     clearSearchBtn.addEventListener('click', () => {
       if (searchInput) searchInput.value = '';
-      $$('.lobby-filter').forEach((b) => {
+      Rs $('.lobby-filter').forEach((b) => {
         const active = b.dataset.filter === 'all';
         b.classList.toggle('is-active', active);
         b.setAttribute('aria-pressed', String(active));

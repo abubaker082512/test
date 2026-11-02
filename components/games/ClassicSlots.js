@@ -146,7 +146,7 @@ export default function ClassicSlots({ user, wallet, fetchWallet }) {
         if (data.success) {
           setMessage({
             type: 'success',
-            text: `🎉 WIN! ${winLabel} (+Pi ${(betAmount * multiplier).toFixed(2)})`
+            text: `🎉 WIN! ${winLabel} (+Rs ${(betAmount * multiplier).toFixed(2)})`
           })
         }
       } catch (e) {
@@ -303,7 +303,7 @@ export default function ClassicSlots({ user, wallet, fetchWallet }) {
               fontWeight: 'bold',
               fontSize: '13px'
             }}>
-              Pi {betAmount}
+              Rs {betAmount}
             </div>
             <button
               disabled={spinning}

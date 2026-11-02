@@ -1,10 +1,101 @@
-html, body {
+* {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    overflow: hidden;
+}
+
+html, body {
     width: 100%;
     height: 100%;
-    background: #080d1a;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: radial-gradient(circle at 50% 20%, #0d2818 0%, #060b13 75%);
+    font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+    color: #fff;
+}
+
+.winx-cabinet {
+    width: 100%;
+    min-height: 100dvh;
+    padding: 12px 10px 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.cabinet-marquee {
+    background: linear-gradient(180deg, rgba(16, 185, 129, 0.16) 0%, rgba(8, 15, 26, 0.92) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    border-radius: 16px;
+    padding: 10px 12px;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.marquee-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    color: #34d399;
+    margin-bottom: 8px;
+}
+
+.jackpot-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.jp-box {
+    padding: 6px 4px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.jp-box span {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    opacity: 0.85;
+}
+
+.jp-box strong {
+    font-size: 13px;
+    font-weight: 900;
+    margin-top: 2px;
+}
+
+.jp-grand {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(180, 83, 9, 0.15));
+    border-color: rgba(251, 191, 36, 0.5);
+    color: #fde68a;
+}
+
+.jp-major {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(5, 150, 105, 0.12));
+    border-color: rgba(52, 211, 153, 0.45);
+    color: #6ee7b7;
+}
+
+.jp-minor {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(2, 132, 199, 0.12));
+    border-color: rgba(56, 189, 248, 0.4);
+    color: #bae6fd;
+}
+
+.cabinet-stage {
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 2px solid rgba(16, 185, 129, 0.45);
+    box-shadow: 0 0 32px rgba(16, 185, 129, 0.2), 0 12px 30px rgba(0, 0, 0, 0.7);
+    background: #050911;
+    aspect-ratio: 16 / 9;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -12,7 +103,60 @@ html, body {
 
 #gameCanvas {
     display: block;
-    width: 100vw;
-    height: 100dvh;
+    width: 100% !important;
+    height: 100% !important;
     object-fit: contain;
+}
+
+.cabinet-footer {
+    background: rgba(11, 18, 30, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.pay-pills {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+}
+
+.pay-pill {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 6px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 11px;
+}
+
+.pay-pill span {
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.pay-pill b {
+    color: #fbbf24;
+    font-size: 13px;
+    font-weight: 900;
+    margin-top: 2px;
+}
+
+.cabinet-tip {
+    text-align: center;
+    font-size: 11px;
+    color: #94a3b8;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    padding: 8px 10px;
+    border-radius: 10px;
+}
+.cabinet-tip b {
+    color: #34d399;
 }

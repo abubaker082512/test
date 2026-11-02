@@ -3,20 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mystical Forest Slot</title>
+    <title>WinX • Mystical Forest 5x3 Slot</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
-    <!-- Include PIXI.js -->
+    <div class="winx-cabinet">
+        <!-- Top Jackpot Marquee -->
+        <div class="cabinet-marquee">
+            <div class="marquee-badge">🌲 PIXI.JS 7 WEBGL ENGINE</div>
+            <div class="jackpot-grid">
+                <div class="jp-box jp-grand">
+                    <span>GRAND</span>
+                    <strong>Rs 250,000</strong>
+                </div>
+                <div class="jp-box jp-major">
+                    <span>MAJOR</span>
+                    <strong>Rs 50,000</strong>
+                </div>
+                <div class="jp-box jp-minor">
+                    <span>MINOR</span>
+                    <strong>Rs 10,000</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main WebGL Slot Stage -->
+        <div class="cabinet-stage">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+
+        <!-- Bottom Paytable & Feature Footer -->
+        <div class="cabinet-footer">
+            <div class="pay-pills">
+                <div class="pay-pill"><span>👑 Wild</span><b>50x</b></div>
+                <div class="pay-pill"><span>💎 Scatter</span><b>25x</b></div>
+                <div class="pay-pill"><span>🦊 Spirit</span><b>15x</b></div>
+                <div class="pay-pill"><span>🍄 Magic</span><b>10x</b></div>
+            </div>
+            <div class="cabinet-tip">Tap the glowing <b>SPIN</b> button on the slot console above to spin &amp; win instant PKR!</div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.2.0/pixi.min.js"></script>
-    <!-- Include Howler.js for sound -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
-    <!-- Include GSAP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
-    <!-- WinX Universal Wallet & RTP Bridge -->
     <script src="/games/winx-bridge.js"></script>
-    <!-- Include your game script -->
     <script src="slot-game.js"></script>
 </body>
 </html>

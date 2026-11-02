@@ -746,7 +746,7 @@ export class HiloGame {
     this.audio?.play?.('hilo', 'win', { volume: 0.88 });
     this.pulse(T.PALETTE.gold);
     this.addCashoutParticles();
-    this.addFloater(`CASHED OUT $${payout.toFixed(2)}`, T.PALETTE.gold);
+    this.addFloater(`CASHED OUT Rs ${payout.toFixed(2)}`, T.PALETTE.gold);
 
     if (typeof this.onCashout === 'function') {
       this.onCashout(outcome);
@@ -1695,10 +1695,10 @@ export class HiloGame {
 
     if (L.readoutSplit && this.state === 'in_game') {
       const payout = this.getPayout();
-      const cash = `$${payout.toFixed(2)}`;
+      const cash = `Rs ${payout.toFixed(2)}`;
       const profit = payout - this.betAmount;
       const sign = profit >= 0 ? '+' : '-';
-      const foot = `PROFIT ${sign}$${Math.abs(profit).toFixed(2)}  \u00b7  ${this.cardHistory.length} CARDS`;
+      const foot = `PROFIT ${sign}Rs ${Math.abs(profit).toFixed(2)}  \u00b7  ${this.cardHistory.length} CARDS`;
       const valSize = clamp(ph * 0.34, 18, 40);
       const colW = inner * 0.5;
       const ruleX = Math.round(x + pw * 0.56) + 0.5;
@@ -1768,9 +1768,9 @@ export class HiloGame {
       const payout = this.getPayout();
       const profit = payout - this.betAmount;
       const sign = profit >= 0 ? '+' : '-';
-      return `PAYOUT $${payout.toFixed(2)}  \u00b7  PROFIT ${sign}$${Math.abs(profit).toFixed(2)}`;
+      return `PAYOUT Rs ${payout.toFixed(2)}  \u00b7  PROFIT ${sign}Rs ${Math.abs(profit).toFixed(2)}`;
     }
-    if (this.state === 'cashed_out') return `CASHED OUT  \u00b7  $${this.getPayout().toFixed(2)}`;
+    if (this.state === 'cashed_out') return `CASHED OUT  \u00b7  Rs ${this.getPayout().toFixed(2)}`;
     if (this.state === 'lost') return 'BUSTED  \u00b7  START A NEW ROUND';
     return 'SET YOUR BET  \u00b7  DEAL TO BEGIN';
   }
