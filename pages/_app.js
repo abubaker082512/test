@@ -5,6 +5,7 @@ import '../styles/globals.css'
 import { AuthProvider } from '../context/AuthContext'
 import SplashScreen from '../components/SplashScreen'
 import UniversalReferralWidget from '../components/UniversalReferralWidget'
+import { Analytics } from '@vercel/analytics/next'
 
 function ReferralTracker() {
   const router = useRouter()
@@ -39,6 +40,7 @@ function MyApp({ Component, pageProps }) {
       <SplashScreen />
       <Component {...pageProps} />
       <UniversalReferralWidget />
+      <Analytics />
     </AuthProvider>
   )
 }
