@@ -66,6 +66,7 @@ export default function MinesweeperGame({ user, wallet, fetchWallet, isDemoMode,
     setRevealedCount(0);
     setActive(true);
     setProcessing(false);
+    try { new Audio('/games/assets/mines/betButtonSound.mp3').play().catch(() => {}); } catch(e){}
     casinoAudio.playReelTick();
   };
 
@@ -83,6 +84,7 @@ export default function MinesweeperGame({ user, wallet, fetchWallet, isDemoMode,
       });
       setGrid(newGrid);
       setActive(false);
+      try { new Audio('/games/assets/mines/bombSound.mp3').play().catch(() => {}); } catch(e){}
       casinoAudio.playCrashBoom();
       setMessage({ type: 'error', text: '💥 BOOM! You hit a mine. Better luck next time!' });
     } else {
@@ -93,6 +95,7 @@ export default function MinesweeperGame({ user, wallet, fetchWallet, isDemoMode,
 
       const nextMult = calculateNextMultiplier(mineCount, revealedCount);
       setMultiplier(nextMult);
+      try { new Audio('/games/assets/mines/gemSound.mp3').play().catch(() => {}); } catch(e){}
       casinoAudio.playWinChime(nextRevealed);
 
       // Check if all safe gems revealed
@@ -112,6 +115,7 @@ export default function MinesweeperGame({ user, wallet, fetchWallet, isDemoMode,
 
     if (isDemoMode) {
       if (addDemoBalance) addDemoBalance(rawPayout);
+      try { new Audio('/games/assets/mines/cashoutSound.mp3').play().catch(() => {}); } catch(e){}
       casinoAudio.playBigWin();
       setMessage({ type: 'success', text: `💰 Cashed Out Demo! +Rs ${rawPayout.toFixed(2)} (${finalMult}x)` });
       setProcessing(false);
@@ -130,6 +134,7 @@ export default function MinesweeperGame({ user, wallet, fetchWallet, isDemoMode,
       });
       const data = await res.json();
       if (data.success) {
+        try { new Audio('/games/assets/mines/cashoutSound.mp3').play().catch(() => {}); } catch(e){}
         casinoAudio.playBigWin();
         setMessage({ type: 'success', text: `💰 Successfully Cashed Out! +Rs ${rawPayout.toFixed(2)} (${finalMult}x)` });
         if (fetchWallet) fetchWallet();
@@ -235,8 +240,20 @@ export default function MinesweeperGame({ user, wallet, fetchWallet, isDemoMode,
                 transition: 'all 0.15s ease'
               }}
             >
-              {isGem && '💎'}
-              {isBomb && '💣'}
+              {isGem && (
+                <img 
+                  src="/games/assets/mines/gems.png" 
+                  alt="Diamond Gem" 
+                  style={{ width: '82%', height: '82%', objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(0, 255, 136, 0.9))' }} 
+                />
+              )}
+              {isBomb && (
+                <img 
+                  src="/games/assets/mines/bomb.png" 
+                  alt="Mine Bomb" 
+                  style={{ width: '82%', height: '82%', objectFit: 'contain', filter: 'drop-shadow(0 0 12px rgba(255, 23, 68, 0.95))' }} 
+                />
+              )}
               {!isRevealed && ''}
             </button>
           );

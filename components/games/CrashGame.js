@@ -29,6 +29,21 @@ export default function CrashGame({ user, wallet, fetchWallet }) {
   // Particles for canvas
   const particlesRef = useRef([])
   const starsRef = useRef([])
+  const planeImgRef = useRef(null)
+
+  // Preload authentic Spribe Aviator Jet image
+  useEffect(() => {
+    const img = new Image()
+    img.src = '/games/assets/aviator/plane.png'
+    img.onload = () => {
+      planeImgRef.current = img
+      const canvas = canvasRef.current
+      if (canvas && stage === 'idle') {
+        const ctx = canvas.getContext('2d')
+        drawStatic(ctx)
+      }
+    }
+  }, [stage])
 
   // Initialize stars
   useEffect(() => {
@@ -66,12 +81,19 @@ export default function CrashGame({ user, wallet, fetchWallet }) {
       ctx.lineTo(320, i)
       ctx.stroke()
     }
-    // Rocket idle
-    ctx.fillStyle = '#f5c242'
-    ctx.font = '36px sans-serif'
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.fillText('🚀', 50, 210)
+    // Authentic Spribe Jet Idle
+    if (planeImgRef.current) {
+      ctx.save()
+      ctx.translate(55, 210)
+      ctx.drawImage(planeImgRef.current, -35, -20, 70, 40)
+      ctx.restore()
+    } else {
+      ctx.fillStyle = '#f5c242'
+      ctx.font = '36px sans-serif'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText('✈️', 50, 210)
+    }
   }
 
   // Active flight simulation loop
@@ -161,24 +183,29 @@ export default function CrashGame({ user, wallet, fetchWallet }) {
       ctx.stroke()
       ctx.restore()
 
-      // Draw Supersonic Jet (Aviator style)
+      // Draw Authentic Supersonic Jet (Aviator style)
       ctx.save()
       ctx.translate(rX, rY)
-      ctx.rotate(Math.PI / 4)
-      ctx.fillStyle = '#ff1744'
-      ctx.shadowColor = '#ff5252'
-      ctx.shadowBlur = 10
-      ctx.beginPath()
-      ctx.moveTo(20, 0)
-      ctx.lineTo(-15, -12)
-      ctx.lineTo(-9, 0)
-      ctx.lineTo(-15, 12)
-      ctx.closePath()
-      ctx.fill()
-      ctx.fillStyle = '#ffffff'
-      ctx.beginPath()
-      ctx.ellipse(5, 0, 6, 2.5, 0, 0, Math.PI * 2)
-      ctx.fill()
+      if (planeImgRef.current) {
+        ctx.rotate(-Math.PI / 16)
+        ctx.drawImage(planeImgRef.current, -40, -22, 80, 44)
+      } else {
+        ctx.rotate(Math.PI / 4)
+        ctx.fillStyle = '#ff1744'
+        ctx.shadowColor = '#ff5252'
+        ctx.shadowBlur = 10
+        ctx.beginPath()
+        ctx.moveTo(20, 0)
+        ctx.lineTo(-15, -12)
+        ctx.lineTo(-9, 0)
+        ctx.lineTo(-15, 12)
+        ctx.closePath()
+        ctx.fill()
+        ctx.fillStyle = '#ffffff'
+        ctx.beginPath()
+        ctx.ellipse(5, 0, 6, 2.5, 0, 0, Math.PI * 2)
+        ctx.fill()
+      }
       ctx.restore()
 
       // Draw overlay multiplier text on canvas

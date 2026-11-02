@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react'
 
 const SYMBOLS = [
-  { char: '💎', name: 'Diamond', weight: 8, payout3x: 50 },
-  { char: '👑', name: 'Crown', weight: 5, payout3x: 100 },
-  { char: '🔔', name: 'Bell', weight: 12, payout3x: 25 },
-  { char: '🍋', name: 'Lemon', weight: 18, payout3x: 10 },
-  { char: '🍒', name: 'Cherry', weight: 22, payout3x: 5 },
-  { char: '⭐', name: 'Star', weight: 10, payout3x: 30 }
+  { id: '7', img: '/games/assets/slots/symbols/7.png', name: 'Lucky 7', weight: 5, payout3x: 100 },
+  { id: 'diamond', img: '/games/assets/slots/symbols/diamond.png', name: 'Diamond', weight: 8, payout3x: 50 },
+  { id: 'clover', img: '/games/assets/slots/symbols/clover.png', name: 'Clover', weight: 12, payout3x: 25 },
+  { id: 'blueberry', img: '/games/assets/slots/symbols/blueberry.png', name: 'Berry', weight: 18, payout3x: 10 },
+  { id: 'cherry', img: '/games/assets/slots/symbols/cherry.png', name: 'Cherry', weight: 22, payout3x: 5 }
 ]
 
 export default function ClassicSlots({ user, wallet, fetchWallet }) {
   const [betAmount, setBetAmount] = useState(10)
   const [spinning, setSpinning] = useState(false)
-  const [reels, setReels] = useState(['💎', '💎', '💎'])
+  const [reels, setReels] = useState([SYMBOLS[0].img, SYMBOLS[1].img, SYMBOLS[2].img])
   const [message, setMessage] = useState(null)
   const [processing, setProcessing] = useState(false)
   
@@ -76,29 +75,29 @@ export default function ClassicSlots({ user, wallet, fetchWallet }) {
     let tickCount = 0
     const tickInterval = setInterval(() => {
       setReels(prev => [
-        spinClass[0] ? SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)].char : prev[0],
-        spinClass[1] ? SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)].char : prev[1],
-        spinClass[2] ? SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)].char : prev[2]
+        spinClass[0] ? SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)].img : prev[0],
+        spinClass[1] ? SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)].img : prev[1],
+        spinClass[2] ? SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)].img : prev[2]
       ])
       tickCount++
     }, 80)
 
     // Stop Reel 1
     setTimeout(() => {
-      setReels(prev => [finalSyms[0].char, prev[1], prev[2]])
+      setReels(prev => [finalSyms[0].img, prev[1], prev[2]])
       setSpinClass(prev => [false, prev[1], prev[2]])
     }, 800)
 
     // Stop Reel 2
     setTimeout(() => {
-      setReels(prev => [finalSyms[0].char, finalSyms[1].char, prev[2]])
+      setReels(prev => [finalSyms[0].img, finalSyms[1].img, prev[2]])
       setSpinClass(prev => [false, false, prev[2]])
     }, 1400)
 
     // Stop Reel 3 and evaluate
     setTimeout(() => {
       clearInterval(tickInterval)
-      setReels([finalSyms[0].char, finalSyms[1].char, finalSyms[2].char])
+      setReels([finalSyms[0].img, finalSyms[1].img, finalSyms[2].img])
       setSpinClass([false, false, false])
       setSpinning(false)
 
@@ -244,7 +243,7 @@ export default function ClassicSlots({ user, wallet, fetchWallet }) {
             pointerEvents: 'none'
           }}></div>
 
-          {reels.map((char, idx) => (
+          {reels.map((symImg, idx) => (
             <div key={idx} style={{
               width: '80px',
               height: '80px',
@@ -254,12 +253,17 @@ export default function ClassicSlots({ user, wallet, fetchWallet }) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '44px',
               boxShadow: 'inset 0 0 10px rgba(0,0,0,0.8)',
               animation: spinClass[idx] ? 'spin-slow 0.15s linear infinite' : 'none',
-              transition: 'transform 0.1s'
+              transition: 'transform 0.1s',
+              overflow: 'hidden',
+              padding: '8px'
             }}>
-              {char}
+              <img 
+                src={symImg} 
+                alt="Slot Reel Symbol" 
+                style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.6))' }} 
+              />
             </div>
           ))}
         </div>

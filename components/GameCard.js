@@ -16,6 +16,8 @@ export default function GameCard({
 }) {
   const [isFavorite, setIsFavorite] = useState(false)
 
+  const [imgError, setImgError] = useState(false)
+
   const toggleFavorite = (e) => {
     e.preventDefault()
     e.stopPropagation()
@@ -23,33 +25,16 @@ export default function GameCard({
   }
 
   const renderCardGraphic = () => {
-    if (imageUrl) {
-      return (
-        <img 
-          src={imageUrl} 
-          alt={title} 
-          className="game-card-img"
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-        />
-      )
-    }
+    const finalSrc = (!imgError && imageUrl) ? imageUrl : '/games/super_ace.png'
 
     return (
-      <div style={{
-        width: '100%',
-        height: '100%',
-        background: theme || 'linear-gradient(180deg, #2a0f4f 0%, #150628 100%)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        <span style={{ fontSize: '38px', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.5))' }}>
-          {icon}
-        </span>
-      </div>
+      <img 
+        src={finalSrc} 
+        alt={title} 
+        onError={() => setImgError(true)}
+        className="game-card-img"
+        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+      />
     )
   }
 
