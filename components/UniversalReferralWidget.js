@@ -32,7 +32,7 @@ export default function UniversalReferralWidget() {
       <div style={{
         position: 'fixed',
         bottom: '72px',
-        right: '12px',
+        right: 'max(12px, calc(50% - 228px))',
         zIndex: 1000,
         display: 'flex',
         alignItems: 'center',

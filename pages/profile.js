@@ -304,12 +304,15 @@ export default function Profile() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        background: 'rgba(11, 14, 20, 0.92)',
-        backdropFilter: 'blur(16px)',
+        background: 'rgba(11, 14, 20, 0.96)',
         borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
         position: 'sticky',
         top: 0,
-        zIndex: 50
+        zIndex: 50,
+        width: '100%',
+        maxWidth: '480px',
+        margin: '0 auto',
+        boxSizing: 'border-box'
       }}>
         <button 
           onClick={() => router.back()} 
@@ -343,10 +346,10 @@ export default function Profile() {
         </div>
       </div>
 
-      <div style={{ padding: '16px 14px 90px', maxWidth: '480px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <div style={{ padding: '16px 14px 90px', width: '100%', maxWidth: '480px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '14px', boxSizing: 'border-box' }}>
         
         {/* User Hero Banner (Screenshot 1) */}
-        <div className="glass-panel" style={{ borderRadius: '20px', padding: '16px' }}>
+        <div className="glass-panel" style={{ borderRadius: '20px', padding: '16px', boxSizing: 'border-box', overflow: 'hidden' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             {/* Avatar with edit pencil */}
             <div style={{ position: 'relative' }}>
@@ -417,71 +420,77 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Balance Bar with 3D Deposit & Withdraw Buttons (Screenshot 1) */}
+          {/* Balance Bar with 3D Deposit & Withdraw Buttons (10Win reference design) */}
           <div style={{
             marginTop: '16px',
             paddingTop: '14px',
             borderTop: '1px solid rgba(255, 255, 255, 0.06)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between'
+            justifyContent: 'space-between',
+            gap: '8px',
+            width: '100%',
+            boxSizing: 'border-box'
           }}>
             {/* Balance Pill */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '18px' }}>🇵🇰</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '20px', fontWeight: 900, color: '#fff', letterSpacing: '0.2px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+              <span style={{ fontSize: '18px', flexShrink: 0 }}>🇵🇰</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                <span style={{ fontSize: '18px', fontWeight: 900, color: '#fff', letterSpacing: '0.2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {balance.toFixed(2)}
                 </span>
                 <button 
                   onClick={handleRefreshBalance}
-                  style={{ background: 'none', border: 'none', color: '#00E65B', cursor: 'pointer', fontSize: '14px', transition: 'transform 0.4s' }}
+                  style={{ background: 'none', border: 'none', color: '#00E65B', cursor: 'pointer', fontSize: '13px', padding: '2px', flexShrink: 0 }}
                   className={refreshing ? 'coin-spin' : ''}
+                  title="Refresh Balance"
                 >
                   🔄
                 </button>
               </div>
             </div>
 
-            {/* 3D Action Cards */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* 3D Action Cards (Vertical layout, fully responsive, never overflows frame) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
               <Link href="/wallet" style={{ textDecoration: 'none' }}>
                 <div style={{
-                  background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.02) 60%, rgba(0, 0, 0, 0.15) 100%), rgba(20, 26, 36, 0.75)',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  borderRadius: '14px',
-                  padding: '9px 15px',
+                  background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%), #141A24',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  borderRadius: '12px',
+                  padding: '6px 12px',
                   display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '6px',
+                  justifyContent: 'center',
+                  gap: '3px',
                   cursor: 'pointer',
-                  backdropFilter: 'blur(14px)',
-                  WebkitBackdropFilter: 'blur(14px)',
-                  boxShadow: 'inset 0 1px 1px rgba(255, 255, 255, 0.35), 0 4px 14px rgba(0, 0, 0, 0.4)',
-                  transition: 'all 0.2s'
+                  minWidth: '56px',
+                  boxShadow: 'inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 2px 8px rgba(0, 0, 0, 0.3)',
+                  transition: 'transform 0.15s'
                 }}>
-                  <span style={{ fontSize: '16px' }}>👛</span>
-                  <span style={{ fontSize: '12px', fontWeight: 800, color: '#fff' }}>Deposit</span>
+                  <span style={{ fontSize: '18px', lineHeight: 1 }}>👛</span>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#FFFFFF' }}>Deposit</span>
                 </div>
               </Link>
 
               <Link href="/wallet" style={{ textDecoration: 'none' }}>
                 <div style={{
-                  background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.02) 60%, rgba(0, 0, 0, 0.15) 100%), rgba(20, 26, 36, 0.75)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
-                  borderRadius: '14px',
-                  padding: '9px 15px',
+                  background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%), #141A24',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  padding: '6px 12px',
                   display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '6px',
+                  justifyContent: 'center',
+                  gap: '3px',
                   cursor: 'pointer',
-                  backdropFilter: 'blur(14px)',
-                  WebkitBackdropFilter: 'blur(14px)',
-                  boxShadow: 'inset 0 1px 1px rgba(255, 255, 255, 0.25), 0 4px 14px rgba(0, 0, 0, 0.4)',
-                  transition: 'all 0.2s'
+                  minWidth: '56px',
+                  boxShadow: 'inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 2px 8px rgba(0, 0, 0, 0.3)',
+                  transition: 'transform 0.15s'
                 }}>
-                  <span style={{ fontSize: '16px' }}>💳</span>
-                  <span style={{ fontSize: '12px', fontWeight: 800, color: '#94A3B8' }}>Withdraw</span>
+                  <span style={{ fontSize: '18px', lineHeight: 1 }}>💳</span>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#94A3B8' }}>Withdraw</span>
                 </div>
               </Link>
             </div>

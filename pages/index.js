@@ -265,36 +265,30 @@ export default function Home() {
     <div className="app">
       <NavBar />
 
-      {/* Dynamic Image/Promo Banner Carousel */}
+      {/* Dynamic Image/Promo Banner Carousel (Clean Native Poster Presentation) */}
       <div className="banner-carousel">
         <div 
           className="carousel-track" 
           style={{ transform: `translate3d(-${currentSlide * 100}%, 0, 0)` }}
         >
           {promoBanners.map((banner, idx) => (
-            <div key={idx} className="carousel-slide" style={{ backgroundImage: `url(${banner.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-              <div 
-                className="carousel-overlay" 
-                style={{ background: 'rgba(0,0,0,0.65)' }}
-              >
-                <div style={{ fontSize: '32px', marginBottom: '8px' }}>{banner.emoji}</div>
-                <h2 className="carousel-title">{banner.title}</h2>
-                <p className="carousel-desc">{banner.desc}</p>
-                <button 
-                  onClick={() => {
-                    if (idx === 0) router.push('/offers')
-                    else if (idx === 1) router.push('/wallet')
-                    else if (idx === 2) router.push('/invite')
-                    else if (!user) setIsAuthModalOpen(true)
-                    else router.push('/offers')
-                  }}
-                  className="btn primary" 
-                  style={{ alignSelf: 'flex-start', padding: '6px 12px', fontSize: '11px' }}
-                >
-                  {idx === 2 ? 'Invite Friends' : idx === 1 ? 'Deposit Now' : 'Claim Now'}
-                </button>
-              </div>
-            </div>
+            <div 
+              key={idx} 
+              className="carousel-slide" 
+              onClick={() => {
+                if (idx === 0) router.push('/offers')
+                else if (idx === 1) router.push('/wallet')
+                else if (idx === 2) router.push('/invite')
+                else if (!user) setIsAuthModalOpen(true)
+                else router.push('/offers')
+              }}
+              style={{ 
+                backgroundImage: `url(${banner.image})`, 
+                backgroundSize: 'cover', 
+                backgroundPosition: 'center',
+                cursor: 'pointer'
+              }}
+            />
           ))}
         </div>
         <div className="carousel-dots">
@@ -303,6 +297,7 @@ export default function Home() {
               key={idx}
               className={`carousel-dot ${currentSlide === idx ? 'active' : ''}`}
               onClick={() => setCurrentSlide(idx)}
+              aria-label={`Slide ${idx + 1}`}
             />
           ))}
         </div>

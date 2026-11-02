@@ -51,6 +51,9 @@ html {
   min-height: 100%;
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
 }
 
 body {
@@ -64,6 +67,9 @@ body {
   display: flex;
   justify-content: center;
   overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  position: relative;
 }
 
 #__next {
@@ -78,21 +84,19 @@ body {
   border-right: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
-/* Glassmorphic Base Classes */
+/* Glassmorphic Base Classes (High-performance GPU friendly) */
 .glass-panel {
-  background: var(--card-glass);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  background: rgba(20, 26, 36, 0.88);
   border: 1px solid var(--card-border);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .glass-pill {
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 9999px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
@@ -143,15 +147,16 @@ body {
   min-height: 64px;
   width: 100%;
   max-width: 480px;
-  background: rgba(11, 14, 20, 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(11, 14, 20, 0.96);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   position: sticky;
   top: 0;
   z-index: 100;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   margin: 0 auto;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+  transform: translateZ(0);
 }
 
 .logo-container {
@@ -199,8 +204,7 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(20, 26, 36, 0.8);
-  backdrop-filter: blur(12px);
+  background: rgba(20, 26, 36, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 6px 10px;
   border-radius: 12px;
@@ -237,7 +241,7 @@ body {
 }
 
 /* =========================================================
-   GLASS EFFECT BUTTONS (Specular Reflection, Sheen, Blur)
+   GLASS EFFECT BUTTONS (Specular Reflection, Sheen, High-FPS)
    ========================================================= */
 
 /* High-Converting Glass Deposit CTA Button */
@@ -254,8 +258,6 @@ body {
   display: flex;
   align-items: center;
   gap: 5px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6),
               inset 0 -1px 2px rgba(0, 0, 0, 0.3),
               0 4px 16px rgba(255, 87, 34, 0.45);
@@ -292,9 +294,7 @@ body {
 /* Frosted Glass Base Button */
 .btn {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 60%, rgba(0, 0, 0, 0.1) 100%),
-              rgba(20, 26, 36, 0.65);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+              rgba(20, 26, 36, 0.9);
   color: #E2E8F0;
   border: 1px solid rgba(255, 255, 255, 0.14);
   padding: 9px 18px;
@@ -312,7 +312,7 @@ body {
   border-color: rgba(0, 230, 91, 0.6);
   color: #FFFFFF;
   background: linear-gradient(180deg, rgba(0, 230, 91, 0.2) 0%, rgba(0, 230, 91, 0.05) 100%),
-              rgba(20, 26, 36, 0.85);
+              rgba(20, 26, 36, 0.95);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4),
               0 0 16px rgba(0, 230, 91, 0.35);
   transform: translateY(-1px);
@@ -328,8 +328,6 @@ body {
   color: #07090D;
   border: 1px solid rgba(255, 255, 255, 0.35);
   font-weight: 900;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.7),
               inset 0 -1px 2px rgba(0, 0, 0, 0.3),
               0 4px 18px rgba(0, 230, 91, 0.45);
@@ -351,8 +349,6 @@ body {
               linear-gradient(135deg, #00E65B 0%, #00B345 100%);
   border: 1px solid rgba(255, 255, 255, 0.35);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.7), 0 4px 14px rgba(0, 230, 91, 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   color: #07090D;
   font-weight: 900;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -367,8 +363,6 @@ body {
               linear-gradient(135deg, #FF9800 0%, #FF5722 100%);
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), 0 4px 14px rgba(255, 87, 34, 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   color: #FFFFFF;
   font-weight: 800;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -451,178 +445,20 @@ body {
 }
 
 /* =========================================================
-   GLASS EFFECT STRIPS & RIBBONS (Frosted Blur & Specular Edges)
+   GLASS EFFECT STRIPS & RIBBONS (High-Performance GPU-Optimized)
    ========================================================= */
-
-/* Top Header Strip */
-.navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  min-height: 64px;
-  width: 100%;
-  max-width: 480px;
-  background: rgba(11, 14, 20, 0.82);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
-  margin: 0 auto;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 6px 25px rgba(0, 0, 0, 0.55);
-}
 
 /* Glassy Announcement / Marquee Strip */
 .announcement-bar {
   display: flex;
   align-items: center;
-  background: linear-gradient(90deg, rgba(20, 26, 36, 0.75) 0%, rgba(14, 18, 26, 0.85) 50%, rgba(20, 26, 36, 0.75) 100%);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  background: rgba(18, 24, 34, 0.95);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   padding: 8px 14px;
   gap: 10px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 14px rgba(0, 0, 0, 0.25);
-}
-
-/* Top Winners Glass Ribbon Ticker Strip */
-.winners-ticker-container {
-  background: linear-gradient(180deg, rgba(16, 22, 32, 0.6) 0%, rgba(11, 14, 20, 0.75) 100%);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  padding: 10px 14px;
-  overflow: hidden;
-  position: relative;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-.winner-card {
-  background: linear-gradient(135deg, rgba(28, 36, 50, 0.75) 0%, rgba(18, 24, 34, 0.85) 100%);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 7px 13px;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  min-width: 175px;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.18), 0 4px 14px rgba(0, 0, 0, 0.35);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.winner-card:hover {
-  border-color: rgba(0, 230, 91, 0.55);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), 0 6px 18px rgba(0, 230, 91, 0.25);
-  transform: translateY(-1.5px);
-}
-
-/* Category Tabs Glass Strip */
-.category-bar {
-  display: flex;
-  gap: 8px;
-  padding: 12px 14px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  position: relative;
-  background: rgba(11, 14, 20, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 16px rgba(0, 0, 0, 0.35);
-}
-
-.category-chip {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%),
-              rgba(20, 26, 36, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: var(--text-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  padding: 8px 15px;
-  border-radius: 12px;
-  cursor: pointer;
-  white-space: nowrap;
-  font-weight: 700;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.12), 0 2px 8px rgba(0, 0, 0, 0.25);
-}
-.category-chip:hover {
-  border-color: rgba(255, 255, 255, 0.25);
-  color: #FFFFFF;
-  transform: translateY(-1px);
-}
-.category-chip.active {
-  background: linear-gradient(180deg, rgba(0, 230, 91, 0.25) 0%, rgba(0, 230, 91, 0.08) 100%),
-              rgba(14, 22, 18, 0.9);
-  color: var(--accent);
-  border: 1px solid rgba(0, 230, 91, 0.75);
-  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.4),
-              0 0 18px rgba(0, 230, 91, 0.35);
-  transform: translateY(-1px);
-}
-
-/* Floating Deposit Coupon Glass Strip */
-.coupon-ticker-banner {
-  position: fixed;
-  bottom: 60px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 480px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.15) 100%),
-              linear-gradient(90deg, #FF5722 0%, #FF9800 100%);
-  color: #fff;
-  padding: 9px 15px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  z-index: 95;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.45), 0 -4px 20px rgba(255, 87, 34, 0.45);
-  font-size: 11px;
-  font-weight: 800;
-  border-top: 1px solid rgba(255, 255, 255, 0.35);
-}
-
-/* Floating Bottom Navigation Dock Strip */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 480px;
-  height: calc(60px + env(safe-area-inset-bottom, 0px));
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  background: rgba(11, 14, 20, 0.85);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  display: flex;
-  align-items: center;
-  border-top: 1px solid rgba(255, 255, 255, 0.09);
-  z-index: 100;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08), 0 -8px 30px rgba(0, 0, 0, 0.65);
-  border-left: 1px solid rgba(255, 255, 255, 0.06);
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-/* Reusable Glass Strip Utility */
-.glass-strip {
-  background: rgba(20, 26, 36, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 16px rgba(0, 0, 0, 0.3);
+  contain: paint;
 }
 .announcement-icon {
   color: var(--accent);
@@ -634,6 +470,7 @@ body {
   flex: 1;
   overflow: hidden;
   white-space: nowrap;
+  contain: paint;
 }
 .announcement-text {
   display: inline-block;
@@ -642,6 +479,8 @@ body {
   color: #94A3B8;
   font-size: 12px;
   font-weight: 500;
+  will-change: transform;
+  transform: translateZ(0);
 }
 @keyframes marquee {
   0% { transform: translate3d(0, 0, 0); }
@@ -671,14 +510,15 @@ body {
   justify-content: center;
 }
 
-/* Top Winners Glass Ribbon Ticker */
+/* Top Winners Live Ribbon Ticker Strip */
 .winners-ticker-container {
-  background: rgba(14, 18, 26, 0.5);
-  backdrop-filter: blur(12px);
+  background: rgba(14, 18, 26, 0.95);
   padding: 10px 14px;
   overflow: hidden;
   position: relative;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  contain: paint;
 }
 .winners-ticker-title {
   font-size: 10.5px;
@@ -696,6 +536,8 @@ body {
   gap: 10px;
   width: max-content;
   animation: scroll-left 45s linear infinite;
+  will-change: transform;
+  transform: translateZ(0);
 }
 .winners-ticker-track:hover {
   animation-play-state: paused;
@@ -706,21 +548,22 @@ body {
 }
 
 .winner-card {
-  background: rgba(20, 26, 36, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: #141A24;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
-  padding: 6px 12px;
+  padding: 7px 13px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   min-width: 175px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  transition: all 0.2s;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 4px 12px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s;
+  contain: content;
 }
 .winner-card:hover {
-  border-color: rgba(0, 230, 91, 0.4);
-  transform: translateY(-1px);
+  border-color: rgba(0, 230, 91, 0.55);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), 0 6px 18px rgba(0, 230, 91, 0.25);
+  transform: translateY(-1.5px);
 }
 .winner-avatar {
   font-size: 18px;
@@ -747,7 +590,7 @@ body {
   text-transform: uppercase;
 }
 
-/* Category Tabs Bar */
+/* Category Tabs Glass Strip */
 .category-bar {
   display: flex;
   gap: 8px;
@@ -755,16 +598,20 @@ body {
   overflow-x: auto;
   scrollbar-width: none;
   position: relative;
+  background: rgba(11, 14, 20, 0.96);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 16px rgba(0, 0, 0, 0.35);
+  transform: translateZ(0);
 }
 .category-bar::-webkit-scrollbar {
   display: none;
 }
+
 .category-chip {
-  background: rgba(20, 26, 36, 0.65);
-  backdrop-filter: blur(10px);
+  background: #161D2A;
   color: var(--text-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  padding: 8px 15px;
   border-radius: 12px;
   cursor: pointer;
   white-space: nowrap;
@@ -773,18 +620,97 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 .category-chip:hover {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.25);
   color: #FFFFFF;
+  transform: translateY(-1px);
 }
 .category-chip.active {
-  background: rgba(0, 230, 91, 0.12);
+  background: linear-gradient(180deg, rgba(0, 230, 91, 0.22) 0%, rgba(0, 230, 91, 0.06) 100%),
+              #121A16;
   color: var(--accent);
-  border: 1px solid rgba(0, 230, 91, 0.65);
-  box-shadow: 0 0 16px rgba(0, 230, 91, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(0, 230, 91, 0.75);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.35),
+              0 0 16px rgba(0, 230, 91, 0.35);
+  transform: translateY(-1px);
+}
+
+/* Floating Deposit Coupon Glass Strip */
+.coupon-ticker-banner {
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%) translateZ(0);
+  width: 100%;
+  max-width: 480px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.15) 100%),
+              linear-gradient(90deg, #FF5722 0%, #FF9800 100%);
+  color: #fff;
+  padding: 9px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 95;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.45), 0 -4px 20px rgba(255, 87, 34, 0.45);
+  font-size: 11px;
+  font-weight: 800;
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
+}
+.coupon-ticker-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  flex: 1;
+  cursor: pointer;
+}
+.coupon-close-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: #fff;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+/* Floating Bottom Navigation Dock Strip */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateZ(0);
+  width: 100%;
+  max-width: 480px;
+  height: calc(60px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: rgba(11, 14, 20, 0.96);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  z-index: 100;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08), 0 -8px 30px rgba(0, 0, 0, 0.65);
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Reusable Glass Strip Utility */
+.glass-strip {
+  background: rgba(20, 26, 36, 0.9);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 /* Section Title */
@@ -821,23 +747,22 @@ body {
   padding: 4px 12px 16px;
 }
 
-/* Game Card in Obsidian Glass */
+/* Game Card in Obsidian Glass (GPU Optimized) */
 .game-card-premium {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1.32;
-  background: rgba(20, 26, 36, 0.75);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: #141A24;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
   cursor: pointer;
   display: flex;
   flex-direction: column;
   user-select: none;
+  contain: content;
 }
 .game-card-premium:hover {
   transform: translateY(-3px);
@@ -945,50 +870,6 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 65px;
-}
-
-/* Floating Deposit Coupon Banner */
-.coupon-ticker-banner {
-  position: fixed;
-  bottom: 60px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 480px;
-  background: linear-gradient(90deg, #FF5722 0%, #FF9800 100%);
-  color: #fff;
-  padding: 8px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  z-index: 95;
-  box-shadow: 0 -4px 16px rgba(255, 87, 34, 0.4);
-  font-size: 11px;
-  font-weight: 800;
-  border-top: 1px solid rgba(255, 255, 255, 0.25);
-}
-.coupon-ticker-text {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  flex: 1;
-  cursor: pointer;
-}
-.coupon-close-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  color: #fff;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9px;
-  cursor: pointer;
 }
 
 /* Footer & Social Channels */
