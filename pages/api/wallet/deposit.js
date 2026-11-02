@@ -1,38 +1,103 @@
-import { recordTransactionRecord } from '../../../utils/walletStore'
+import { recordTransactionRecord, getAllTransactionsList } from '../../../utils/walletStore'
 import { addTransaction } from '../../../utils/firebaseDb'
+import { getPersistedSettings } from '../../../utils/settingsStore'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const { user_id, amount, method, tx_id, email } = req.body
-  if (!user_id || !amount || parseFloat(amount) < 100) return res.status(400).json({ error: 'Minimum deposit is Pi 100' })
-  if (!method || !tx_id) return res.status(400).json({ error: 'Payment method and transaction ID required' })
+  const {
+    user_id,
+    amount,
+    channel,
+    method,
+    sender_phone,
+    sender_name,
+    tid,
+    notes,
+    screenshot_url,
+    bonus_amount,
+    email
+  } = req.body
+
+  const settings = getPersistedSettings()
+  const minDeposit = Number(settings.min_deposit || 200)
+  const maxDeposit = Number(settings.max_deposit || 100000)
+
+  if (!user_id) {
+    return res.status(400).json({ error: 'Authentication required. Please sign in to deposit.' })
+  }
 
   const numAmount = parseFloat(amount)
+  if (isNaN(numAmount) || numAmount < minDeposit) {
+    return res.status(400).json({ error: `Minimum deposit amount is Rs ${minDeposit.toLocaleString()}` })
+  }
+  if (numAmount > maxDeposit) {
+    return res.status(400).json({ error: `Maximum deposit amount is Rs ${maxDeposit.toLocaleString()}` })
+  }
 
-  // Log pending deposit
-  recordTransactionRecord({
+  const cleanTid = String(tid || '').trim()
+  if (!cleanTid) {
+    return res.status(400).json({ error: 'Transaction ID (TID / TRX ID) is required.' })
+  }
+
+  // Prevent duplicate TID submission
+  const allTxs = getAllTransactionsList()
+  const duplicate = allTxs.find(t => 
+    (t.metadata?.tid && String(t.metadata.tid).trim().toLowerCase() === cleanTid.toLowerCase()) ||
+    (t.tx_id && String(t.tx_id).trim().toLowerCase() === cleanTid.toLowerCase())
+  )
+  if (duplicate) {
+    return res.status(400).json({
+      error: `Transaction ID '${cleanTid}' has already been submitted (${duplicate.status}). If you need help, please contact live support.`
+    })
+  }
+
+  const resolvedChannel = channel || method || 'JazzCash'
+  const internalTxId = `DEP-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`
+  const numBonus = parseFloat(bonus_amount) || 0
+
+  const metadata = {
+    channel: resolvedChannel,
+    tid: cleanTid,
+    sender_phone: sender_phone || '',
+    sender_name: sender_name || '',
+    bonus_amount: numBonus,
+    screenshot_url: screenshot_url || '',
+    submitted_at: new Date().toISOString()
+  }
+
+  // Record pending deposit
+  const tx = recordTransactionRecord({
+    id: internalTxId,
     user_id,
     email: email || '',
     type: 'deposit',
     amount: numAmount,
     status: 'pending',
-    method,
-    tx_id,
-    notes: `Deposit via ${method} — TxID: ${tx_id}`
+    method: resolvedChannel,
+    tx_id: internalTxId,
+    notes: `Manual Deposit via ${resolvedChannel} | Sender: ${sender_phone || 'N/A'} | TID: ${cleanTid}${numBonus > 0 ? ` (+Rs ${numBonus} bonus)` : ''}`,
+    metadata
   })
 
-  // Sync with Firestore
+  // Sync to Firestore if available
   try {
     addTransaction({
       user_id,
       type: 'deposit',
       amount: numAmount,
       status: 'pending',
-      notes: `Deposit via ${method} — TxID: ${tx_id}`,
-      metadata: { method, tx_id }
+      notes: tx.notes,
+      metadata
     }).catch(() => {})
   } catch (e) {}
 
-  return res.status(200).json({ success: true, message: 'Deposit request submitted. Pending admin approval.' })
+  return res.status(200).json({
+    success: true,
+    tx_id: internalTxId,
+    tid: cleanTid,
+    amount: numAmount,
+    bonus: numBonus,
+    message: `Deposit request for Rs ${numAmount.toLocaleString()} submitted successfully! It will be verified and credited to your balance shortly.`
+  })
 }

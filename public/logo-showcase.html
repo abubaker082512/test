@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WinX Pro - Brand Logo & Theme System Concepts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #07090D;
+      --bg-card: #0E131C;
+      --bg-card-hover: #141B27;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-emerald: rgba(0, 230, 91, 0.3);
+      --emerald: #00E65B;
+      --emerald-light: #00FF87;
+      --emerald-glow: rgba(0, 230, 91, 0.35);
+      --gold: #FFB800;
+      --text: #FFFFFF;
+      --text-muted: #94A3B8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-base);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      padding: 32px 16px 80px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(0, 230, 91, 0.1);
+      border: 1px solid var(--border-emerald);
+      border-radius: 9999px;
+      color: var(--emerald-light);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 900;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #FFF 40%, var(--emerald-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 15px;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    /* Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.25s ease;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .card:hover {
+      border-color: var(--border-emerald);
+      box-shadow: 0 12px 35px rgba(0, 230, 91, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .card-badge {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.06);
+      color: var(--text-muted);
+    }
+
+    .featured-badge {
+      background: rgba(0, 230, 91, 0.15);
+      color: var(--emerald-light);
+      border: 1px solid var(--border-emerald);
+    }
+
+    .logo-stage {
+      height: 120px;
+      background: #080B10;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .logo-stage::before {
+      content: '';
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, var(--emerald-glow) 0%, transparent 70%);
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .logo-stage img {
+      max-width: 85%;
+      max-height: 60px;
+      object-fit: contain;
+      z-index: 1;
+      filter: drop-shadow(0 4px 15px rgba(0,0,0,0.7));
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 16px;
+      flex-grow: 1;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 18px;
+    }
+
+    .tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 4px;
+      color: #94A3B8;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00FF87 0%, #00E65B 100%);
+      color: #05070A;
+      box-shadow: 0 4px 14px rgba(0, 230, 91, 0.3);
+    }
+    .btn-primary:hover {
+      box-shadow: 0 6px 20px rgba(0, 230, 91, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: #FFF;
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Live Preview Section */
+    .preview-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 30px;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .mock-navbar {
+      height: 64px;
+      background: #0B0E14;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    }
+
+    .mock-balance-pill {
+      background: rgba(20, 26, 36, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--emerald);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .color-palette {
+      display: flex;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .color-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .color-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+
+    .app-icon-card {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 28px;
+    }
+
+    @media (max-width: 640px) {
+      .app-icon-card { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div class="badge">✨ Brand Identity System 2026</div>
+      <h1>WinX Pro — Emerald Neon Logos</h1>
+      <p class="subtitle">Designed specifically for your new Obsidian Slate &amp; Electric Neon Emerald theme (<code>#00E65B</code> / <code>#0B0E14</code>). Crisp, vector scalable, and ready for deployment.</p>
+    </header>
+
+    <!-- Interactive Live Navbar Simulation -->
+    <div class="preview-section">
+      <div class="preview-header">
+        <h3 style="font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+          📱 Live Navbar Simulation
+        </h3>
+        <span style="font-size: 12px; color: var(--text-muted);">Exact mobile app header render</span>
+      </div>
+
+      <div class="mock-navbar">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <span style="font-size: 20px; cursor: pointer; color: #FFF;">☰</span>
+          <img id="livePreviewImg" src="/logo.svg" alt="Active Logo" style="height: 38px; width: auto; object-fit: contain;" />
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="mock-balance-pill">
+            <span>🇵🇰</span>
+            <span>Rs 12,450.00</span>
+          </div>
+          <button style="background: linear-gradient(135deg, #FF9800, #FF5722); border: none; color: #FFF; font-weight: 800; font-size: 12px; padding: 7px 14px; border-radius: 6px; cursor: pointer;">
+            + DEPOSIT
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 Logo Options Grid -->
+    <div class="grid">
+      <!-- Concept 1 -->
+      <div class="card">
+        <div class="card-badge featured-badge">★ ACTIVE / RECOMMENDED</div>
+        <div class="logo-stage">
+          <img src="/logo-emerald-apex.svg" alt="Apex Cyber Shield" />
+        </div>
+        <div class="card-title">1. Cyber Apex Shield</div>
+        <div class="card-desc">
+          Features a multi-faceted cybernetic shield emblem with dual glowing emerald blades forming an intersecting 'W' and 'X' apex. Modern, prestigious, and high-tech.
+        </div>
+        <div class="tags">
+          <span class="tag">#00E65B Neon</span>
+          <span class="tag">Cyber Hex Shield</span>
+          <span class="tag">Sports &amp; Slots</span>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary" onclick="setPreview('/logo-emerald-apex.svg')">Preview in Navbar</button>
+          <a class="btn btn-secondary" href="/logo-emerald-apex.svg" download="winx-logo-apex.svg">Download SVG</a>
+        </div>
+      </div>
+
+      <!-- Concept 2 -->
+      <div class="card">
+        <div class="card-badge">MINIMAL / SPEED</div>
+        <div class="logo-stage">
+          <img src="/logo-emerald-bolt.svg" alt="Velocity Neon Bolt" />
+        </div>
+        <div class="card-title">2. Velocity Neon Bolt</div>
+        <div class="card-desc">
+          Inspired by top-tier modern iGaming platforms (Stake, Roobet). Bold lightning-fast monogram infused into the dynamic 'X' with a high-contrast lime pill badge.
+        </div>
+        <div class="tags">
+          <span class="tag">Lightning Fast</span>
+          <span class="tag">Bold Monogram</span>
+          <span class="tag">High Legibility</span>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary" onclick="setPreview('/logo-emerald-bolt.svg')">Preview in Navbar</button>
+          <a class="btn btn-secondary" href="/logo-emerald-bolt.svg" download="winx-logo-bolt.svg">Download SVG</a>
+        </div>
+      </div>
+
+      <!-- Concept 3 -->
+      <div class="card">
+        <div class="card-badge">VIP / LUXURY</div>
+        <div class="logo-stage">
+          <img src="/logo-emerald-crown.svg" alt="VIP Casino Crown" />
+        </div>
+        <div class="card-title">3. VIP Casino Crown</div>
+        <div class="card-desc">
+          Geometric 5-point emerald crown integrated inside a roulette-inspired circular token with 24K gold accents. Tailored for VIP table games and high-roller appeal.
+        </div>
+        <div class="tags">
+          <span class="tag">Emerald Crown</span>
+          <span class="tag">24K Gold Trim</span>
+          <span class="tag">VIP Luxury</span>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary" onclick="setPreview('/logo-emerald-crown.svg')">Preview in Navbar</button>
+          <a class="btn btn-secondary" href="/logo-emerald-crown.svg" download="winx-logo-crown.svg">Download SVG</a>
+        </div>
+      </div>
+
+      <!-- Concept 4: 3D App Icon / Splash Render -->
+      <div class="card app-icon-card">
+        <img src="/winx-pro-3d-icon.jpg" alt="3D App Icon" style="width: 140px; height: 140px; border-radius: 28px; box-shadow: 0 12px 30px rgba(0, 230, 91, 0.25), 0 4px 10px rgba(0,0,0,0.8); object-fit: cover;" />
+        <div style="flex: 1;">
+          <div class="card-title" style="font-size: 20px;">4. 3D Holographic App Icon &amp; Splash Icon</div>
+          <div class="card-desc" style="font-size: 14px; margin-bottom: 12px;">
+            A rich 3D squircle badge featuring polished metallic chamfers, holographic emerald edge glow, glassmorphic reflections, and carbon-fiber backing. Ideal for APK mobile launchers, PWA homescreen icon, and loading splash screens.
+          </div>
+          <div class="tags">
+            <span class="tag">3D Squircle Icon</span>
+            <span class="tag">Android APK</span>
+            <span class="tag">PWA 512x512</span>
+            <span class="tag">Splash Screen</span>
+          </div>
+          <div class="action-row" style="max-width: 320px;">
+            <a class="btn btn-primary" href="/winx-pro-3d-icon.jpg" download="winx-pro-app-icon.jpg">Download 3D Icon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme Color Specifications -->
+    <div class="preview-section">
+      <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 12px;">🎨 Matching Color System</h3>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">The exact hex codes synced with your <code>globals.css</code> theme tokens:</p>
+      <div class="color-palette">
+        <div class="color-chip">
+          <div class="color-dot" style="background: #00E65B; box-shadow: 0 0 10px #00E65B;"></div>
+          <span>Neon Emerald: <code>#00E65B</code></span>
+        </div>
+        <div class="color-chip">
+          <div class="color-dot" style="background: #00FF87;"></div>
+          <span>Electric Mint: <code>#00FF87</code></span>
+        </div>
+        <div class="color-chip">
+          <div class="color-dot" style="background: #0B0E14; border: 1px solid #333;"></div>
+          <span>Obsidian Carbon: <code>#0B0E14</code></span>
+        </div>
+        <div class="color-chip">
+          <div class="color-dot" style="background: #FFB800;"></div>
+          <span>24K Gold Accent: <code>#FFB800</code></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function setPreview(src) {
+      const img = document.getElementById('livePreviewImg');
+      img.style.opacity = '0';
+      img.style.transform = 'scale(0.95)';
+      setTimeout(() => {
+        img.src = src;
+        img.style.transition = 'all 0.25s ease';
+        img.style.opacity = '1';
+        img.style.transform = 'scale(1)';
+      }, 150);
+    }
+  </script>
+</body>
+</html>

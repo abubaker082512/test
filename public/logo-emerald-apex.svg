@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 54" width="240" height="54" fill="none">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="neonGlowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00FF87" />
+      <stop offset="50%" stop-color="#00E65B" />
+      <stop offset="100%" stop-color="#00B345" />
+    </linearGradient>
+
+    <linearGradient id="cyanEmeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38EF7D" />
+      <stop offset="100%" stop-color="#11998E" />
+    </linearGradient>
+
+    <linearGradient id="shieldBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1A2433" />
+      <stop offset="100%" stop-color="#0B0F16" />
+    </linearGradient>
+
+    <linearGradient id="goldAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE066" />
+      <stop offset="100%" stop-color="#FFB800" />
+    </linearGradient>
+
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#D1D9E6" />
+    </linearGradient>
+
+    <!-- Drop Shadow / Glow Filters -->
+    <filter id="emeraldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.6" />
+    </filter>
+  </defs>
+
+  <!-- Left Icon Emblem (Shield / Hex Diamond) -->
+  <g transform="translate(6, 5)">
+    <!-- Ambient back glow -->
+    <circle cx="22" cy="22" r="18" fill="#00E65B" opacity="0.15" filter="url(#emeraldGlow)" />
+    
+    <!-- Outer Shield Frame -->
+    <polygon points="22,2 41,12 41,32 22,42 3,32 3,12" 
+             fill="url(#shieldBg)" 
+             stroke="url(#neonGlowGrad)" 
+             stroke-width="1.8" 
+             stroke-linejoin="round"
+             filter="url(#softShadow)" />
+
+    <!-- Inner Shield Rim -->
+    <polygon points="22,5.5 38,14.5 38,29.5 22,38.5 6,29.5 6,14.5" 
+             fill="none" 
+             stroke="rgba(0, 230, 91, 0.25)" 
+             stroke-width="1" />
+
+    <!-- Dynamic Intersecting Energy Blades (Stylized 'W' & 'X') -->
+    <!-- Blade Left (W / Wing) -->
+    <path d="M12 15 L19 27 L15 32 L9 22 Z" fill="url(#neonGlowGrad)" opacity="0.9" />
+    
+    <!-- Blade Right (X Strike) -->
+    <path d="M32 15 L17 33 L21 34 L35 18 Z" fill="url(#neonGlowGrad)" />
+    <path d="M14 17 L28 32 L31 28 L20 15 Z" fill="#00FF87" />
+
+    <!-- Center Core Diamond Gem -->
+    <polygon points="22,19 26,24 22,29 18,24" fill="#FFFFFF" opacity="0.95" />
+    <polygon points="22,20.5 24.5,24 22,27.5 19.5,24" fill="url(#goldAccent)" />
+  </g>
+
+  <!-- Brand Typography -->
+  <!-- "WIN" -->
+  <text x="60" y="36" 
+        font-family="'Montserrat', 'Outfit', 'Inter', -apple-system, sans-serif" 
+        font-weight="900" 
+        font-size="28" 
+        letter-spacing="0.5" 
+        fill="url(#textGrad)"
+        filter="url(#softShadow)">WIN</text>
+
+  <!-- Stylized "X" -->
+  <g transform="translate(126, 12)">
+    <!-- Glowing background accent for X -->
+    <path d="M4 4 L22 26 M22 4 L4 26" 
+          stroke="#00E65B" 
+          stroke-width="7" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          opacity="0.3" 
+          filter="url(#emeraldGlow)" />
+    
+    <!-- Primary sharp X strokes -->
+    <path d="M4 4 L22 26" 
+          stroke="url(#neonGlowGrad)" 
+          stroke-width="5" 
+          stroke-linecap="round" />
+    <path d="M22 4 L4 26" 
+          stroke="url(#neonGlowGrad)" 
+          stroke-width="5" 
+          stroke-linecap="round" />
+
+    <!-- Center gloss node -->
+    <circle cx="13" cy="15" r="2.5" fill="#FFFFFF" />
+  </g>
+
+  <!-- "PRO" Badge -->
+  <g transform="translate(158, 14)">
+    <!-- Pill Container -->
+    <rect x="0" y="3" width="56" height="22" rx="6" 
+          fill="#101722" 
+          stroke="url(#neonGlowGrad)" 
+          stroke-width="1.2" />
+    
+    <!-- Emerald accent dot inside badge -->
+    <circle cx="9" cy="14" r="3" fill="#00E65B" filter="url(#emeraldGlow)" />
+    <circle cx="9" cy="14" r="1.5" fill="#FFFFFF" />
+
+    <!-- "PRO" Label -->
+    <text x="17" y="19" 
+          font-family="'Montserrat', 'Outfit', 'Inter', -apple-system, sans-serif" 
+          font-weight="800" 
+          font-size="12" 
+          letter-spacing="2" 
+          fill="#FFFFFF">PRO</text>
+  </g>
+
+  <!-- Subtle Sub-title / Tagline -->
+  <text x="61" y="48" 
+        font-family="'Montserrat', 'Outfit', 'Inter', sans-serif" 
+        font-weight="700" 
+        font-size="7.5" 
+        letter-spacing="3.8" 
+        fill="#00E65B" 
+        opacity="0.85">CASINO &amp; SPORTS</text>
+</svg>

@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 54" width="240" height="54" fill="none">
+  <defs>
+    <linearGradient id="emeraldGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00FFA3"/>
+      <stop offset="50%" stop-color="#00E65B"/>
+      <stop offset="100%" stop-color="#008F39"/>
+    </linearGradient>
+
+    <linearGradient id="goldGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE885"/>
+      <stop offset="100%" stop-color="#FFB800"/>
+    </linearGradient>
+
+    <linearGradient id="badgeDark3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#141E28"/>
+      <stop offset="100%" stop-color="#080C12"/>
+    </linearGradient>
+
+    <filter id="glow3" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Crown & Chip Emblem -->
+  <g transform="translate(6, 4)">
+    <!-- Outer Glow Ring -->
+    <circle cx="23" cy="23" r="21" fill="none" stroke="rgba(0, 230, 91, 0.25)" stroke-width="1.5" stroke-dasharray="4 2"/>
+    
+    <!-- Chip Base -->
+    <circle cx="23" cy="23" r="18" fill="url(#badgeDark3)" stroke="url(#emeraldGrad3)" stroke-width="2"/>
+
+    <!-- Geometric Crown Blades -->
+    <path d="M12 28 L14 17 L19 23 L23 13 L27 23 L32 17 L34 28 Z" 
+          fill="url(#emeraldGrad3)" 
+          filter="url(#glow3)"/>
+    
+    <!-- Crown Jewels (Gold accents) -->
+    <circle cx="23" cy="11.5" r="2" fill="url(#goldGrad3)"/>
+    <circle cx="14" cy="15.5" r="1.3" fill="url(#goldGrad3)"/>
+    <circle cx="32" cy="15.5" r="1.3" fill="url(#goldGrad3)"/>
+
+    <!-- Bottom Arc Base -->
+    <path d="M14 30 Q23 33 32 30" stroke="#00FFA3" stroke-width="2" stroke-linecap="round"/>
+  </g>
+
+  <!-- Wordmark -->
+  <g transform="translate(58, 10)">
+    <text x="0" y="25" 
+          font-family="'Montserrat', 'Outfit', sans-serif" 
+          font-weight="900" 
+          font-size="25" 
+          letter-spacing="0.5" 
+          fill="#FFFFFF">WIN</text>
+
+    <!-- Emerald X with Crown notch -->
+    <text x="56" y="25" 
+          font-family="'Montserrat', 'Outfit', sans-serif" 
+          font-weight="900" 
+          font-size="28" 
+          fill="url(#emeraldGrad3)"
+          filter="url(#glow3)">X</text>
+
+    <!-- PRO Badge with Gold Border -->
+    <g transform="translate(86, 6)">
+      <rect x="0" y="0" width="48" height="20" rx="5" 
+            fill="rgba(0, 230, 91, 0.12)" 
+            stroke="url(#emeraldGrad3)" 
+            stroke-width="1.2"/>
+      <text x="24" y="14" 
+            text-anchor="middle"
+            font-family="'Montserrat', 'Outfit', sans-serif" 
+            font-weight="900" 
+            font-size="11" 
+            letter-spacing="2" 
+            fill="#00FFA3">PRO</text>
+    </g>
+
+    <text x="2" y="37" 
+          font-family="'Montserrat', 'Outfit', sans-serif" 
+          font-weight="700" 
+          font-size="7" 
+          letter-spacing="3.2" 
+          fill="#94A3B8">VIP CASINO &amp; BETTING</text>
+  </g>
+</svg>

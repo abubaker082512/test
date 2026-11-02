@@ -82,6 +82,25 @@ export default function AdminPanel() {
   // Card Gateway state
   const [cardMode, setCardMode] = useState('directpay')
 
+  // Manual P2P Receiving Accounts & Limits state
+  const [manualDepositEnabled, setManualDepositEnabled] = useState(true)
+  const [minDeposit, setMinDeposit] = useState('200')
+  const [maxDeposit, setMaxDeposit] = useState('100000')
+  const [minWithdraw, setMinWithdraw] = useState('500')
+  const [maxWithdraw, setMaxWithdraw] = useState('50000')
+  const [manualJazzcashTitle, setManualJazzcashTitle] = useState('')
+  const [manualJazzcashNo, setManualJazzcashNo] = useState('')
+  const [manualJazzcash2Title, setManualJazzcash2Title] = useState('')
+  const [manualJazzcash2No, setManualJazzcash2No] = useState('')
+  const [manualEasypaisaTitle, setManualEasypaisaTitle] = useState('')
+  const [manualEasypaisaNo, setManualEasypaisaNo] = useState('')
+  const [manualEasypaisa2Title, setManualEasypaisa2Title] = useState('')
+  const [manualEasypaisa2No, setManualEasypaisa2No] = useState('')
+  const [manualCryptoNetwork, setManualCryptoNetwork] = useState('USDT (TRC20)')
+  const [manualCryptoAddress, setManualCryptoAddress] = useState('')
+  const [depositInstructions, setDepositInstructions] = useState('')
+  const [copiedTid, setCopiedTid] = useState(null)
+
   const [ratesLoading, setRatesLoading] = useState(false)
   const [ratesMsg, setRatesMsg] = useState(null)
 
@@ -190,6 +209,23 @@ export default function AdminPanel() {
         setEasypaisaMode(data.easypaisa_mode || 'directpay')
 
         setCardMode(data.card_mode || 'directpay')
+
+        if (data.manual_deposit_enabled !== undefined) setManualDepositEnabled(data.manual_deposit_enabled)
+        if (data.min_deposit !== undefined) setMinDeposit(data.min_deposit.toString())
+        if (data.max_deposit !== undefined) setMaxDeposit(data.max_deposit.toString())
+        if (data.min_withdraw !== undefined) setMinWithdraw(data.min_withdraw.toString())
+        if (data.max_withdraw !== undefined) setMaxWithdraw(data.max_withdraw.toString())
+        if (data.manual_jazzcash_title) setManualJazzcashTitle(data.manual_jazzcash_title)
+        if (data.manual_jazzcash_no) setManualJazzcashNo(data.manual_jazzcash_no)
+        if (data.manual_jazzcash2_title) setManualJazzcash2Title(data.manual_jazzcash2_title)
+        if (data.manual_jazzcash2_no) setManualJazzcash2No(data.manual_jazzcash2_no)
+        if (data.manual_easypaisa_title) setManualEasypaisaTitle(data.manual_easypaisa_title)
+        if (data.manual_easypaisa_no) setManualEasypaisaNo(data.manual_easypaisa_no)
+        if (data.manual_easypaisa2_title) setManualEasypaisa2Title(data.manual_easypaisa2_title)
+        if (data.manual_easypaisa2_no) setManualEasypaisa2No(data.manual_easypaisa2_no)
+        if (data.manual_crypto_network) setManualCryptoNetwork(data.manual_crypto_network)
+        if (data.manual_crypto_address) setManualCryptoAddress(data.manual_crypto_address)
+        if (data.deposit_instructions) setDepositInstructions(data.deposit_instructions)
       }
     } catch (err) {
       console.error('Error fetching rates:', err)
@@ -465,12 +501,28 @@ export default function AdminPanel() {
           easypaisa_hash_key: easypaisaHashKey,
           easypaisa_enabled: easypaisaEnabled,
           easypaisa_mode: easypaisaMode,
-          card_mode: cardMode
+          card_mode: cardMode,
+          manual_deposit_enabled: manualDepositEnabled,
+          min_deposit: Number(minDeposit),
+          max_deposit: Number(maxDeposit),
+          min_withdraw: Number(minWithdraw),
+          max_withdraw: Number(maxWithdraw),
+          manual_jazzcash_title: manualJazzcashTitle,
+          manual_jazzcash_no: manualJazzcashNo,
+          manual_jazzcash2_title: manualJazzcash2Title,
+          manual_jazzcash2_no: manualJazzcash2No,
+          manual_easypaisa_title: manualEasypaisaTitle,
+          manual_easypaisa_no: manualEasypaisaNo,
+          manual_easypaisa2_title: manualEasypaisa2Title,
+          manual_easypaisa2_no: manualEasypaisa2No,
+          manual_crypto_network: manualCryptoNetwork,
+          manual_crypto_address: manualCryptoAddress,
+          deposit_instructions: depositInstructions
         })
       })
       const data = await res.json()
       if (data.success) {
-        setRatesMsg({ type: 'success', text: 'All exchange rates, DirectPay, JazzCash & EasyPaisa settings updated successfully!' })
+        setRatesMsg({ type: 'success', text: 'All manual receiving accounts, limits, and gateway settings updated successfully!' })
       } else {
         setRatesMsg({ type: 'error', text: data.error })
       }
@@ -641,7 +693,7 @@ export default function AdminPanel() {
             🎯 Real-Time Engine
           </button>
           <button style={tabStyle(activeTab === 'rates')} onClick={() => setActiveTab('rates')}>
-            💵 Gateway Settings
+            💳 Payment Accounts & Limits
           </button>
         </div>
 
@@ -965,10 +1017,14 @@ export default function AdminPanel() {
                   {displayList.map(tx => {
                     const isCompleted = tx.status === 'completed';
                     const isPending = tx.status === 'pending';
+                    const tid = tx.reference_id || tx.tid || (tx.tx_id && !tx.tx_id.startsWith('dep_') && !tx.tx_id.startsWith('tx_') ? tx.tx_id : null) || (tx.notes && tx.notes.includes('TID:') ? tx.notes.split('TID:')[1].split('|')[0].trim() : null) || tx.tx_id;
+                    const senderNum = tx.sender_number || (tx.notes && tx.notes.includes('Sender:') ? tx.notes.split('Sender:')[1].split('|')[0].trim() : null);
+                    const bonusAmt = tx.bonus || (tx.notes && tx.notes.includes('Bonus:') ? tx.notes.split('Bonus:')[1].trim() : null);
+
                     return (
-                      <div key={tx.id || tx.tx_id} style={{ background: 'var(--card)', border: `1px solid ${isCompleted ? '#00ff8844' : isPending ? '#ff990044' : 'var(--border)'}`, borderRadius: '12px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div key={tx.id || tx.tx_id} style={{ background: 'var(--card)', border: `1px solid ${isCompleted ? '#00ff8844' : isPending ? '#ff990044' : 'var(--border)'}`, borderRadius: '12px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                        <div style={{ flex: '1 1 300px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                             <span style={{ 
                               padding: '3px 8px', 
                               borderRadius: '4px', 
@@ -981,44 +1037,79 @@ export default function AdminPanel() {
                             }}>
                               {tx.status}
                             </span>
-                            <strong style={{ fontSize: '16px', color: 'var(--accent)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <strong style={{ fontSize: '18px', color: 'var(--accent)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                               <CurrencyFlag size={14} />{parseFloat(tx.amount || 0).toFixed(2)}
                             </strong>
-                            <span style={{ fontSize: '13px', color: 'var(--muted)' }}>via {tx.method}</span>
+                            <span style={{ fontSize: '13px', color: '#aaa', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: '4px' }}>
+                              {tx.target_channel || tx.method || 'Manual P2P'}
+                            </span>
+                            {bonusAmt && Number(bonusAmt) > 0 && (
+                              <span style={{ fontSize: '11px', color: '#ffb300', background: 'rgba(255,179,0,0.15)', border: '1px solid rgba(255,179,0,0.3)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                                🎁 +Rs {bonusAmt} Bonus
+                              </span>
+                            )}
                           </div>
 
-                          <div style={{ fontSize: '13px', color: '#ccc', marginTop: '6px' }}>
-                            <strong>Player Account:</strong> {tx.email || getEmail(tx.user_id)}
+                          <div style={{ fontSize: '13px', color: '#ccc', marginTop: '8px' }}>
+                            <strong>Player:</strong> {tx.email || getEmail(tx.user_id)} {tx.phone ? `(${tx.phone})` : ''}
                           </div>
 
-                          {tx.tx_id && (
-                            <div style={{ fontSize: '12px', color: '#00e5ff', marginTop: '2px', fontFamily: 'monospace' }}>
-                              <strong>TxID / Reference:</strong> {tx.tx_id}
+                          {senderNum && (
+                            <div style={{ fontSize: '13px', color: '#fff', marginTop: '4px' }}>
+                              <strong>Sender Number / Account:</strong> <span style={{ color: '#00e5ff', fontFamily: 'monospace', fontWeight: 'bold' }}>{senderNum}</span>
+                            </div>
+                          )}
+
+                          {tid && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
+                              <div style={{ fontSize: '12px', color: '#00ff88', fontFamily: 'monospace', background: 'rgba(0,255,136,0.08)', padding: '4px 8px', borderRadius: '4px', border: '1px solid rgba(0,255,136,0.2)' }}>
+                                <strong>TID / Trx ID:</strong> {tid}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(tid);
+                                  setCopiedTid(tx.id || tx.tx_id);
+                                  setTimeout(() => setCopiedTid(null), 2000);
+                                }}
+                                style={{
+                                  background: copiedTid === (tx.id || tx.tx_id) ? '#00ff88' : 'rgba(255,255,255,0.12)',
+                                  color: copiedTid === (tx.id || tx.tx_id) ? '#000' : '#fff',
+                                  border: 'none',
+                                  padding: '4px 10px',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: 'bold',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                {copiedTid === (tx.id || tx.tx_id) ? '✅ Copied!' : '📋 Copy TID'}
+                              </button>
                             </div>
                           )}
 
                           {tx.notes && (
-                            <div style={{ fontSize: '12px', color: '#ffb300', marginTop: '2px' }}>
+                            <div style={{ fontSize: '12px', color: '#888', marginTop: '6px' }}>
                               <em>📝 {tx.notes}</em>
                             </div>
                           )}
 
-                          <div style={{ fontSize: '11px', color: '#888', marginTop: '4px' }}>
+                          <div style={{ fontSize: '11px', color: '#666', marginTop: '4px' }}>
                             📅 {new Date(tx.created_at).toLocaleString()}
                           </div>
                         </div>
 
                         {isPending && (
-                          <div style={{ display: 'flex', gap: '8px' }}>
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                             <button
                               onClick={() => handleAction(tx.id || tx.tx_id, 'approve')}
-                              style={{ padding: '8px 16px', background: '#00cc66', color: '#000', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+                              style={{ padding: '10px 18px', background: 'linear-gradient(135deg, #00ff88, #00aa55)', color: '#000', border: 'none', borderRadius: '8px', fontWeight: '900', cursor: 'pointer', fontSize: '13px', boxShadow: '0 4px 12px rgba(0,255,136,0.25)' }}
                             >
-                              ✓ Approve
+                              ✓ Approve & Credit
                             </button>
                             <button
                               onClick={() => handleAction(tx.id || tx.tx_id, 'reject')}
-                              style={{ padding: '8px 16px', background: '#331111', color: '#ff6666', border: '1px solid #ff444444', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+                              style={{ padding: '10px 18px', background: '#331111', color: '#ff6666', border: '1px solid #ff444444', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
                             >
                               ✕ Reject
                             </button>
@@ -1631,48 +1722,286 @@ export default function AdminPanel() {
         )}
 
         {/* ==========================================
-            TAB 7: 💵 GATEWAY SETTINGS & RATES
+            TAB 7: 💳 PAYMENT ACCOUNTS & LIMITS
             ========================================== */}
         {activeTab === 'rates' && (
           <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px' }}>
-            <h2 style={{ color: 'var(--accent)', marginTop: 0 }}>💵 Conversion Rates & DirectPay Gateway Credentials</h2>
+            <div style={{ marginBottom: '20px' }}>
+              <h2 style={{ color: 'var(--accent)', margin: '0 0 6px', fontSize: '20px' }}>💳 Manual Payment Accounts & Limits</h2>
+              <p style={{ margin: 0, color: 'var(--muted)', fontSize: '13px' }}>
+                Manage your active JazzCash, EasyPaisa, and USDT accounts for manual P2P deposits. All player transfers go directly to your configured numbers.
+              </p>
+            </div>
 
             {ratesMsg && (
-              <div style={{ padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '14px', background: ratesMsg.type === 'error' ? '#ff000022' : '#00ff8822', color: ratesMsg.type === 'error' ? '#ff6666' : '#00ff88' }}>
+              <div style={{ padding: '12px 16px', borderRadius: '8px', marginBottom: '20px', fontSize: '14px', background: ratesMsg.type === 'error' ? '#ff000022' : '#00ff8822', color: ratesMsg.type === 'error' ? '#ff6666' : '#00ff88', border: `1px solid ${ratesMsg.type === 'error' ? '#ff444444' : '#00ff8844'}` }}>
                 {ratesMsg.text}
               </div>
             )}
 
-            <form onSubmit={handleSaveRates} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                <h3 style={{ margin: '0 0 12px', fontSize: '15px', color: 'var(--accent)' }}>⚡ DirectPay Landing Page API Credentials</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <form onSubmit={handleSaveRates} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+              {/* 1. Transaction Limits & System Status */}
+              <div style={{ background: 'var(--bg-tertiary)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                <h3 style={{ margin: '0 0 16px', fontSize: '16px', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  ⚙️ System Status & Limits
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
                   <div>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>DirectPay Client ID:</label>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '6px' }}>
+                      Minimum Deposit (PKR):
+                    </label>
                     <input
-                      type="text"
-                      value={directpayClientId}
-                      onChange={e => setDirectpayClientId(e.target.value)}
-                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px', fontFamily: 'monospace' }}
+                      type="number"
+                      value={minDeposit}
+                      onChange={e => setMinDeposit(e.target.value)}
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#00ff88', fontSize: '15px', fontWeight: 'bold' }}
+                      min="100"
+                      required
+                    />
+                    <small style={{ color: 'var(--muted)', fontSize: '11px', marginTop: '4px', display: 'block' }}>Default recommended: Rs 200</small>
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '6px' }}>
+                      Maximum Deposit (PKR):
+                    </label>
+                    <input
+                      type="number"
+                      value={maxDeposit}
+                      onChange={e => setMaxDeposit(e.target.value)}
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '15px' }}
                       required
                     />
                   </div>
 
                   <div>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '4px' }}>DirectPay Client Secret:</label>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '6px' }}>
+                      Minimum Withdrawal (PKR):
+                    </label>
                     <input
-                      type="text"
-                      value={directpayClientSecret}
-                      onChange={e => setDirectpayClientSecret(e.target.value)}
-                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '14px', fontFamily: 'monospace' }}
+                      type="number"
+                      value={minWithdraw}
+                      onChange={e => setMinWithdraw(e.target.value)}
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#ffb300', fontSize: '15px', fontWeight: 'bold' }}
+                      min="100"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '6px' }}>
+                      Maximum Withdrawal (PKR):
+                    </label>
+                    <input
+                      type="number"
+                      value={maxWithdraw}
+                      onChange={e => setMaxWithdraw(e.target.value)}
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '15px' }}
                       required
                     />
                   </div>
                 </div>
               </div>
 
-              <button type="submit" disabled={ratesLoading} style={{ width: '100%', padding: '16px', fontSize: '15px', background: 'var(--accent)', color: '#000', fontWeight: 'bold', borderRadius: '8px' }}>
-                {ratesLoading ? 'Saving...' : '💾 Save Rates & Gateway Credentials'}
+              {/* 2. JazzCash Receiving Accounts */}
+              <div style={{ background: 'var(--bg-tertiary)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(235, 28, 45, 0.3)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                  <span style={{ background: '#EB1C2D', color: '#fff', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '900' }}>JAZZCASH</span>
+                  <h3 style={{ margin: 0, fontSize: '16px', color: '#fff' }}>JazzCash Receiving Accounts</h3>
+                </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                  {/* Account 1 */}
+                  <div style={{ background: 'rgba(0,0,0,0.4)', padding: '14px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#00ff88', marginBottom: '10px' }}>Primary Account (JazzCash 1)</div>
+                    <div style={{ marginBottom: '10px' }}>
+                      <label style={{ fontSize: '11px', color: '#aaa', display: 'block', marginBottom: '4px' }}>Account Title / Name:</label>
+                      <input
+                        type="text"
+                        value={manualJazzcashTitle}
+                        onChange={e => setManualJazzcashTitle(e.target.value)}
+                        placeholder="e.g. Muhammad Ahmad"
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: '#111', color: '#fff', fontSize: '13px' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '11px', color: '#aaa', display: 'block', marginBottom: '4px' }}>Mobile / Account Number:</label>
+                      <input
+                        type="text"
+                        value={manualJazzcashNo}
+                        onChange={e => setManualJazzcashNo(e.target.value)}
+                        placeholder="e.g. 03001234567"
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: '#111', color: '#00e5ff', fontSize: '14px', fontFamily: 'monospace', fontWeight: 'bold' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Account 2 */}
+                  <div style={{ background: 'rgba(0,0,0,0.4)', padding: '14px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#aaa', marginBottom: '10px' }}>Secondary Account (JazzCash 2)</div>
+                    <div style={{ marginBottom: '10px' }}>
+                      <label style={{ fontSize: '11px', color: '#aaa', display: 'block', marginBottom: '4px' }}>Account Title / Name:</label>
+                      <input
+                        type="text"
+                        value={manualJazzcash2Title}
+                        onChange={e => setManualJazzcash2Title(e.target.value)}
+                        placeholder="e.g. Second Receiver Title"
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: '#111', color: '#fff', fontSize: '13px' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '11px', color: '#aaa', display: 'block', marginBottom: '4px' }}>Mobile / Account Number:</label>
+                      <input
+                        type="text"
+                        value={manualJazzcash2No}
+                        onChange={e => setManualJazzcash2No(e.target.value)}
+                        placeholder="e.g. 03011234567"
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: '#111', color: '#00e5ff', fontSize: '14px', fontFamily: 'monospace', fontWeight: 'bold' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. EasyPaisa Receiving Accounts */}
+              <div style={{ background: 'var(--bg-tertiary)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(0, 168, 89, 0.3)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                  <span style={{ background: '#00A859', color: '#fff', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '900' }}>EASYPAISA</span>
+                  <h3 style={{ margin: 0, fontSize: '16px', color: '#fff' }}>EasyPaisa Receiving Accounts</h3>
+                </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                  {/* Account 1 */}
+                  <div style={{ background: 'rgba(0,0,0,0.4)', padding: '14px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#00ff88', marginBottom: '10px' }}>Primary Account (EasyPaisa 1)</div>
+                    <div style={{ marginBottom: '10px' }}>
+                      <label style={{ fontSize: '11px', color: '#aaa', display: 'block', marginBottom: '4px' }}>Account Title / Name:</label>
+                      <input
+                        type="text"
+                        value={manualEasypaisaTitle}
+                        onChange={e => setManualEasypaisaTitle(e.target.value)}
+                        placeholder="e.g. Muhammad Ahmad"
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: '#111', color: '#fff', fontSize: '13px' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '11px', color: '#aaa', display: 'block', marginBottom: '4px' }}>Mobile / Account Number:</label>
+                      <input
+                        type="text"
+                        value={manualEasypaisaNo}
+                        onChange={e => setManualEasypaisaNo(e.target.value)}
+                        placeholder="e.g. 03451234567"
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: '#111', color: '#00e5ff', fontSize: '14px', fontFamily: 'monospace', fontWeight: 'bold' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Account 2 */}
+                  <div style={{ background: 'rgba(0,0,0,0.4)', padding: '14px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#aaa', marginBottom: '10px' }}>Secondary Account (EasyPaisa 2)</div>
+                    <div style={{ marginBottom: '10px' }}>
+                      <label style={{ fontSize: '11px', color: '#aaa', display: 'block', marginBottom: '4px' }}>Account Title / Name:</label>
+                      <input
+                        type="text"
+                        value={manualEasypaisa2Title}
+                        onChange={e => setManualEasypaisa2Title(e.target.value)}
+                        placeholder="e.g. Second Receiver Title"
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: '#111', color: '#fff', fontSize: '13px' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '11px', color: '#aaa', display: 'block', marginBottom: '4px' }}>Mobile / Account Number:</label>
+                      <input
+                        type="text"
+                        value={manualEasypaisa2No}
+                        onChange={e => setManualEasypaisa2No(e.target.value)}
+                        placeholder="e.g. 03461234567"
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: '#111', color: '#00e5ff', fontSize: '14px', fontFamily: 'monospace', fontWeight: 'bold' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. Crypto USDT (TRC-20) */}
+              <div style={{ background: 'var(--bg-tertiary)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(38, 161, 123, 0.3)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                  <span style={{ background: '#26A17B', color: '#fff', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '900' }}>USDT TRC20</span>
+                  <h3 style={{ margin: 0, fontSize: '16px', color: '#fff' }}>Crypto Receiving Address</h3>
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', display: 'block', marginBottom: '6px' }}>
+                    USDT TRC-20 Wallet Address:
+                  </label>
+                  <input
+                    type="text"
+                    value={manualCryptoAddress}
+                    onChange={e => setManualCryptoAddress(e.target.value)}
+                    placeholder="e.g. TYDzsxdczQD1R9W1zZpYr... (TRC-20)"
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#00ff88', fontSize: '14px', fontFamily: 'monospace' }}
+                  />
+                </div>
+              </div>
+
+              {/* 5. Deposit Instructions Notice */}
+              <div style={{ background: 'var(--bg-tertiary)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                <h3 style={{ margin: '0 0 10px', fontSize: '15px', color: 'var(--accent)' }}>📢 Deposit Instructions Notice</h3>
+                <p style={{ margin: '0 0 12px', color: 'var(--muted)', fontSize: '12px' }}>
+                  This message is displayed directly on the user deposit screen to instruct players.
+                </p>
+                <textarea
+                  value={depositInstructions}
+                  onChange={e => setDepositInstructions(e.target.value)}
+                  placeholder="e.g. Please transfer exact amount to our active JazzCash/EasyPaisa number. After payment, enter your 11-digit Sender Number and Transaction ID (TID) from the SMS to verify instantly."
+                  rows={3}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '13px', lineHeight: '1.5', resize: 'vertical' }}
+                />
+              </div>
+
+              {/* 6. Fallback DirectPay Landing Page API Credentials */}
+              <div style={{ background: 'var(--bg-tertiary)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                <h3 style={{ margin: '0 0 12px', fontSize: '15px', color: '#888' }}>⚡ DirectPay Landing Page API (Optional Fallback)</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+                  <div>
+                    <label style={{ fontSize: '11px', color: '#aaa', display: 'block', marginBottom: '4px' }}>DirectPay Client ID:</label>
+                    <input
+                      type="text"
+                      value={directpayClientId}
+                      onChange={e => setDirectpayClientId(e.target.value)}
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '13px', fontFamily: 'monospace' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '11px', color: '#aaa', display: 'block', marginBottom: '4px' }}>DirectPay Client Secret:</label>
+                    <input
+                      type="text"
+                      value={directpayClientSecret}
+                      onChange={e => setDirectpayClientSecret(e.target.value)}
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: '#000', color: '#fff', fontSize: '13px', fontFamily: 'monospace' }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={ratesLoading}
+                style={{
+                  width: '100%',
+                  padding: '16px',
+                  fontSize: '16px',
+                  background: 'linear-gradient(135deg, #00ff88, #00bb66)',
+                  color: '#000',
+                  fontWeight: '900',
+                  borderRadius: '10px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 6px 20px rgba(0,255,136,0.3)',
+                  transition: 'transform 0.15s ease'
+                }}
+              >
+                {ratesLoading ? 'Saving Settings...' : '💾 Save All Payment Accounts & Rules'}
               </button>
             </form>
           </div>

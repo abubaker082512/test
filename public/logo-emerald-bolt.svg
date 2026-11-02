@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 54" width="240" height="54" fill="none">
+  <defs>
+    <linearGradient id="limeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22FFA2" />
+      <stop offset="50%" stop-color="#00E65B" />
+      <stop offset="100%" stop-color="#00B843" />
+    </linearGradient>
+
+    <linearGradient id="carbonBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#161D29" />
+      <stop offset="100%" stop-color="#0C1017" />
+    </linearGradient>
+
+    <filter id="neonBlur" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.5" result="glow" />
+      <feComposite in="SourceGraphic" in2="glow" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Left Icon: Sleek Neon Lightning Hexagon -->
+  <g transform="translate(8, 4)">
+    <!-- Hexagon base -->
+    <polygon points="23,1 42,12 42,34 23,45 4,34 4,12" 
+             fill="url(#carbonBg)" 
+             stroke="#1E2A3C" 
+             stroke-width="1.5" />
+    
+    <!-- Neon border highlight -->
+    <path d="M4 23 L4 12 L23 1 L42 12 L42 23" 
+          stroke="url(#limeGrad)" 
+          stroke-width="2" 
+          stroke-linecap="round" />
+
+    <!-- Lightning Bolt 'W' + 'X' fusion -->
+    <path d="M14 12 L22 24 L17 24 L25 35 L21 26 L26 26 Z" 
+          fill="url(#limeGrad)" 
+          filter="url(#neonBlur)" />
+          
+    <circle cx="31" cy="18" r="2.5" fill="#00FF87" />
+  </g>
+
+  <!-- Typography -->
+  <text x="62" y="35" 
+        font-family="'Teko', 'Outfit', 'Montserrat', sans-serif" 
+        font-weight="800" 
+        font-size="30" 
+        letter-spacing="1" 
+        fill="#FFFFFF">WIN<tspan fill="url(#limeGrad)">X</tspan></text>
+
+  <!-- High-contrast PRO pill -->
+  <g transform="translate(142, 14)">
+    <rect x="0" y="2" width="52" height="23" rx="11.5" 
+          fill="url(#limeGrad)" />
+    <text x="26" y="18" 
+          text-anchor="middle"
+          font-family="'Montserrat', 'Outfit', sans-serif" 
+          font-weight="900" 
+          font-size="12" 
+          letter-spacing="1.5" 
+          fill="#0B0E14">PRO</text>
+  </g>
+
+  <!-- Slogan -->
+  <text x="63" y="47" 
+        font-family="'Montserrat', 'Outfit', sans-serif" 
+        font-weight="700" 
+        font-size="7" 
+        letter-spacing="3" 
+        fill="#94A3B8">OFFICIAL BETTING ARENA</text>
+</svg>
