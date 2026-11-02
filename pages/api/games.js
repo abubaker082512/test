@@ -1,7 +1,8 @@
+import ourGamesCatalog from '../../data/ourGamesCatalog.json';
 import betnexCatalog from '../../data/betnexCatalog.json';
 import freeToGameCatalog from '../../data/freeToGameCatalog.json';
 
-const COMBINED_CATALOG = [...betnexCatalog, ...freeToGameCatalog];
+const COMBINED_CATALOG = [...ourGamesCatalog, ...betnexCatalog, ...freeToGameCatalog];
 
 export default async function handler(req, res) {
   // Edge cache for 1 hour, stale-while-revalidate for 24 hours
@@ -12,31 +13,57 @@ export default async function handler(req, res) {
   let filtered = COMBINED_CATALOG;
 
   if (category) {
-    const catLower = String(category).toLowerCase();
+    const catLower = String(category).toLowerCase().trim();
     if (catLower === 'hot') {
-      filtered = COMBINED_CATALOG.filter(g => g.recommended || g.badge === 'Top Pick' || g.badge === 'Hot' || g.badge === '⚡ Instant');
+      filtered = COMBINED_CATALOG.filter(g => g.recommended || g.isOurGame || g.badge === 'Top Pick' || g.badge === 'Hot' || g.badge === '⚡ Instant');
+    } else if (catLower === 'our games' || catLower === 'our-games' || catLower === 'originals' || catLower === 'winx') {
+      filtered = ourGamesCatalog;
     } else if (catLower === 'free games' || catLower === 'free' || catLower === 'freetogame') {
       filtered = freeToGameCatalog;
     } else if (catLower === 'slots') {
-      filtered = betnexCatalog.filter(g => g.category === 'Slots');
+      filtered = [
+        ...ourGamesCatalog.filter(g => g.gameType === 'slots'),
+        ...betnexCatalog.filter(g => g.category === 'Slots')
+      ];
     } else if (catLower === 'live') {
-      filtered = betnexCatalog.filter(g => g.category === 'Live');
+      filtered = [
+        ...ourGamesCatalog.filter(g => g.gameType === 'roulette' || g.gameType === 'baccarat' || g.gameType === 'wheel'),
+        ...betnexCatalog.filter(g => g.category === 'Live')
+      ];
     } else if (catLower === 'crash') {
-      filtered = betnexCatalog.filter(g => g.category === 'Crash');
+      filtered = [
+        ...ourGamesCatalog.filter(g => g.gameType === 'crash' || g.gameType === 'limbo'),
+        ...betnexCatalog.filter(g => g.category === 'Crash')
+      ];
     } else if (catLower === 'mini games' || catLower === 'mini') {
-      filtered = COMBINED_CATALOG.filter(g => g.category === 'Mini Games' || g.category === 'Crash' || (g.isFreeGame && g.platform && g.platform.includes('Browser')));
+      filtered = [
+        ...ourGamesCatalog.filter(g => g.gameType === 'mines' || g.gameType === 'plinko' || g.gameType === 'coinflip' || g.gameType === 'limbo' || g.gameType === 'hilo'),
+        ...COMBINED_CATALOG.filter(g => g.category === 'Mini Games' || (g.isFreeGame && g.platform && g.platform.includes('Browser')))
+      ];
     } else if (catLower === 'fishing') {
-      filtered = betnexCatalog.filter(g => g.category === 'Fishing');
+      filtered = [
+        ...ourGamesCatalog.filter(g => g.gameType === 'fishing'),
+        ...betnexCatalog.filter(g => g.category === 'Fishing')
+      ];
     } else if (catLower === 'cards') {
-      filtered = COMBINED_CATALOG.filter(g => g.category === 'Cards' || (g.genre && g.genre.toLowerCase().includes('card')));
+      filtered = [
+        ...ourGamesCatalog.filter(g => g.gameType === 'blackjack' || g.gameType === 'dragontiger' || g.gameType === 'baccarat' || g.gameType === 'videopoker' || g.gameType === 'hilo'),
+        ...COMBINED_CATALOG.filter(g => g.category === 'Cards' || (g.genre && g.genre.toLowerCase().includes('card')))
+      ];
     } else if (catLower === 'sports') {
-      filtered = COMBINED_CATALOG.filter(g => g.category === 'Sports' || (g.genre && g.genre.toLowerCase().includes('sports')));
+      filtered = [
+        ...ourGamesCatalog.filter(g => g.gameType === 'penalty' || g.gameType === 'derby'),
+        ...COMBINED_CATALOG.filter(g => g.category === 'Sports' || (g.genre && g.genre.toLowerCase().includes('sports')))
+      ];
     } else if (catLower === 'strategy') {
       filtered = freeToGameCatalog.filter(g => (g.genre && g.genre.toLowerCase().includes('strategy')));
     } else if (catLower === 'shooter') {
       filtered = freeToGameCatalog.filter(g => (g.genre && g.genre.toLowerCase().includes('shooter')));
     } else {
-      filtered = COMBINED_CATALOG.filter(g => (g.category && g.category.toLowerCase() === catLower) || (g.genre && g.genre.toLowerCase() === catLower));
+      filtered = COMBINED_CATALOG.filter(g => 
+        (g.category && g.category.toLowerCase() === catLower) || 
+        (g.genre && g.genre.toLowerCase() === catLower)
+      );
     }
   }
 

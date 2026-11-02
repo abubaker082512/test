@@ -5,6 +5,9 @@ import {
   calculateSuperAceSpin,
   calculateFortuneGemsSpin,
   calculateMinesOutcome,
+  calculatePlinkoOutcome,
+  calculateRouletteOutcome,
+  calculateLimboOutcome,
   getRiskControls
 } from '../../../utils/gameEngine/rtpGovernor';
 
@@ -27,10 +30,6 @@ export default async function handler(req, res) {
   // 1. Fetch Risk Controls
   const risk = getRiskControls();
   const isRestricted = (risk.restrictedUsers || []).includes(user_id);
-
-  if (isRestricted || (risk.forceHouseEdge && action !== 'crash_init')) {
-    // If house edge is strictly forced, force loss
-  }
 
   // 2. Debit Bet Amount
   const debitRes = debitUserBalance(user_id, parsedBet);
@@ -59,11 +58,15 @@ export default async function handler(req, res) {
   let gameResult = {};
   let finalPayout = 0;
 
+  const normalizedGame = (game || '').toLowerCase().replace(/^winx-/, '');
+
   // 3. Execute Server-Side RNG Engine
-  switch ((game || '').toLowerCase()) {
+  switch (normalizedGame) {
     case 'crash':
-    case 'aviator': {
-      const crashMultiplier = risk.forceHouseEdge ? 1.00 : calculateCrashOutcome('crash');
+    case 'aviator':
+    case 'aviator-pro':
+    case 'spribe_aviator': {
+      const crashMultiplier = risk.forceHouseEdge ? 1.00 : calculateCrashOutcome(normalizedGame);
       gameResult = {
         crashPoint: crashMultiplier,
         isCrashed: false
@@ -71,10 +74,13 @@ export default async function handler(req, res) {
       break;
     }
 
-    case 'super-ace': {
+    case 'super-ace':
+    case 'super-ace-deluxe':
+    case 'mahjong-ways-gold':
+    case 'wild-bounty-gold': {
       const spin = risk.forceHouseEdge
         ? { grid: [], goldenGrid: [], isWin: false, totalMultiplier: 0, payout: 0, cascades: [] }
-        : calculateSuperAceSpin(parsedBet, 'super-ace');
+        : calculateSuperAceSpin(parsedBet, normalizedGame);
       
       gameResult = spin;
       finalPayout = spin.payout || 0;
@@ -85,17 +91,18 @@ export default async function handler(req, res) {
     case 'fortune-gems-2': {
       const spin = risk.forceHouseEdge
         ? { grid: [], wheelMultiplier: 1, isWin: false, totalMultiplier: 0, payout: 0, winningLines: [] }
-        : calculateFortuneGemsSpin(parsedBet, 'fortune-gems');
+        : calculateFortuneGemsSpin(parsedBet, normalizedGame);
 
       gameResult = spin;
       finalPayout = spin.payout || 0;
       break;
     }
 
-    case 'mines': {
+    case 'mines':
+    case 'stake-mines': {
       const totalMines = Number(params.mines || 3);
       const openedCount = Number(params.openedTiles || 1);
-      const mult = calculateMinesOutcome(totalMines, openedCount, 'mines');
+      const mult = calculateMinesOutcome(totalMines, openedCount, normalizedGame);
       gameResult = {
         multiplier: mult,
         safe: true
@@ -104,9 +111,54 @@ export default async function handler(req, res) {
       break;
     }
 
+    case 'plinko':
+    case 'stake-plinko': {
+      const rows = Number(params.rows || 12);
+      const riskLevel = params.risk || 'medium';
+      const plinkoRes = calculatePlinkoOutcome(rows, riskLevel, normalizedGame);
+      gameResult = plinkoRes;
+      finalPayout = parseFloat((parsedBet * plinkoRes.multiplier).toFixed(2));
+      break;
+    }
+
+    case 'limbo':
+    case 'limbo-rocket': {
+      const targetMult = parseFloat(params.targetMultiplier || 2.0);
+      const limboRes = calculateLimboOutcome(targetMult, normalizedGame);
+      gameResult = limboRes;
+      if (limboRes.isWin) {
+        finalPayout = parseFloat((parsedBet * targetMult).toFixed(2));
+      }
+      break;
+    }
+
+    case 'roulette':
+    case 'roulette-pro': {
+      const outcome = calculateRouletteOutcome(normalizedGame);
+      const betType = params.betType || 'red';
+      let isWin = false;
+      let mult = 0;
+
+      if (betType === outcome.color) {
+        isWin = true;
+        mult = 2.0;
+      } else if (betType === 'even' && outcome.isEven) {
+        isWin = true;
+        mult = 2.0;
+      } else if (Number(params.chosenNumber) === outcome.number) {
+        isWin = true;
+        mult = 36.0;
+      }
+
+      gameResult = { ...outcome, isWin };
+      if (isWin) {
+        finalPayout = parseFloat((parsedBet * mult).toFixed(2));
+      }
+      break;
+    }
+
     default: {
-      // Classic slots fallback
-      const spin = calculateSuperAceSpin(parsedBet, 'super-ace');
+      const spin = calculateSuperAceSpin(parsedBet, normalizedGame);
       gameResult = spin;
       finalPayout = spin.payout || 0;
     }

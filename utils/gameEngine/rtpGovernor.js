@@ -17,7 +17,8 @@ export function getGameRtp(gameSlug = '') {
     const globalRtp = settings.global_rtp !== undefined ? Number(settings.global_rtp) : DEFAULT_GLOBAL_RTP;
     const rtpMap = settings.game_rtp_settings || {};
 
-    const specificRtp = rtpMap[gameSlug.toLowerCase()];
+    const cleanSlug = String(gameSlug).toLowerCase().replace(/^winx-/, '');
+    const specificRtp = rtpMap[cleanSlug] || rtpMap[gameSlug.toLowerCase()];
     if (specificRtp !== undefined && !isNaN(Number(specificRtp))) {
       return Number(specificRtp);
     }
@@ -51,31 +52,23 @@ export function getRiskControls() {
 
 /**
  * CRASH / AVIATOR OUTCOME GENERATOR
- * Returns the exact multiplier where the plane crashes.
  */
 export function calculateCrashOutcome(gameSlug = 'crash') {
   const rtp = getGameRtp(gameSlug);
-  const houseEdge = (100 - rtp) / 100; // e.g. 0.08 for 92% RTP
+  const houseEdge = (100 - rtp) / 100;
 
   const rand = Math.random();
-
-  // Instant crash at 1.00x based on house edge
   if (rand < houseEdge) {
     return 1.00;
   }
 
-  // Generate exponential crash multiplier
-  // 99% of bets fall between 1.01 and 30x, occasional spikes up to 100x+
   const uniform = Math.random();
   const rawMult = 0.99 / (1 - uniform * (rtp / 100));
-  const finalMult = Math.min(Math.max(1.01, parseFloat(rawMult.toFixed(2))), 150.0);
-
-  return finalMult;
+  return Math.min(Math.max(1.01, parseFloat(rawMult.toFixed(2))), 150.0);
 }
 
 /**
  * SUPER ACE (JILI) SLOT SPIN GENERATOR
- * Generates 5x3 cascading reel symbols, golden card flags, and winning paylines.
  */
 const SUPER_ACE_SYMBOLS = [
   { id: 'A', name: 'Ace', payout: 2.5, color: '#ff3366', isRoyal: true },
@@ -91,11 +84,9 @@ const SUPER_ACE_SYMBOLS = [
 
 export function calculateSuperAceSpin(betAmount = 10, gameSlug = 'super-ace') {
   const rtp = getGameRtp(gameSlug);
-  const winProbability = (rtp / 100) * 0.45; // Calibrated for exact 91-93% RTP across cascades
-
+  const winProbability = (rtp / 100) * 0.45;
   const isWin = Math.random() < winProbability;
 
-  // Build 5 columns x 3 rows grid
   const grid = [];
   const goldenGrid = [];
 
@@ -105,7 +96,6 @@ export function calculateSuperAceSpin(betAmount = 10, gameSlug = 'super-ace') {
     for (let r = 0; r < 3; r++) {
       const randomSymbol = SUPER_ACE_SYMBOLS[Math.floor(Math.random() * SUPER_ACE_SYMBOLS.length)];
       col.push(randomSymbol.id);
-      // 15% chance of golden card in columns 2, 3, 4
       goldCol.push(c >= 1 && c <= 3 && Math.random() < 0.18);
     }
     grid.push(col);
@@ -116,19 +106,16 @@ export function calculateSuperAceSpin(betAmount = 10, gameSlug = 'super-ace') {
   let cascades = [];
 
   if (isWin) {
-    // Force a matching combination on first 3 or 4 columns
     const winSymbol = SUPER_ACE_SYMBOLS[Math.floor(Math.random() * (SUPER_ACE_SYMBOLS.length - 2))];
     grid[0][1] = winSymbol.id;
     grid[1][1] = winSymbol.id;
     grid[2][1] = winSymbol.id;
 
-    // Optional 4-of-a-kind
     if (Math.random() < 0.35) {
       grid[3][1] = winSymbol.id;
     }
 
     const baseWin = winSymbol.payout * (grid[3][1] === winSymbol.id ? 2.5 : 1.0);
-    // Multiplier steps: 1x -> 2x -> 3x -> 5x
     const stepMult = Math.random() < 0.25 ? 2 : 1;
     totalMultiplier = baseWin * stepMult;
 
@@ -141,22 +128,19 @@ export function calculateSuperAceSpin(betAmount = 10, gameSlug = 'super-ace') {
     });
   }
 
-  // Scatter check (3 scatters trigger free spins)
-  const isScatterBonus = Math.random() < 0.025; // 2.5% chance
+  const isScatterBonus = Math.random() < 0.025;
   if (isScatterBonus) {
     grid[0][0] = 'SCATTER';
     grid[2][0] = 'SCATTER';
     grid[4][0] = 'SCATTER';
   }
 
-  const rawPayout = parseFloat((betAmount * totalMultiplier).toFixed(2));
-
   return {
     grid,
     goldenGrid,
     isWin,
     totalMultiplier: parseFloat(totalMultiplier.toFixed(2)),
-    payout: rawPayout,
+    payout: parseFloat((betAmount * totalMultiplier).toFixed(2)),
     cascades,
     freeSpinsAwarded: isScatterBonus ? 10 : 0
   };
@@ -164,7 +148,6 @@ export function calculateSuperAceSpin(betAmount = 10, gameSlug = 'super-ace') {
 
 /**
  * FORTUNE GEMS 2 (JILI) SLOT SPIN GENERATOR
- * Generates 3x3 reel symbols + 4th Multiplier Wheel (1x, 2x, 3x, 5x, 10x, 15x).
  */
 const FORTUNE_GEMS_SYMBOLS = [
   { id: 'GARUDA', name: 'Garuda Wild', payout: 5.0, color: '#f59e0b' },
@@ -181,11 +164,9 @@ const WHEEL_MULTIPLIERS = [1, 1, 1, 2, 2, 2, 3, 3, 5, 8];
 
 export function calculateFortuneGemsSpin(betAmount = 10, gameSlug = 'fortune-gems') {
   const rtp = getGameRtp(gameSlug);
-  const winProbability = (rtp / 100) * 0.18; // Calibrated for exact 91-93% RTP with 4th wheel multiplier
-
+  const winProbability = (rtp / 100) * 0.18;
   const isWin = Math.random() < winProbability;
 
-  // 3x3 grid
   const grid = [];
   for (let c = 0; c < 3; c++) {
     const col = [];
@@ -196,7 +177,6 @@ export function calculateFortuneGemsSpin(betAmount = 10, gameSlug = 'fortune-gem
     grid.push(col);
   }
 
-  // 4th Reel: Special Multiplier Wheel
   const wheelIndex = Math.floor(Math.random() * WHEEL_MULTIPLIERS.length);
   const wheelMultiplier = WHEEL_MULTIPLIERS[wheelIndex];
 
@@ -205,7 +185,6 @@ export function calculateFortuneGemsSpin(betAmount = 10, gameSlug = 'fortune-gem
 
   if (isWin) {
     const winSym = FORTUNE_GEMS_SYMBOLS[Math.floor(Math.random() * FORTUNE_GEMS_SYMBOLS.length)];
-    // Middle row win
     grid[0][1] = winSym.id;
     grid[1][1] = Math.random() < 0.25 ? 'GARUDA' : winSym.id;
     grid[2][1] = winSym.id;
@@ -220,14 +199,12 @@ export function calculateFortuneGemsSpin(betAmount = 10, gameSlug = 'fortune-gem
     });
   }
 
-  const rawPayout = parseFloat((betAmount * totalMultiplier).toFixed(2));
-
   return {
     grid,
     wheelMultiplier,
     isWin,
     totalMultiplier: parseFloat(totalMultiplier.toFixed(2)),
-    payout: rawPayout,
+    payout: parseFloat((betAmount * totalMultiplier).toFixed(2)),
     winningLines
   };
 }
@@ -240,12 +217,78 @@ export function calculateMinesOutcome(totalMines = 3, openedTiles = 1, gameSlug 
   const totalTiles = 25;
   const safeTiles = totalTiles - totalMines;
 
-  // Combinatorial multiplier with house edge
   let multiplier = 1.0;
   for (let i = 0; i < openedTiles; i++) {
     multiplier *= (totalTiles - i) / (safeTiles - i);
   }
-  // Apply RTP discount
   const finalMultiplier = parseFloat((multiplier * (rtp / 100)).toFixed(2));
   return Math.max(1.05, finalMultiplier);
+}
+
+/**
+ * PLINKO (STAKE STYLE) ROW DROP GENERATOR
+ */
+export function calculatePlinkoOutcome(rows = 12, risk = 'medium', gameSlug = 'plinko') {
+  const rtp = getGameRtp(gameSlug);
+  const probabilities = [];
+  
+  // Binomial distribution for peg bounce left vs right
+  let path = [];
+  let rightBounces = 0;
+  for (let r = 0; r < rows; r++) {
+    const goRight = Math.random() < 0.5;
+    path.push(goRight ? 'R' : 'L');
+    if (goRight) rightBounces++;
+  }
+
+  const slotIndex = rightBounces;
+  const multipliers = {
+    low: [5.6, 2.1, 1.3, 1.0, 0.7, 0.5, 0.7, 1.0, 1.3, 2.1, 5.6],
+    medium: [13, 3, 1.5, 1.1, 0.4, 0.2, 0.4, 1.1, 1.5, 3, 13],
+    high: [29, 4, 1.5, 0.3, 0.2, 0.1, 0.2, 0.3, 1.5, 4, 29]
+  };
+
+  const multList = multipliers[risk] || multipliers.medium;
+  const safeIndex = Math.min(Math.max(slotIndex, 0), multList.length - 1);
+  const rawMult = multList[safeIndex];
+  const finalMult = parseFloat((rawMult * (rtp / 100)).toFixed(2));
+
+  return {
+    path,
+    slotIndex: safeIndex,
+    multiplier: Math.max(0.1, finalMult)
+  };
+}
+
+/**
+ * EUROPEAN ROULETTE (37 Pockets 0-36)
+ */
+export function calculateRouletteOutcome(gameSlug = 'roulette') {
+  const number = Math.floor(Math.random() * 37); // 0 to 36
+  const redNumbers = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+  const color = number === 0 ? 'green' : (redNumbers.includes(number) ? 'red' : 'black');
+  return {
+    number,
+    color,
+    isEven: number !== 0 && number % 2 === 0,
+    isHigh: number >= 19 && number <= 36
+  };
+}
+
+/**
+ * LIMBO ROCKET MULTIPLIER GENERATOR
+ */
+export function calculateLimboOutcome(targetMultiplier = 2.0, gameSlug = 'limbo') {
+  const rtp = getGameRtp(gameSlug);
+  const winProbability = (rtp / 100) / targetMultiplier;
+  const isWin = Math.random() < winProbability;
+  const multiplier = isWin 
+    ? parseFloat((targetMultiplier + (Math.random() * targetMultiplier * 0.5)).toFixed(2))
+    : parseFloat(((Math.random() * (targetMultiplier - 1.01)) + 1.00).toFixed(2));
+
+  return {
+    isWin,
+    targetMultiplier,
+    drawnMultiplier: multiplier
+  };
 }

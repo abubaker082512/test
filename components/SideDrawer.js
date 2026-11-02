@@ -40,6 +40,7 @@ export default function SideDrawer({ isOpen, onClose, balance = 0, onOpenAuth })
 
   const gameCategories = [
     { id: 'hot', name: 'Hot', icon: '🔥', href: '/' },
+    { id: 'our-games', name: 'Our Games', icon: '👑', href: '/?tab=our-games' },
     { id: 'free', name: 'Free Games', icon: '🎁', href: '/?tab=free' },
     { id: 'slot', name: 'Slot', icon: '🎰', href: '/casino?tab=slots' },
     { id: 'redeem', name: 'Redeem bonus', icon: '🎁', href: '/offers' },

@@ -108,6 +108,7 @@ export default function PlayGame() {
       return
     }
 
+    const cleanSlug = String(gameId).toLowerCase().replace(/^winx-/, '');
     const nativeSelfHostedSlugs = [
       'super-ace',
       'super-ace-deluxe',
@@ -115,13 +116,50 @@ export default function PlayGame() {
       'fortune-gems-2',
       'crash',
       'aviator',
+      'aviator-pro',
       'spribe_aviator',
       'mines',
+      'stake-mines',
       'minesweeper',
-      'plinko'
+      'plinko',
+      'stake-plinko',
+      'roulette',
+      'roulette-pro',
+      'blackjack',
+      'blackjack-pro',
+      'limbo',
+      'limbo-rocket',
+      'dragon-tiger',
+      'dragon-tiger-pro',
+      'baccarat',
+      'baccarat-pro',
+      'classic-slots',
+      'classic-slots-neon',
+      'hilo',
+      'hilo-streak',
+      'coin-flip',
+      'coin-flip-3d',
+      'keno',
+      'keno-neon',
+      'sic-bo-macau',
+      'sicbo',
+      'sic-bo',
+      'penalty',
+      'penalty-shootout',
+      'penalty-shootout-pro',
+      'royal-derby',
+      'derby',
+      'mega-fortune-wheel',
+      'wheel',
+      'video-poker',
+      'video-poker-pro',
+      'fishing-joy',
+      'fishing-joy-cannon',
+      'mahjong-ways-gold',
+      'wild-bounty-gold'
     ];
 
-    if (nativeSelfHostedSlugs.includes(String(gameId).toLowerCase())) {
+    if (String(gameId).toLowerCase().startsWith('winx-') || nativeSelfHostedSlugs.includes(cleanSlug) || nativeSelfHostedSlugs.includes(String(gameId).toLowerCase())) {
       setGameMode('canvas');
       setApiLoading(false);
       return;
