@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { casinoAudio } from '../../utils/casinoAudio'
 
 const MOCK_PLAYERS = [
   { name: 'pak***01', bet: 100 },
@@ -148,14 +149,36 @@ export default function CrashGame({ user, wallet, fetchWallet }) {
         ctx.fill()
       })
 
-      // Draw rocket
+      // Draw glowing curved flight trail underneath plane
+      ctx.save()
+      ctx.beginPath()
+      ctx.moveTo(50, 210)
+      ctx.quadraticCurveTo((50 + rX) / 2, 210, rX, rY)
+      ctx.strokeStyle = '#e53935'
+      ctx.lineWidth = 4
+      ctx.shadowColor = '#ff1744'
+      ctx.shadowBlur = 12
+      ctx.stroke()
+      ctx.restore()
+
+      // Draw Supersonic Jet (Aviator style)
       ctx.save()
       ctx.translate(rX, rY)
-      ctx.rotate(Math.PI / 4) // Angled flight
-      ctx.font = '38px sans-serif'
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      ctx.fillText('🚀', 0, 0)
+      ctx.rotate(Math.PI / 4)
+      ctx.fillStyle = '#ff1744'
+      ctx.shadowColor = '#ff5252'
+      ctx.shadowBlur = 10
+      ctx.beginPath()
+      ctx.moveTo(20, 0)
+      ctx.lineTo(-15, -12)
+      ctx.lineTo(-9, 0)
+      ctx.lineTo(-15, 12)
+      ctx.closePath()
+      ctx.fill()
+      ctx.fillStyle = '#ffffff'
+      ctx.beginPath()
+      ctx.ellipse(5, 0, 6, 2.5, 0, 0, Math.PI * 2)
+      ctx.fill()
       ctx.restore()
 
       // Draw overlay multiplier text on canvas
@@ -205,11 +228,22 @@ export default function CrashGame({ user, wallet, fetchWallet }) {
     }
     fetchWallet()
 
-    // Configure randomized crash point (house edge math: average crash is 2.5x, but can go up to 20x, or crash instantly at 1.01x)
-    const rand = Math.random()
+    // Fetch server-calculated crash point governed by admin RTP
+    casinoAudio.init()
     let crashPoint = 1.01
-    if (rand > 0.08) {
-      // 92% chance crash is calculated exponentially
+    try {
+      const playRes = await fetch('/api/games/play', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id || user.uid, game: 'crash', action: 'crash_init', betAmount })
+      })
+      const playData = await playRes.json()
+      if (playData.success && playData.result && playData.result.crashPoint) {
+        crashPoint = playData.result.crashPoint
+      } else {
+        crashPoint = parseFloat((1.01 + Math.pow(Math.random(), 2) * 8).toFixed(2))
+      }
+    } catch (e) {
       crashPoint = parseFloat((1.01 + Math.pow(Math.random(), 2) * 8).toFixed(2))
     }
     crashPointRef.current = crashPoint
@@ -242,7 +276,8 @@ export default function CrashGame({ user, wallet, fetchWallet }) {
     })
     const payData = await payRes.json()
     if (payData.success) {
-      setMessage({ type: 'success', text: `💰 Cashed Out! +Pi ${(betAmount * currentMult).toFixed(2)} (${currentMult}x)` })
+      setMessage({ type: 'success', text: `💰 Cashed Out! +Rs ${(betAmount * currentMult).toFixed(2)} (${currentMult}x)` })
+      casinoAudio.playWinChime(3)
     }
     fetchWallet()
   }
@@ -250,6 +285,7 @@ export default function CrashGame({ user, wallet, fetchWallet }) {
   const triggerCrash = () => {
     runningRef.current = false
     setStage('crashed')
+    casinoAudio.playCrashBoom()
 
     // Draw explosion on canvas
     const canvas = canvasRef.current

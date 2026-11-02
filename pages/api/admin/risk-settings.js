@@ -1,4 +1,5 @@
 import { getRiskSettings, updateRiskSettings } from '../../../utils/firebaseDb'
+import { updateSettings } from '../../../utils/settingsStore'
 
 const ADMIN_PASSWORD = 'Admin@123'
 
@@ -62,6 +63,12 @@ export default async function handler(req, res) {
 
     try {
       await updateRiskSettings(riskConfig)
+      updateSettings({
+        global_rtp: riskConfig.global_rtp,
+        max_win_cap: riskConfig.max_win_cap,
+        force_house_edge: riskConfig.force_house_edge,
+        restricted_users: riskConfig.restricted_users
+      })
     } catch (e) {
       console.warn('Could not persist risk config to Firestore:', e.message)
     }

@@ -1,409 +1,440 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
+import { casinoAudio } from '../../utils/casinoAudio';
 
-const SYMBOLS = {
-  'WILD': { char: '🦅', name: 'Garuda Wild', val: 25, color: '#f5c242' },
-  'RUBY': { char: '🔴', name: 'Ruby', val: 15, color: '#ff4444' },
-  'EMERALD': { char: '🟢', name: 'Emerald', val: 10, color: '#00c851' },
-  'SAPPHIRE': { char: '🔵', name: 'Sapphire', val: 6, color: '#33b5e5' },
-  'A': { char: 'A', name: 'Ace', val: 3, color: '#ffbb00' },
-  'K': { char: 'K', name: 'King', val: 2, color: '#ffbb00' },
-  'Q': { char: 'Q', name: 'Queen', val: 1.5, color: '#fff' },
-  'J': { char: 'J', name: 'Jack', val: 1, color: '#fff' }
-}
+const GEM_SYMBOLS = {
+  'GARUDA': {
+    name: 'Garuda Wild',
+    title: 'WILD',
+    icon: '🦅',
+    gradient: 'linear-gradient(135deg, #ffd700 0%, #ff8f00 50%, #d84315 100%)',
+    border: '#fff',
+    glow: 'rgba(255, 215, 0, 0.8)',
+    payout: 25.0
+  },
+  'RUBY': {
+    name: 'Red Ruby',
+    title: 'RUBY',
+    icon: '💎',
+    gradient: 'linear-gradient(135deg, #ff1744 0%, #d50000 60%, #4a0000 100%)',
+    border: '#ff5252',
+    glow: 'rgba(255, 23, 68, 0.6)',
+    payout: 15.0
+  },
+  'EMERALD': {
+    name: 'Emerald',
+    title: 'EMERALD',
+    icon: '🟢',
+    gradient: 'linear-gradient(135deg, #00e676 0%, #00c853 60%, #003300 100%)',
+    border: '#69f0ae',
+    glow: 'rgba(0, 230, 118, 0.6)',
+    payout: 10.0
+  },
+  'SAPPHIRE': {
+    name: 'Sapphire',
+    title: 'SAPPHIRE',
+    icon: '🔷',
+    gradient: 'linear-gradient(135deg, #00b0ff 0%, #0091ea 60%, #002171 100%)',
+    border: '#40c4ff',
+    glow: 'rgba(0, 176, 255, 0.6)',
+    payout: 8.0
+  },
+  'A': {
+    name: 'Ace',
+    title: 'A',
+    icon: '👑',
+    gradient: 'linear-gradient(135deg, #ffab00 0%, #ff6d00 100%)',
+    border: '#ffd54f',
+    glow: 'rgba(255, 171, 0, 0.4)',
+    payout: 3.0
+  },
+  'K': {
+    name: 'King',
+    title: 'K',
+    icon: '⚜️',
+    gradient: 'linear-gradient(135deg, #ff9100 0%, #e65100 100%)',
+    border: '#ffb74d',
+    glow: 'rgba(255, 145, 0, 0.3)',
+    payout: 2.0
+  },
+  'Q': {
+    name: 'Queen',
+    title: 'Q',
+    icon: '♦',
+    gradient: 'linear-gradient(135deg, #00e5ff 0%, #006064 100%)',
+    border: '#80deea',
+    glow: 'rgba(0, 229, 255, 0.3)',
+    payout: 1.5
+  },
+  'J': {
+    name: 'Jack',
+    title: 'J',
+    icon: '♣',
+    gradient: 'linear-gradient(135deg, #d500f9 0%, #4a148c 100%)',
+    border: '#ea80fc',
+    glow: 'rgba(213, 0, 249, 0.3)',
+    payout: 1.0
+  }
+};
 
-const MULTIPLIERS = [1, 2, 3, 5, 15]
+const GEM_KEYS = ['GARUDA', 'RUBY', 'EMERALD', 'SAPPHIRE', 'A', 'K', 'Q', 'J'];
+const WHEEL_STEPS = [1, 2, 3, 5, 8, 10, 15];
 
-const PAYLINES = [
-  { id: 0, coords: [[0, 0], [1, 0], [2, 0]], label: 'Top Row' },
-  { id: 1, coords: [[0, 1], [1, 1], [2, 1]], label: 'Middle Row' },
-  { id: 2, coords: [[0, 2], [1, 2], [2, 2]], label: 'Bottom Row' },
-  { id: 3, coords: [[0, 0], [1, 1], [2, 2]], label: 'Diagonal Down' },
-  { id: 4, coords: [[0, 2], [1, 1], [2, 0]], label: 'Diagonal Up' }
-]
-
-export default function FortuneGems({ user, wallet, fetchWallet }) {
-  const [betAmount, setBetAmount] = useState(10)
-  const [spinning, setSpinning] = useState(false)
+export default function FortuneGems({ user, wallet, fetchWallet, isDemoMode, demoBalance, spendDemoBalance, addDemoBalance }) {
+  const [betAmount, setBetAmount] = useState(20);
+  const [spinning, setSpinning] = useState(false);
   const [reels, setReels] = useState([
-    ['A', 'A', 'A'],
-    ['K', 'K', 'K'],
-    ['Q', 'Q', 'Q']
-  ]) // 3 columns x 3 rows symbols
-  const [multiplierReel, setMultiplierReel] = useState([1, 2, 3]) // 4th column multipliers
-  const [activeMultiplier, setActiveMultiplier] = useState(1)
-  const [message, setMessage] = useState(null)
-  
-  // Visual Effects
-  const [activePaylines, setActivePaylines] = useState([]) // indices of winning paylines
-  const [spinState, setSpinState] = useState([false, false, false, false])
+    ['RUBY', 'A', 'K'],
+    ['GARUDA', 'RUBY', 'EMERALD'],
+    ['SAPPHIRE', 'Q', 'J']
+  ]);
+  const [wheelMultiplier, setWheelMultiplier] = useState(1);
+  const [message, setMessage] = useState(null);
+  const [bigWin, setBigWin] = useState(null);
 
   const triggerSpin = async () => {
-    if (spinning) return
-    if (!wallet || wallet.balance < betAmount) {
-      return setMessage({ type: 'error', text: 'Insufficient balance! Please deposit.' })
+    if (spinning) return;
+    casinoAudio.init();
+
+    const currentBal = isDemoMode ? demoBalance : (wallet ? parseFloat(wallet.balance) : 0);
+    if (currentBal < betAmount) {
+      return setMessage({ type: 'error', text: 'Insufficient balance! Please deposit to continue.' });
     }
 
-    setMessage(null)
-    setSpinning(true)
-    setActivePaylines([])
-    
-    // Deduct bet
-    const res = await fetch('/api/wallet/bet', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: user.id, amount: betAmount })
-    })
-    const data = await res.json()
-    if (!data.success) {
-      setSpinning(false)
-      return setMessage({ type: 'error', text: data.error })
-    }
-    fetchWallet()
+    setMessage(null);
+    setBigWin(null);
+    setSpinning(true);
+    casinoAudio.playReelTick();
 
-    // 1. Reel spin animation loop
-    setSpinState([true, true, true, true])
-    let timer = 0
-    const interval = setInterval(() => {
-      setReels(prev => {
-        return prev.map((col, cIdx) => {
-          if (!spinState[cIdx]) return col
-          return col.map(() => {
-            const keys = Object.keys(SYMBOLS)
-            return keys[Math.floor(Math.random() * keys.length)]
-          })
-        })
-      })
-      setMultiplierReel(prev => {
-        if (!spinState[3]) return prev
-        return prev.map(() => MULTIPLIERS[Math.floor(Math.random() * MULTIPLIERS.length)])
-      })
-      timer += 100
-    }, 100)
-
-    // Stop Reels sequentially
-    for (let i = 0; i < 4; i++) {
-      await new Promise(resolve => setTimeout(resolve, 300))
-      setSpinState(prev => {
-        const next = [...prev]
-        next[i] = false
-        return next
-      })
+    if (isDemoMode && spendDemoBalance) {
+      spendDemoBalance(betAmount);
     }
 
-    clearInterval(interval)
-
-    // 2. Generate final results
-    const finalReels = []
-    for (let c = 0; c < 3; c++) {
-      const column = []
-      for (let r = 0; r < 3; r++) {
-        const rand = Math.random()
-        let sym = 'A'
-        if (rand < 0.08) sym = 'WILD'
-        else if (rand < 0.18) sym = 'RUBY'
-        else if (rand < 0.3) sym = 'EMERALD'
-        else if (rand < 0.45) sym = 'SAPPHIRE'
-        else {
-          const keys = ['A', 'K', 'Q', 'J']
-          sym = keys[Math.floor(Math.random() * keys.length)]
-        }
-        column.push(sym)
-      }
-      finalReels.push(column)
-    }
-
-    // Generate multiplier Reel
-    const multCol = [
-      MULTIPLIERS[Math.floor(Math.random() * MULTIPLIERS.length)],
-      MULTIPLIERS[Math.floor(Math.random() * MULTIPLIERS.length)],
-      MULTIPLIERS[Math.floor(Math.random() * MULTIPLIERS.length)]
-    ]
-    const centerMultiplier = multCol[1] // The active multiplier is the middle position on Reel 4
-
-    setReels(finalReels)
-    setMultiplierReel(multCol)
-    setActiveMultiplier(centerMultiplier)
-    setSpinning(false)
-
-    // 3. Evaluate payouts
-    evaluateWin(finalReels, centerMultiplier)
-  }
-
-  const evaluateWin = async (grid, centerMult) => {
-    let winPayout = 0
-    const winningLines = []
-
-    PAYLINES.forEach(line => {
-      const [[c0, r0], [c1, r1], [c2, r2]] = line.coords
-      const s0 = grid[c0][r0]
-      const s1 = grid[c1][r1]
-      const s2 = grid[c2][r2]
-
-      // Check if all 3 match or contain WILDs
-      const uniqueNonWild = new Set([s0, s1, s2])
-      uniqueNonWild.delete('WILD')
-
-      if (uniqueNonWild.size === 0) {
-        // All WILDs! Garuda Jackpot!
-        winPayout += SYMBOLS['WILD'].val
-        winningLines.push(line.id)
-      } else if (uniqueNonWild.size === 1) {
-        // 3 matching symbols (or matching + WILDs)
-        const targetSym = Array.from(uniqueNonWild)[0]
-        winPayout += SYMBOLS[targetSym].val
-        winningLines.push(line.id)
-      }
-    })
-
-    if (winningLines.length > 0) {
-      setActivePaylines(winningLines)
-      const finalWin = winPayout * betAmount * centerMult * 0.15 // Scale win
-
-      if (finalWin > 0) {
-        await fetch('/api/wallet/payout', {
+    // Call Server RTP Engine
+    let serverResult = null;
+    try {
+      if (!isDemoMode && user) {
+        const res = await fetch('/api/games/play', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: user.id, bet_amount: betAmount, multiplier: (finalWin / betAmount) })
-        })
-        fetchWallet()
-        setMessage({ type: 'success', text: `🎉 WINNER! Landed ${winningLines.length} payline(s) x${centerMult} Multiplier! +Pi ${finalWin.toFixed(2)}` })
+          body: JSON.stringify({
+            user_id: user.id || user.uid,
+            game: 'fortune-gems-2',
+            action: 'spin',
+            betAmount
+          })
+        });
+        const data = await res.json();
+        if (data.success && data.result) {
+          serverResult = data.result;
+          if (fetchWallet) fetchWallet();
+        }
+      }
+    } catch (e) {
+      console.warn('Fortune Gems server spin call failed:', e);
+    }
+
+    // Spin animation
+    let ticks = 0;
+    const spinInterval = setInterval(() => {
+      ticks++;
+      if (ticks % 2 === 0) casinoAudio.playReelTick();
+
+      setReels(prev => {
+        return prev.map(col => {
+          return col.map(() => GEM_KEYS[Math.floor(Math.random() * GEM_KEYS.length)]);
+        });
+      });
+
+      setWheelMultiplier(WHEEL_STEPS[Math.floor(Math.random() * WHEEL_STEPS.length)]);
+
+      if (ticks >= 12) {
+        clearInterval(spinInterval);
+        finalizeSpin(serverResult);
+      }
+    }, 60);
+  };
+
+  const finalizeSpin = (serverResult) => {
+    setSpinning(false);
+
+    if (serverResult && serverResult.grid) {
+      setReels(serverResult.grid);
+      setWheelMultiplier(serverResult.wheelMultiplier || 1);
+
+      if (serverResult.isWin && serverResult.payout > 0) {
+        casinoAudio.playWinChime(2);
+
+        if (serverResult.payout >= betAmount * 5) {
+          setBigWin(serverResult.payout);
+          casinoAudio.playBigWin();
+        }
+
+        setMessage({
+          type: 'success',
+          text: `💎 FORTUNE WIN! +Rs ${serverResult.payout.toFixed(2)} (${serverResult.wheelMultiplier}x Wheel Multiplier)`
+        });
       }
     } else {
-      setMessage({ type: 'error', text: '😭 No match. Try again!' })
+      // Demo mode fallback
+      const isWin = Math.random() < 0.35;
+      if (isWin) {
+        const mult = WHEEL_STEPS[Math.floor(Math.random() * 4)];
+        setWheelMultiplier(mult);
+        const payout = parseFloat((betAmount * mult).toFixed(2));
+        if (isDemoMode && addDemoBalance) addDemoBalance(payout);
+        casinoAudio.playWinChime(1);
+        setMessage({ type: 'success', text: `✨ Demo Win! +Rs ${payout.toFixed(2)}` });
+      }
     }
-  }
+  };
 
   return (
     <div style={{
-      flex: 1,
+      width: '100%',
+      height: '100%',
+      background: 'radial-gradient(ellipse at top, #2b1704 0%, #100800 70%, #000 100%)',
+      color: '#fff',
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '16px',
-      background: 'linear-gradient(180deg, #021a0d 0%, #000c05 100%)',
-      width: '100%',
-      minHeight: '100%',
-      overflowY: 'auto'
+      padding: '8px 12px 16px',
+      boxSizing: 'border-box',
+      overflowY: 'auto',
+      userSelect: 'none'
     }}>
-      {/* Title */}
-      <h2 style={{
-        fontSize: '22px',
-        fontWeight: '900',
-        fontStyle: 'italic',
-        background: 'linear-gradient(to right, #00ff88, #00e5ff)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        marginBottom: '16px',
-        textShadow: '0 2px 10px rgba(0,255,136,0.2)'
-      }}>
-        FORTUNE GEMS
-      </h2>
 
-      {/* Main Reels Grid with 4th Multiplier Reel */}
+      {/* Header Bar */}
       <div style={{
-        background: '#0a0d14',
-        border: '3px solid #00ff88',
-        borderRadius: '16px',
-        padding: '10px',
-        boxShadow: '0 8px 30px rgba(0, 230, 118, 0.15)',
-        width: '100%',
-        maxWidth: '400px',
-        aspectRatio: '4/3',
+        background: 'linear-gradient(180deg, rgba(255, 171, 0, 0.2) 0%, rgba(30, 15, 0, 0.9) 100%)',
+        border: '1px solid rgba(255, 215, 0, 0.4)',
+        borderRadius: '12px',
+        padding: '8px 14px',
+        marginBottom: '10px',
         display: 'flex',
-        gap: '8px',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '20px' }}>💎</span>
+          <div>
+            <div style={{ fontSize: '13px', fontWeight: '900', color: '#ffd700', letterSpacing: '0.5px' }}>
+              FORTUNE GEMS 2 • JILI
+            </div>
+            <div style={{ fontSize: '10px', color: '#ffb74d' }}>
+              4th Multiplier Wheel System • Up to 15x
+            </div>
+          </div>
+        </div>
+
+        {/* Wheel Indicator Badge */}
+        <div style={{
+          background: 'linear-gradient(135deg, #ffd700, #ff8800)',
+          color: '#000',
+          padding: '4px 10px',
+          borderRadius: '8px',
+          fontSize: '12px',
+          fontWeight: '900',
+          boxShadow: '0 0 12px rgba(255, 215, 0, 0.7)'
+        }}>
+          WHEEL: {wheelMultiplier}x
+        </div>
+      </div>
+
+      {/* Main Game Stage: 3x3 Reels + 4th Multiplier Wheel Column */}
+      <div style={{
+        flex: 1,
+        minHeight: '260px',
+        background: 'linear-gradient(180deg, #180d00 0%, #0a0500 100%)',
+        border: '2px solid rgba(255, 193, 7, 0.5)',
+        borderRadius: '16px',
+        padding: '8px',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr) 0.8fr',
+        gap: '6px',
+        boxShadow: 'inset 0 0 24px rgba(0,0,0,0.8), 0 8px 30px rgba(0,0,0,0.7)',
         position: 'relative'
       }}>
-        {/* Draw Payline overlay lines if winning */}
-        {activePaylines.includes(0) && <div style={{ position: 'absolute', left: 0, right: '25%', top: '22%', height: '3px', background: '#00ff88', boxShadow: '0 0 10px #00ff88', zIndex: 10 }} />}
-        {activePaylines.includes(1) && <div style={{ position: 'absolute', left: 0, right: '25%', top: '50%', height: '3px', background: '#00ff88', boxShadow: '0 0 10px #00ff88', zIndex: 10 }} />}
-        {activePaylines.includes(2) && <div style={{ position: 'absolute', left: 0, right: '25%', top: '78%', height: '3px', background: '#00ff88', boxShadow: '0 0 10px #00ff88', zIndex: 10 }} />}
-        
-        {/* Diagonal Down */}
-        {activePaylines.includes(3) && (
-          <div style={{ 
-            position: 'absolute', 
-            left: 0, 
-            right: '25%', 
-            top: '50%', 
-            height: '3px', 
-            background: '#00ff88', 
-            boxShadow: '0 0 10px #00ff88', 
-            transform: 'rotate(24deg)', 
-            transformOrigin: 'center', 
-            zIndex: 10 
-          }} />
-        )}
-        {/* Diagonal Up */}
-        {activePaylines.includes(4) && (
-          <div style={{ 
-            position: 'absolute', 
-            left: 0, 
-            right: '25%', 
-            top: '50%', 
-            height: '3px', 
-            background: '#00ff88', 
-            boxShadow: '0 0 10px #00ff88', 
-            transform: 'rotate(-24deg)', 
-            transformOrigin: 'center', 
-            zIndex: 10 
-          }} />
-        )}
-
-        {/* Reels 1, 2, 3 (Symbols) */}
-        {reels.map((column, colIdx) => (
-          <div key={colIdx} style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px'
-          }}>
-            {column.map((symKey, rowIdx) => {
-              const sym = SYMBOLS[symKey]
-              const isSpinning = spinState[colIdx]
-
+        {/* 3x3 Reels */}
+        {reels.map((col, cIdx) => (
+          <div key={cIdx} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {col.map((symId, rIdx) => {
+              const sym = GEM_SYMBOLS[symId] || GEM_SYMBOLS['RUBY'];
               return (
-                <div 
-                  key={rowIdx} 
+                <div
+                  key={rIdx}
                   style={{
                     flex: 1,
-                    background: '#151b27',
-                    border: '1px solid var(--border)',
+                    minHeight: '74px',
                     borderRadius: '10px',
+                    background: sym.gradient,
+                    border: `1.5px solid ${sym.border}`,
+                    boxShadow: `0 0 12px ${sym.glow}, inset 0 1px 3px rgba(255,255,255,0.4)`,
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '28px',
-                    boxShadow: 'inset 0 0 8px rgba(0,0,0,0.5)',
-                    transition: 'all 0.15s'
+                    transform: spinning ? 'scale(0.96)' : 'scale(1)',
+                    transition: 'transform 0.15s ease'
                   }}
-                  className={isSpinning ? 'reel-blur' : ''}
                 >
-                  <span style={{
-                    color: sym?.color || '#fff',
-                    textShadow: symKey === 'WILD' ? '0 0 10px rgba(245, 194, 66, 0.5)' : 'none'
-                  }}>
-                    {sym?.char || symKey}
+                  <span style={{ fontSize: '28px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.7))' }}>
+                    {sym.icon}
                   </span>
+                  <div style={{ fontSize: '10px', fontWeight: '900', color: '#fff', marginTop: '2px', letterSpacing: '0.5px' }}>
+                    {sym.title}
+                  </div>
                 </div>
-              )
+              );
             })}
           </div>
         ))}
 
-        {/* Divider for 4th reel */}
+        {/* 4th Reel: Golden Multiplier Wheel */}
         <div style={{
-          width: '2px',
-          background: 'rgba(0, 230, 118, 0.4)',
-          boxShadow: '0 0 8px #00ff88',
-          margin: '0 2px'
-        }} />
-
-        {/* Reel 4 (Multiplier Reel) */}
-        <div style={{
-          width: '25%',
           display: 'flex',
           flexDirection: 'column',
-          gap: '8px'
+          background: 'linear-gradient(180deg, rgba(255, 215, 0, 0.15) 0%, rgba(0, 0, 0, 0.6) 100%)',
+          borderRadius: '10px',
+          border: '1.5px solid #ffd700',
+          padding: '4px',
+          justifyContent: 'space-around',
+          alignItems: 'center'
         }}>
-          {multiplierReel.map((mult, rowIdx) => {
-            const isSpinning = spinState[3]
-            const isCenter = rowIdx === 1 // środkowa pozycja to aktywny mnożnik
-
-            return (
-              <div 
-                key={rowIdx} 
-                style={{
-                  flex: 1,
-                  background: isCenter ? 'linear-gradient(135deg, #2b3040 0%, #151b27 100%)' : '#10141e',
-                  border: isCenter ? '2px solid var(--accent)' : '1px solid #222',
-                  borderRadius: '10px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '22px',
-                  fontWeight: 'bold',
-                  color: isCenter ? 'var(--accent)' : 'var(--muted)',
-                  boxShadow: isCenter ? '0 0 10px rgba(245, 194, 66, 0.3)' : 'none',
-                  transition: 'all 0.15s'
-                }}
-                className={isSpinning ? 'reel-blur' : ''}
-              >
-                x{mult}
-              </div>
-            )
-          })}
+          <div style={{ fontSize: '9px', fontWeight: '900', color: '#ffd700' }}>MULTIPLIER</div>
+          <div style={{
+            width: '46px',
+            height: '46px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #ffd700 0%, #ff6f00 100%)',
+            color: '#000',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '18px',
+            fontWeight: '900',
+            boxShadow: '0 0 16px rgba(255, 215, 0, 0.8), inset 0 0 4px #fff',
+            animation: spinning ? 'spin 0.4s linear infinite' : 'none'
+          }}>
+            {wheelMultiplier}x
+          </div>
+          <div style={{ fontSize: '8px', color: '#aaa', textAlign: 'center' }}>4TH REEL</div>
         </div>
+
+        {/* Big Win Pop-Up */}
+        {bigWin && (
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.85)',
+            borderRadius: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 50
+          }}>
+            <div style={{ fontSize: '40px' }}>💎 💰 💎</div>
+            <div style={{ fontSize: '24px', fontWeight: '900', color: '#ffd700' }}>SUPER WIN!</div>
+            <div style={{ fontSize: '32px', fontWeight: '900', color: '#fff', marginTop: '6px' }}>
+              Rs {bigWin.toFixed(2)}
+            </div>
+            <button
+              onClick={() => setBigWin(null)}
+              style={{
+                marginTop: '16px',
+                padding: '6px 18px',
+                borderRadius: '8px',
+                background: '#ffd700',
+                color: '#000',
+                fontWeight: '900',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              COLLECT
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Message feedback */}
+      {/* Messages */}
       {message && (
         <div style={{
-          padding: '8px 16px',
+          margin: '8px 0',
+          padding: '8px 12px',
           borderRadius: '8px',
           fontSize: '12px',
-          marginTop: '12px',
-          background: message.type === 'error' ? 'rgba(255, 23, 68, 0.15)' : 'rgba(0, 230, 118, 0.15)',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          background: message.type === 'error' ? 'rgba(255, 0, 0, 0.2)' : 'rgba(0, 255, 136, 0.2)',
           color: message.type === 'error' ? '#ff6666' : '#00ff88',
-          border: `1px solid ${message.type === 'error' ? '#ff174433' : '#00e67633'}`,
-          maxWidth: '360px',
-          textAlign: 'center'
+          border: `1px solid ${message.type === 'error' ? '#ff4444' : '#00ff88'}`
         }}>
           {message.text}
         </div>
       )}
 
-      {/* Control panel */}
+      {/* Bottom Controls */}
       <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '10px',
-        width: '100%',
-        maxWidth: '400px',
-        marginTop: '16px',
-        background: 'rgba(0,0,0,0.5)',
-        padding: '16px',
+        marginTop: '10px',
+        background: 'rgba(255, 255, 255, 0.04)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
         borderRadius: '12px',
-        border: '1px solid var(--border)'
+        padding: '10px 14px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '12px',
+        flexWrap: 'wrap'
       }}>
-        {/* Bet selector */}
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {[10, 50, 100, 500].map(amt => (
-            <button 
-              key={amt} 
-              className="btn" 
-              onClick={() => setBetAmount(amt)}
-              disabled={spinning}
+        {/* Bet Selection */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ fontSize: '11px', color: '#aaa' }}>BET:</span>
+          {[10, 20, 50, 100, 500].map(amt => (
+            <button
+              key={amt}
+              onClick={() => { setBetAmount(amt); casinoAudio.playReelTick(); }}
               style={{
-                flex: 1,
-                padding: '8px',
-                fontSize: '12px',
-                background: betAmount === amt ? 'var(--accent)' : '#000',
+                padding: '5px 9px',
+                borderRadius: '6px',
+                background: betAmount === amt ? 'var(--accent)' : 'rgba(255, 255, 255, 0.08)',
                 color: betAmount === amt ? '#000' : '#fff',
-                borderColor: betAmount === amt ? 'var(--accent)' : '#333'
+                border: 'none',
+                fontWeight: 'bold',
+                fontSize: '11px',
+                cursor: 'pointer'
               }}
             >
-              Pi {amt}
+              {amt}
             </button>
           ))}
         </div>
 
-        {/* Spin trigger */}
-        <button 
-          className="btn primary"
+        {/* Spin Button */}
+        <button
           onClick={triggerSpin}
           disabled={spinning}
           style={{
-            width: '100%',
-            padding: '14px',
-            fontSize: '18px',
+            flex: 1,
+            minWidth: '120px',
+            padding: '12px 24px',
+            borderRadius: '10px',
+            background: spinning
+              ? '#444'
+              : 'linear-gradient(135deg, #ffd700 0%, #ff8f00 50%, #e65100 100%)',
+            color: spinning ? '#888' : '#000',
             fontWeight: '900',
-            letterSpacing: '1px'
+            fontSize: '15px',
+            border: 'none',
+            cursor: spinning ? 'not-allowed' : 'pointer',
+            boxShadow: spinning ? 'none' : '0 4px 18px rgba(255, 179, 0, 0.4)',
+            letterSpacing: '0.5px'
           }}
         >
-          {spinning ? 'SPINNING...' : `SPIN - Pi ${betAmount}`}
+          {spinning ? 'SPINNING...' : '💎 SPIN'}
         </button>
       </div>
+
     </div>
-  )
+  );
 }

@@ -108,6 +108,25 @@ export default function PlayGame() {
       return
     }
 
+    const nativeSelfHostedSlugs = [
+      'super-ace',
+      'super-ace-deluxe',
+      'fortune-gems',
+      'fortune-gems-2',
+      'crash',
+      'aviator',
+      'spribe_aviator',
+      'mines',
+      'minesweeper',
+      'plinko'
+    ];
+
+    if (nativeSelfHostedSlugs.includes(String(gameId).toLowerCase())) {
+      setGameMode('canvas');
+      setApiLoading(false);
+      return;
+    }
+
     try {
       const cleanUser = (activeUser.email || activeUser.displayName || 'player')
         .split('@')[0]

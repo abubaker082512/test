@@ -39,6 +39,10 @@ const DEFAULT_SETTINGS = {
   manual_crypto_network: 'USDT (TRC20)',
   manual_crypto_address: '',
   deposit_instructions: 'Please transfer the exact amount to the account shown above, then enter your Transaction ID (TID) to get credited.',
+  global_rtp: 92.0,
+  max_win_cap: 5000.0,
+  force_house_edge: false,
+  restricted_users: [],
   epicarena_mode: 'casual',
   is_pro_mode: false,
   epicarena_featured_banner: 'EpicArena Global Gaming Hub',
@@ -93,3 +97,6 @@ export function savePersistedSettings(newSettings = {}) {
 
   return memoryStore;
 }
+
+export const getSettings = getPersistedSettings;
+export const updateSettings = savePersistedSettings;
