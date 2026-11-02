@@ -38,6 +38,8 @@ export default function PlayGame() {
   const [wallet, setWallet] = useState(null)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [ftgData, setFtgData] = useState(null)
+  const [showFtgDetails, setShowFtgDetails] = useState(false)
 
   // Live Provider Stream State
   const [gameMode, setGameMode] = useState('api')
@@ -84,6 +86,27 @@ export default function PlayGame() {
     if (!gameId) return
     setApiLoading(true)
     setApiError(null)
+
+    if (String(gameId).startsWith('ftg-') || String(gameId).startsWith('ftg_')) {
+      try {
+        const cleanId = String(gameId).replace(/^ftg[-_]/, '')
+        const res = await fetch(`/api/freetogame/game?id=${encodeURIComponent(cleanId)}`)
+        const json = await res.json()
+        if (json.success && json.data) {
+          setFtgData(json.data)
+          setLiveGameUrl(json.data.game_url)
+          setApiGameName(json.data.title)
+          setApiProvider(json.data.developer || json.data.publisher || 'FreeToGame')
+        } else {
+          setApiError('FreeToGame title is currently initializing.')
+        }
+      } catch (err) {
+        setApiError(err.message || 'Error connecting to FreeToGame service')
+      } finally {
+        setApiLoading(false)
+      }
+      return
+    }
 
     try {
       const cleanUser = (activeUser.email || activeUser.displayName || 'player')
@@ -240,6 +263,234 @@ export default function PlayGame() {
 
     return <ClassicSlots {...props} gameId={gameId} title={getGameTitle()} />
   }
+  const renderFtgStage = () => {
+    if (!ftgData) return null
+
+    const isBrowserGame = (ftgData.platform || '').toLowerCase().includes('browser')
+
+    if (isBrowserGame && !showFtgDetails) {
+      return (
+        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <div style={{
+            height: '36px',
+            background: 'rgba(15, 32, 39, 0.95)',
+            borderBottom: '1px solid rgba(0, 255, 136, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 10px',
+            fontSize: '11px',
+            zIndex: 10
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ background: '#00ff88', color: '#000', padding: '1px 6px', borderRadius: '4px', fontWeight: '900', fontSize: '10px' }}>FREE</span>
+              <span style={{ color: '#fff', fontWeight: 'bold' }}>Instant Web Play</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <button
+                type="button"
+                onClick={() => setShowFtgDetails(true)}
+                style={{
+                  background: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  color: '#fff',
+                  padding: '3px 8px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  cursor: 'pointer'
+                }}
+              >
+                ℹ️ Info
+              </button>
+              <button
+                type="button"
+                onClick={() => window.open(ftgData.game_url, '_blank')}
+                style={{
+                  background: '#00ff88',
+                  border: 'none',
+                  color: '#000',
+                  padding: '3px 8px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                ↗️ New Tab
+              </button>
+            </div>
+          </div>
+
+          <div style={{ flex: 1, position: 'relative' }}>
+            <iframe
+              src={liveGameUrl}
+              style={{ width: '100%', height: '100%', border: 'none', background: '#000' }}
+              allow="autoplay; fullscreen; payment; microphone; camera; geolocation; clipboard-read; clipboard-write; focus-without-user-activation *"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads allow-orientation-lock allow-pointer-lock allow-presentation"
+              title={ftgData.title}
+            />
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div style={{
+        width: '100%',
+        height: '100%',
+        overflowY: 'auto',
+        background: 'linear-gradient(180deg, #0b101b 0%, #06090e 100%)',
+        color: '#fff',
+        padding: '16px',
+        boxSizing: 'border-box'
+      }}>
+        <div style={{
+          position: 'relative',
+          borderRadius: '16px',
+          overflow: 'hidden',
+          marginBottom: '16px',
+          border: '1px solid rgba(0, 255, 136, 0.3)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.6)'
+        }}>
+          <img
+            src={ftgData.thumbnail || ftgData.imageUrl}
+            alt={ftgData.title}
+            style={{ width: '100%', maxHeight: '220px', objectFit: 'cover', display: 'block' }}
+          />
+          <div style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            background: 'linear-gradient(0deg, rgba(6,9,14,0.98) 0%, rgba(6,9,14,0.7) 60%, transparent 100%)',
+            padding: '20px 16px 14px'
+          }}>
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '6px', flexWrap: 'wrap' }}>
+              <span style={{ background: '#00ff88', color: '#000', fontSize: '10px', fontWeight: '900', padding: '2px 8px', borderRadius: '4px' }}>
+                100% FREE
+              </span>
+              <span style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px' }}>
+                {ftgData.genre}
+              </span>
+              <span style={{ background: 'rgba(0,229,255,0.2)', color: '#00e5ff', fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px' }}>
+                {ftgData.platform}
+              </span>
+            </div>
+            <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '900', color: '#fff' }}>{ftgData.title}</h1>
+            <div style={{ fontSize: '12px', color: '#aaa', marginTop: '4px' }}>
+              By {ftgData.developer || ftgData.publisher || 'FreeToGame'} • Released {ftgData.release_date || 'N/A'}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => window.open(ftgData.game_url, '_blank')}
+            style={{
+              flex: 1,
+              minWidth: '180px',
+              padding: '14px',
+              background: 'linear-gradient(135deg, #00ff88, #00bb66)',
+              border: 'none',
+              borderRadius: '10px',
+              color: '#000',
+              fontWeight: '900',
+              fontSize: '15px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 18px rgba(0, 255, 136, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px'
+            }}
+          >
+            🚀 Play Now ({isBrowserGame ? 'Instant Web' : 'Free Access'})
+          </button>
+
+          {isBrowserGame && showFtgDetails && (
+            <button
+              type="button"
+              onClick={() => setShowFtgDetails(false)}
+              style={{
+                padding: '14px 20px',
+                background: 'rgba(255,255,255,0.1)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '10px',
+                color: '#fff',
+                fontWeight: 'bold',
+                fontSize: '13px',
+                cursor: 'pointer'
+              }}
+            >
+              🎮 Resume Game
+            </button>
+          )}
+        </div>
+
+        <div style={{
+          background: 'rgba(255,255,255,0.04)',
+          borderRadius: '12px',
+          padding: '14px',
+          border: '1px solid rgba(255,255,255,0.08)',
+          marginBottom: '16px',
+          fontSize: '13px',
+          lineHeight: '1.6',
+          color: '#ddd'
+        }}>
+          <h3 style={{ margin: '0 0 8px', fontSize: '14px', color: '#00ff88' }}>About the Game</h3>
+          <p style={{ margin: 0 }}>{ftgData.description || ftgData.short_description}</p>
+        </div>
+
+        {ftgData.screenshots && ftgData.screenshots.length > 0 && (
+          <div style={{ marginBottom: '16px' }}>
+            <h3 style={{ margin: '0 0 10px', fontSize: '14px', color: '#00ff88' }}>In-Game Screenshots</h3>
+            <div style={{
+              display: 'flex',
+              gap: '8px',
+              overflowX: 'auto',
+              paddingBottom: '8px'
+            }}>
+              {ftgData.screenshots.map((s, idx) => (
+                <img
+                  key={idx}
+                  src={s.image}
+                  alt={ftgData.title + ' screenshot'}
+                  style={{ width: '220px', height: '124px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {ftgData.minimum_system_requirements && (
+          <div style={{
+            background: 'rgba(255,255,255,0.03)',
+            borderRadius: '12px',
+            padding: '14px',
+            border: '1px solid rgba(255,255,255,0.06)',
+            marginBottom: '16px',
+            fontSize: '12px',
+            color: '#aaa'
+          }}>
+            <h3 style={{ margin: '0 0 10px', fontSize: '13px', color: '#00e5ff' }}>Minimum System Requirements</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+              <div><strong>OS:</strong> {ftgData.minimum_system_requirements.os || 'Windows 10/11'}</div>
+              <div><strong>CPU:</strong> {ftgData.minimum_system_requirements.processor || 'Intel/AMD Dual Core'}</div>
+              <div><strong>RAM:</strong> {ftgData.minimum_system_requirements.memory || '4 GB'}</div>
+              <div><strong>GPU:</strong> {ftgData.minimum_system_requirements.graphics || 'DirectX 11+'}</div>
+              <div><strong>Storage:</strong> {ftgData.minimum_system_requirements.storage || '5 GB'}</div>
+            </div>
+          </div>
+        )}
+
+        <div style={{ textAlign: 'center', padding: '12px', color: '#666', fontSize: '11px' }}>
+          Free to Play provided via official FreeToGame API partner network.
+        </div>
+      </div>
+    )
+  }
+
 
   if (loading) {
     return (
@@ -344,6 +595,27 @@ export default function PlayGame() {
             </span>
           </div>
 
+                    {ftgData && (
+            <button
+              onClick={() => window.open(ftgData.game_url, '_blank')}
+              style={{
+                background: 'linear-gradient(135deg, #00ff88, #00aa55)',
+                border: 'none',
+                color: '#000',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                fontSize: '11px',
+                fontWeight: '900',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px'
+              }}
+              title="Launch in New Full Window"
+            >
+              🚀 Launch
+            </button>
+          )}
           <button 
             onClick={toggleFullscreen}
             style={{ padding: '4px 8px', fontSize: '11px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', borderRadius: '6px', cursor: 'pointer' }}
@@ -356,7 +628,7 @@ export default function PlayGame() {
 
       {/* Main Direct Embedded Game Stage Inside Interface */}
       <div style={{ flex: 1, position: 'relative', width: '100%', height: 'calc(100vh - 48px)', background: '#000', overflow: 'hidden' }}>
-        {gameMode === 'api' ? (
+        {ftgData ? renderFtgStage() : gameMode === 'api' ? (
           apiLoading ? (
             <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', gap: '16px', background: '#0c0317' }}>
               <div style={{ width: '52px', height: '52px', border: '4px solid rgba(255,215,0,0.2)', borderTop: '4px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />

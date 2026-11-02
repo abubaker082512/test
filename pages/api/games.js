@@ -1,4 +1,7 @@
 import betnexCatalog from '../../data/betnexCatalog.json';
+import freeToGameCatalog from '../../data/freeToGameCatalog.json';
+
+const COMBINED_CATALOG = [...betnexCatalog, ...freeToGameCatalog];
 
 export default async function handler(req, res) {
   // Edge cache for 1 hour, stale-while-revalidate for 24 hours
@@ -6,12 +9,14 @@ export default async function handler(req, res) {
 
   const { category, provider, search, limit = 36, page = 1 } = req.query;
 
-  let filtered = betnexCatalog;
+  let filtered = COMBINED_CATALOG;
 
   if (category) {
     const catLower = String(category).toLowerCase();
     if (catLower === 'hot') {
-      filtered = betnexCatalog.filter(g => g.recommended || g.badge === 'Top Pick' || g.badge === 'Hot');
+      filtered = COMBINED_CATALOG.filter(g => g.recommended || g.badge === 'Top Pick' || g.badge === 'Hot' || g.badge === '⚡ Instant');
+    } else if (catLower === 'free games' || catLower === 'free' || catLower === 'freetogame') {
+      filtered = freeToGameCatalog;
     } else if (catLower === 'slots') {
       filtered = betnexCatalog.filter(g => g.category === 'Slots');
     } else if (catLower === 'live') {
@@ -19,22 +24,26 @@ export default async function handler(req, res) {
     } else if (catLower === 'crash') {
       filtered = betnexCatalog.filter(g => g.category === 'Crash');
     } else if (catLower === 'mini games' || catLower === 'mini') {
-      filtered = betnexCatalog.filter(g => g.category === 'Mini Games' || g.category === 'Crash');
+      filtered = COMBINED_CATALOG.filter(g => g.category === 'Mini Games' || g.category === 'Crash' || (g.isFreeGame && g.platform && g.platform.includes('Browser')));
     } else if (catLower === 'fishing') {
       filtered = betnexCatalog.filter(g => g.category === 'Fishing');
     } else if (catLower === 'cards') {
-      filtered = betnexCatalog.filter(g => g.category === 'Cards');
+      filtered = COMBINED_CATALOG.filter(g => g.category === 'Cards' || (g.genre && g.genre.toLowerCase().includes('card')));
     } else if (catLower === 'sports') {
-      filtered = betnexCatalog.filter(g => g.category === 'Sports');
+      filtered = COMBINED_CATALOG.filter(g => g.category === 'Sports' || (g.genre && g.genre.toLowerCase().includes('sports')));
+    } else if (catLower === 'strategy') {
+      filtered = freeToGameCatalog.filter(g => (g.genre && g.genre.toLowerCase().includes('strategy')));
+    } else if (catLower === 'shooter') {
+      filtered = freeToGameCatalog.filter(g => (g.genre && g.genre.toLowerCase().includes('shooter')));
     } else {
-      filtered = betnexCatalog.filter(g => g.category.toLowerCase() === catLower);
+      filtered = COMBINED_CATALOG.filter(g => (g.category && g.category.toLowerCase() === catLower) || (g.genre && g.genre.toLowerCase() === catLower));
     }
   }
 
   if (provider) {
     const provLower = String(provider).toLowerCase();
     filtered = filtered.filter(g => 
-      g.provider.toLowerCase().includes(provLower) || 
+      (g.provider && g.provider.toLowerCase().includes(provLower)) || 
       (g.rawProvider && g.rawProvider.toLowerCase().includes(provLower))
     );
   }
@@ -42,8 +51,9 @@ export default async function handler(req, res) {
   if (search) {
     const q = String(search).toLowerCase();
     filtered = filtered.filter(g => 
-      g.title.toLowerCase().includes(q) || 
-      g.provider.toLowerCase().includes(q)
+      (g.title && g.title.toLowerCase().includes(q)) || 
+      (g.provider && g.provider.toLowerCase().includes(q)) ||
+      (g.genre && g.genre.toLowerCase().includes(q))
     );
   }
 

@@ -114,7 +114,7 @@ export default function Home() {
   useEffect(() => {
     // Preload all categories so all homepage sections display 3-column vertical grids on top-to-bottom scroll
     const preloadAllCategories = async () => {
-      const catsToLoad = ['Slots', 'Mini Games', 'Cards', 'Fishing', 'Live', 'Sports', 'Crash'];
+      const catsToLoad = ['Free Games', 'Slots', 'Mini Games', 'Cards', 'Fishing', 'Live', 'Sports', 'Crash'];
       for (const cat of catsToLoad) {
         try {
           const res = await fetch(`/api/games?category=${encodeURIComponent(cat)}&limit=18`);
@@ -157,6 +157,10 @@ export default function Home() {
     if (tab) {
       const tabMap = {
         'hot': 'Hot',
+        'free': 'Free Games',
+        'freegames': 'Free Games',
+        'free-games': 'Free Games',
+        'freetogame': 'Free Games',
         'slot': 'Slots',
         'slots': 'Slots',
         'mini': 'Mini Games',
@@ -242,6 +246,7 @@ export default function Home() {
   // Categories list covering all integrated providers matching Drawer
   const categoriesList = [
     { name: 'Hot', label: 'Hot', icon: '🔥' },
+    { name: 'Free Games', label: 'Free Games', icon: '🎁' },
     { name: 'Slots', label: 'Slots', icon: '🎰' },
     { name: 'Mini Games', label: 'Mini Games', icon: '💎' },
     { name: 'Cards', label: 'Cards', icon: '🃏' },

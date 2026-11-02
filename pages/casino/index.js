@@ -6,7 +6,8 @@ import { useAuth } from '../../context/AuthContext'
 import AuthModal from '../../components/AuthModal'
 
 const FEATURED_PROVIDERS = [
-  { id: 'ALL', name: 'All Games', icon: '🔥', count: '2,037 Games' },
+  { id: 'ALL', name: 'All Games', icon: '🔥', count: '2,458 Games' },
+  { id: 'FreeToGame', name: 'Free Games', icon: '🎁', count: '421 Games' },
   { id: 'JILI', name: 'JILI Games', icon: '🎰', count: '253 Games' },
   { id: 'PG', name: 'PG Soft', icon: '🐲', count: '161 Games' },
   { id: 'PRAGMATIC', name: 'Pragmatic Play', icon: '⚡', count: '694 Games' },
