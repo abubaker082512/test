@@ -6,17 +6,11 @@ import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
 import AuthModal from '../components/AuthModal'
 import GameCard from '../components/GameCard'
+import ourGamesCatalog from '../data/ourGamesCatalog.json'
 
 // Light curated featured list for 0ms instant initial rendering (36 top picks)
 const featuredGames = [
-  // WinX Originals (Our Games Flagships)
-  { id: 'winx-aviator-pro', slug: 'aviator-pro', title: 'Aviator Pro 3D', provider: 'WinX Originals', category: 'Our Games', badge: '🔥 Hot Original', recommended: true, theme: 'linear-gradient(135deg, #1b0a2a 0%, #0d0517 100%)', imageUrl: '/games/crash.png', isOurGame: true },
-  { id: 'winx-super-ace-deluxe', slug: 'super-ace-deluxe', title: 'Super Ace Deluxe', provider: 'WinX Originals', category: 'Our Games', badge: '👑 VIP Top', recommended: true, theme: 'linear-gradient(135deg, #2b1800 0%, #120a00 100%)', imageUrl: '/games/super_ace.png', isOurGame: true },
-  { id: 'winx-fortune-gems-2', slug: 'fortune-gems-2', title: 'Fortune Gems 2', provider: 'WinX Originals', category: 'Our Games', badge: '💎 Jackpot Wheel', recommended: true, theme: 'linear-gradient(135deg, #022b1c 0%, #01120c 100%)', imageUrl: '/games/fortune_gems.png', isOurGame: true },
-  { id: 'winx-stake-mines', slug: 'stake-mines', title: 'Stake Mines', provider: 'WinX Originals', category: 'Our Games', badge: '💣 Instant Win', recommended: true, theme: 'linear-gradient(135deg, #0e1520 0%, #06090e 100%)', imageUrl: '/games/mines.png', isOurGame: true },
-  { id: 'winx-stake-plinko', slug: 'stake-plinko', title: 'Stake Plinko 1000x', provider: 'WinX Originals', category: 'Our Games', badge: '⚡ 1000x Win', recommended: true, theme: 'linear-gradient(135deg, #1f0b24 0%, #0a040d 100%)', imageUrl: '/games/plinko.png', isOurGame: true },
-  { id: 'winx-roulette-pro', slug: 'roulette-pro', title: '3D European Roulette', provider: 'WinX Originals', category: 'Our Games', badge: '🎯 37 Pockets', recommended: true, theme: 'linear-gradient(135deg, #0a2512 0%, #031207 100%)', imageUrl: '/games/roulette.png', isOurGame: true },
-  { id: 'winx-blackjack-pro', slug: 'blackjack-pro', title: 'Vegas Classic Blackjack', provider: 'WinX Originals', category: 'Our Games', badge: '🃏 3:2 Blackjack', recommended: true, theme: 'linear-gradient(135deg, #081d28 0%, #030b10 100%)', imageUrl: '/games/blackjack.png', isOurGame: true },
+  ...ourGamesCatalog,
 
   // JILI Flagships
   { id: 'bdfb23c974a2517198c5443adeea77a8', slug: 'super-ace', title: 'Super Ace', provider: 'JILI', category: 'Slots', badge: 'Top Pick', recommended: true, theme: 'linear-gradient(135deg, #1f0a38 0%, #0c0317 100%)', imageUrl: 'https://cdn.betnex.co/images/jiligaming/48.webp' },

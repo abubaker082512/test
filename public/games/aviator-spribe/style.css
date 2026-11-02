@@ -1,0 +1,276 @@
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #090b10;
+    font-family: 'Inter', 'Exo 2', system-ui, sans-serif;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+#wrapper {
+    width: 100%;
+    max-width: 820px;
+    padding: 12px 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+#mid-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+}
+
+#header {
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+#last-counters {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    color: #ffffff;
+    overflow: hidden;
+    gap: 6px;
+}
+
+#last-counters p {
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid;
+    font-size: 13px;
+    font-weight: 700;
+    margin: 0;
+    white-space: nowrap;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.blueBorder {
+    color: rgb(52, 180, 255);
+    border-color: rgba(52, 180, 255, 0.45);
+}
+
+.purpleBorder {
+    color: rgb(165, 92, 255);
+    border-color: rgba(165, 92, 255, 0.45);
+}
+
+.burgundyBorder {
+    color: rgb(255, 62, 165);
+    border-color: rgba(255, 62, 165, 0.55);
+}
+
+.balance-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    flex-shrink: 0;
+}
+
+#balance {
+    text-transform: uppercase;
+    color: #30fcbe;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+}
+
+#balance-amount {
+    font-weight: 800;
+    min-width: 110px;
+    padding: 4px 12px;
+    border: 2px solid #30fcbe;
+    font-size: 14px;
+    border-radius: 999px;
+    background: rgba(48, 252, 190, 0.08);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 3px;
+}
+
+#counterWrapper {
+    position: relative;
+    width: 100%;
+    height: clamp(230px, 46vh, 360px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin: 0 auto;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: #0e121b;
+}
+
+#bg-image {
+    position: absolute;
+    width: 300%;
+    height: 450%;
+    overflow: hidden;
+    top: 100%;
+    left: 0%;
+    transform: translate(-50%, -50%);
+}
+
+#counterWrapper #bg-image::before {
+    content: '';
+    background-image: url('img/aviator-re-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    min-width: 100%;
+    top: 0;
+    left: 0;
+    animation: rotation 10s infinite linear;
+    transform-origin: 50% 50%;
+}
+
+@keyframes rotation {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+#canvas {
+    width: 100%;
+    height: 100%;
+    z-index: 6;
+    display: block;
+}
+
+#counter {
+    position: absolute;
+    top: 18%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: clamp(36px, 7vw, 62px);
+    font-weight: 900;
+    color: white;
+    z-index: 20;
+    text-shadow: 0 4px 24px rgba(0, 0, 0, 0.85);
+}
+
+#bottom-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 14px;
+    padding: 14px 0 8px;
+}
+
+#input-wrapper {
+    position: relative;
+    flex: 1.2;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+#bet-input {
+    width: 100%;
+    padding: 10px 54px 10px 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    font-weight: 800;
+    font-size: 17px;
+    color: #fff;
+    outline: none;
+}
+
+.currency-tag {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #94a3b8;
+}
+
+.quick-bets {
+    display: flex;
+    gap: 6px;
+}
+
+.q-btn {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #cbd5e1;
+    border-radius: 10px;
+    padding: 5px 0;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.q-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+#bet-button {
+    flex: 1;
+    border: none;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #fb024c, #c9003b);
+    cursor: pointer;
+    color: #ffffff;
+    font-weight: 900;
+    font-size: 20px;
+    text-transform: uppercase;
+    box-shadow: 0 8px 24px rgba(251, 2, 76, 0.35);
+    transition: transform 0.12s, background 0.2s;
+}
+
+#bet-button.cashout-active {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.45);
+}
+
+#bet-button.queued-active {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+#message {
+    color: #30fcbe;
+    font-size: 14px;
+    font-weight: 700;
+    margin: 4px 0 0;
+    text-align: center;
+}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aviator Spribe</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+<div id="wrapper">
+    <div id="mid-wrapper">
+        <div id="header">
+            <div id="last-counters"></div>
+            <div class="balance-box">
+                <div id="balance">BALANCE</div>
+                <div id="balance-amount">Rs 5,000</div>
+            </div>
+        </div>
+
+        <div id="counterWrapper">
+            <div id="bg-image"></div>
+            <canvas id="canvas"></canvas>
+            <div id="counter">1.00x</div>
+        </div>
+
+        <div id="bottom-wrapper">
+            <div id="input-wrapper">
+                <input type="number" id="bet-input" value="100" min="10" max="50000" step="50" />
+                <div class="currency-tag">PKR</div>
+                <div class="quick-bets">
+                    <button type="button" class="q-btn" data-val="50">50</button>
+                    <button type="button" class="q-btn" data-val="100">100</button>
+                    <button type="button" class="q-btn" data-val="500">500</button>
+                    <button type="button" class="q-btn" data-val="1000">1K</button>
+                </div>
+            </div>
+            <button id="bet-button">BET</button>
+        </div>
+
+        <div id="message-button">
+            <p id="message">Place your bet for the next flight</p>
+        </div>
+    </div>
+</div>
+
+<script src="/games/winx-bridge.js"></script>
+<script src="./script.js"></script>
+</body>
+
+</html>

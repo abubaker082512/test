@@ -1,0 +1,550 @@
+/* =========================================================================
+   Nour's Casino — optional appearance themes
+   Loaded last so semantic theme roles can correct legacy fixed colours without
+   duplicating component layouts. The existing appearance remains the default.
+   ========================================================================= */
+
+:root {
+  --theme-canvas: #0b1422;
+  --theme-surface: #111b29;
+  --theme-surface-elevated: #162131;
+  --theme-surface-inset: #0a1320;
+  --theme-surface-hover: #1a2738;
+  --theme-surface-pressed: #0f1927;
+  --theme-border: rgba(148, 163, 184, .16);
+  --theme-border-strong: rgba(148, 163, 184, .30);
+  --theme-control-border: rgba(148, 163, 184, .42);
+  --theme-divider: rgba(148, 163, 184, .12);
+  --theme-overlay: rgba(2, 6, 13, .78);
+  --theme-text: #e9eef8;
+  --theme-text-secondary: #a8b4c7;
+  --theme-text-muted: #7f8da4;
+  --theme-code: #08111e;
+  --theme-skeleton: #162131;
+  --theme-skeleton-highlight: #223047;
+  --theme-tooltip: #111b29;
+  --theme-canvas-top: #070b12;
+  --theme-canvas-bottom: #0d1420;
+  --theme-canvas-panel: rgba(30, 41, 59, .72);
+  --theme-canvas-panel-bottom: rgba(15, 21, 27, .72);
+  --theme-canvas-track: #080d15;
+}
+
+html[data-theme="oled"] {
+  color-scheme: dark;
+  --theme-canvas: #000000;
+  --theme-surface: #050505;
+  --theme-surface-elevated: #090909;
+  --theme-surface-inset: #030303;
+  --theme-surface-hover: #111111;
+  --theme-surface-pressed: #0b0b0b;
+  --theme-border: rgba(255, 255, 255, .11);
+  --theme-border-strong: rgba(255, 255, 255, .22);
+  --theme-control-border: #606060;
+  --theme-divider: rgba(255, 255, 255, .075);
+  --theme-overlay: rgba(0, 0, 0, .84);
+  --theme-text: #e9edf0;
+  --theme-text-secondary: #adb6be;
+  --theme-text-muted: #7f8993;
+  --theme-code: #020202;
+  --theme-skeleton: #0c0c0c;
+  --theme-skeleton-highlight: #171717;
+  --theme-tooltip: #0a0a0a;
+  --theme-canvas-top: #000000;
+  --theme-canvas-bottom: #030303;
+  --theme-canvas-panel: rgba(9, 9, 9, .94);
+  --theme-canvas-panel-bottom: rgba(3, 3, 3, .94);
+  --theme-canvas-track: #050505;
+
+  /* Map the existing design-system tokens rather than forking components. */
+  --bg: #000000;
+  --bg-deep: #000000;
+  --panel: #050505;
+  --panel-2: #090909;
+  --panel-3: #0e0e0e;
+  --line: var(--theme-border);
+  --line-soft: var(--theme-divider);
+  --text: var(--theme-text);
+  --text-dim: var(--theme-text-secondary);
+  --text-faint: var(--theme-text-muted);
+  --gamdom-dark: #090909;
+  --gamdom-surface: #050505;
+  --gamdom-text-dim: #7f8993;
+  --rail: var(--theme-border);
+  --glass: linear-gradient(180deg, rgba(255,255,255,.018), rgba(255,255,255,0));
+  --shadow-card: 0 18px 42px -32px rgba(0,0,0,1), inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+/* ========================== Appearance selector ========================== */
+
+.theme-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  border: 0;
+}
+
+.theme-choice {
+  position: relative;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 11px;
+  min-height: 70px;
+  padding: 10px 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: rgba(148, 163, 184, .045);
+  color: var(--text-dim);
+  cursor: pointer;
+  user-select: none;
+  transition: background-color .16s var(--ease), border-color .16s var(--ease), color .16s var(--ease), transform .12s var(--ease), box-shadow .16s var(--ease);
+}
+.theme-choice:hover { background: rgba(148, 163, 184, .085); border-color: rgba(148, 163, 184, .25); color: var(--text); }
+.theme-choice:active { transform: scale(.992); }
+.theme-choice:has(.theme-choice__input:checked) {
+  color: var(--text);
+  border-color: rgba(0, 255, 134, .42);
+  background: rgba(0, 255, 134, .075);
+  box-shadow: inset 3px 0 0 var(--mint, var(--green));
+}
+.theme-choice:has(.theme-choice__input:focus-visible) {
+  outline: 2px solid var(--green-hi);
+  outline-offset: 2px;
+}
+.theme-choice__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.theme-choice__preview {
+  position: relative;
+  display: grid;
+  grid-template-columns: 9px 1fr;
+  grid-template-rows: 9px 1fr;
+  gap: 3px;
+  width: 52px;
+  height: 42px;
+  padding: 5px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 8px;
+  box-shadow: 0 8px 16px -12px rgba(0,0,0,.95);
+}
+.theme-choice__preview i { display: block; border-radius: 2px; }
+.theme-choice__preview i:first-child { grid-row: 1 / -1; }
+.theme-choice__preview i:nth-child(2) { grid-column: 2; }
+.theme-choice__preview i:nth-child(3) { grid-column: 2; }
+.theme-choice__preview--default { background: #0b1422; }
+.theme-choice__preview--default i:first-child { background: #111b29; }
+.theme-choice__preview--default i:nth-child(2) { background: #162131; }
+.theme-choice__preview--default i:nth-child(3) { background: linear-gradient(90deg, #00ff86 0 38%, #0a1320 38%); }
+.theme-choice__preview--oled { background: #000; border-color: rgba(255,255,255,.2); }
+.theme-choice__preview--oled i:first-child { background: #050505; border: 1px solid #1a1a1a; }
+.theme-choice__preview--oled i:nth-child(2) { background: #090909; border: 1px solid #1d1d1d; }
+.theme-choice__preview--oled i:nth-child(3) { background: linear-gradient(90deg, #00ff86 0 38%, #030303 38%); border: 1px solid #161616; }
+.theme-choice__copy { display: flex; min-width: 0; flex-direction: column; gap: 3px; }
+.theme-choice__copy strong { font-size: 13px; font-weight: 800; color: currentColor; }
+.theme-choice__copy small { font-size: 10.5px; line-height: 1.35; color: var(--text-faint); }
+.theme-choice__state {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: transparent;
+  background: rgba(0,0,0,.08);
+  transition: color .16s, background .16s, border-color .16s;
+}
+.theme-choice:has(.theme-choice__input:checked) .theme-choice__state {
+  color: #041a13;
+  border-color: var(--green-hi);
+  background: var(--green-hi);
+}
+.theme-status { min-height: 1.4em; margin-top: 2px; }
+.theme-status:empty { display: none; }
+
+@media (max-width: 520px) {
+  .theme-picker { grid-template-columns: 1fr; }
+}
+
+/* ============================ OLED foundation ============================ */
+
+html[data-theme="oled"],
+html[data-theme="oled"] body {
+  background-color: #000000;
+}
+
+html[data-theme="oled"] body {
+  color: var(--theme-text);
+  background-image:
+    radial-gradient(780px 430px at 12% -18%, rgba(0,255,134,.038), transparent 68%),
+    radial-gradient(720px 430px at 90% -18%, rgba(56,189,248,.025), transparent 70%);
+  background-attachment: scroll;
+}
+
+html[data-theme="oled"] ::selection {
+  color: #eafff5;
+  background: rgba(0, 255, 134, .36);
+}
+
+html[data-theme="oled"] * { scrollbar-color: #333333 #050505; }
+html[data-theme="oled"] *::-webkit-scrollbar-track { background: #050505; }
+html[data-theme="oled"] *::-webkit-scrollbar-thumb { background: #303030; border: 2px solid #050505; }
+html[data-theme="oled"] *::-webkit-scrollbar-thumb:hover { background: #454545; }
+
+/* Chrome and persistent navigation surfaces. */
+html[data-theme="oled"] .topbar {
+  background: rgba(0, 0, 0, .98);
+  border-bottom-color: var(--theme-border);
+  box-shadow: 0 12px 30px -28px #000;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+html[data-theme="oled"] .game-nav,
+html[data-theme="oled"] .wallet,
+html[data-theme="oled"] .topbar__actions,
+html[data-theme="oled"] .controls-sheet-content,
+html[data-theme="oled"] .phone-playbar,
+html[data-theme="oled"] .phone-bet-summary {
+  background-image: none;
+  background-color: var(--theme-surface);
+  border-color: var(--theme-border);
+}
+html[data-theme="oled"] .game-nav { background-color: #030303; }
+html[data-theme="oled"] .wallet { box-shadow: inset 0 1px 0 rgba(255,255,255,.025); }
+html[data-theme="oled"] .brand:hover { background-color: rgba(0,255,134,.055); }
+html[data-theme="oled"] .brand__text b { background: none; color: #e9f5ef; }
+
+/* Shared content surfaces and separators. */
+html[data-theme="oled"] .panel,
+html[data-theme="oled"] .history-rail,
+html[data-theme="oled"] .board-footer,
+html[data-theme="oled"] .modal__card,
+html[data-theme="oled"] .toast,
+html[data-theme="oled"] .stat-card,
+html[data-theme="oled"] .acct-row,
+html[data-theme="oled"] #account-msg,
+html[data-theme="oled"] .file-pick,
+html[data-theme="oled"] .cheat-panel,
+html[data-theme="oled"] .cheat-card,
+html[data-theme="oled"] .payout-preview,
+html[data-theme="oled"] .verify__result,
+html[data-theme="oled"] .dist,
+html[data-theme="oled"] .hotkeys {
+  background-image: none;
+  background-color: var(--theme-surface);
+  border-color: var(--theme-border);
+  box-shadow: var(--shadow-card);
+}
+html[data-theme="oled"] .panel,
+html[data-theme="oled"] .history-rail,
+html[data-theme="oled"] .board-footer,
+html[data-theme="oled"] .modal__card,
+html[data-theme="oled"] .toast {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+html[data-theme="oled"] .rule,
+html[data-theme="oled"] .modal__head,
+html[data-theme="oled"] .history-rail__label,
+html[data-theme="oled"] .stat-strip,
+html[data-theme="oled"] .dist__head {
+  border-color: var(--theme-divider);
+}
+html[data-theme="oled"] .modal__head { background: linear-gradient(180deg, rgba(255,255,255,.025), transparent); }
+html[data-theme="oled"] .modal__backdrop { background: var(--theme-overlay); }
+html[data-theme="oled"] .modal__card { box-shadow: 0 38px 92px -34px #000, 0 0 0 1px rgba(255,255,255,.025); }
+html[data-theme="oled"] .prose,
+html[data-theme="oled"] .field__hint,
+html[data-theme="oled"] .history-rail__empty,
+html[data-theme="oled"] .game-card__desc,
+html[data-theme="oled"] .game-card__meta,
+html[data-theme="oled"] .lobby-hero__sub,
+html[data-theme="oled"] .lobby-foot p { color: var(--theme-text-secondary); }
+
+/* Buttons and direct interaction states. */
+html[data-theme="oled"] .btn {
+  --btn-bg: #090909;
+  border-color: var(--theme-border);
+  box-shadow: none;
+}
+html[data-theme="oled"] .btn:hover:not(:disabled) { background: var(--theme-surface-hover); border-color: var(--theme-border-strong); }
+html[data-theme="oled"] .btn:active:not(:disabled) { background: var(--theme-surface-pressed); }
+html[data-theme="oled"] .btn--ghost { --btn-bg: #050505; color: var(--theme-text-secondary); }
+html[data-theme="oled"] .btn--ghost:hover:not(:disabled) { color: var(--theme-text); background: #101010; }
+html[data-theme="oled"] .btn--outline { --btn-bg: #030303; }
+html[data-theme="oled"] .btn--mint {
+  --btn-bg: linear-gradient(180deg, #23dda0, #12b981);
+  --btn-fg: #04160f;
+  border-color: rgba(52,211,153,.52);
+  box-shadow: 0 10px 22px -17px rgba(0,255,134,.9);
+}
+html[data-theme="oled"] .btn--mint:hover:not(:disabled) {
+  background: linear-gradient(180deg, #2ae7aa, #15c68a);
+  border-color: rgba(75,235,178,.68);
+  box-shadow: 0 12px 24px -17px rgba(0,255,134,.95);
+}
+html[data-theme="oled"] .btn--mint:active:not(:disabled) {
+  background: linear-gradient(180deg, #18c88e, #0ca970);
+}
+html[data-theme="oled"] .btn--drop { color: #04160f; }
+html[data-theme="oled"] .chip-btn,
+html[data-theme="oled"] .acct-row__go,
+html[data-theme="oled"] .acct-row__del,
+html[data-theme="oled"] kbd {
+  color: var(--theme-text-secondary);
+  background: #0b0b0b;
+  border-color: var(--theme-border);
+}
+html[data-theme="oled"] .chip-btn:hover:not(:disabled) { background: rgba(0,255,134,.09); }
+html[data-theme="oled"] .game-tab:hover:not(.is-active) { color: var(--theme-text); background: #0d0d0d; border-color: var(--theme-border); }
+html[data-theme="oled"] .game-tab.is-active {
+  color: #dffcef;
+  background: rgba(0, 255, 134, .11);
+  border-color: rgba(0, 255, 134, .42);
+  box-shadow: inset 0 -2px 0 var(--mint);
+}
+html[data-theme="oled"] .btn:disabled,
+html[data-theme="oled"] .chip-btn:disabled,
+html[data-theme="oled"] .segmented__btn:disabled { color: #626a72; opacity: .62; }
+
+/* Form controls, native UI, autofill and validation. */
+html[data-theme="oled"] .input,
+html[data-theme="oled"] .segmented,
+html[data-theme="oled"] .input-group,
+html[data-theme="oled"] select.input option {
+  color: var(--theme-text);
+  background-color: var(--theme-surface-inset);
+  border-color: var(--theme-control-border);
+}
+html[data-theme="oled"] .input { background-image: none; }
+html[data-theme="oled"] select.input {
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--theme-text-secondary) 50%),
+    linear-gradient(135deg, var(--theme-text-secondary) 50%, transparent 50%);
+}
+html[data-theme="oled"] .input:hover { border-color: #737373; }
+html[data-theme="oled"] .input:focus {
+  color: var(--theme-text);
+  background-color: #050505;
+  border-color: rgba(0, 255, 134, .66);
+  box-shadow: 0 0 0 3px rgba(0, 255, 134, .13);
+}
+html[data-theme="oled"] .input::placeholder { color: #78828c; }
+html[data-theme="oled"] .input:read-only { color: #929ca5; background-color: #030303; }
+html[data-theme="oled"] .input:disabled,
+html[data-theme="oled"] fieldset:disabled .input { color: #626a72; background-color: #050505; border-color: #171717; }
+html[data-theme="oled"] .input.is-error { border-color: rgba(248,113,113,.72); box-shadow: 0 0 0 3px rgba(239,68,68,.15); }
+html[data-theme="oled"] .input-group__prefix,
+html[data-theme="oled"] .input-group__suffix { color: var(--theme-text-muted); }
+html[data-theme="oled"] .segmented__thumb { background: #101010; border-color: var(--theme-border-strong); box-shadow: none; }
+html[data-theme="oled"] .segmented__btn { color: var(--theme-text-muted); }
+html[data-theme="oled"] .segmented__btn:hover { color: var(--theme-text-secondary); }
+html[data-theme="oled"] .segmented__btn.is-active { color: var(--theme-text); }
+html[data-theme="oled"] input[type="checkbox"],
+html[data-theme="oled"] input[type="radio"] { accent-color: var(--green-hi); }
+html[data-theme="oled"] input:-webkit-autofill,
+html[data-theme="oled"] input:-webkit-autofill:hover,
+html[data-theme="oled"] input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--theme-text);
+  caret-color: var(--theme-text);
+  box-shadow: 0 0 0 1000px #050505 inset;
+  transition: background-color 9999s ease-out 0s;
+}
+html[data-theme="oled"] .range::-webkit-slider-runnable-track,
+html[data-theme="oled"] .range::-moz-range-track { background-color: #1a1a1a; border-color: var(--theme-border); }
+
+/* Data displays, feedback, and non-default states. */
+html[data-theme="oled"] .dbar,
+html[data-theme="oled"] .dist__body { background-color: #030303; border-color: var(--theme-divider); }
+html[data-theme="oled"] .toast { background-color: var(--theme-tooltip); }
+html[data-theme="oled"] .toast--error { border-color: rgba(248,113,113,.34); }
+html[data-theme="oled"] .toast--warn { border-color: rgba(251,191,36,.32); }
+html[data-theme="oled"] .verify__result.is-bad { background-color: rgba(239,68,68,.09); border-color: rgba(248,113,113,.34); }
+html[data-theme="oled"] .stat-card--gold { background-color: rgba(251,191,36,.045); border-color: rgba(251,191,36,.23); }
+html[data-theme="oled"] .stat-strip { background: var(--theme-divider); }
+html[data-theme="oled"] .stat-strip__item { background: #070707; }
+html[data-theme="oled"] .swatch--theory { background: rgba(233,237,240,.28); }
+html[data-theme="oled"] .dbar__theory {
+  background: rgba(233,237,240,.12);
+  border-top-color: rgba(233,237,240,.34);
+}
+html[data-theme="oled"] [aria-busy="true"],
+html[data-theme="oled"] .skeleton {
+  background-color: var(--theme-skeleton);
+  background-image: linear-gradient(90deg, var(--theme-skeleton), var(--theme-skeleton-highlight), var(--theme-skeleton));
+}
+
+/* Code, seed readouts and tooltip-like surfaces. */
+html[data-theme="oled"] code,
+html[data-theme="oled"] pre,
+html[data-theme="oled"] .input--mono,
+html[data-theme="oled"] .verify__path {
+  background-color: var(--theme-code);
+  border-color: var(--theme-border);
+}
+
+/* Canvas and hybrid game stages. */
+html[data-theme="oled"] .board-stage,
+html[data-theme="oled"] .game-stage-view,
+html[data-theme="oled"] .limbo-card,
+html[data-theme="oled"] .limbo-display {
+  background-color: #000000;
+  border-color: var(--theme-border);
+}
+html[data-theme="oled"] .board-stage { background-image: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,.018), 0 18px 50px -42px #000; }
+html[data-theme="oled"] .board-stage__glow { opacity: .34; }
+html[data-theme="oled"] .hchip { border-color: var(--theme-border); }
+
+/* Account, cheat, and portal-like ancillary content. */
+html[data-theme="oled"] .acct-row:hover { background-color: #101010; border-color: var(--theme-border-strong); }
+html[data-theme="oled"] #account-list:empty::after { border-color: var(--theme-border); background: #030303; }
+html[data-theme="oled"] .file-pick:hover,
+html[data-theme="oled"] .file-pick:focus-within { background-color: #0d0d0d; border-color: rgba(0,255,134,.42); }
+html[data-theme="oled"] .cheat-cell,
+html[data-theme="oled"] .cheat-row { background-color: #030303; border-color: var(--theme-divider); }
+html[data-theme="oled"] [role="dialog"],
+html[data-theme="oled"] [role="menu"],
+html[data-theme="oled"] [role="listbox"] { color-scheme: dark; }
+
+/* =============================== Lobby ================================= */
+
+html[data-theme="oled"] .lobby {
+  --hair: var(--theme-divider);
+  --hair-hi: var(--theme-border-strong);
+  --card-surface: linear-gradient(180deg, #090909 0%, #050505 62%, #020202 100%);
+  --card-sheen: linear-gradient(168deg, rgba(255,255,255,.035), rgba(255,255,255,.009) 42%, transparent 72%);
+  background-color: #000;
+}
+html[data-theme="oled"] .lobby::before { background-image: radial-gradient(circle at 1px 1px, rgba(233,237,240,.055) 1px, transparent 0); }
+html[data-theme="oled"] .lobby__orb { opacity: .48; filter: blur(96px); }
+html[data-theme="oled"] .lobby__orb--a { background: radial-gradient(circle, rgba(0,255,134,.30), transparent 68%); }
+html[data-theme="oled"] .lobby__orb--b { background: radial-gradient(circle, rgba(139,92,246,.24), transparent 68%); }
+html[data-theme="oled"] .lobby__orb--c { background: radial-gradient(circle, rgba(34,211,238,.16), transparent 70%); }
+html[data-theme="oled"] .lobby-stats {
+  background: #050505;
+  border-color: var(--theme-border);
+}
+html[data-theme="oled"] .lobby-hero__eyebrow,
+html[data-theme="oled"] .lobby-stat,
+html[data-theme="oled"] .lobby-search .input,
+html[data-theme="oled"] .lobby-filters,
+html[data-theme="oled"] .lobby-empty {
+  background-color: #050505;
+  border-color: var(--theme-border);
+  box-shadow: none;
+}
+html[data-theme="oled"] .lobby-hero__art { background: radial-gradient(circle at 50% 45%, rgba(0,255,134,.075), transparent 62%); }
+html[data-theme="oled"] .lobby-hero__art::after { border-color: rgba(255,255,255,.055); }
+html[data-theme="oled"] .lobby-toolbar::before { background: linear-gradient(90deg, transparent, var(--theme-divider), transparent); }
+html[data-theme="oled"] .lobby-search .input { background-color: #030303; }
+html[data-theme="oled"] .lobby-search:focus-within { border-color: rgba(0,255,134,.46); }
+html[data-theme="oled"] .lobby-filters { background-color: #030303; }
+html[data-theme="oled"] .lobby-filter { color: var(--theme-text-secondary); }
+html[data-theme="oled"] .lobby-filter:hover:not(.is-active) { color: var(--theme-text); background: #101010; }
+html[data-theme="oled"] .lobby-filter.is-active { color: #dffcef; background: rgba(0,255,134,.10); border-color: rgba(0,255,134,.38); }
+html[data-theme="oled"] .game-card {
+  background: var(--card-sheen), var(--card-surface);
+  border-color: var(--theme-border);
+  box-shadow: 0 20px 44px -38px #000, inset 0 1px 0 rgba(255,255,255,.025);
+}
+html[data-theme="oled"] .game-card::before { opacity: .32; }
+html[data-theme="oled"] .game-card:hover,
+html[data-theme="oled"] .game-card:focus-visible { background-color: #090909; border-color: rgba(255,255,255,.20); box-shadow: 0 24px 48px -40px #000, inset 0 1px 0 rgba(255,255,255,.04); }
+html[data-theme="oled"] .game-card__art { background-color: #000; border-color: var(--theme-divider); }
+html[data-theme="oled"] .game-card__badge { background: #0a0a0a; border-color: var(--theme-border); color: var(--theme-text-secondary); }
+html[data-theme="oled"] .game-card__cta { background: #0a0a0a; border-color: var(--theme-border); }
+html[data-theme="oled"] .lobby-empty { border-style: dashed; }
+html[data-theme="oled"] .lobby-foot { border-color: var(--theme-divider); }
+html[data-theme="oled"] .lobby-foot p { color: var(--theme-text-secondary); }
+
+/* Mobile sheets/scrims must not fall back to the default navy palette. */
+html[data-theme="oled"] .tools-scrim,
+html[data-theme="oled"] .bet-controls-scrim { background: rgba(0,0,0,.82); }
+html[data-theme="oled"] body.tools-open .topbar__actions,
+html[data-theme="oled"] body.bet-controls-open .controls-sheet-content {
+  background: #050505;
+  border-color: var(--theme-border);
+  box-shadow: 0 -28px 70px -38px #000;
+}
+html[data-theme="oled"] .controls-sheet-head { border-color: var(--theme-divider); background: #050505; }
+html[data-theme="oled"] .phone-playbar { box-shadow: 0 -16px 34px -30px #000; }
+
+/* ========================== Restraint / system modes ===================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-choice { transition: none !important; transform: none !important; }
+}
+
+@media (forced-colors: active) {
+  .theme-choice { forced-color-adjust: auto; }
+  .theme-choice__preview { display: none; }
+  .theme-choice:has(.theme-choice__input:checked) { outline: 2px solid Highlight; }
+  html[data-theme="oled"] * { forced-color-adjust: auto; }
+}
+
+@media print {
+  html[data-theme="oled"],
+  html[data-theme="oled"] body {
+    color-scheme: light !important;
+    color: #000 !important;
+    background: #fff !important;
+  }
+  html[data-theme="oled"] .topbar,
+  html[data-theme="oled"] .panel,
+  html[data-theme="oled"] .history-rail,
+  html[data-theme="oled"] .board-footer,
+  html[data-theme="oled"] .session-ledger,
+  html[data-theme="oled"] .modal__card,
+  html[data-theme="oled"] .stat-card,
+  html[data-theme="oled"] .game-card {
+    color: #000 !important;
+    background: #fff !important;
+    border-color: #bbb !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Casino Lab components use the same semantic OLED surfaces as the rest of the app. */
+html[data-theme="oled"] .play-money-badge,
+html[data-theme="oled"] .session-ledger,
+html[data-theme="oled"] .session-ledger__header,
+html[data-theme="oled"] .lobby-hero__proof {
+  background-color: var(--theme-surface);
+  border-color: var(--theme-border);
+  box-shadow: none;
+}
+html[data-theme="oled"] body[data-route="game"] .game-nav,
+html[data-theme="oled"] .session-ledger__table th,
+html[data-theme="oled"] .proof-flow__index,
+html[data-theme="oled"] .proof-panel__formula {
+  background-color: #030303;
+  border-color: var(--theme-border);
+}
+html[data-theme="oled"] .session-ledger__header,
+html[data-theme="oled"] .session-ledger__note,
+html[data-theme="oled"] .session-ledger__table th,
+html[data-theme="oled"] .session-ledger__table td,
+html[data-theme="oled"] .proof-panel__head {
+  border-color: var(--theme-divider);
+}
+html[data-theme="oled"] .session-ledger__table tbody tr:hover { background: rgba(255,255,255,.025); }
+html[data-theme="oled"] .session-result--push { background: #090909; }
+html[data-theme="oled"] .lobby__bg {
+  background: linear-gradient(90deg, rgba(0,255,134,.025), transparent 36%, transparent 72%, rgba(56,189,248,.015));
+}
+html[data-theme="oled"] .lobby-hero__proof {
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
