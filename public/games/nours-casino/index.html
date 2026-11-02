@@ -8,29 +8,6 @@
 <script src="js/theme-bootstrap.js"></script>
 <script src="/games/winx-bridge.js"></script>
 <title>WinX Originals &middot; Provably Fair Casino</title>
-<style>
-  #btn-cheat, #btn-deposit, #btn-custom, #btn-reset, #btn-account, .play-money-badge,
-  header.topbar, .game-context {
-    display: none !important;
-  }
-  :root {
-    --topbar-h: 0px !important;
-  }
-  @media (max-width: 960px) {
-    .controls {
-      top: auto !important;
-      overflow: visible !important;
-    }
-    .board-stage {
-      height: clamp(340px, calc(100svh - var(--bet-bar-h) - 96px), 560px) !important;
-      min-height: 340px !important;
-    }
-    body[data-route="game"]:has(.game-ctrl-pane.is-active .pane-actions button:not(:disabled)) .board-stage {
-      height: clamp(290px, calc(100svh - var(--bet-bar-h) - 168px), 480px) !important;
-      min-height: 290px !important;
-    }
-  }
-</style>
 
 <link rel="preload" as="font" type="font/woff2" href="fonts/inter-latin.woff2" crossorigin />
 <link rel="preload" as="font" type="font/woff2" href="fonts/roboto-mono-latin.woff2" crossorigin />
@@ -41,6 +18,32 @@
 <link rel="stylesheet" href="css/themes.css" />
 <link rel="stylesheet" href="css/ultimate.css" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%2300ff86' d='M8.7 1H23.3Q27.4 1 28.03 5.1L31.59 28.3Q32 31 29.3 31H2.7Q0 31 .41 28.3L3.97 5.1Q4.6 1 8.7 1Z'/%3E%3Cpath fill='%23071018' d='M5.58 26.2L6.54 6.6H12.04L20.48 17.18 19.96 6.6H25.46L26.42 26.2H20.92L11.65 14.57 11.08 26.2Z'/%3E%3C/svg%3E" />
+<style>
+  #btn-cheat, #btn-deposit, #btn-custom, #btn-reset, #btn-account, .play-money-badge,
+  header.topbar, .game-context {
+    display: none !important;
+  }
+  :root {
+    --topbar-h: 0px !important;
+  }
+  @media (max-width: 960px) {
+    .main {
+      padding: 8px 10px calc(var(--bet-bar-h) + 22px) !important;
+    }
+    .controls {
+      top: auto !important;
+      overflow: visible !important;
+    }
+    .board-stage {
+      height: clamp(320px, calc(100svh - var(--bet-bar-h) - 110px), 480px) !important;
+      min-height: 320px !important;
+    }
+    body[data-route="game"]:has(.game-ctrl-pane.is-active .pane-actions button:not(:disabled)) .board-stage {
+      height: clamp(275px, calc(100svh - var(--bet-bar-h) - 175px), 420px) !important;
+      min-height: 275px !important;
+    }
+  }
+</style>
 </head>
 <body data-route="lobby">
 

@@ -446,7 +446,7 @@ export default function PlayGame() {
 
   if (loading) {
     return (
-      <div className="winx-game-stage-shell" style={{ width: '100%', height: '100vh', margin: '0 auto', background: '#070b14', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="winx-game-stage-shell" style={{ width: '100%', maxWidth: '480px', height: '100dvh', margin: '0 auto', background: '#070b14', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '32px', marginBottom: '12px' }}>🎰</div>
           <div style={{ color: '#34d399', fontWeight: 700 }}>Loading WinX Game Engine...</div>
@@ -456,12 +456,12 @@ export default function PlayGame() {
   }
 
   return (
-    <div className="winx-game-stage-shell" style={{ width: '100%', maxWidth: '100vw', height: '100dvh', margin: '0 auto', background: '#070a14', color: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div className="winx-game-stage-shell" style={{ width: '100%', maxWidth: '480px', height: '100dvh', margin: '0 auto', background: '#070a14', color: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       
-      {/* Unified Single WINX Dark-Emerald Top Header Across All Games */}
+      {/* Unified Single WINX Dark-Emerald Top Header Across All Games (480px Mobile Frame) */}
       <header style={{ 
-        height: '58px',
-        padding: '0 16px', 
+        height: '52px',
+        padding: '0 10px', 
         background: 'linear-gradient(180deg, #0b1322 0%, #070d18 100%)', 
         display: 'flex', 
         justifyContent: 'space-between', 
@@ -469,27 +469,27 @@ export default function PlayGame() {
         borderBottom: '1px solid rgba(16, 185, 129, 0.22)',
         boxShadow: '0 6px 24px rgba(0, 0, 0, 0.55)',
         zIndex: 50,
-        gap: '10px',
+        gap: '6px',
         flexShrink: 0
       }}>
         {/* Left: Back to Lobby + WINX Brand + Active Game Name */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-          <Link href="/" style={{ textDecoration: 'none' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '7px', minWidth: 0, flex: 1 }}>
+          <Link href="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
             <button 
               type="button"
               style={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 border: '1px solid rgba(255, 255, 255, 0.14)',
                 color: '#e2e8f0',
-                padding: '7px 12px',
-                borderRadius: '10px',
-                fontSize: '12px',
+                padding: '6px 9px',
+                borderRadius: '8px',
+                fontSize: '11px',
                 fontWeight: '800',
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '5px'
+                gap: '4px'
               }}
             >
               <span>⬅</span>
@@ -497,27 +497,27 @@ export default function PlayGame() {
             </button>
           </Link>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '9px', minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '7px', minWidth: 0 }}>
             <div style={{
-              width: '34px',
-              height: '34px',
-              borderRadius: '10px',
+              width: '30px',
+              height: '30px',
+              borderRadius: '8px',
               background: 'rgba(16, 185, 129, 0.14)',
               border: '1px solid rgba(16, 185, 129, 0.45)',
-              boxShadow: '0 0 16px rgba(16, 185, 129, 0.25)',
+              boxShadow: '0 0 14px rgba(16, 185, 129, 0.25)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#10b981',
               fontWeight: '900',
-              fontSize: '17px',
+              fontSize: '15px',
               flexShrink: 0
             }}>
               W
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
               <span style={{
-                fontSize: '13px',
+                fontSize: '11px',
                 fontWeight: '900',
                 letterSpacing: '0.08em',
                 color: '#f8fafc',
@@ -526,15 +526,16 @@ export default function PlayGame() {
                 WINX
               </span>
               <span style={{
-                fontSize: '11px',
+                fontSize: '10px',
                 fontWeight: '800',
-                letterSpacing: '0.06em',
+                letterSpacing: '0.04em',
                 color: '#10b981',
                 textTransform: 'uppercase',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                lineHeight: 1.2
+                lineHeight: 1.2,
+                maxWidth: '110px'
               }}>
                 {getGameTitle()}
               </span>
@@ -542,37 +543,37 @@ export default function PlayGame() {
           </div>
         </div>
 
-        {/* Center/Right: Unified PKR WALLET Box + Action Buttons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+        {/* Right: Unified PKR WALLET Box + Action Buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
           <div 
             onClick={() => toggleDemoMode(!isDemoMode)}
             style={{ 
               background: 'rgba(13, 22, 38, 0.95)', 
               border: `1px solid ${isDemoMode ? 'rgba(56, 189, 248, 0.45)' : 'rgba(16, 185, 129, 0.45)'}`, 
-              padding: '5px 12px', 
-              borderRadius: '12px', 
+              padding: '4px 8px', 
+              borderRadius: '10px', 
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '10px',
+              gap: '6px',
               boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)'
             }}
             title="Click to switch between Real PKR Wallet and Demo Wallet"
           >
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-              <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '0.08em', color: '#94a3b8', textTransform: 'uppercase', lineHeight: 1 }}>
+              <span style={{ fontSize: '8px', fontWeight: '800', letterSpacing: '0.06em', color: '#94a3b8', textTransform: 'uppercase', lineHeight: 1 }}>
                 {isDemoMode ? 'DEMO WALLET' : 'PKR WALLET'}
               </span>
-              <span style={{ fontSize: '14px', fontWeight: '900', color: '#f8fafc', lineHeight: 1.25, fontFamily: 'monospace, sans-serif' }}>
+              <span style={{ fontSize: '12px', fontWeight: '900', color: '#f8fafc', lineHeight: 1.2, fontFamily: 'monospace, sans-serif' }}>
                 Rs {activeBalance.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
             <span style={{
-              padding: '3px 7px',
-              borderRadius: '6px',
-              fontSize: '10px',
+              padding: '2px 5px',
+              borderRadius: '5px',
+              fontSize: '9px',
               fontWeight: '900',
-              letterSpacing: '0.05em',
+              letterSpacing: '0.04em',
               background: isDemoMode ? 'rgba(56, 189, 248, 0.18)' : 'rgba(16, 185, 129, 0.2)',
               color: isDemoMode ? '#38bdf8' : '#34d399',
               border: `1px solid ${isDemoMode ? 'rgba(56, 189, 248, 0.4)' : 'rgba(16, 185, 129, 0.4)'}`
@@ -588,13 +589,13 @@ export default function PlayGame() {
               reloadStream()
             }}
             style={{
-              width: '36px',
-              height: '36px',
+              width: '30px',
+              height: '30px',
               background: 'rgba(255,255,255,0.05)',
               border: '1px solid rgba(255,255,255,0.12)',
               color: '#e2e8f0',
-              borderRadius: '10px',
-              fontSize: '13px',
+              borderRadius: '8px',
+              fontSize: '12px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -609,13 +610,13 @@ export default function PlayGame() {
             type="button"
             onClick={toggleFullscreen}
             style={{
-              width: '36px',
-              height: '36px',
+              width: '30px',
+              height: '30px',
               background: 'rgba(255,255,255,0.05)',
               border: '1px solid rgba(255,255,255,0.12)',
               color: '#e2e8f0',
-              borderRadius: '10px',
-              fontSize: '13px',
+              borderRadius: '8px',
+              fontSize: '12px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -629,7 +630,7 @@ export default function PlayGame() {
       </header>
 
       {/* Main Embedded Open-Source Game Stage */}
-      <div style={{ flex: 1, position: 'relative', width: '100%', height: 'calc(100dvh - 58px)', background: '#070a14', overflow: 'hidden' }}>
+      <div style={{ flex: 1, position: 'relative', width: '100%', height: 'calc(100dvh - 52px)', background: '#070a14', overflow: 'hidden' }}>
         {ftgData ? renderFtgStage() : gameMode === 'api' && liveGameUrl ? (
           <iframe 
             src={liveGameUrl}

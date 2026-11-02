@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 	<title>WinX • European Roulette VIP</title>
 	<link href="./assets/css/style.css" rel="stylesheet" type="text/css">
 	<script src="/games/winx-bridge.js"></script>
@@ -11,33 +11,49 @@
 			margin: 0;
 			padding: 0;
 			background: radial-gradient(circle at center, #064e23 0%, #022c14 100%);
+			width: 100%;
 			min-height: 100vh;
 			display: flex;
-			align-items: center;
+			align-items: flex-start;
 			justify-content: center;
 			overflow-x: hidden;
+			overflow-y: auto;
 		}
 		#container {
 			background: transparent !important;
-			flex-wrap: wrap;
-			align-items: center;
-			justify-content: center;
-			gap: 24px;
+			display: flex !important;
+			flex-direction: column !important;
+			align-items: center !important;
+			justify-content: flex-start !important;
+			gap: 14px;
 			height: auto !important;
-			min-height: 520px;
+			padding: 10px 0 30px !important;
+			transform: scale(0.84);
 			transform-origin: top center;
 		}
-		@media (max-width: 960px) {
-			#container {
-				transform: scale(0.76);
-				margin-top: 10px;
-			}
+		.wheel {
+			position: relative !important;
+			left: auto !important;
+			top: auto !important;
+			margin: 0 auto 8px !important;
 		}
-		@media (max-width: 540px) {
-			#container {
-				transform: scale(0.64);
-				margin-top: 0;
-			}
+		#betting_board {
+			margin: 0 auto !important;
+		}
+		.spinBtn {
+			position: fixed !important;
+			bottom: 16px !important;
+			left: 50% !important;
+			transform: translateX(-50%) !important;
+			top: auto !important;
+			z-index: 50 !important;
+			background: linear-gradient(135deg, #10b981, #059669) !important;
+			color: #03150e !important;
+			font-weight: 900 !important;
+			padding: 12px 32px !important;
+			border-radius: 999px !important;
+			box-shadow: 0 8px 25px rgba(0,0,0,0.6) !important;
+			text-transform: uppercase;
 		}
 	</style>
 </head>

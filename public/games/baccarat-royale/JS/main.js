@@ -1,7 +1,7 @@
 "use strict";
 
-const cWidth = 1200;
-const cHeight = 800;
+const cWidth = Math.max(320, Math.min(window.innerWidth || 480, 480));
+const cHeight = Math.max(520, Math.min(window.innerHeight || 720, 860));
 
 const BGCanvas = document.getElementById('BGCanvas');
 const mainCanvas = document.getElementById('mainCanvas');
