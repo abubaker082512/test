@@ -135,15 +135,17 @@ export function creditUserBalance(userId, amount, email = "", notes = "") {
   return wallet;
 }
 
-export function debitUserBalance(userId, amount) {
+export function debitUserBalance(userId, amount, email = "") {
   loadData();
   const numAmount = parseFloat(amount) || 0;
-  const wallet = getUserWallet(userId);
+  const wallet = getUserWallet(userId, email);
   if (wallet.balance < numAmount) return { success: false, error: "Insufficient balance", wallet };
 
   wallet.balance = parseFloat((wallet.balance - numAmount).toFixed(2));
   wallet.updated_at = new Date().toISOString();
+  if (email && !wallet.email) wallet.email = email.toLowerCase().trim();
   memoryWallets[wallet.user_id] = wallet;
+  if (userId) memoryWallets[userId] = wallet;
   persistData();
   return { success: true, wallet };
 }

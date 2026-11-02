@@ -1679,7 +1679,7 @@ export class BlackjackGame {
 
     T.heroText(ctx, text, L.cx, y - bh * 0.13, { size, color: preset.color, blur: 26 });
     this.captionFit(
-      ctx, payout > 0 ? `PAYOUT $${payout.toFixed(2)}` : `LOST $${wager.toFixed(2)}`,
+      ctx, payout > 0 ? `PAYOUT Rs ${payout.toFixed(2)}` : `LOST Rs ${wager.toFixed(2)}`,
       L.cx, y + bh * 0.3, bw - r * 2, Math.max(8.5, 10.5 * L.fs), T.PALETTE.textDim,
     );
   }
@@ -1702,7 +1702,7 @@ export class BlackjackGame {
     let statusLeft = L.pad;
 
     if (wager > 0) {
-      const label = `$${wager.toFixed(2)}${doubled ? ' \u00d72' : ''}`;
+      const label = `Rs ${wager.toFixed(0)}${doubled ? ' \u00d72' : ''}`;
       // theme.chip() centres its label at 0.42h in mono and does not wrap, so
       // the pill is measured to the wager instead of clipping a five-figure one.
       ctx.save();

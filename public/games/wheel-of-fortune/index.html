@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>WinX • Mega Fortune Wheel</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <script src="/games/winx-bridge.js"></script>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        background: radial-gradient(circle at 50% 35%, #1e1338 0%, #090c15 80%);
+        color: #fff;
+        font-family: 'Inter', system-ui, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        overflow-x: hidden;
+      }
+      #app {
+        width: 360px !important;
+        height: 360px !important;
+        margin: 24px auto 10px !important;
+        position: relative;
+      }
+      .marker {
+        width: 48px !important;
+        left: 156px !important;
+        top: -14px !important;
+        z-index: 5;
+        filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6));
+      }
+      .wheel {
+        width: 100% !important;
+        height: 100% !important;
+        filter: drop-shadow(0 12px 35px rgba(0,0,0,0.75));
+      }
+      .button {
+        display: none !important;
+      }
+      .fortune-hud {
+        text-align: center;
+        margin-top: 8px;
+      }
+      .fortune-banner {
+        display: inline-block;
+        padding: 8px 22px;
+        border-radius: 999px;
+        background: rgba(16, 185, 129, 0.14);
+        border: 1px solid rgba(16, 185, 129, 0.4);
+        color: #a7f3d0;
+        font-weight: 800;
+        font-size: 14px;
+        letter-spacing: 0.04em;
+      }
+      .bet-dock {
+        width: calc(100% - 24px);
+        max-width: 540px;
+        background: rgba(11, 17, 30, 0.94);
+        border: 1px solid rgba(16, 185, 129, 0.28);
+        border-radius: 18px;
+        padding: 14px 18px;
+        margin-bottom: 18px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .chip-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .chip-btn {
+        flex: 1;
+        padding: 9px 6px;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.14);
+        background: rgba(255,255,255,0.05);
+        color: #e2e8f0;
+        font-weight: 800;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .chip-btn.active {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: #04130d;
+        border-color: #34d399;
+        box-shadow: 0 0 14px rgba(16, 185, 129, 0.45);
+      }
+      .spin-action-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+      }
+      .bal-pill {
+        display: flex;
+        flex-direction: column;
+        background: rgba(255,255,255,0.04);
+        padding: 8px 14px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.08);
+        min-width: 145px;
+      }
+      .bal-pill small {
+        font-size: 10px;
+        text-transform: uppercase;
+        color: #94a3b8;
+        letter-spacing: 0.08em;
+      }
+      .bal-pill strong {
+        font-size: 16px;
+        color: #34d399;
+        font-weight: 900;
+      }
+      .spin-main-btn {
+        flex: 1;
+        padding: 14px 20px;
+        border-radius: 12px;
+        border: none;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: #03150e;
+        font-weight: 900;
+        font-size: 16px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        cursor: pointer;
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+      }
+      .spin-main-btn:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="fortune-hud">
+      <div id="fortuneStatus" class="fortune-banner">SELECT YOUR BET &amp; SPIN THE MEGA WHEEL</div>
+    </div>
+
+    <div id="app">
+      <img class="marker" src="marker.png" alt="Marker" />
+      <img class="wheel" src="wheel.png" alt="Fortune Wheel" />
+      <img class="button" src="button.png" alt="Spin" />
+    </div>
+
+    <div class="bet-dock">
+      <div class="chip-row">
+        <button class="chip-btn" data-bet="20">Rs 20</button>
+        <button class="chip-btn active" data-bet="50">Rs 50</button>
+        <button class="chip-btn" data-bet="100">Rs 100</button>
+        <button class="chip-btn" data-bet="500">Rs 500</button>
+        <button class="chip-btn" data-bet="1000">Rs 1,000</button>
+      </div>
+      <div class="spin-action-row">
+        <div class="bal-pill">
+          <small>PKR Wallet</small>
+          <strong id="wheelBalText">Rs 1,000</strong>
+        </div>
+        <button id="spinTriggerBtn" class="spin-main-btn">SPIN WHEEL (Rs 50)</button>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

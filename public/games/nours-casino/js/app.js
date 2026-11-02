@@ -3421,6 +3421,12 @@ async function init() {
   // migration captures the session the player was mid-way through, and only
   // then may an active profile's own save override it.
   bootProfiles();
+  if (window.WinXBridge) {
+    winxSyncingExternal = true;
+    state.balance = round2(window.WinXBridge.getBalance());
+    winxLastSyncedBalance = state.balance;
+    winxSyncingExternal = false;
+  }
   await ensureSeeds();
 
   try {

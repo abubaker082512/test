@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { useAuth } from '../../context/AuthContext'
@@ -14,6 +14,8 @@ export default function PlayGame() {
   const [ftgData, setFtgData] = useState(null)
   const [showFtgDetails, setShowFtgDetails] = useState(false)
   const [iframeReloadKey, setIframeReloadKey] = useState(0)
+  const iframeRef = useRef(null)
+  const bootBalanceRef = useRef(null)
 
   // Live Provider Stream State
   const [gameMode, setGameMode] = useState('api')
@@ -30,23 +32,56 @@ export default function PlayGame() {
     displayName: 'Guest'
   }
 
+  //Effective wallet balance (Real or Demo)
+  const activeBalance = isDemoMode ? demoBalance : (wallet && wallet.balance !== undefined ? parseFloat(wallet.balance) : 150.0)
+
+  if (bootBalanceRef.current === null || (wallet && bootBalanceRef.current === 150.0 && parseFloat(wallet.balance) !== 150.0)) {
+    bootBalanceRef.current = activeBalance
+  }
+
+  // Push WINX_INIT to the game iframe without reloading its src URL
+  const pushInitToIframe = (overrideBal) => {
+    try {
+      const win = iframeRef.current && iframeRef.current.contentWindow
+      if (!win) return
+      win.postMessage({
+        type: 'WINX_INIT',
+        userId: activeUser.id || activeUser.uid || 'guest_player',
+        email: activeUser.email || '',
+        isDemo: Boolean(isDemoMode),
+        balance: typeof overrideBal === 'number' ? overrideBal : activeBalance
+      }, '*')
+    } catch (e) {}
+  }
+
   // Fetch real wallet balance
   const fetchWallet = async () => {
-    if (!user) return
+    const uid = user ? (user.id || user.uid || '') : 'guest_player'
+    const email = user ? (user.email || '') : ''
     try {
-      const res = await fetch(`/api/wallet/get-balance?user_id=${encodeURIComponent(user.id || user.uid || '')}&email=${encodeURIComponent(user.email || '')}`)
+      const res = await fetch(`/api/wallet/get-balance?user_id=${encodeURIComponent(uid)}&email=${encodeURIComponent(email)}`)
       const json = await res.json()
       if (json.success && json.wallet) {
         setWallet(json.wallet)
+        const fetchedBal = parseFloat(json.wallet.balance)
+        if (!isNaN(fetchedBal) && !isDemoMode) {
+          bootBalanceRef.current = fetchedBal
+          pushInitToIframe(fetchedBal)
+        }
       }
     } catch (e) {}
   }
 
   useEffect(() => {
-    if (user) {
+    if (!loading) {
       fetchWallet()
     }
-  }, [user])
+  }, [user, loading])
+
+  // Sync mode/balance changes to iframe via postMessage
+  useEffect(() => {
+    pushInitToIframe(activeBalance)
+  }, [isDemoMode, user])
 
   // Listen for real-time balance updates from hosted GitHub open-source game iframes via WinXBridge
   useEffect(() => {
@@ -72,13 +107,36 @@ export default function PlayGame() {
     return () => window.removeEventListener('message', handleBridgeMessage)
   }, [demoBalance, spendDemoBalance, addDemoBalance])
 
-  // Effective wallet balance (Real or Demo)
-  const activeBalance = isDemoMode ? demoBalance : (wallet ? parseFloat(wallet.balance) : 5000.0)
-
   // Map slug to our self-hosted GitHub open-source engines in /public/games/
+  // IMPORTANT: Do NOT interpolate live `activeBalance` into the iframe src, or React will reload the iframe on every bet!
   const resolveOpenSourceEngineUrl = (rawSlug) => {
     const slug = String(rawSlug || '').toLowerCase().replace(/^winx-/, '')
-    const baseQuery = `user_id=${encodeURIComponent(activeUser.id || activeUser.uid || 'guest_player')}&email=${encodeURIComponent(activeUser.email || '')}&demo=${isDemoMode ? 'true' : 'false'}&balance=${encodeURIComponent(Math.round(activeBalance))}`
+    const initialBal = Math.round(bootBalanceRef.current ?? activeBalance)
+    const baseQuery = `user_id=${encodeURIComponent(activeUser.id || activeUser.uid || 'guest_player')}&email=${encodeURIComponent(activeUser.email || '')}&demo=${isDemoMode ? 'true' : 'false'}&balance=${encodeURIComponent(initialBal)}`
+
+    if (slug.includes('euro-roulette') || slug.includes('european-roulette') || slug.includes('vip-roulette')) {
+      return `/games/euro-roulette/index.html?${baseQuery}&game=euro-roulette`
+    }
+
+    if (slug.includes('baccarat')) {
+      return `/games/baccarat-royale/index.html?${baseQuery}&game=baccarat-royale`
+    }
+
+    if (slug.includes('video-poker') || slug.includes('jacks-or-better') || slug.includes('poker')) {
+      return `/games/video-poker/index.html?${baseQuery}&game=video-poker`
+    }
+
+    if (slug.includes('mega-fortune-wheel') || slug.includes('wheel-of-fortune') || slug.includes('fortune-wheel')) {
+      return `/games/wheel-of-fortune/index.html?${baseQuery}&game=mega-fortune-wheel`
+    }
+
+    if (slug.includes('vegas-slot') || slug.includes('20-line') || slug.includes('pharaoh') || slug.includes('olympus')) {
+      return `/games/vegas-slots/index.html?${baseQuery}&game=vegas-slots`
+    }
+
+    if (slug.includes('galaxy-slot') || slug.includes('star-wars') || slug.includes('space-slot')) {
+      return `/games/galaxy-slots/index.html?${baseQuery}&game=galaxy-slots`
+    }
 
     if (
       slug.includes('mystical') ||
@@ -118,7 +176,7 @@ export default function PlayGame() {
     if (slug.includes('roulette')) {
       return `/games/nours-casino/index.html?${baseQuery}&game=roulette#/roulette`
     }
-    if (slug.includes('blackjack') || slug.includes('baccarat') || slug.includes('dragon') || slug.includes('poker')) {
+    if (slug.includes('blackjack') || slug.includes('dragon')) {
       return `/games/nours-casino/index.html?${baseQuery}&game=blackjack#/blackjack`
     }
     if (slug.includes('limbo')) {
@@ -176,6 +234,11 @@ export default function PlayGame() {
       'super-ace-deluxe',
       'fortune-gems',
       'fortune-gems-2',
+      'vegas-slots',
+      'galaxy-slots',
+      'euro-roulette',
+      'baccarat-royale',
+      'wheel-of-fortune',
       'crash',
       'stake-crash',
       'aviator',
@@ -214,6 +277,9 @@ export default function PlayGame() {
       'derby',
       'mega-fortune-wheel',
       'wheel',
+      'twist',
+      'pocket-dice',
+      'dice',
       'video-poker',
       'video-poker-pro',
       'fishing-joy',
@@ -269,11 +335,13 @@ export default function PlayGame() {
 
   useEffect(() => {
     if (gameId) {
+      bootBalanceRef.current = activeBalance
       fetchLiveGameUrl()
     }
   }, [gameId, isDemoMode, user])
 
   const reloadStream = (extraFunds) => {
+    bootBalanceRef.current = activeBalance
     setIframeReloadKey((prev) => prev + 1)
     fetchLiveGameUrl(extraFunds)
   }
@@ -301,8 +369,10 @@ export default function PlayGame() {
     const engineSrc = resolveOpenSourceEngineUrl(gameId)
     return (
       <iframe
+        ref={iframeRef}
         key={`${gameId}-${isDemoMode}-${iframeReloadKey}`}
         src={engineSrc}
+        onLoad={() => pushInitToIframe(activeBalance)}
         style={{
           width: '100%',
           height: '100%',
@@ -323,56 +393,6 @@ export default function PlayGame() {
     if (isBrowserGame && !showFtgDetails) {
       return (
         <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <div style={{
-            height: '36px',
-            background: 'rgba(15, 32, 39, 0.95)',
-            borderBottom: '1px solid rgba(0, 255, 136, 0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '0 10px',
-            fontSize: '11px',
-            zIndex: 10
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ background: '#00ff88', color: '#000', padding: '1px 6px', borderRadius: '4px', fontWeight: '900', fontSize: '10px' }}>FREE</span>
-              <span style={{ color: '#fff', fontWeight: 'bold' }}>Instant Web Play</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <button
-                type="button"
-                onClick={() => setShowFtgDetails(true)}
-                style={{
-                  background: 'rgba(255,255,255,0.1)',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  color: '#fff',
-                  padding: '3px 8px',
-                  borderRadius: '4px',
-                  fontSize: '11px',
-                  cursor: 'pointer'
-                }}
-              >
-                ℹ️ Info
-              </button>
-              <button
-                type="button"
-                onClick={() => window.open(ftgData.game_url, '_blank')}
-                style={{
-                  background: '#00ff88',
-                  border: 'none',
-                  color: '#000',
-                  padding: '3px 8px',
-                  borderRadius: '4px',
-                  fontSize: '11px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer'
-                }}
-              >
-                ↗️ New Tab
-              </button>
-            </div>
-          </div>
-
           <div style={{ flex: 1, position: 'relative' }}>
             <iframe
               src={liveGameUrl}
@@ -426,114 +446,190 @@ export default function PlayGame() {
 
   if (loading) {
     return (
-      <div style={{ width: '100%', height: '100vh', margin: '0 auto', background: '#0c0317', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="winx-game-stage-shell" style={{ width: '100%', height: '100vh', margin: '0 auto', background: '#070b14', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '32px', animation: 'spin 1s linear infinite', marginBottom: '12px' }}>🎰</div>
-          <div>Loading Game Engine...</div>
+          <div style={{ fontSize: '32px', marginBottom: '12px' }}>🎰</div>
+          <div style={{ color: '#34d399', fontWeight: 700 }}>Loading WinX Game Engine...</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div style={{ width: '100%', maxWidth: '100vw', height: '100dvh', margin: '0 auto', background: '#070a14', color: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div className="winx-game-stage-shell" style={{ width: '100%', maxWidth: '100vw', height: '100dvh', margin: '0 auto', background: '#070a14', color: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       
-      {/* Top Header Bar */}
-      <div style={{ 
-        height: '48px',
-        padding: '0 14px', 
-        background: '#120722', 
+      {/* Unified Single WINX Dark-Emerald Top Header Across All Games */}
+      <header style={{ 
+        height: '58px',
+        padding: '0 16px', 
+        background: 'linear-gradient(180deg, #0b1322 0%, #070d18 100%)', 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
-        borderBottom: '1px solid rgba(255, 215, 0, 0.2)',
+        borderBottom: '1px solid rgba(16, 185, 129, 0.22)',
+        boxShadow: '0 6px 24px rgba(0, 0, 0, 0.55)',
         zIndex: 50,
-        gap: '8px'
+        gap: '10px',
+        flexShrink: 0
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+        {/* Left: Back to Lobby + WINX Brand + Active Game Name */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
           <Link href="/" style={{ textDecoration: 'none' }}>
             <button 
+              type="button"
               style={{
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(255,215,0,0.3)',
-                color: '#fff',
-                padding: '5px 10px',
-                borderRadius: '6px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.14)',
+                color: '#e2e8f0',
+                padding: '7px 12px',
+                borderRadius: '10px',
                 fontSize: '12px',
-                fontWeight: 'bold',
+                fontWeight: '800',
                 cursor: 'pointer',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px'
               }}
             >
-              ⬅ Lobby
+              <span>⬅</span>
+              <span>Lobby</span>
             </button>
           </Link>
-          
-          <div style={{ 
-            fontWeight: '900', 
-            color: 'var(--accent)', 
-            fontSize: '13px', 
-            textTransform: 'uppercase', 
-            letterSpacing: '0.5px',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-          }}>
-            🎮 {getGameTitle()}
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '9px', minWidth: 0 }}>
+            <div style={{
+              width: '34px',
+              height: '34px',
+              borderRadius: '10px',
+              background: 'rgba(16, 185, 129, 0.14)',
+              border: '1px solid rgba(16, 185, 129, 0.45)',
+              boxShadow: '0 0 16px rgba(16, 185, 129, 0.25)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#10b981',
+              fontWeight: '900',
+              fontSize: '17px',
+              flexShrink: 0
+            }}>
+              W
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+              <span style={{
+                fontSize: '13px',
+                fontWeight: '900',
+                letterSpacing: '0.08em',
+                color: '#f8fafc',
+                lineHeight: 1.1
+              }}>
+                WINX
+              </span>
+              <span style={{
+                fontSize: '11px',
+                fontWeight: '800',
+                letterSpacing: '0.06em',
+                color: '#10b981',
+                textTransform: 'uppercase',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                lineHeight: 1.2
+              }}>
+                {getGameTitle()}
+              </span>
+            </div>
           </div>
         </div>
-        
+
+        {/* Center/Right: Unified PKR WALLET Box + Action Buttons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-          <button
-            onClick={() => reloadStream()}
-            style={{
-              background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.15)',
-              color: '#fff',
-              padding: '5px 9px',
-              borderRadius: '6px',
-              fontSize: '11px',
-              cursor: 'pointer'
+          <div 
+            onClick={() => toggleDemoMode(!isDemoMode)}
+            style={{ 
+              background: 'rgba(13, 22, 38, 0.95)', 
+              border: `1px solid ${isDemoMode ? 'rgba(56, 189, 248, 0.45)' : 'rgba(16, 185, 129, 0.45)'}`, 
+              padding: '5px 12px', 
+              borderRadius: '12px', 
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)'
             }}
-            title="Reload Game"
+            title="Click to switch between Real PKR Wallet and Demo Wallet"
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+              <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '0.08em', color: '#94a3b8', textTransform: 'uppercase', lineHeight: 1 }}>
+                {isDemoMode ? 'DEMO WALLET' : 'PKR WALLET'}
+              </span>
+              <span style={{ fontSize: '14px', fontWeight: '900', color: '#f8fafc', lineHeight: 1.25, fontFamily: 'monospace, sans-serif' }}>
+                Rs {activeBalance.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+            <span style={{
+              padding: '3px 7px',
+              borderRadius: '6px',
+              fontSize: '10px',
+              fontWeight: '900',
+              letterSpacing: '0.05em',
+              background: isDemoMode ? 'rgba(56, 189, 248, 0.18)' : 'rgba(16, 185, 129, 0.2)',
+              color: isDemoMode ? '#38bdf8' : '#34d399',
+              border: `1px solid ${isDemoMode ? 'rgba(56, 189, 248, 0.4)' : 'rgba(16, 185, 129, 0.4)'}`
+            }}>
+              {isDemoMode ? 'DEMO' : 'REAL'}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              fetchWallet()
+              reloadStream()
+            }}
+            style={{
+              width: '36px',
+              height: '36px',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              color: '#e2e8f0',
+              borderRadius: '10px',
+              fontSize: '13px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            title="Sync Wallet & Reload Game"
           >
             🔄
           </button>
 
-          <div 
-            onClick={() => toggleDemoMode(!isDemoMode)}
-            style={{ 
-              background: isDemoMode ? 'rgba(0, 230, 118, 0.15)' : 'rgba(255, 215, 0, 0.15)', 
-              border: `1px solid ${isDemoMode ? '#00e676' : 'var(--accent)'}`, 
-              padding: '4px 10px', 
-              borderRadius: '12px', 
-              fontSize: '12px', 
-              fontWeight: '900',
+          <button 
+            type="button"
+            onClick={toggleFullscreen}
+            style={{
+              width: '36px',
+              height: '36px',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              color: '#e2e8f0',
+              borderRadius: '10px',
+              fontSize: '13px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '5px'
+              justifyContent: 'center'
             }}
-            title="Click to toggle Demo/Real Mode"
-          >
-            <span>{isDemoMode ? '🎮 DEMO' : '💰 REAL'}</span>
-            <span style={{ color: isDemoMode ? '#00e676' : 'var(--accent)' }}>
-              Rs {activeBalance.toLocaleString('en-PK', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-            </span>
-          </div>
-
-          <button 
-            onClick={toggleFullscreen}
-            style={{ padding: '5px 9px', fontSize: '11px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', borderRadius: '6px', cursor: 'pointer' }}
             title="Toggle Fullscreen"
           >
-            {isFullscreen ? 'Exit' : '⛶'}
+            {isFullscreen ? '✕' : '⛶'}
           </button>
         </div>
-      </div>
+      </header>
 
       {/* Main Embedded Open-Source Game Stage */}
-      <div style={{ flex: 1, position: 'relative', width: '100%', height: 'calc(100dvh - 48px)', background: '#070a14', overflow: 'hidden' }}>
+      <div style={{ flex: 1, position: 'relative', width: '100%', height: 'calc(100dvh - 58px)', background: '#070a14', overflow: 'hidden' }}>
         {ftgData ? renderFtgStage() : gameMode === 'api' && liveGameUrl ? (
           <iframe 
             src={liveGameUrl}

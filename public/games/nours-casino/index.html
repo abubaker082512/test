@@ -9,8 +9,26 @@
 <script src="/games/winx-bridge.js"></script>
 <title>WinX Originals &middot; Provably Fair Casino</title>
 <style>
-  #btn-cheat, #btn-deposit, #btn-custom, #btn-reset, #btn-account, .play-money-badge {
+  #btn-cheat, #btn-deposit, #btn-custom, #btn-reset, #btn-account, .play-money-badge,
+  header.topbar, .game-context {
     display: none !important;
+  }
+  :root {
+    --topbar-h: 0px !important;
+  }
+  @media (max-width: 960px) {
+    .controls {
+      top: auto !important;
+      overflow: visible !important;
+    }
+    .board-stage {
+      height: clamp(340px, calc(100svh - var(--bet-bar-h) - 96px), 560px) !important;
+      min-height: 340px !important;
+    }
+    body[data-route="game"]:has(.game-ctrl-pane.is-active .pane-actions button:not(:disabled)) .board-stage {
+      height: clamp(290px, calc(100svh - var(--bet-bar-h) - 168px), 480px) !important;
+      min-height: 290px !important;
+    }
   }
 </style>
 
@@ -670,10 +688,10 @@
       <div class="field">
         <div class="field__head">
           <label class="field__label" for="bet-amount">Bet Amount</label>
-          <span class="field__hint" id="bet-usd">$10.00</span>
+          <span class="field__hint" id="bet-usd">Rs 10.00</span>
         </div>
         <div class="input-group">
-          <span class="input-group__prefix" aria-hidden="true">$</span>
+          <span class="input-group__prefix" aria-hidden="true">Rs</span>
           <input class="input" type="text" id="bet-amount" inputmode="decimal" autocomplete="off"
                  spellcheck="false" value="10.00" aria-describedby="bet-usd" />
           <div class="input-group__actions">
@@ -927,7 +945,7 @@
         </div>
         <div class="payout-preview__row">
           <span>Max Win</span>
-          <b id="preview-max-win" class="txt-gold">$10,000.00</b>
+          <b id="preview-max-win" class="txt-gold">Rs 10,000.00</b>
         </div>
       </div>
 
@@ -940,7 +958,7 @@
               aria-haspopup="dialog" aria-controls="bet-controls-content">
         <svg class="ico" width="17" height="17" aria-hidden="true"><use href="#i-sliders" /></svg>
         <span class="phone-bet-summary__copy">
-          <strong id="phone-bet-amount">$10.00</strong>
+          <strong id="phone-bet-amount">Rs 10.00</strong>
           <small id="phone-bet-detail">Medium &middot; 16 rows</small>
         </span>
       </button>

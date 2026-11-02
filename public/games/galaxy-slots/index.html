@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WinX • Galaxy Wars 5-Reel Slot</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/bootstrap@5.2.3/dist/css/bootstrap-reboot.min.css"
+    />
+    <link rel="stylesheet" href="./css/style.css" />
+    <script src="/games/winx-bridge.js"></script>
+    <style>
+      #jackpot {
+        font-size: 20px !important;
+        color: #10b981 !important;
+        font-weight: 800;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+      }
+      #controls {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 10px 14px !important;
+      }
+      .bet-chip-group {
+        display: flex;
+        gap: 6px;
+      }
+      .g-chip {
+        background: #1e293b;
+        color: #e2e8f0;
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 8px;
+        padding: 5px 10px;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .g-chip.active {
+        background: #10b981;
+        color: #03150e;
+        border-color: #34d399;
+      }
+      #spin {
+        background: linear-gradient(135deg, #10b981, #059669) !important;
+        color: #04130d !important;
+        font-weight: 900 !important;
+        border-radius: 10px !important;
+        border: none !important;
+        padding: 8px 22px !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="slot">
+      <div id="jackpot">PKR WALLET: <span id="jp">Rs 1,000</span> &bull; <span id="winMsg" style="color:#fde68a;">READY TO SPIN</span></div>
+      <div id="reels">
+        <div class="reel"></div>
+        <div class="reel"></div>
+        <div class="reel"></div>
+        <div class="reel"></div>
+        <div class="reel"></div>
+      </div>
+      <div id="controls">
+        <div class="bet-chip-group">
+          <button type="button" class="g-chip" data-bet="20">Rs 20</button>
+          <button type="button" class="g-chip active" data-bet="50">Rs 50</button>
+          <button type="button" class="g-chip" data-bet="100">Rs 100</button>
+          <button type="button" class="g-chip" data-bet="500">Rs 500</button>
+        </div>
+        <button type="button" id="spin">SPIN (Rs 50)</button>
+        <label style="font-size:14px;color:#cbd5e1;">
+          <input type="checkbox" name="autoplay" id="autoplay" />
+          Auto
+        </label>
+      </div>
+    </div>
+    <script type="module" src="./js/index.js"></script>
+  </body>
+</html>

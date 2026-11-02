@@ -16,9 +16,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
-  const { user_id, game, action = 'spin', betAmount = 10, params = {} } = req.body || {};
+  const { user_id, email = '', game, action = 'spin', betAmount = 10, params = {} } = req.body || {};
 
-  if (!user_id) {
+  if (!user_id && !email) {
     return res.status(400).json({ success: false, error: 'Missing user identifier' });
   }
 
@@ -32,7 +32,7 @@ export default async function handler(req, res) {
   const isRestricted = (risk.restrictedUsers || []).includes(user_id);
 
   // 2. Debit Bet Amount
-  const debitRes = debitUserBalance(user_id, parsedBet);
+  const debitRes = debitUserBalance(user_id, parsedBet, email);
   if (!debitRes.success) {
     return res.status(400).json({
       success: false,
@@ -172,9 +172,10 @@ export default async function handler(req, res) {
     }
 
     // 5. Credit Payout to User
-    const creditRes = creditUserBalance(user_id, finalPayout, '', `Won in ${game}`);
+    const creditRes = creditUserBalance(user_id, finalPayout, email, `Won in ${game}`);
     recordTransactionRecord({
-      user_id,
+      user_id: creditRes.user_id || user_id,
+      email,
       type: 'payout',
       amount: finalPayout,
       status: 'completed',
@@ -183,8 +184,8 @@ export default async function handler(req, res) {
     });
 
     try {
-      updateWalletBalance(user_id, creditRes.balance).catch(() => {});
-      addTransaction({ user_id, type: 'payout', amount: finalPayout, status: 'completed' }).catch(() => {});
+      updateWalletBalance(creditRes.user_id || user_id, creditRes.balance).catch(() => {});
+      addTransaction({ user_id: creditRes.user_id || user_id, type: 'payout', amount: finalPayout, status: 'completed' }).catch(() => {});
     } catch (e) {}
 
     return res.status(200).json({
@@ -198,7 +199,7 @@ export default async function handler(req, res) {
   }
 
   // Loss response
-  const currentWallet = getUserWallet(user_id);
+  const currentWallet = getUserWallet(user_id, email);
   return res.status(200).json({
     success: true,
     game,
