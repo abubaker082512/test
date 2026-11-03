@@ -7,15 +7,15 @@ export default function GameCard({
   provider, 
   badge, 
   recommended = true,
-  theme = 'linear-gradient(180deg, #2a0f4f 0%, #150628 100%)',
+  theme = 'linear-gradient(180deg, #162a1e 0%, #0b140e 100%)',
   icon = '🎮',
   slug = '',
   imageType = '', 
   imageUrl = '',
-  category = ''
+  category = '',
+  featuredBento = false
 }) {
   const [isFavorite, setIsFavorite] = useState(false)
-
   const [imgError, setImgError] = useState(false)
 
   const toggleFavorite = (e) => {
@@ -24,67 +24,73 @@ export default function GameCard({
     setIsFavorite(!isFavorite)
   }
 
-  const renderCardGraphic = () => {
-    const finalSrc = (!imgError && imageUrl) ? imageUrl : '/games/super_ace.png'
+  const fallbackCovers = [
+    'https://cdn.betnex.co/images/jiligaming/48.webp',
+    'https://cdn.betnex.co/images/jiligaming/37.png',
+    'https://cdn.betnex.co/images/pgsoft/16.png',
+    'https://cdn.betnex.co/images/pgsoft/0.webp',
+    'https://cdn.betnex.co/images/jiligaming/74.webp'
+  ]
+  const hashIdx = String(id || title || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0) % fallbackCovers.length
+  const finalSrc = (!imgError && imageUrl) ? imageUrl : fallbackCovers[hashIdx]
 
-    return (
-      <img 
-        src={finalSrc} 
-        alt={title} 
-        onError={() => setImgError(true)}
-        className="game-card-img"
-        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-      />
-    )
-  }
+  const targetUrl = (category === 'Sports' || provider === 'BetStack' || provider === 'BetStack Sports')
+    ? '/sports'
+    : `/play/${slug || id}`
 
-  const targetUrl = (category === 'Sports' || provider === 'BetStack') ? '/sports' : `/play/${slug || id}`;
-
-  // Formatted display label for bottom pill badge
-  const pillLabel = provider ? `${provider} ${title.split(' ')[0]}` : title;
+  // Clean short provider tag for the top-center pill (matching bbrssms1.com)
+  const shortProvider = (() => {
+    if (!provider) return 'WINX'
+    const p = provider.toUpperCase()
+    if (p.includes('WINX')) return 'WINX'
+    if (p.includes('JILI')) return 'JILI'
+    if (p.includes('PG')) return 'PG'
+    if (p.includes('PRAGMATIC')) return 'PP'
+    if (p.includes('SPRIBE')) return 'IN-OUT'
+    if (p.includes('EVOLUTION')) return 'EVO'
+    if (p.includes('JDB')) return 'JDB'
+    if (p.includes('FA CHAI')) return 'FC'
+    if (p.includes('CQ9')) return 'CQ9'
+    if (p.includes('BETSTACK')) return 'SPORT'
+    return p.split(' ')[0].slice(0, 6)
+  })()
 
   return (
-    <Link href={targetUrl} style={{ textDecoration: 'none', display: 'block' }}>
-      <div className="game-card-premium">
-        
-        {/* Top-Left Thumbs-up / Recommended badge */}
-        {recommended && (
-          <div className="card-top-badge-left" title="Hot Recommended">
-            👍
-          </div>
-        )}
+    <Link 
+      href={targetUrl} 
+      className={featuredBento ? 'bbr-card-link bento-span-2x2' : 'bbr-card-link'}
+      style={{ textDecoration: 'none', display: 'block' }}
+    >
+      <div className={`bbr-game-card ${featuredBento ? 'bbr-game-card-bento' : ''}`}>
+        {/* Full-bleed vertical poster artwork */}
+        <img 
+          src={finalSrc} 
+          alt={title} 
+          loading="lazy"
+          onError={() => setImgError(true)}
+          className="bbr-game-card-img"
+        />
 
-        {/* Top-Right Favorite Star badge */}
+        {/* Top-center subtle provider tag matching bbrssms1.com */}
+        <div className="bbr-card-provider-tag">
+          {shortProvider}
+        </div>
+
+        {/* Top-right circular heart favorite button matching bbrssms1.com */}
         <button 
           type="button"
-          className="card-top-badge-right" 
+          className={`bbr-card-heart-btn ${isFavorite ? 'liked' : ''}`}
           onClick={toggleFavorite}
-          style={{ color: isFavorite ? '#ffd700' : 'rgba(255,255,255,0.7)' }}
-          title="Add to Favorites"
+          aria-label="Favorite game"
         >
-          ★
+          {isFavorite ? '♥' : '♡'}
         </button>
 
-        {/* Payout / Multiplier Badge */}
-        {badge && (
-          <div className="card-multiplier-badge">
-            {badge}
-          </div>
-        )}
-
-        {/* Inner Image Container */}
-        <div className="game-card-img-wrapper">
-          {renderCardGraphic()}
+        {/* Integrated bottom poster vignette + stylized game title for clarity */}
+        <div className="bbr-card-poster-footer">
+          <span className="bbr-card-poster-title">{title}</span>
         </div>
-
-        {/* Bottom Pill Badge matching 666H screenshot layout */}
-        <div className="game-card-pill-badge">
-          <span className="pill-provider">{provider || 'AKW'}</span>
-          <span className="pill-title">{title}</span>
-        </div>
-
       </div>
     </Link>
   )
 }
-

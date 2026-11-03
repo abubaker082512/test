@@ -5,15 +5,15 @@ import AuthModal from './AuthModal'
 import SideDrawer from './SideDrawer'
 import CurrencyFlag from './CurrencyFlag'
 
-export default function NavBar() {
+export default function NavBar({ onOpenPromoModal }) {
   const { user, logOut, isDemoMode, demoBalance, toggleDemoMode } = useAuth()
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [balance, setBalance] = useState(0.0)
   const [showMenu, setShowMenu] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  const [showAppBar, setShowAppBar] = useState(true)
 
-  // Fetch and subscribe to wallet balance
   const fetchBalance = async () => {
     if (!user) return
     try {
@@ -32,26 +32,15 @@ export default function NavBar() {
       setBalance(0.0)
       return
     }
-
     fetchBalance()
-
-    // Real-time polling every 5 seconds for instant synchronization
-    const pollInterval = setInterval(() => {
-      fetchBalance()
-    }, 5000)
-
-    // Custom client-side event for instant updates
-    const handleWalletUpdate = () => {
-      fetchBalance()
-    }
+    const pollInterval = setInterval(fetchBalance, 5000)
+    const handleWalletUpdate = () => fetchBalance()
     window.addEventListener('wallet-updated', handleWalletUpdate)
-
     return () => {
       clearInterval(pollInterval)
       window.removeEventListener('wallet-updated', handleWalletUpdate)
     }
   }, [user])
-
 
   const handleRefresh = async () => {
     if (!user) {
@@ -65,6 +54,41 @@ export default function NavBar() {
 
   return (
     <>
+      {/* Top Neon-Lime App Download Strip (matching bbrssms1.com Screenshot 4) */}
+      {showAppBar && (
+        <div className="bbr-top-install-bar">
+          <div className="bbr-install-left">
+            <div className="bbr-install-app-icon">
+              <img src="/logo.png" alt="WinX" />
+            </div>
+            <div className="bbr-install-copy">
+              Download the app to win <strong>PKR 8888</strong>
+            </div>
+            <span className="bbr-install-gift" onClick={() => onOpenPromoModal && onOpenPromoModal()}>🎁</span>
+          </div>
+          <div className="bbr-install-right">
+            <button
+              type="button"
+              className="bbr-install-btn"
+              onClick={() => {
+                if (onOpenPromoModal) onOpenPromoModal()
+                else alert('WinX Pro Official Android & iOS Web App Ready! Add to Home Screen to claim PKR 8,888 bonus.')
+              }}
+            >
+              ⬇ Install
+            </button>
+            <button
+              type="button"
+              className="bbr-install-close"
+              onClick={() => setShowAppBar(false)}
+              aria-label="Close install banner"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       <nav className="navbar">
         <div className="logo-container">
           <button 
@@ -78,7 +102,7 @@ export default function NavBar() {
               position: 'absolute',
               top: '-4px',
               right: '-4px',
-              background: '#ff0055',
+              background: '#ff2a55',
               color: '#fff',
               fontSize: '9px',
               fontWeight: '900',
@@ -87,156 +111,195 @@ export default function NavBar() {
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 2px 5px rgba(255, 0, 85, 0.5)'
+              justifyContent: 'center'
             }}>
-              5
+              3
             </span>
           </button>
-          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <img 
               src="/logo.png" 
               alt="WinX Pro" 
               style={{ 
-                height: '44px', 
+                height: '38px', 
                 width: 'auto', 
-                maxHeight: '46px',
                 objectFit: 'contain',
-                filter: 'drop-shadow(0 2px 10px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 8px rgba(255, 215, 0, 0.3))'
+                filter: 'drop-shadow(0 2px 8px rgba(109, 255, 56, 0.35))'
               }} 
             />
           </Link>
         </div>
 
         <div className="header-right">
-          {/* Demo Mode Toggle Badge */}
-          {isDemoMode ? (
-            <div 
-              onClick={() => toggleDemoMode(false)}
+          {onOpenPromoModal && (
+            <button
+              type="button"
+              onClick={onOpenPromoModal}
+              title="Promotions & QR Tutorial"
               style={{
-                background: 'rgba(0, 230, 118, 0.15)',
-                border: '1px solid #00e676',
-                borderRadius: '20px',
-                padding: '4px 10px',
+                background: 'rgba(109, 255, 56, 0.14)',
+                border: '1px solid rgba(109, 255, 56, 0.45)',
+                borderRadius: '10px',
+                width: '32px',
+                height: '32px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                cursor: 'pointer'
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '15px'
               }}
-              title="Click to switch to Real Account"
             >
-              <span style={{ fontSize: '13px' }}>🎮</span>
-              <span style={{ fontSize: '12px', fontWeight: 900, color: '#00e676', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                DEMO <CurrencyFlag size={14} /> {demoBalance.toFixed(2)}
-              </span>
-              <span style={{ fontSize: '9px', background: '#00e676', color: '#000', padding: '1px 5px', borderRadius: '4px', fontWeight: 900 }}>
-                TRIAL
-              </span>
-            </div>
-          ) : (
-            /* Real Wallet Balance Display */
-            <div className="wallet-display">
-              <CurrencyFlag size={18} />
-              <span className="wallet-amount">
-                {user ? balance.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
-              </span>
-              <button 
-                className={`wallet-refresh ${refreshing ? 'coin-spin' : ''}`} 
-                onClick={handleRefresh}
-                title="Refresh Balance (Fiat)"
-              >
-                🔄
-              </button>
-            </div>
+              🎁
+            </button>
           )}
 
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              {/* Deposit Button with Dropdown and Badge */}
-              {!isDemoMode && (
-                <div className="deposit-dropdown-container">
-                  <Link href="/wallet" style={{ textDecoration: 'none' }}>
-                    <button className="btn-deposit">
-                      Deposit <span style={{ fontSize: '10px' }}>▼</span>
-                      <span className="deposit-badge">+5%</span>
-                    </button>
-                  </Link>
+            <>
+              {isDemoMode ? (
+                <div 
+                  onClick={() => toggleDemoMode(false)}
+                  style={{
+                    background: 'rgba(109, 255, 56, 0.15)',
+                    border: '1px solid #6dff38',
+                    borderRadius: '20px',
+                    padding: '4px 10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    cursor: 'pointer'
+                  }}
+                  title="Click to switch to Real Account"
+                >
+                  <span style={{ fontSize: '11px', fontWeight: 900, color: '#6dff38' }}>
+                    DEMO Rs {demoBalance.toFixed(0)}
+                  </span>
+                </div>
+              ) : (
+                <div className="wallet-display">
+                  <CurrencyFlag size={16} />
+                  <span className="wallet-amount">
+                    Rs {balance.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                  <button 
+                    className={`wallet-refresh ${refreshing ? 'coin-spin' : ''}`} 
+                    onClick={handleRefresh}
+                    title="Refresh Balance"
+                  >
+                    🔄
+                  </button>
                 </div>
               )}
 
-              {/* User Menu Dropdown */}
-              <div style={{ position: 'relative' }}>
-                <div 
-                  onClick={() => setShowMenu(!showMenu)} 
-                  style={{ 
-                    fontSize: '22px', 
-                    cursor: 'pointer', 
-                    userSelect: 'none', 
-                    background: 'rgba(255,255,255,0.08)',
-                    borderRadius: '50%',
-                    width: '32px',
-                    height: '32px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: '1px solid var(--border)'
-                  }}
-                >
-                  👤
-                </div>
-                {showMenu && (
-                  <div style={{ 
-                    position: 'absolute', 
-                    right: 0, 
-                    top: '38px', 
-                    background: 'var(--bg-secondary)', 
-                    border: '1px solid var(--border)', 
-                    borderRadius: '12px', 
-                    minWidth: '170px', 
-                    zIndex: 100, 
-                    overflow: 'hidden',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
-                  }}>
-                    <div style={{ padding: '10px 14px', fontSize: '11px', color: 'var(--muted)', borderBottom: '1px solid var(--border)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {user.email || 'Player'}
-                    </div>
-                    <div 
-                      onClick={() => { toggleDemoMode(!isDemoMode); setShowMenu(false) }}
-                      className="menu-item-hover" 
-                      style={{ padding: '10px 14px', cursor: 'pointer', color: '#00e676', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}
-                    >
-                      {isDemoMode ? '💰 Switch to Real Mode' : '🎮 Switch to Demo Mode'}
-                    </div>
-                    <Link href="/wallet" style={{ textDecoration: 'none' }}>
-                      <div onClick={() => setShowMenu(false)} className="menu-item-hover" style={{ padding: '10px 14px', cursor: 'pointer', color: '#fff', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        💳 Wallet / Deposit
-                      </div>
-                    </Link>
-                    <Link href="/invite" style={{ textDecoration: 'none' }}>
-                      <div onClick={() => setShowMenu(false)} className="menu-item-hover" style={{ padding: '10px 14px', cursor: 'pointer', color: '#00e676', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        💸 Invite & Earn (Rs 600)
-                      </div>
-                    </Link>
-                    <Link href="/profile" style={{ textDecoration: 'none' }}>
-                      <div onClick={() => setShowMenu(false)} className="menu-item-hover" style={{ padding: '10px 14px', cursor: 'pointer', color: '#fff', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        👤 VIP Profile
-                      </div>
-                    </Link>
-                    <div 
-                      onClick={() => { logOut(); setShowMenu(false) }} 
-                      className="menu-item-hover"
-                      style={{ padding: '10px 14px', cursor: 'pointer', color: 'var(--danger)', fontSize: '13px', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '8px' }}
-                    >
-                      🚪 Log Out
-                    </div>
-                  </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {!isDemoMode && (
+                  <Link href="/wallet" style={{ textDecoration: 'none' }}>
+                    <button className="btn-deposit" style={{ padding: '6px 11px', fontSize: '11px' }}>
+                      Deposit
+                      <span className="deposit-badge">+35%</span>
+                    </button>
+                  </Link>
                 )}
+
+                <div style={{ position: 'relative' }}>
+                  <div 
+                    onClick={() => setShowMenu(!showMenu)} 
+                    style={{ 
+                      fontSize: '18px', 
+                      cursor: 'pointer', 
+                      userSelect: 'none', 
+                      background: 'rgba(109, 255, 56, 0.12)',
+                      borderRadius: '50%',
+                      width: '32px',
+                      height: '32px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: '1px solid rgba(109, 255, 56, 0.35)'
+                    }}
+                  >
+                    👤
+                  </div>
+                  {showMenu && (
+                    <div style={{ 
+                      position: 'absolute', 
+                      right: 0, 
+                      top: '38px', 
+                      background: '#132419', 
+                      border: '1px solid rgba(109, 255, 56, 0.3)', 
+                      borderRadius: '12px', 
+                      minWidth: '175px', 
+                      zIndex: 150, 
+                      overflow: 'hidden',
+                      boxShadow: '0 10px 28px rgba(0,0,0,0.75)'
+                    }}>
+                      <div style={{ padding: '10px 14px', fontSize: '11px', color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {user.email || 'Player'}
+                      </div>
+                      <div 
+                        onClick={() => { toggleDemoMode(!isDemoMode); setShowMenu(false) }}
+                        style={{ padding: '10px 14px', cursor: 'pointer', color: '#6dff38', fontSize: '12px', fontWeight: 'bold' }}
+                      >
+                        {isDemoMode ? '💰 Switch to Real Mode' : '🎮 Switch to Demo Mode'}
+                      </div>
+                      <Link href="/wallet" style={{ textDecoration: 'none' }}>
+                        <div onClick={() => setShowMenu(false)} style={{ padding: '10px 14px', cursor: 'pointer', color: '#fff', fontSize: '13px' }}>
+                          💳 Wallet / Deposit
+                        </div>
+                      </Link>
+                      <Link href="/invite" style={{ textDecoration: 'none' }}>
+                        <div onClick={() => setShowMenu(false)} style={{ padding: '10px 14px', cursor: 'pointer', color: '#6dff38', fontSize: '13px' }}>
+                          💸 Invite & Earn (Rs 2,800)
+                        </div>
+                      </Link>
+                      <Link href="/profile" style={{ textDecoration: 'none' }}>
+                        <div onClick={() => setShowMenu(false)} style={{ padding: '10px 14px', cursor: 'pointer', color: '#fff', fontSize: '13px' }}>
+                          👤 VIP Profile
+                        </div>
+                      </Link>
+                      <div 
+                        onClick={() => { logOut(); setShowMenu(false) }} 
+                        style={{ padding: '10px 14px', cursor: 'pointer', color: '#ff4d6d', fontSize: '13px', borderTop: '1px solid rgba(255,255,255,0.08)' }}
+                      >
+                        🚪 Log Out
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            </>
           ) : (
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button className="btn" style={{ padding: '6px 12px', fontSize: '12px' }} onClick={() => setIsAuthModalOpen(true)}>Log In</button>
-              <button className="btn primary" style={{ padding: '6px 12px', fontSize: '12px' }} onClick={() => setIsAuthModalOpen(true)}>Sign Up</button>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <button 
+                onClick={() => setIsAuthModalOpen(true)}
+                style={{
+                  background: 'rgba(18, 36, 26, 0.9)',
+                  color: '#6dff38',
+                  border: '1px solid #6dff38',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  fontWeight: '800',
+                  cursor: 'pointer'
+                }}
+              >
+                Log in
+              </button>
+              <button 
+                onClick={() => setIsAuthModalOpen(true)}
+                style={{
+                  background: 'linear-gradient(180deg, #88ff4d 0%, #52e534 100%)',
+                  color: '#07140b',
+                  border: 'none',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  fontWeight: '900',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 10px rgba(109, 255, 56, 0.35)'
+                }}
+              >
+                Sign Up
+              </button>
             </div>
           )}
         </div>
