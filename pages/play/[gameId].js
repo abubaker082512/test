@@ -178,7 +178,18 @@ export default function PlayGame() {
     ]
     if (rawLower.startsWith('diamond-') || diamondTableIds.includes(rawLower)) {
       const cleanTableId = rawLower.replace(/^diamond-/, '')
-      return <DiamondCasinoGame initialTableId={cleanTableId} />
+      return (
+        <DiamondCasinoGame
+          initialTableId={cleanTableId}
+          user={activeUser}
+          wallet={activeWalletObj}
+          fetchWallet={fetchWallet}
+          isDemoMode={isDemoMode}
+          demoBalance={demoBalance}
+          spendDemoBalance={spendDemoBalance}
+          addDemoBalance={addDemoBalance}
+        />
+      )
     }
     const slug = rawLower.replace(/^winx-theme-/, '').replace(/^winx-/, '')
     const props = {
