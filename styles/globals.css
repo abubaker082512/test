@@ -1140,77 +1140,104 @@ body {
   justify-content: center;
 }
 
-/* 2. Hero Banner with 3D Characters + 4 Gold Deposit Tier Pills */
+/* 2. Hero Banner with 3D Artwork + 4 Gold Deposit Tier Pills (Clean & Balanced) */
 .bbr-hero-banner {
   position: relative;
-  margin: 8px 10px 6px;
-  border-radius: 14px;
+  margin: 8px 10px 8px;
+  border-radius: 16px;
   overflow: hidden;
-  background: radial-gradient(circle at 50% 35%, rgba(36, 98, 52, 0.65) 0%, rgba(12, 24, 17, 0.96) 75%);
-  border: 1px solid rgba(109, 255, 56, 0.25);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
-  padding: 8px 8px 10px;
+  background: radial-gradient(circle at 75% 30%, rgba(36, 110, 58, 0.75) 0%, rgba(12, 24, 17, 0.98) 75%);
+  border: 1.5px solid rgba(109, 255, 56, 0.28);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.6);
+  padding: 12px 14px 12px;
   cursor: pointer;
-}
-.bbr-hero-art-layer {
-  position: relative;
-  height: 128px;
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  overflow: hidden;
+  flex-direction: column;
+  gap: 10px;
 }
-.bbr-hero-char-left {
-  height: 126px;
-  width: auto;
-  object-fit: contain;
-  transform: translateX(14px);
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6));
-}
-.bbr-hero-char-center {
-  height: 132px;
-  width: auto;
-  object-fit: contain;
-  z-index: 2;
-  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.75));
-}
-.bbr-hero-char-right {
-  height: 96px;
-  width: auto;
-  object-fit: contain;
-  transform: translateX(-14px);
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6));
-}
-.bbr-hero-tiers-grid {
-  position: relative;
-  z-index: 3;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 5px;
-  margin-top: -10px;
-}
-.bbr-tier-pill {
-  background: linear-gradient(90deg, #163822 0%, #245c36 50%, #163822 100%);
-  border: 1.5px solid #ffd54f;
-  border-radius: 999px;
-  padding: 4px 10px;
+.bbr-hero-top-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  gap: 10px;
+}
+.bbr-hero-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.bbr-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(109, 255, 56, 0.16);
+  border: 1px solid rgba(109, 255, 56, 0.4);
+  color: #6dff38;
+  font-size: 9.5px;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 6px;
+  width: fit-content;
+  letter-spacing: 0.3px;
+}
+.bbr-hero-headline {
+  font-size: 16px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.15;
+  letter-spacing: 0.2px;
+}
+.bbr-hero-sub {
+  font-size: 11px;
+  font-weight: 800;
+  color: #ffd54f;
+  letter-spacing: 0.2px;
+}
+.bbr-hero-char-wrap {
+  width: 95px;
+  height: 95px;
+  flex-shrink: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bbr-hero-char-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.7));
+}
+.bbr-hero-tiers-grid {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+.bbr-tier-pill {
+  background: linear-gradient(90deg, #143520 0%, #225633 50%, #143520 100%);
+  border: 1.2px solid #ffd54f;
+  border-radius: 999px;
+  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 .bbr-tier-label {
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 900;
   color: #ffffff;
   letter-spacing: 0.3px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
 .bbr-tier-val {
   font-size: 11px;
   font-weight: 900;
   color: #ffeb3b;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.4);
   padding: 1px 6px;
   border-radius: 999px;
   border: 1px solid rgba(255, 213, 79, 0.45);
@@ -1395,6 +1422,36 @@ body {
 .bbr-sec-badge-pill.pp {
   background: linear-gradient(135deg, #ff6d00 0%, #dd2c00 100%);
   color: #fff;
+}
+.bbr-sec-badge-pill.diamond {
+  background: linear-gradient(135deg, #00e5ff 0%, #00b0ff 100%);
+  color: #001524;
+}
+.bbr-sec-badge-pill.inout {
+  background: linear-gradient(135deg, #e91e63 0%, #ff1744 100%);
+  color: #fff;
+}
+.bbr-sec-badge-pill.winx {
+  background: linear-gradient(135deg, #6dff38 0%, #00e676 100%);
+  color: #081a0b;
+}
+.bbr-sec-badge-pill.fish {
+  background: linear-gradient(135deg, #29b6f6 0%, #0288d1 100%);
+  color: #fff;
+}
+.bbr-sec-badge-pill.cards {
+  background: linear-gradient(135deg, #ab47bc 0%, #7b1fa2 100%);
+  color: #fff;
+}
+.bbr-sec-count {
+  font-size: 10px;
+  font-weight: 800;
+  color: #6dff38;
+  background: rgba(109, 255, 56, 0.12);
+  border: 1px solid rgba(109, 255, 56, 0.3);
+  padding: 1px 6px;
+  border-radius: 999px;
+  margin-left: 4px;
 }
 .bbr-sec-actions {
   display: flex;

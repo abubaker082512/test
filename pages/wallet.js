@@ -3,56 +3,45 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../utils/supabase'
-import { db } from '../utils/firebase'
 import AuthModal from '../components/AuthModal'
-import CurrencyFlag from '../components/CurrencyFlag'
 import BottomNav from '../components/BottomNav'
+
+// Recharge Methods matching Screenshots 1 & 2
+const RECHARGE_METHODS = [
+  { id: 'qr', name: 'QR', isHot: true },
+  { id: 'jazzcash', name: 'JazzCash' },
+  { id: 'easypaisa', name: 'Easypaisa' },
+  { id: 'usdt', name: 'USDT', badge: '+3%' },
+  { id: 'jazzcash_qr', name: 'JAZZCASH_QR' }
+]
+
+// Recharge Amounts matching Screenshots 1 & 2
+const RECHARGE_AMOUNTS = [100, 300, 1000, 2000, 3000, 5000, 10000]
 
 export default function WalletPage() {
   const router = useRouter()
-  const { user, loading } = useAuth()
+  const { user } = useAuth()
   const [wallet, setWallet] = useState(null)
   const [transactions, setTransactions] = useState([])
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('deposit') // 'deposit' | 'withdraw' | 'history'
-  const [depositTab, setDepositTab] = useState('online') // 'online' | 'crypto'
   const [refreshing, setRefreshing] = useState(false)
   const [copiedField, setCopiedField] = useState(null)
 
-  // Receiving Accounts & Gateway Settings from Admin
-  const [rates, setRates] = useState({
-    pkr_rate: 1.0,
-    usd_rate: 280.0,
-    min_deposit: 200,
-    max_deposit: 100000,
-    min_withdraw: 500,
-    max_withdraw: 50000,
-    manual_jazzcash_title: 'WinX Pro Official',
-    manual_jazzcash_no: '03112235935',
-    manual_jazzcash2_title: 'WinX Pro VIP',
-    manual_jazzcash2_no: '03001234567',
-    manual_easypaisa_title: 'WinX Pro Official',
-    manual_easypaisa_no: '03493530916',
-    manual_easypaisa2_title: 'WinX Pro VIP',
-    manual_easypaisa2_no: '03451234567',
-    manual_crypto_network: 'USDT (TRC20)',
-    manual_crypto_address: '',
-    deposit_instructions: 'Please transfer the exact amount to the account shown above, then enter your Transaction ID (TID) to get credited.'
-  })
+  // Deposit States matching Screenshots 1 & 2
+  const [rechargeMethod, setRechargeMethod] = useState('qr')
+  const [rechargeChannel, setRechargeChannel] = useState('qr_code') // 'qr_code' | 'transfer'
+  const [amount, setAmount] = useState('100')
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
 
-  // Selected Payment Method & Channel
-  const [selectedChannel, setSelectedChannel] = useState('JazzCash') // 'JazzCash' | 'EasyPaisa' | 'JazzCash 2' | 'EasyPaisa 2'
-  const [dpAmount, setDpAmount] = useState('200') // Minimum deposit is 200
-  const [dpPhone, setDpPhone] = useState('')
-  const [dpTid, setDpTid] = useState('')
-  const [dpLoading, setDpLoading] = useState(false)
-  const [dpMsg, setDpMsg] = useState(null)
-
-  // Crypto Deposit state
-  const [cryptoAmount, setCryptoAmount] = useState('10')
+  // Payment Form States
+  const [senderPhone, setSenderPhone] = useState('')
+  const [tid, setTid] = useState('')
   const [cryptoTxid, setCryptoTxid] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [depositMsg, setDepositMsg] = useState(null)
 
-  // Withdraw form
+  // Withdrawal States
   const [witAmount, setWitAmount] = useState('')
   const [witMethod, setWitMethod] = useState('EasyPaisa')
   const [witAccount, setWitAccount] = useState('')
@@ -60,20 +49,30 @@ export default function WalletPage() {
   const [witMsg, setWitMsg] = useState(null)
   const [witLoading, setWitLoading] = useState(false)
 
-  // Promotion countdown timer state
-  const [timeLeft, setTimeLeft] = useState('02:05:50.8')
+  // Gateway Settings
+  const [rates, setRates] = useState({
+    pkr_rate: 1.0,
+    usd_rate: 280.0,
+    min_deposit: 100,
+    max_deposit: 20000,
+    min_withdraw: 500,
+    max_withdraw: 50000,
+    manual_jazzcash_title: 'WinX Pro Official',
+    manual_jazzcash_no: '03112235935',
+    manual_easypaisa_title: 'WinX Pro Official',
+    manual_easypaisa_no: '03493530916',
+    manual_crypto_network: 'USDT (TRC20)',
+    manual_crypto_address: 'TP2B4tF9qK8jZ1sL5vN8mM9eR7wX4yP1aB'
+  })
 
+  // Handle Query Parameters
   useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date()
-      const hours = String(23 - now.getHours()).padStart(2, '0')
-      const minutes = String(59 - now.getMinutes()).padStart(2, '0')
-      const seconds = String(59 - now.getSeconds()).padStart(2, '0')
-      const tenths = Math.floor(Math.random() * 9)
-      setTimeLeft(`${hours}:${minutes}:${seconds}.${tenths}`)
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [])
+    if (!router.isReady) return
+    const { tab } = router.query
+    if (tab === 'withdraw') setActiveTab('withdraw')
+    else if (tab === 'history') setActiveTab('history')
+    else if (tab === 'crypto') setRechargeMethod('usdt')
+  }, [router.isReady, router.query])
 
   const fetchRates = async () => {
     try {
@@ -84,21 +83,15 @@ export default function WalletPage() {
           ...prev,
           pkr_rate: data.pkr_rate || 1.0,
           usd_rate: data.usd_rate || 280.0,
-          min_deposit: data.min_deposit || 200,
-          max_deposit: data.max_deposit || 100000,
+          min_deposit: data.min_deposit || 100,
+          max_deposit: data.max_deposit || 20000,
           min_withdraw: data.min_withdraw || 500,
           max_withdraw: data.max_withdraw || 50000,
-          manual_jazzcash_title: data.manual_jazzcash_title || 'WinX Pro Official',
-          manual_jazzcash_no: data.manual_jazzcash_no || '03112235935',
-          manual_jazzcash2_title: data.manual_jazzcash2_title || 'WinX Pro VIP',
-          manual_jazzcash2_no: data.manual_jazzcash2_no || '03001234567',
-          manual_easypaisa_title: data.manual_easypaisa_title || 'WinX Pro Official',
-          manual_easypaisa_no: data.manual_easypaisa_no || '03493530916',
-          manual_easypaisa2_title: data.manual_easypaisa2_title || 'WinX Pro VIP',
-          manual_easypaisa2_no: data.manual_easypaisa2_no || '03451234567',
-          manual_crypto_network: data.manual_crypto_network || 'USDT (TRC20)',
-          manual_crypto_address: data.manual_crypto_address || '',
-          deposit_instructions: data.deposit_instructions || prev.deposit_instructions
+          manual_jazzcash_title: data.manual_jazzcash_title || prev.manual_jazzcash_title,
+          manual_jazzcash_no: data.manual_jazzcash_no || prev.manual_jazzcash_no,
+          manual_easypaisa_title: data.manual_easypaisa_title || prev.manual_easypaisa_title,
+          manual_easypaisa_no: data.manual_easypaisa_no || prev.manual_easypaisa_no,
+          manual_crypto_address: data.manual_crypto_address || prev.manual_crypto_address
         }))
       }
     } catch (e) {}
@@ -120,7 +113,12 @@ export default function WalletPage() {
 
     try {
       if (user?.id) {
-        const { data: t } = await supabase.from('transactions').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(20)
+        const { data: t } = await supabase
+          .from('transactions')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(25)
         if (t && t.length > 0) {
           setTransactions(prev => {
             const map = new Map()
@@ -138,8 +136,8 @@ export default function WalletPage() {
   useEffect(() => {
     fetchRates()
     fetchData()
-    const pollInterval = setInterval(() => { fetchData() }, 5000)
-    return () => clearInterval(pollInterval)
+    const poll = setInterval(fetchData, 5000)
+    return () => clearInterval(poll)
   }, [user])
 
   const handleRefresh = async () => {
@@ -148,223 +146,163 @@ export default function WalletPage() {
     setTimeout(() => setRefreshing(false), 800)
   }
 
-  // Payment Channels list matching Screenshot 3
-  const paymentChannels = [
-    { id: 'JazzCash', name: 'JazzCash', badge: '+0.3%', tag: 'HOT', icon: '🔴' },
-    { id: 'EasyPaisa', name: 'EasyPaisa', badge: '+0.3%', tag: 'HOT', icon: '🟢' },
-    { id: 'JazzCash 2', name: 'JazzCash 2', badge: null, tag: 'VIP', icon: '🔴' },
-    { id: 'EasyPaisa 2', name: 'EasyPaisa 2', badge: null, tag: 'VIP', icon: '🟢' },
-  ]
-
-  // Resolve currently selected admin receiving account
-  const getAdminAccount = () => {
-    if (selectedChannel === 'JazzCash') {
-      return {
-        title: rates.manual_jazzcash_title || 'WinX Pro Official',
-        no: rates.manual_jazzcash_no || '03112235935',
-        type: 'JazzCash'
-      }
-    }
-    if (selectedChannel === 'JazzCash 2') {
-      return {
-        title: rates.manual_jazzcash2_title || 'WinX Pro VIP',
-        no: rates.manual_jazzcash2_no || '03001234567',
-        type: 'JazzCash VIP'
-      }
-    }
-    if (selectedChannel === 'EasyPaisa') {
-      return {
-        title: rates.manual_easypaisa_title || 'WinX Pro Official',
-        no: rates.manual_easypaisa_no || '03493530916',
-        type: 'EasyPaisa'
-      }
-    }
-    if (selectedChannel === 'EasyPaisa 2') {
-      return {
-        title: rates.manual_easypaisa2_title || 'WinX Pro VIP',
-        no: rates.manual_easypaisa2_no || '03451234567',
-        type: 'EasyPaisa VIP'
-      }
-    }
-    return {
-      title: rates.manual_jazzcash_title || 'WinX Pro Official',
-      no: rates.manual_jazzcash_no || '03112235935',
-      type: 'JazzCash'
-    }
-  }
-
-  // Quick Amount Options with Golden Bonuses matching Screenshot 3 & 2 (Minimum 200)
-  const quickAmounts = [
-    { amount: 200, bonus: 20.00 },
-    { amount: 500, bonus: 130.00 },
-    { amount: 1000, bonus: 160.00 },
-    { amount: 3000, bonus: 100.00 },
-    { amount: 5000, bonus: 240.00 },
-    { amount: 10000, bonus: 520.00 },
-    { amount: 30000, bonus: 850.00 },
-    { amount: 50000, bonus: 1500.00 },
-    { amount: 100000, bonus: 5700.00 },
-  ]
-
   const copyToClipboard = (text, fieldName) => {
     if (!text) return
-    navigator.clipboard.writeText(text)
-    setCopiedField(fieldName)
-    setTimeout(() => setCopiedField(null), 2000)
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text)
+      setCopiedField(fieldName)
+      setTimeout(() => setCopiedField(null), 1800)
+    }
   }
 
-  // Handle Direct Manual Deposit Submission (Zero 3rd-party fees)
-  const handleDepositSubmit = async (e) => {
-    e.preventDefault()
+  // Calculate Bonus and "You can get" display
+  const numAmount = parseFloat(amount) || 0
+  let bonusRate = 0
+  if (rechargeMethod === 'usdt') {
+    bonusRate = 0.03
+  } else if (numAmount >= 10000) {
+    bonusRate = 0.10
+  } else if (numAmount >= 3000) {
+    bonusRate = 0.08
+  } else if (numAmount >= 1000) {
+    bonusRate = 0.05
+  }
+  const calculatedTotal = numAmount * (1 + bonusRate)
+
+  // Handle Deposit Initiation
+  const handleInitiateDeposit = () => {
     if (!user) {
       setIsAuthModalOpen(true)
       return
     }
-
-    const minDeposit = Number(rates.min_deposit || 200)
-    const maxDeposit = Number(rates.max_deposit || 100000)
-    const numAmount = Number(dpAmount)
-
-    if (isNaN(numAmount) || numAmount < minDeposit) {
-      setDpMsg({ type: 'error', text: `Minimum deposit amount is Rs ${minDeposit.toLocaleString()}` })
+    const val = parseFloat(amount)
+    if (isNaN(val) || val < 100) {
+      alert('Minimum deposit amount is Rs 100.')
       return
     }
-    if (numAmount > maxDeposit) {
-      setDpMsg({ type: 'error', text: `Maximum deposit amount is Rs ${maxDeposit.toLocaleString()}` })
-      return
+    setDepositMsg(null)
+    setShowPaymentModal(true)
+  }
+
+  const handleConfirmDeposit = async (e) => {
+    if (e) e.preventDefault()
+    if (!user) return
+
+    if (rechargeMethod === 'usdt') {
+      if (!cryptoTxid || cryptoTxid.trim().length < 8) {
+        setDepositMsg({ type: 'error', text: 'Please enter a valid USDT TRC20 Transaction Hash (TXID).' })
+        return
+      }
+    } else {
+      if (!tid || tid.trim().length < 6) {
+        setDepositMsg({ type: 'error', text: 'Please enter the 11-12 digit Transaction ID (TID) from your payment receipt.' })
+        return
+      }
     }
 
-    if (!dpTid || dpTid.trim().length < 6) {
-      setDpMsg({ type: 'error', text: 'Please enter a valid Transaction ID (TID / TRX ID) from your payment receipt.' })
-      return
-    }
-
-    setDpLoading(true)
-    setDpMsg(null)
+    setIsSubmitting(true)
+    setDepositMsg(null)
 
     const activeUserId = user.id || user.uid || 'guest'
     const activeEmail = user.email || `${activeUserId}@winxpro.com`
-    const activePhone = dpPhone || user.phone || ''
-
-    // Calculate eligible bonus from quickAmounts
-    const matchedOpt = quickAmounts.find(q => q.amount === numAmount)
-    const bonusAmount = matchedOpt ? matchedOpt.bonus : 0
+    const isCrypto = rechargeMethod === 'usdt'
 
     try {
-      const res = await fetch('/api/wallet/deposit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: activeUserId,
-          email: activeEmail,
-          amount: numAmount,
-          channel: selectedChannel,
-          sender_phone: activePhone,
-          tid: dpTid.trim(),
-          bonus_amount: bonusAmount
-        })
-      })
-      const data = await res.json()
-      if (data.success) {
-        setDpMsg({ 
-          type: 'success', 
-          text: `✅ Deposit of Rs ${numAmount.toLocaleString()} submitted! TID: ${dpTid.trim()}. Your balance will be credited upon verification in under 2 minutes.` 
-        })
-        setDpTid('')
-        fetchData()
-        window.dispatchEvent(new Event('wallet-updated'))
-      } else {
-        setDpMsg({ type: 'error', text: data.error || 'Failed to submit deposit request.' })
+      const payload = isCrypto ? {
+        user_id: activeUserId,
+        email: activeEmail,
+        amount: numAmount,
+        currency: 'USDT',
+        method: 'USDT (TRC20)',
+        transaction_id: cryptoTxid.trim(),
+        notes: `USDT Deposit +3% Bonus | TXID: ${cryptoTxid.trim()}`
+      } : {
+        user_id: activeUserId,
+        email: activeEmail,
+        amount: numAmount,
+        currency: 'PKR',
+        method: rechargeMethod.toUpperCase(),
+        sender_phone: senderPhone || user.phone || '03xxxxxxxxx',
+        transaction_id: tid.trim(),
+        notes: `${rechargeMethod.toUpperCase()} | Channel: ${rechargeChannel} | TID: ${tid.trim()}`
       }
-    } catch (err) {
-      setDpMsg({ type: 'error', text: err.message || 'Network error. Please try again.' })
-    } finally {
-      setDpLoading(false)
-    }
-  }
 
-  // Handle Crypto USDT Deposit Submission
-  const handleCryptoSubmit = async (e) => {
-    e.preventDefault()
-    if (!user) return setIsAuthModalOpen(true)
-
-    if (!cryptoTxid || cryptoTxid.trim().length < 10) {
-      setDpMsg({ type: 'error', text: 'Please enter a valid USDT (TRC20) Transaction Hash (TXID).' })
-      return
-    }
-
-    setDpLoading(true)
-    setDpMsg(null)
-
-    const pkrEquivalent = Math.round(Number(cryptoAmount) * Number(rates.usd_rate || 280))
-    const activeUserId = user.id || user.uid || 'guest'
-
-    try {
       const res = await fetch('/api/wallet/deposit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: activeUserId,
-          email: user.email || '',
-          amount: pkrEquivalent,
-          channel: 'USDT (TRC20)',
-          sender_phone: 'Crypto Wallet',
-          tid: cryptoTxid.trim(),
-          bonus_amount: 0
-        })
+        body: JSON.stringify(payload)
       })
       const data = await res.json()
+
       if (data.success) {
-        setDpMsg({ 
-          type: 'success', 
-          text: `✅ Crypto deposit of ${cryptoAmount} USDT (~Rs ${pkrEquivalent.toLocaleString()}) submitted! Hash: ${cryptoTxid.slice(0, 16)}... Status: PENDING.` 
+        setDepositMsg({
+          type: 'success',
+          text: `✅ Deposit of Rs ${numAmount.toLocaleString()} submitted! Verification is instant.`
         })
+        setTid('')
         setCryptoTxid('')
         fetchData()
+        window.dispatchEvent(new Event('wallet-updated'))
+        setTimeout(() => {
+          setShowPaymentModal(false)
+        }, 2200)
       } else {
-        setDpMsg({ type: 'error', text: data.error || 'Failed to submit crypto deposit.' })
+        setDepositMsg({ type: 'error', text: data.error || 'Failed to submit deposit. Please check your TID.' })
       }
     } catch (err) {
-      setDpMsg({ type: 'error', text: err.message || 'Network error.' })
+      setDepositMsg({ type: 'error', text: err.message || 'Network error occurred.' })
     } finally {
-      setDpLoading(false)
+      setIsSubmitting(false)
     }
   }
 
   // Handle Withdrawal Request
   const handleWithdraw = async (e) => {
     e.preventDefault()
-    if (!user) return setIsAuthModalOpen(true)
-    setWitMsg(null)
+    if (!user) {
+      setIsAuthModalOpen(true)
+      return
+    }
 
-    const minWithdraw = Number(rates.min_withdraw || 500)
-    const numAmount = Number(witAmount)
+    const currentBal = wallet ? parseFloat(wallet.balance) : 0
+    const val = parseFloat(witAmount)
 
-    if (isNaN(numAmount) || numAmount < minWithdraw) {
-      return setWitMsg({ type: 'error', text: `Minimum withdrawal is Rs ${minWithdraw.toLocaleString()}.` })
+    if (isNaN(val) || val < (rates.min_withdraw || 500)) {
+      setWitMsg({ type: 'error', text: `Minimum withdrawal is Rs ${(rates.min_withdraw || 500).toLocaleString()}` })
+      return
+    }
+    if (val > currentBal) {
+      setWitMsg({ type: 'error', text: 'Insufficient wallet balance.' })
+      return
+    }
+    if (!witAccount || witAccount.trim().length < 8) {
+      setWitMsg({ type: 'error', text: 'Please enter a valid mobile or account number.' })
+      return
     }
 
     setWitLoading(true)
+    setWitMsg(null)
+
     try {
       const res = await fetch('/api/wallet/withdraw', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           user_id: user.id || user.uid,
-          amount: numAmount,
+          amount: val,
           notes: `Withdrawal to ${witMethod} | Title: ${witTitle || 'N/A'} | Number: ${witAccount}`
         })
       })
       const data = await res.json()
       if (data.success) {
-        setWitMsg({ type: 'success', text: `✅ Payout request of Rs ${numAmount.toLocaleString()} submitted! Admin will send payment to your account shortly.` })
+        setWitMsg({ type: 'success', text: `✅ Payout request of Rs ${val.toLocaleString()} submitted successfully!` })
         setWitAmount('')
         setWitAccount('')
         setWitTitle('')
         fetchData()
         window.dispatchEvent(new Event('wallet-updated'))
       } else {
-        setWitMsg({ type: 'error', text: data.error || 'Failed to request payout.' })
+        setWitMsg({ type: 'error', text: data.error || 'Withdrawal failed.' })
       }
     } catch (err) {
       setWitMsg({ type: 'error', text: err.message })
@@ -373,17 +311,27 @@ export default function WalletPage() {
     }
   }
 
-  const currentAdmin = getAdminAccount()
+  // Active Admin Details
+  const activeAdminNo = rechargeMethod === 'easypaisa'
+    ? rates.manual_easypaisa_no
+    : rates.manual_jazzcash_no
+  const activeAdminTitle = rechargeMethod === 'easypaisa'
+    ? rates.manual_easypaisa_title
+    : rates.manual_jazzcash_title
+
+  // Dynamic QR Image URL for payment
+  const qrDataText = encodeURIComponent(`pkr:${activeAdminNo}?amount=${numAmount}&title=${activeAdminTitle}`)
+  const dynamicQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${qrDataText}&color=081a0b`
 
   return (
-    <div className="app">
-      {/* Sleek Top Header matching Screenshot 3 */}
+    <div className="app bbr-deposit-page">
+      {/* 1. Header (matching Screenshots 1 & 2: ← Deposit 📋) */}
       <div style={{
-        padding: '12px 16px',
+        padding: '14px 16px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        background: 'rgba(11, 14, 20, 0.96)',
+        background: '#0d1510',
         borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
         position: 'sticky',
         top: 0,
@@ -393,597 +341,489 @@ export default function WalletPage() {
         margin: '0 auto',
         boxSizing: 'border-box'
       }}>
-        <button 
-          onClick={() => router.back()} 
-          style={{ background: 'none', border: 'none', color: '#94A3B8', fontSize: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+        <button
+          onClick={() => activeTab !== 'deposit' ? setActiveTab('deposit') : router.back()}
+          style={{ background: 'none', border: 'none', color: '#ffffff', fontSize: '22px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
         >
-          ‹
+          ←
         </button>
-        <div style={{ fontSize: '15px', fontWeight: 800, color: '#fff', letterSpacing: '0.3px' }}>
-          {activeTab === 'withdraw' ? 'Withdrawal' : activeTab === 'history' ? 'History' : 'Deposit'}
+        <div style={{ fontSize: '17px', fontWeight: 800, color: '#ffffff', letterSpacing: '0.2px' }}>
+          {activeTab === 'withdraw' ? 'Withdrawal' : activeTab === 'history' ? 'Deposit Records' : 'Deposit'}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button onClick={() => router.push('/support')} style={{ background: 'none', border: 'none', color: '#94A3B8', fontSize: '18px', cursor: 'pointer' }}>
-            🎧
-          </button>
-          <button onClick={() => setActiveTab(activeTab === 'history' ? 'deposit' : 'history')} style={{ background: 'none', border: 'none', color: '#94A3B8', fontSize: '18px', cursor: 'pointer' }}>
-            🧾
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button
+            onClick={() => setActiveTab(activeTab === 'history' ? 'deposit' : 'history')}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: activeTab === 'history' ? '#6dff38' : '#ffd54f',
+              fontSize: '20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            title="Deposit Records"
+          >
+            📋
           </button>
         </div>
       </div>
 
-      <div style={{ padding: '14px 16px 90px', maxWidth: '480px', width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '14px', boxSizing: 'border-box' }}>
-        
-        {/* Balance Bar (Screenshot 3) */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: '#94A3B8' }}>Balance</div>
-          <div style={{
-            background: 'rgba(20, 26, 36, 0.95)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: '20px',
-            padding: '5px 14px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <span style={{ fontSize: '16px' }}>🇵🇰</span>
-            <span style={{ fontSize: '16px', fontWeight: 900, color: '#00E65B' }}>
-              {wallet ? parseFloat(wallet.balance).toFixed(2) : '0.00'}
-            </span>
-            <button 
-              onClick={handleRefresh}
-              style={{ background: 'none', border: 'none', color: '#00E65B', cursor: 'pointer', fontSize: '13px', padding: '2px' }}
-              className={refreshing ? 'coin-spin' : ''}
-              title="Refresh Balance"
+      <div style={{
+        padding: '14px 16px 90px',
+        maxWidth: '480px',
+        width: '100%',
+        margin: '0 auto',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
+        boxSizing: 'border-box'
+      }}>
+
+        {/* 2. Top Balance Card (Screenshots 1 & 2) */}
+        <div style={{
+          background: 'linear-gradient(135deg, #16261d 0%, #101c15 100%)',
+          border: '1px solid rgba(109, 255, 56, 0.16)',
+          borderRadius: '16px',
+          padding: '14px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.35)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* Wallet with Coins Icon */}
+            <div style={{
+              width: '42px',
+              height: '42px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #ff4081 0%, #ff80ab 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '22px',
+              boxShadow: '0 4px 12px rgba(255, 64, 129, 0.3)'
+            }}>
+              👛
+            </div>
+            <div>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#9bb0a2' }}>Balance</div>
+              <div style={{ fontSize: '20px', fontWeight: 900, color: '#ffd54f', letterSpacing: '0.3px', marginTop: '2px' }}>
+                Rs {wallet ? parseFloat(wallet.balance).toFixed(2) : '0.00'}
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={handleRefresh}
+            style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '50%',
+              width: '34px',
+              height: '34px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#6dff38',
+              fontSize: '15px',
+              cursor: 'pointer'
+            }}
+            className={refreshing ? 'coin-spin' : ''}
+            title="Refresh Balance"
+          >
+            🔄
+          </button>
+        </div>
+
+        {/* Tab Switcher if on Withdraw / History */}
+        {activeTab !== 'deposit' && (
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => setActiveTab('deposit')}
+              style={{
+                flex: 1,
+                padding: '9px',
+                borderRadius: '10px',
+                border: '1px solid #6dff38',
+                background: 'rgba(109, 255, 56, 0.15)',
+                color: '#6dff38',
+                fontWeight: 800,
+                fontSize: '13px',
+                cursor: 'pointer'
+              }}
             >
-              🔄
+              ← Back to Deposit
             </button>
           </div>
-        </div>
+        )}
 
-        {/* Deposit / Withdraw / History Navigation Pills */}
-        <div style={{ display: 'flex', gap: '6px', background: 'rgba(20, 26, 36, 0.8)', padding: '4px', borderRadius: '14px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
-          <button 
-            onClick={() => setActiveTab('deposit')}
-            style={{
-              flex: 1,
-              padding: '9px',
-              borderRadius: '10px',
-              border: activeTab === 'deposit' ? '1px solid rgba(0, 230, 91, 0.5)' : '1px solid transparent',
-              background: activeTab === 'deposit' ? 'rgba(0, 230, 91, 0.15)' : 'transparent',
-              color: activeTab === 'deposit' ? '#00E65B' : '#94A3B8',
-              fontWeight: 800,
-              fontSize: '12.5px',
-              cursor: 'pointer'
-            }}
-          >
-            Deposit
-          </button>
-          <button 
-            onClick={() => setActiveTab('withdraw')}
-            style={{
-              flex: 1,
-              padding: '9px',
-              borderRadius: '10px',
-              border: activeTab === 'withdraw' ? '1px solid rgba(0, 230, 91, 0.5)' : '1px solid transparent',
-              background: activeTab === 'withdraw' ? 'rgba(0, 230, 91, 0.15)' : 'transparent',
-              color: activeTab === 'withdraw' ? '#00E65B' : '#94A3B8',
-              fontWeight: 800,
-              fontSize: '12.5px',
-              cursor: 'pointer'
-            }}
-          >
-            Withdraw
-          </button>
-          <button 
-            onClick={() => setActiveTab('history')}
-            style={{
-              flex: 1,
-              padding: '9px',
-              borderRadius: '10px',
-              border: activeTab === 'history' ? '1px solid rgba(0, 230, 91, 0.5)' : '1px solid transparent',
-              background: activeTab === 'history' ? 'rgba(0, 230, 91, 0.15)' : 'transparent',
-              color: activeTab === 'history' ? '#00E65B' : '#94A3B8',
-              fontWeight: 800,
-              fontSize: '12.5px',
-              cursor: 'pointer'
-            }}
-          >
-            History
-          </button>
-        </div>
-
+        {/* MAIN DEPOSIT SCREEN (Screenshots 1 & 2) */}
         {activeTab === 'deposit' && (
           <>
-            {/* Tabs: Online deposit & Crypto (Screenshot 3) */}
-            <div style={{ display: 'flex', gap: '20px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '8px' }}>
-              <div 
-                onClick={() => setDepositTab('online')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  cursor: 'pointer',
-                  position: 'relative',
-                  paddingBottom: '8px',
-                  color: depositTab === 'online' ? '#00E65B' : '#64748B',
-                  fontWeight: 800,
-                  fontSize: '14px'
-                }}
-              >
-                <span>📲</span>
-                <span>Online deposit</span>
-                {depositTab === 'online' && (
-                  <div style={{ position: 'absolute', bottom: '-9px', left: 0, right: 0, height: '2.5px', background: '#00E65B', borderRadius: '2px', boxShadow: '0 0 8px #00E65B' }} />
-                )}
+            {/* 3. Recharge Method Section */}
+            <div>
+              <div style={{ fontSize: '13.5px', fontWeight: 800, color: '#ffffff', marginBottom: '10px' }}>
+                Recharge Method:
               </div>
 
-              <div 
-                onClick={() => setDepositTab('crypto')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  cursor: 'pointer',
-                  position: 'relative',
-                  paddingBottom: '8px',
-                  color: depositTab === 'crypto' ? '#00E65B' : '#64748B',
-                  fontWeight: 800,
-                  fontSize: '14px'
-                }}
-              >
-                <span>🪙</span>
-                <span>Crypto</span>
-                {depositTab === 'crypto' && (
-                  <div style={{ position: 'absolute', bottom: '-9px', left: 0, right: 0, height: '2.5px', background: '#00E65B', borderRadius: '2px', boxShadow: '0 0 8px #00E65B' }} />
-                )}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '8px'
+              }}>
+                {RECHARGE_METHODS.map(m => {
+                  const isActive = rechargeMethod === m.id
+                  return (
+                    <div
+                      key={m.id}
+                      onClick={() => setRechargeMethod(m.id)}
+                      style={{
+                        position: 'relative',
+                        background: isActive ? '#70e434' : '#1c261f',
+                        border: isActive ? '1.5px solid #85f34b' : '1px solid rgba(255, 255, 255, 0.06)',
+                        borderRadius: '12px',
+                        padding: '12px 6px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        cursor: 'pointer',
+                        boxShadow: isActive ? '0 0 16px rgba(112, 228, 52, 0.45)' : 'none',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {/* Top-left Badge (e.g. +3% on USDT) */}
+                      {m.badge && (
+                        <span style={{
+                          position: 'absolute',
+                          top: '-6px',
+                          left: '6px',
+                          background: '#70e434',
+                          color: '#081a0b',
+                          fontSize: '9px',
+                          fontWeight: 900,
+                          padding: '1px 5px',
+                          borderRadius: '999px',
+                          border: '1px solid #081a0b',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.4)'
+                        }}>
+                          {m.badge}
+                        </span>
+                      )}
+
+                      {/* Icon */}
+                      <div style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '18px'
+                      }}>
+                        {m.id === 'qr' && (
+                          <div style={{
+                            width: '28px',
+                            height: '28px',
+                            background: '#ffffff',
+                            borderRadius: '6px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '16px'
+                          }}>
+                            🏁
+                          </div>
+                        )}
+                        {m.id === 'jazzcash' && (
+                          <div style={{
+                            width: '28px',
+                            height: '28px',
+                            background: '#d61a20',
+                            borderRadius: '6px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#ffeb3b',
+                            fontSize: '15px',
+                            fontWeight: 900
+                          }}>
+                            🔥
+                          </div>
+                        )}
+                        {m.id === 'easypaisa' && (
+                          <div style={{
+                            width: '28px',
+                            height: '28px',
+                            background: '#00a852',
+                            borderRadius: '6px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#ffffff',
+                            fontSize: '16px',
+                            fontWeight: 900
+                          }}>
+                            e
+                          </div>
+                        )}
+                        {m.id === 'usdt' && (
+                          <div style={{
+                            width: '28px',
+                            height: '28px',
+                            background: '#26a17b',
+                            borderRadius: '6px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#ffffff',
+                            fontSize: '16px',
+                            fontWeight: 900
+                          }}>
+                            ₮
+                          </div>
+                        )}
+                        {m.id === 'jazzcash_qr' && (
+                          <div style={{
+                            width: '28px',
+                            height: '28px',
+                            background: '#d61a20',
+                            borderRadius: '6px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#ffffff',
+                            fontSize: '14px',
+                            position: 'relative'
+                          }}>
+                            🔥
+                            <span style={{ position: 'absolute', bottom: -2, right: -2, fontSize: '9px' }}>📱</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Title */}
+                      <span style={{
+                        fontSize: '12px',
+                        fontWeight: 900,
+                        color: isActive ? '#081a0b' : '#ffffff',
+                        textAlign: 'center',
+                        lineHeight: 1.1
+                      }}>
+                        {m.name}
+                      </span>
+                    </div>
+                  )
+                })}
               </div>
             </div>
 
-            {depositTab === 'online' ? (
-              <>
-                {/* Payment Method Section (Screenshot 3) */}
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#fff', marginBottom: '10px' }}>
-                    Payment method
-                  </div>
+            {/* 4. Recharge Channel Section (Screenshots 1 & 2) */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '16px' }}>🏁</span>
+                <span style={{ fontSize: '13.5px', fontWeight: 800, color: '#ffffff' }}>Recharge Channel:</span>
+              </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    {paymentChannels.map((channel) => {
-                      const isSelected = selectedChannel === channel.id
-                      return (
-                        <div
-                          key={channel.id}
-                          onClick={() => setSelectedChannel(channel.id)}
-                          style={{
-                            background: '#141A24',
-                            border: isSelected ? '1.5px solid #00E65B' : '1px solid rgba(255, 255, 255, 0.08)',
-                            boxShadow: isSelected ? '0 0 16px rgba(0, 230, 91, 0.25)' : 'none',
-                            borderRadius: '12px',
-                            padding: '10px 12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            cursor: 'pointer',
-                            position: 'relative',
-                            transition: 'all 0.15s'
-                          }}
-                        >
-                          {channel.badge && (
-                            <span style={{
-                              position: 'absolute',
-                              top: '-6px',
-                              right: '12px',
-                              background: '#FF3366',
-                              color: '#fff',
-                              fontSize: '8.5px',
-                              fontWeight: 900,
-                              padding: '1px 5px',
-                              borderRadius: '6px',
-                              boxShadow: '0 2px 6px rgba(255, 51, 102, 0.5)'
-                            }}>
-                              {channel.badge}
-                            </span>
-                          )}
-
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '18px' }}>{channel.icon}</span>
-                            <span style={{ fontSize: '13px', fontWeight: 800, color: isSelected ? '#00E65B' : '#fff' }}>
-                              {channel.name}
-                            </span>
-                          </div>
-
-                          <span style={{
-                            fontSize: '9px',
-                            fontWeight: 900,
-                            padding: '2px 6px',
-                            borderRadius: '4px',
-                            background: isSelected ? 'rgba(0, 230, 91, 0.2)' : 'rgba(255, 255, 255, 0.06)',
-                            color: isSelected ? '#00E65B' : '#64748B',
-                            border: isSelected ? '1px solid rgba(0, 230, 91, 0.5)' : '1px solid transparent'
-                          }}>
-                            {channel.tag}
-                          </span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {/* Direct Admin Receiving Account Card (Official Details) */}
-                <div style={{
-                  background: 'linear-gradient(135deg, rgba(20, 26, 36, 0.95) 0%, rgba(14, 18, 26, 0.98) 100%)',
-                  border: '1px solid rgba(0, 230, 91, 0.35)',
-                  borderRadius: '16px',
-                  padding: '14px',
-                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '18px' }}>🏦</span>
-                      <span style={{ fontSize: '13px', fontWeight: 800, color: '#fff' }}>
-                        Deposit to {currentAdmin.type}
-                      </span>
-                    </div>
-                    <span style={{ fontSize: '10px', color: '#00E65B', background: 'rgba(0, 230, 91, 0.15)', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>
-                      Official Admin Account
-                    </span>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(0, 0, 0, 0.3)', padding: '10px 12px', borderRadius: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '11px', color: '#94A3B8' }}>Account Title:</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '12.5px', fontWeight: 800, color: '#fff' }}>{currentAdmin.title}</span>
-                        <button 
-                          onClick={() => copyToClipboard(currentAdmin.title, 'title')}
-                          style={{
-                            background: 'rgba(255, 255, 255, 0.08)',
-                            border: '1px solid rgba(255, 255, 255, 0.15)',
-                            color: copiedField === 'title' ? '#00E65B' : '#94A3B8',
-                            borderRadius: '6px',
-                            padding: '2px 6px',
-                            fontSize: '10px',
-                            fontWeight: 800,
-                            cursor: 'pointer'
-                          }}
-                        >
-                          {copiedField === 'title' ? '✓ Copied' : '📋 Copy'}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '11px', color: '#94A3B8' }}>Account Number:</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '15px', fontWeight: 900, color: '#00E65B', letterSpacing: '0.5px' }}>{currentAdmin.no}</span>
-                        <button 
-                          onClick={() => copyToClipboard(currentAdmin.no, 'no')}
-                          style={{
-                            background: 'rgba(0, 230, 91, 0.15)',
-                            border: '1px solid rgba(0, 230, 91, 0.4)',
-                            color: copiedField === 'no' ? '#00FF66' : '#00E65B',
-                            borderRadius: '6px',
-                            padding: '2px 8px',
-                            fontSize: '11px',
-                            fontWeight: 900,
-                            cursor: 'pointer'
-                          }}
-                        >
-                          {copiedField === 'no' ? '✓ Copied' : '📋 Copy'}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ fontSize: '10.5px', color: '#94A3B8', marginTop: '8px', lineHeight: 1.4 }}>
-                    💡 Transfer Rs {Number(dpAmount || 200).toLocaleString()} to the account above via your {selectedChannel.includes('JazzCash') ? 'JazzCash' : 'EasyPaisa'} App, then enter your Transaction ID (TID) below.
-                  </div>
-                </div>
-
-                {/* Deposit Amount Input (Screenshot 3) */}
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#fff', marginBottom: '8px' }}>
-                    Deposit amount (Minimum Rs {rates.min_deposit || 200})
-                  </div>
-
-                  <div style={{
-                    background: 'rgba(20, 26, 36, 0.95)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '12px',
-                    padding: '10px 14px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.5)'
-                  }}>
-                    <span style={{ fontSize: '14px', fontWeight: 800, color: '#94A3B8' }}>Rs</span>
-                    <input 
-                      type="number"
-                      placeholder={`Min ${rates.min_deposit || 200}~Max 100,000`}
-                      value={dpAmount}
-                      onChange={(e) => setDpAmount(e.target.value)}
-                      style={{
-                        background: 'transparent',
-                        border: 'none',
-                        outline: 'none',
-                        color: '#fff',
-                        fontSize: '15px',
-                        fontWeight: 800,
-                        width: '100%'
-                      }}
-                      min={rates.min_deposit || 200}
-                      max={rates.max_deposit || 100000}
-                    />
-                  </div>
-                </div>
-
-                {/* Quick Amount Selector Grid (Screenshot 3 - Minimum 200) */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                  {quickAmounts.map((opt) => {
-                    const isSelected = Number(dpAmount) === opt.amount
-                    return (
-                      <div
-                        key={opt.amount}
-                        onClick={() => setDpAmount(String(opt.amount))}
-                        style={{
-                          background: '#141A24',
-                          border: isSelected ? '1.5px solid #00E65B' : '1px solid rgba(255, 255, 255, 0.08)',
-                          boxShadow: isSelected ? '0 0 12px rgba(0, 230, 91, 0.25)' : 'none',
-                          borderRadius: '10px',
-                          padding: '8px 4px',
-                          textAlign: 'center',
-                          cursor: 'pointer',
-                          transition: 'all 0.15s'
-                        }}
-                      >
-                        <div style={{ fontSize: '13px', fontWeight: 800, color: '#fff' }}>
-                          {opt.amount.toLocaleString()}
-                        </div>
-                        <div style={{ fontSize: '9.5px', fontWeight: 800, color: '#FFB800', marginTop: '2px' }}>
-                          +{opt.bonus.toFixed(2)}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* Sender Details & Transaction ID Input (Manual Verification) */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <div>
-                    <label style={{ fontSize: '11px', fontWeight: 700, color: '#94A3B8', display: 'block', marginBottom: '4px' }}>
-                      Your Sender Mobile Number
-                    </label>
-                    <input 
-                      type="text"
-                      placeholder="e.g. 03xxxxxxxxx (account sent from)"
-                      value={dpPhone}
-                      onChange={e => setDpPhone(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        borderRadius: '10px',
-                        background: 'rgba(20, 26, 36, 0.85)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        color: '#fff',
-                        fontSize: '13px',
-                        fontWeight: 700,
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ fontSize: '11px', fontWeight: 700, color: '#00E65B', display: 'block', marginBottom: '4px' }}>
-                      Transaction ID (TID / TRX ID) *
-                    </label>
-                    <input 
-                      type="text"
-                      placeholder="e.g. 028472918349 (from SMS/App Receipt)"
-                      value={dpTid}
-                      onChange={e => setDpTid(e.target.value)}
-                      required
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        borderRadius: '10px',
-                        background: 'rgba(20, 26, 36, 0.95)',
-                        border: '1.5px solid rgba(0, 230, 91, 0.5)',
-                        color: '#fff',
-                        fontSize: '14px',
-                        fontWeight: 800,
-                        letterSpacing: '0.5px',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                    <span style={{ fontSize: '9.5px', color: '#64748B', marginTop: '3px', display: 'block' }}>
-                      Enter the 11-12 digit TID received in your JazzCash/EasyPaisa confirmation SMS.
-                    </span>
-                  </div>
-                </div>
-
-                {/* Deposit Promotion Card (Screenshot 3) */}
-                <div className="glass-panel" style={{ borderRadius: '16px', padding: '12px 14px', border: '1px solid rgba(255, 184, 0, 0.25)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '16px' }}>🎁</span>
-                      <span style={{ fontSize: '12.5px', fontWeight: 800, color: '#fff' }}>Deposit promotion</span>
-                    </div>
-                    <div style={{
-                      background: 'linear-gradient(90deg, #FF5722 0%, #FF9800 100%)',
-                      padding: '2px 6px',
-                      borderRadius: '6px',
-                      fontSize: '9.5px',
-                      fontWeight: 900,
-                      color: '#fff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}>
-                      <span>⚡ LT</span> {timeLeft}
-                    </div>
-                  </div>
-
-                  <div style={{ fontSize: '9.5px', color: '#64748B', textAlign: 'center', marginBottom: '10px' }}>
-                    ----- Automatically participated in the following activities -----
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '11px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#94A3B8' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span>🎁</span> <span>Bonus 20.00</span>
-                      </div>
-                      <span style={{ color: '#E2E8F0', fontWeight: 700 }}>First Deposit ≥ 200</span>
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#94A3B8' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span>🎁</span> <span>Bonus 130.00</span>
-                      </div>
-                      <span style={{ color: '#E2E8F0', fontWeight: 700 }}>First Deposit ≥ 500</span>
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#94A3B8' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span>🎁</span> <span>Bonus 160.00</span>
-                      </div>
-                      <span style={{ color: '#E2E8F0', fontWeight: 700 }}>Total deposit ≥ 1,000</span>
-                    </div>
-                  </div>
-                </div>
-
-                {dpMsg && (
-                  <div style={{
-                    padding: '10px 14px',
-                    borderRadius: '10px',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    background: dpMsg.type === 'error' ? 'rgba(255, 51, 102, 0.15)' : 'rgba(0, 230, 91, 0.15)',
-                    border: `1px solid ${dpMsg.type === 'error' ? '#FF3366' : '#00E65B'}`,
-                    color: dpMsg.type === 'error' ? '#FF3366' : '#00E65B'
-                  }}>
-                    {dpMsg.text}
-                  </div>
-                )}
-
-                {/* Submit Button */}
-                <button 
-                  onClick={handleDepositSubmit}
-                  disabled={dpLoading}
-                  className="glass-btn-orange"
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => setRechargeChannel('qr_code')}
                   style={{
-                    width: '100%',
-                    padding: '14px',
-                    borderRadius: '14px',
-                    fontSize: '14px',
+                    background: rechargeChannel === 'qr_code' ? '#70e434' : '#1c261f',
+                    border: rechargeChannel === 'qr_code' ? '1.5px solid #85f34b' : '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: '12px',
+                    padding: '10px 8px',
                     cursor: 'pointer',
-                    marginTop: '4px'
+                    boxShadow: rechargeChannel === 'qr_code' ? '0 0 14px rgba(112, 228, 52, 0.35)' : 'none'
                   }}
                 >
-                  {dpLoading ? 'Submitting Deposit...' : `Submit Rs ${Number(dpAmount || 200).toLocaleString()} Deposit`}
+                  <div style={{ fontSize: '12px', fontWeight: 900, color: rechargeChannel === 'qr_code' ? '#081a0b' : '#ffffff', lineHeight: 1.3 }}>
+                    {rechargeMethod === 'usdt' ? 'USDT TRC20' : 'JazzCash / Easypaisa'}
+                  </div>
+                  <div style={{ fontSize: '11px', fontWeight: 800, color: rechargeChannel === 'qr_code' ? '#081a0b' : '#94a3b8' }}>
+                    {rechargeMethod === 'usdt' ? '(Instant 3% Bonus)' : 'QR code'}
+                  </div>
                 </button>
-              </>
-            ) : (
-              /* Crypto Tab */
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{
-                  background: '#141A24',
-                  borderRadius: '16px',
-                  padding: '16px',
-                  border: '1px solid rgba(0, 230, 91, 0.3)'
-                }}>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#fff', marginBottom: '8px' }}>
-                    USDT (TRC20 Network Only)
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#94A3B8', marginBottom: '12px' }}>
-                    Exchange Rate: 1 USDT = Rs {rates.usd_rate || 280}
-                  </div>
 
-                  <div style={{ background: 'rgba(0, 0, 0, 0.35)', padding: '12px', borderRadius: '10px', wordBreak: 'break-all', fontFamily: 'monospace', fontSize: '12px', color: '#00E65B', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span>{rates.manual_crypto_address || 'TP2B4tFxxxxxxxxxxxxxxxxxxxxTRC20'}</span>
-                    <button 
-                      onClick={() => copyToClipboard(rates.manual_crypto_address, 'crypto')}
-                      style={{ background: 'rgba(255, 255, 255, 0.1)', border: 'none', color: '#fff', padding: '4px 8px', borderRadius: '6px', fontSize: '10px', cursor: 'pointer', flexShrink: 0 }}
-                    >
-                      {copiedField === 'crypto' ? '✓ Copied' : '📋 Copy'}
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#94A3B8', display: 'block', marginBottom: '4px' }}>
-                    USDT Amount
-                  </label>
-                  <input 
-                    type="number"
-                    value={cryptoAmount}
-                    onChange={e => setCryptoAmount(e.target.value)}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: '#141A24', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}
-                  />
-                  <span style={{ fontSize: '11px', color: '#00E65B', marginTop: '4px', display: 'block', fontWeight: 700 }}>
-                    ~ Rs {Math.round(Number(cryptoAmount) * Number(rates.usd_rate || 280)).toLocaleString()} balance
-                  </span>
-                </div>
-
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#00E65B', display: 'block', marginBottom: '4px' }}>
-                    Transaction Hash (TXID) *
-                  </label>
-                  <input 
-                    type="text"
-                    placeholder="Paste TRC20 TXID hash here"
-                    value={cryptoTxid}
-                    onChange={e => setCryptoTxid(e.target.value)}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: '#141A24', border: '1.5px solid rgba(0, 230, 91, 0.5)', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }}
-                  />
-                </div>
-
-                {dpMsg && (
-                  <div style={{
-                    padding: '10px 14px',
-                    borderRadius: '10px',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    background: dpMsg.type === 'error' ? 'rgba(255, 51, 102, 0.15)' : 'rgba(0, 230, 91, 0.15)',
-                    border: `1px solid ${dpMsg.type === 'error' ? '#FF3366' : '#00E65B'}`,
-                    color: dpMsg.type === 'error' ? '#FF3366' : '#00E65B'
-                  }}>
-                    {dpMsg.text}
-                  </div>
-                )}
-
-                <button 
-                  onClick={handleCryptoSubmit}
-                  disabled={dpLoading}
-                  className="glass-btn-emerald"
-                  style={{ width: '100%', padding: '14px', borderRadius: '14px', fontSize: '14px', cursor: 'pointer' }}
+                <button
+                  type="button"
+                  onClick={() => setRechargeChannel('transfer')}
+                  style={{
+                    background: rechargeChannel === 'transfer' ? '#70e434' : '#1c261f',
+                    border: rechargeChannel === 'transfer' ? '1.5px solid #85f34b' : '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: '12px',
+                    padding: '10px 8px',
+                    cursor: 'pointer',
+                    boxShadow: rechargeChannel === 'transfer' ? '0 0 14px rgba(112, 228, 52, 0.35)' : 'none'
+                  }}
                 >
-                  {dpLoading ? 'Submitting...' : `Submit ${cryptoAmount} USDT Deposit`}
+                  <div style={{ fontSize: '12px', fontWeight: 900, color: rechargeChannel === 'transfer' ? '#081a0b' : '#ffffff', lineHeight: 1.3 }}>
+                    {rechargeMethod === 'usdt' ? 'USDT BEP20' : 'QR Code'}
+                  </div>
+                  <div style={{ fontSize: '11px', fontWeight: 800, color: rechargeChannel === 'transfer' ? '#081a0b' : '#94a3b8' }}>
+                    {rechargeMethod === 'usdt' ? '(Binance Smart Chain)' : 'Use transfer'}
+                  </div>
                 </button>
               </div>
-            )}
+            </div>
+
+            {/* 5. Recharge Amount Section (Screenshots 1 & 2) */}
+            <div>
+              <div style={{ fontSize: '13.5px', fontWeight: 800, color: '#ffffff', marginBottom: '10px' }}>
+                Recharge Amount:
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                {RECHARGE_AMOUNTS.map(amt => {
+                  const isSelected = String(amt) === String(amount)
+                  return (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => setAmount(String(amt))}
+                      style={{
+                        background: isSelected ? 'rgba(112, 228, 52, 0.15)' : '#1c261f',
+                        border: isSelected ? '1.5px solid #70e434' : '1px solid rgba(255, 255, 255, 0.08)',
+                        borderRadius: '12px',
+                        padding: '12px 6px',
+                        color: isSelected ? '#70e434' : '#ffffff',
+                        fontSize: '14px',
+                        fontWeight: 900,
+                        cursor: 'pointer',
+                        boxShadow: isSelected ? '0 0 12px rgba(112, 228, 52, 0.25)' : 'none',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {amt.toLocaleString()}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* 6. "You can get" Calculation Capsule (Screenshots 1 & 2) */}
+            <div style={{
+              background: '#222d26',
+              border: '1px solid rgba(255, 255, 255, 0.06)',
+              borderRadius: '12px',
+              padding: '12px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <span style={{ fontSize: '13.5px', fontWeight: 700, color: '#c4d7ca' }}>
+                You can get
+              </span>
+              <span style={{ fontSize: '16px', fontWeight: 900, color: '#ffd54f', letterSpacing: '0.3px' }}>
+                Rs {calculatedTotal.toFixed(2)}
+              </span>
+            </div>
+
+            {/* 7. Amount Input Field with Clear Button (Screenshots 1 & 2) */}
+            <div style={{
+              background: '#121c16',
+              border: '1.5px solid rgba(109, 255, 56, 0.25)',
+              borderRadius: '14px',
+              padding: '12px 14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '10px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                <span style={{ fontSize: '14px', fontWeight: 900, color: '#6dff38' }}>Rs</span>
+                <input
+                  type="number"
+                  placeholder="Rs 100 ~ 20000"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    outline: 'none',
+                    color: '#ffffff',
+                    fontSize: '15px',
+                    fontWeight: 800,
+                    width: '100%'
+                  }}
+                  min="100"
+                  max="20000"
+                />
+              </div>
+              {amount && (
+                <button
+                  type="button"
+                  onClick={() => setAmount('')}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.15)',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '20px',
+                    height: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#ffffff',
+                    fontSize: '11px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* 8. Full-Width Vibrant Green Deposit Button (Screenshots 1 & 2) */}
+            <button
+              type="button"
+              onClick={handleInitiateDeposit}
+              style={{
+                background: 'linear-gradient(90deg, #5ec831 0%, #43a31e 100%)',
+                border: 'none',
+                borderRadius: '999px',
+                padding: '15px 20px',
+                color: '#081a0b',
+                fontSize: '16.5px',
+                fontWeight: 900,
+                letterSpacing: '0.4px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 18px rgba(94, 200, 49, 0.45)',
+                transition: 'transform 0.15s, opacity 0.15s'
+              }}
+            >
+              Deposit
+            </button>
           </>
         )}
 
+        {/* WITHDRAWAL TAB */}
         {activeTab === 'withdraw' && (
-          <div className="glass-panel" style={{ borderRadius: '18px', padding: '16px' }}>
-            <div style={{ fontSize: '15px', fontWeight: 800, color: '#fff', marginBottom: '4px' }}>
-              Request Payout / Withdrawal
+          <div style={{
+            background: '#152219',
+            border: '1px solid rgba(109, 255, 56, 0.2)',
+            borderRadius: '16px',
+            padding: '16px'
+          }}>
+            <div style={{ fontSize: '15px', fontWeight: 800, color: '#ffffff', marginBottom: '4px' }}>
+              Instant Withdrawal Request
             </div>
-            <div style={{ fontSize: '11px', color: '#94A3B8', marginBottom: '16px' }}>
-              Minimum withdrawal: Rs {rates.min_withdraw || 500}. Direct payout to JazzCash, EasyPaisa or Bank in minutes.
+            <div style={{ fontSize: '11px', color: '#9bb0a2', marginBottom: '14px' }}>
+              Minimum withdrawal: Rs {rates.min_withdraw || 500}. Direct payout in minutes.
             </div>
 
             {witMsg && (
               <div style={{
-                padding: '10px 14px',
+                padding: '10px 12px',
                 borderRadius: '10px',
                 fontSize: '12px',
                 fontWeight: 700,
-                marginBottom: '14px',
-                background: witMsg.type === 'error' ? 'rgba(255, 51, 102, 0.15)' : 'rgba(0, 230, 91, 0.15)',
-                border: `1px solid ${witMsg.type === 'error' ? '#FF3366' : '#00E65B'}`,
-                color: witMsg.type === 'error' ? '#FF3366' : '#00E65B'
+                marginBottom: '12px',
+                background: witMsg.type === 'error' ? 'rgba(255, 51, 102, 0.15)' : 'rgba(109, 255, 56, 0.15)',
+                border: `1px solid ${witMsg.type === 'error' ? '#ff3366' : '#6dff38'}`,
+                color: witMsg.type === 'error' ? '#ff3366' : '#6dff38'
               }}>
                 {witMsg.text}
               </div>
@@ -991,21 +831,21 @@ export default function WalletPage() {
 
             <form onSubmit={handleWithdraw} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: '#94A3B8', display: 'block', marginBottom: '6px' }}>
+                <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#9bb0a2', display: 'block', marginBottom: '4px' }}>
                   Payout Method
                 </label>
-                <select 
-                  value={witMethod} 
-                  onChange={e => setWitMethod(e.target.value)} 
+                <select
+                  value={witMethod}
+                  onChange={e => setWitMethod(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '10px 12px',
+                    padding: '11px 12px',
                     borderRadius: '10px',
-                    background: 'rgba(20, 26, 36, 0.95)',
+                    background: '#101a14',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
-                    color: '#fff',
+                    color: '#ffffff',
                     fontSize: '13px',
-                    fontWeight: 700
+                    fontWeight: 800
                   }}
                 >
                   <option value="EasyPaisa">EasyPaisa</option>
@@ -1015,22 +855,22 @@ export default function WalletPage() {
               </div>
 
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: '#94A3B8', display: 'block', marginBottom: '6px' }}>
+                <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#9bb0a2', display: 'block', marginBottom: '4px' }}>
                   Account Title (Recipient Name)
                 </label>
-                <input 
-                  type="text" 
-                  placeholder="e.g. Muhammad Ali" 
-                  value={witTitle} 
-                  onChange={e => setWitTitle(e.target.value)} 
+                <input
+                  type="text"
+                  placeholder="e.g. Muhammad Ali"
+                  value={witTitle}
+                  onChange={e => setWitTitle(e.target.value)}
                   required
                   style={{
                     width: '100%',
-                    padding: '10px 12px',
+                    padding: '11px 12px',
                     borderRadius: '10px',
-                    background: 'rgba(20, 26, 36, 0.95)',
+                    background: '#101a14',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
-                    color: '#fff',
+                    color: '#ffffff',
                     fontSize: '13px',
                     boxSizing: 'border-box'
                   }}
@@ -1038,22 +878,22 @@ export default function WalletPage() {
               </div>
 
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: '#94A3B8', display: 'block', marginBottom: '6px' }}>
+                <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#9bb0a2', display: 'block', marginBottom: '4px' }}>
                   Account Mobile / IBAN Number
                 </label>
-                <input 
-                  type="text" 
-                  placeholder="03xxxxxxxxx or Bank Account Number" 
-                  value={witAccount} 
-                  onChange={e => setWitAccount(e.target.value)} 
+                <input
+                  type="text"
+                  placeholder="03xxxxxxxxx or Bank Account Number"
+                  value={witAccount}
+                  onChange={e => setWitAccount(e.target.value)}
                   required
                   style={{
                     width: '100%',
-                    padding: '10px 12px',
+                    padding: '11px 12px',
                     borderRadius: '10px',
-                    background: 'rgba(20, 26, 36, 0.95)',
+                    background: '#101a14',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
-                    color: '#fff',
+                    color: '#ffffff',
                     fontSize: '13px',
                     boxSizing: 'border-box'
                   }}
@@ -1061,40 +901,43 @@ export default function WalletPage() {
               </div>
 
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: '#94A3B8', display: 'block', marginBottom: '6px' }}>
+                <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#9bb0a2', display: 'block', marginBottom: '4px' }}>
                   Amount in PKR (Min {rates.min_withdraw || 500})
                 </label>
-                <input 
-                  type="number" 
-                  placeholder="e.g. 1000" 
-                  value={witAmount} 
-                  onChange={e => setWitAmount(e.target.value)} 
+                <input
+                  type="number"
+                  placeholder="e.g. 1000"
+                  value={witAmount}
+                  onChange={e => setWitAmount(e.target.value)}
                   required
                   min={rates.min_withdraw || 500}
                   style={{
                     width: '100%',
-                    padding: '10px 12px',
+                    padding: '11px 12px',
                     borderRadius: '10px',
-                    background: 'rgba(20, 26, 36, 0.95)',
+                    background: '#101a14',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
-                    color: '#fff',
+                    color: '#ffffff',
                     fontSize: '13px',
                     boxSizing: 'border-box'
                   }}
                 />
               </div>
 
-              <button 
+              <button
                 type="submit"
                 disabled={witLoading}
-                className="glass-btn-emerald"
                 style={{
                   width: '100%',
                   padding: '14px',
-                  borderRadius: '12px',
-                  fontSize: '14px',
+                  borderRadius: '999px',
+                  background: 'linear-gradient(90deg, #5ec831 0%, #43a31e 100%)',
+                  border: 'none',
+                  color: '#081a0b',
+                  fontSize: '15px',
+                  fontWeight: 900,
                   cursor: 'pointer',
-                  marginTop: '8px'
+                  marginTop: '6px'
                 }}
               >
                 {witLoading ? 'Submitting Request...' : 'Submit Payout Request'}
@@ -1103,60 +946,66 @@ export default function WalletPage() {
           </div>
         )}
 
+        {/* DEPOSIT RECORDS / HISTORY TAB */}
         {activeTab === 'history' && (
-          <div className="glass-panel" style={{ borderRadius: '18px', padding: '16px' }}>
-            <div style={{ fontSize: '15px', fontWeight: 800, color: '#fff', marginBottom: '14px' }}>
+          <div style={{
+            background: '#152219',
+            border: '1px solid rgba(109, 255, 56, 0.2)',
+            borderRadius: '16px',
+            padding: '16px'
+          }}>
+            <div style={{ fontSize: '15px', fontWeight: 800, color: '#ffffff', marginBottom: '14px' }}>
               Transaction History
             </div>
 
             {transactions.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '24px', color: '#64748B', fontSize: '12px' }}>
+              <div style={{ textAlign: 'center', padding: '24px', color: '#7a8f82', fontSize: '12px' }}>
                 No recorded transactions yet.
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {transactions.map(tx => (
-                  <div 
+                  <div
                     key={tx.id || tx.tx_id}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      padding: '10px 12px',
+                      padding: '12px',
                       borderRadius: '12px',
                       background: 'rgba(255, 255, 255, 0.03)',
-                      border: '1px solid rgba(255, 255, 255, 0.05)'
+                      border: '1px solid rgba(255, 255, 255, 0.06)'
                     }}
                   >
                     <div>
-                      <div style={{ fontSize: '12.5px', fontWeight: 800, color: '#fff' }}>
-                        {tx.type === 'deposit' ? '🟢 Deposit' : '🔴 Withdrawal'} ({tx.method || tx.metadata?.channel || 'Manual P2P'})
+                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#ffffff' }}>
+                        {tx.type === 'deposit' ? '🟢 Deposit' : '🔴 Withdrawal'} ({tx.method || tx.metadata?.channel || 'QR / P2P'})
                       </div>
                       {tx.metadata?.tid && (
-                        <div style={{ fontSize: '10px', color: '#00E65B', marginTop: '2px', fontFamily: 'monospace' }}>
+                        <div style={{ fontSize: '11px', color: '#6dff38', marginTop: '3px', fontFamily: 'monospace' }}>
                           TID: {tx.metadata.tid}
                         </div>
                       )}
-                      <div style={{ fontSize: '10px', color: '#64748B', marginTop: '2px' }}>
+                      <div style={{ fontSize: '10px', color: '#7a8f82', marginTop: '2px' }}>
                         {new Date(tx.created_at).toLocaleString()}
                       </div>
                     </div>
 
                     <div style={{ textAlign: 'right' }}>
                       <div style={{
-                        fontSize: '13px',
+                        fontSize: '13.5px',
                         fontWeight: 900,
-                        color: tx.type === 'deposit' ? '#00E65B' : '#FF3366'
+                        color: tx.type === 'deposit' ? '#6dff38' : '#ff3366'
                       }}>
                         {tx.type === 'deposit' ? '+' : '-'}Rs {parseFloat(tx.amount).toFixed(2)}
                       </div>
                       <span style={{
-                        fontSize: '9px',
-                        fontWeight: 800,
-                        padding: '1px 6px',
+                        fontSize: '9.5px',
+                        fontWeight: 900,
+                        padding: '2px 7px',
                         borderRadius: '6px',
-                        background: tx.status === 'completed' ? 'rgba(0, 230, 91, 0.15)' : tx.status === 'failed' ? 'rgba(255, 51, 102, 0.15)' : 'rgba(255, 184, 0, 0.15)',
-                        color: tx.status === 'completed' ? '#00E65B' : tx.status === 'failed' ? '#FF3366' : '#FFB800'
+                        background: tx.status === 'completed' ? 'rgba(109, 255, 56, 0.15)' : 'rgba(255, 184, 0, 0.15)',
+                        color: tx.status === 'completed' ? '#6dff38' : '#ffd54f'
                       }}>
                         {tx.status}
                       </span>
@@ -1169,6 +1018,263 @@ export default function WalletPage() {
         )}
 
       </div>
+
+      {/* PAYMENT MODAL (Step 1 to 4 QR & TID Submission matching Screenshot 1) */}
+      {showPaymentModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.85)',
+          backdropFilter: 'blur(6px)',
+          zIndex: 100,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px'
+        }}>
+          <div style={{
+            background: '#121e16',
+            border: '1.5px solid #6dff38',
+            borderRadius: '20px',
+            maxWidth: '440px',
+            width: '100%',
+            padding: '20px 18px',
+            boxShadow: '0 0 30px rgba(109, 255, 56, 0.35)',
+            maxHeight: '90vh',
+            overflowY: 'auto'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+              <div style={{ fontSize: '16px', fontWeight: 900, color: '#ffffff' }}>
+                {rechargeMethod === 'usdt' ? 'USDT TRC20 Deposit' : 'QR Payment Confirmation'}
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPaymentModal(false)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: 'none',
+                  color: '#ffffff',
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  fontWeight: 900
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* 4-Step QR Tutorial Graphic or Details (matching Screenshot 1) */}
+            {rechargeMethod !== 'usdt' ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {/* QR Code Container */}
+                <div style={{
+                  background: '#ffffff',
+                  borderRadius: '16px',
+                  padding: '14px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <img
+                    src={dynamicQrCodeUrl}
+                    alt="Payment QR"
+                    style={{ width: '180px', height: '180px', borderRadius: '10px' }}
+                  />
+                  <div style={{ fontSize: '12px', fontWeight: 900, color: '#081a0b', textAlign: 'center' }}>
+                    Scan &amp; Pay: Rs {numAmount.toLocaleString()}
+                  </div>
+                  <div style={{ fontSize: '10.5px', color: '#55665b' }}>
+                    Receiver: {activeAdminTitle} ({activeAdminNo})
+                  </div>
+                </div>
+
+                {/* Account Details with Copy Buttons */}
+                <div style={{
+                  background: 'rgba(0, 0, 0, 0.4)',
+                  padding: '10px 12px',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '11px', color: '#9bb0a2' }}>Account Number:</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '14px', fontWeight: 900, color: '#6dff38' }}>{activeAdminNo}</span>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(activeAdminNo, 'no')}
+                        style={{
+                          background: '#6dff38',
+                          border: 'none',
+                          color: '#081a0b',
+                          fontSize: '10px',
+                          fontWeight: 900,
+                          borderRadius: '6px',
+                          padding: '2px 8px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {copiedField === 'no' ? 'Copied!' : 'Copy'}
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '11px', color: '#9bb0a2' }}>Account Title:</span>
+                    <span style={{ fontSize: '12px', fontWeight: 800, color: '#ffffff' }}>{activeAdminTitle}</span>
+                  </div>
+                </div>
+
+                {/* Form Inputs: Sender Mobile & TID */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 700, color: '#9bb0a2', display: 'block', marginBottom: '4px' }}>
+                      Your Sender Mobile Number
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="03xxxxxxxxx (account sent from)"
+                      value={senderPhone}
+                      onChange={e => setSenderPhone(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        background: '#101a14',
+                        border: '1px solid rgba(255, 255, 255, 0.12)',
+                        color: '#ffffff',
+                        fontSize: '13px',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 800, color: '#6dff38', display: 'block', marginBottom: '4px' }}>
+                      Transaction ID (TID / TRX ID) *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 028472918349 (from SMS receipt)"
+                      value={tid}
+                      onChange={e => setTid(e.target.value)}
+                      required
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        background: '#101a14',
+                        border: '1.5px solid #6dff38',
+                        color: '#ffffff',
+                        fontSize: '14px',
+                        fontWeight: 900,
+                        letterSpacing: '0.5px',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* USDT Flow */
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{
+                  background: 'rgba(0, 0, 0, 0.45)',
+                  padding: '12px',
+                  borderRadius: '14px',
+                  border: '1px solid rgba(38, 161, 123, 0.4)'
+                }}>
+                  <div style={{ fontSize: '12px', fontWeight: 900, color: '#6dff38', marginBottom: '6px' }}>
+                    USDT (TRC20 Network) Address
+                  </div>
+                  <div style={{ wordBreak: 'break-all', fontFamily: 'monospace', fontSize: '12.5px', color: '#ffffff', marginBottom: '8px' }}>
+                    {rates.manual_crypto_address}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(rates.manual_crypto_address, 'usdt')}
+                    style={{
+                      background: '#26a17b',
+                      border: 'none',
+                      color: '#ffffff',
+                      borderRadius: '8px',
+                      padding: '6px 12px',
+                      fontSize: '11px',
+                      fontWeight: 900,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {copiedField === 'usdt' ? '✓ Address Copied' : '📋 Copy TRC20 Address'}
+                  </button>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 800, color: '#6dff38', display: 'block', marginBottom: '4px' }}>
+                    Transaction Hash (TXID) *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Paste TRC20 TXID hash here"
+                    value={cryptoTxid}
+                    onChange={e => setCryptoTxid(e.target.value)}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      background: '#101a14',
+                      border: '1.5px solid #6dff38',
+                      color: '#ffffff',
+                      fontSize: '13px',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {depositMsg && (
+              <div style={{
+                marginTop: '12px',
+                padding: '10px',
+                borderRadius: '10px',
+                fontSize: '12px',
+                fontWeight: 800,
+                background: depositMsg.type === 'error' ? 'rgba(255, 51, 102, 0.15)' : 'rgba(109, 255, 56, 0.15)',
+                border: `1px solid ${depositMsg.type === 'error' ? '#ff3366' : '#6dff38'}`,
+                color: depositMsg.type === 'error' ? '#ff3366' : '#6dff38'
+              }}>
+                {depositMsg.text}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleConfirmDeposit}
+              disabled={isSubmitting}
+              style={{
+                width: '100%',
+                marginTop: '14px',
+                padding: '14px',
+                borderRadius: '999px',
+                background: 'linear-gradient(90deg, #5ec831 0%, #43a31e 100%)',
+                border: 'none',
+                color: '#081a0b',
+                fontSize: '15px',
+                fontWeight: 900,
+                cursor: 'pointer',
+                boxShadow: '0 4px 16px rgba(94, 200, 49, 0.4)'
+              }}
+            >
+              {isSubmitting ? 'Submitting Payment...' : `Confirm & Submit Deposit`}
+            </button>
+          </div>
+        </div>
+      )}
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       <BottomNav />

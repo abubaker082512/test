@@ -125,15 +125,14 @@ const PROMO_MODAL_TABS = [
 // Left Sticky Vertical Sidebar Categories (matching Screenshot 4)
 const SIDEBAR_CATEGORIES = [
   { id: 'hots', label: 'Hots', icon: '🔥', sectionId: 'sec-hots' },
-  { id: 'diamond', label: 'Diamond', icon: '💎', sectionId: 'sec-diamond' },
-  { id: 'our', label: 'Our Games', icon: '👑', sectionId: 'sec-our' },
   { id: 'jili', label: 'JILI', icon: '🎰', sectionId: 'sec-jili' },
-  { id: 'pg', label: 'PG', icon: '🎮', sectionId: 'sec-pg' },
+  { id: 'pg', label: 'PG Soft', icon: '🎮', sectionId: 'sec-pg' },
   { id: 'inout', label: 'IN-OUT', icon: '✈️', sectionId: 'sec-inout' },
-  { id: 'slot', label: 'Slot', icon: '🍒', sectionId: 'sec-slot' },
-  { id: 'cards', label: 'Cards', icon: '🃏', sectionId: 'sec-cards' },
-  { id: 'fish', label: 'Fish', icon: '🐟', sectionId: 'sec-fish' },
-  { id: 'sport', label: 'Sport', icon: '⚽', sectionId: 'sec-sport' }
+  { id: 'diamond', label: 'Diamond', icon: '💎', sectionId: 'sec-diamond' },
+  { id: 'slot', label: 'PP Slots', icon: '🍒', sectionId: 'sec-slot' },
+  { id: 'our', label: 'Originals', icon: '👑', sectionId: 'sec-our' },
+  { id: 'fish', label: 'Fishing', icon: '🐟', sectionId: 'sec-fish' },
+  { id: 'cards', label: 'Cards', icon: '🃏', sectionId: 'sec-cards' }
 ]
 
 export default function Home() {
@@ -157,6 +156,23 @@ export default function Home() {
     } catch (e) {
       setShowPromoModal(true)
     }
+  }, [])
+
+  // Auto-Scrollspy to highlight active sidebar item as user scrolls down
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPos = window.scrollY + 200
+      for (let i = SIDEBAR_CATEGORIES.length - 1; i >= 0; i--) {
+        const item = SIDEBAR_CATEGORIES[i]
+        const el = document.getElementById(item.sectionId)
+        if (el && el.offsetTop <= scrollPos) {
+          setActiveSidebar(item.id)
+          break
+        }
+      }
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   // Handle ?tab= query parameter (e.g., ?tab=our-games)
@@ -200,12 +216,22 @@ export default function Home() {
     <div className="app bbr-theme-app">
       <NavBar onOpenPromoModal={() => setShowPromoModal(true)} />
 
-      {/* Hero Banner with 3D Casino Collage & 4 Gold Deposit Tier Badges (matching Screenshot 4) */}
+      {/* Hero Banner with 3D Artwork & 4 Gold Deposit Tier Badges (matching Screenshot 4) */}
       <div className="bbr-hero-banner" onClick={() => router.push('/wallet')}>
-        <div className="bbr-hero-art-layer">
-          <img src="/banners/pdd_banner.png" alt="" className="bbr-hero-char-left" />
-          <img src="/banners/down_banner.png" alt="" className="bbr-hero-char-center" />
-          <img src="/banners/red_envelope_banner.png" alt="" className="bbr-hero-char-right" />
+        <div className="bbr-hero-top-row">
+          <div className="bbr-hero-content">
+            <span className="bbr-hero-badge">👑 WINX VIP RECHARGE</span>
+            <div className="bbr-hero-headline">
+              RECHARGE 100<br />
+              <span style={{ color: '#6dff38' }}>GRAB RS 100</span>
+            </div>
+            <div className="bbr-hero-sub">
+              ⚡ Instant QR &amp; USDT Deposit Bonus
+            </div>
+          </div>
+          <div className="bbr-hero-char-wrap">
+            <img src="/banners/down_banner.png" alt="Casino Mascot" className="bbr-hero-char-img" />
+          </div>
         </div>
         <div className="bbr-hero-tiers-grid">
           <div className="bbr-tier-pill">
@@ -301,10 +327,11 @@ export default function Home() {
               <div className="bbr-sec-title">
                 <span className="bbr-sec-icon">🔥</span>
                 <span>Hots</span>
+                <span className="bbr-sec-count">{HOTS_GAMES.length}</span>
               </div>
               <div className="bbr-sec-actions">
-                <button type="button" className="bbr-sec-more" onClick={() => toggleExpandSection('our')}>
-                  More
+                <button type="button" className="bbr-sec-more" onClick={() => handleSidebarClick({ id: 'jili', sectionId: 'sec-jili' })}>
+                  More ›
                 </button>
               </div>
             </div>
@@ -315,12 +342,82 @@ export default function Home() {
             </div>
           </section>
 
-          {/* 1.5 DIAMOND CASINO (NO GGR) LIVE & VIRTUAL TABLES SECTION */}
+          {/* 2. JILI SECTION (Bento 2x2 Featured #1 Fortune Gems 500x matching Screenshot 4) */}
+          <section id="sec-jili" className="bbr-provider-section">
+            <div className="bbr-sec-header">
+              <div className="bbr-sec-title">
+                <span className="bbr-sec-badge-pill jili">JILI</span>
+                <span>JILI Gaming</span>
+                <span className="bbr-sec-count">{JILI_GAMES.length}</span>
+              </div>
+              <div className="bbr-sec-actions">
+                <span className="bbr-sec-nav-pill">&lt;</span>
+                <span className="bbr-sec-nav-pill">&gt;</span>
+                <button type="button" className="bbr-sec-more" onClick={() => handleSidebarClick({ id: 'pg', sectionId: 'sec-pg' })}>
+                  More ›
+                </button>
+              </div>
+            </div>
+            <div className="bbr-poster-grid">
+              {JILI_GAMES.map(game => (
+                <GameCard key={game.id} {...game} />
+              ))}
+            </div>
+          </section>
+
+          {/* 3. PG SECTION (Bento 2x2 Featured #1 Wild Bounty Showdown matching Screenshot 4) */}
+          <section id="sec-pg" className="bbr-provider-section">
+            <div className="bbr-sec-header">
+              <div className="bbr-sec-title">
+                <span className="bbr-sec-badge-pill pg">PG</span>
+                <span>PG Soft</span>
+                <span className="bbr-sec-count">{PG_GAMES.length}</span>
+              </div>
+              <div className="bbr-sec-actions">
+                <span className="bbr-sec-nav-pill">&lt;</span>
+                <span className="bbr-sec-nav-pill">&gt;</span>
+                <button type="button" className="bbr-sec-more" onClick={() => handleSidebarClick({ id: 'inout', sectionId: 'sec-inout' })}>
+                  More ›
+                </button>
+              </div>
+            </div>
+            <div className="bbr-poster-grid">
+              {PG_GAMES.map(game => (
+                <GameCard key={game.id} {...game} />
+              ))}
+            </div>
+          </section>
+
+          {/* 4. IN-OUT / SPRIBE CRASH SECTION */}
+          <section id="sec-inout" className="bbr-provider-section">
+            <div className="bbr-sec-header">
+              <div className="bbr-sec-title">
+                <span className="bbr-sec-badge-pill inout">IN-OUT</span>
+                <span>Crash &amp; Instant</span>
+                <span className="bbr-sec-count">{INOUT_GAMES.length}</span>
+              </div>
+              <div className="bbr-sec-actions">
+                <span className="bbr-sec-nav-pill">&lt;</span>
+                <span className="bbr-sec-nav-pill">&gt;</span>
+                <button type="button" className="bbr-sec-more" onClick={() => handleSidebarClick({ id: 'diamond', sectionId: 'sec-diamond' })}>
+                  More ›
+                </button>
+              </div>
+            </div>
+            <div className="bbr-poster-grid">
+              {INOUT_GAMES.map(game => (
+                <GameCard key={game.id} {...game} />
+              ))}
+            </div>
+          </section>
+
+          {/* 5. DIAMOND CASINO (NO GGR) LIVE & VIRTUAL TABLES SECTION */}
           <section id="sec-diamond" className="bbr-provider-section">
             <div className="bbr-sec-header">
               <div className="bbr-sec-title">
-                <span className="bbr-sec-badge-pill" style={{ background: 'linear-gradient(135deg, #00e5ff 0%, #00b0ff 100%)', color: '#001524' }}>DIAMOND</span>
-                <span>Diamond Casino ({diamondCatalog.length})</span>
+                <span className="bbr-sec-badge-pill diamond">DIAMOND</span>
+                <span>Diamond Live Casino</span>
+                <span className="bbr-sec-count">{diamondCatalog.length}</span>
               </div>
               <div className="bbr-sec-actions">
                 <button
@@ -328,7 +425,7 @@ export default function Home() {
                   className="bbr-sec-more"
                   onClick={() => toggleExpandSection('diamond')}
                 >
-                  {expandedSections.diamond ? 'Show Less' : `More (${diamondCatalog.length})`}
+                  {expandedSections.diamond ? 'Show Less' : `More (${diamondCatalog.length}) ›`}
                 </button>
               </div>
             </div>
@@ -352,12 +449,36 @@ export default function Home() {
             )}
           </section>
 
-          {/* 2. OUR GAMES SECTION (36 Playable Originals & GitHub WebGL/Canvas Games with Bento 2x2 Featured #1) */}
+          {/* 6. PP / PRAGMATIC PLAY SLOTS SECTION */}
+          <section id="sec-slot" className="bbr-provider-section">
+            <div className="bbr-sec-header">
+              <div className="bbr-sec-title">
+                <span className="bbr-sec-badge-pill pp">PP</span>
+                <span>Pragmatic Play</span>
+                <span className="bbr-sec-count">{PP_SLOTS.length}</span>
+              </div>
+              <div className="bbr-sec-actions">
+                <span className="bbr-sec-nav-pill">&lt;</span>
+                <span className="bbr-sec-nav-pill">&gt;</span>
+                <button type="button" className="bbr-sec-more" onClick={() => handleSidebarClick({ id: 'our', sectionId: 'sec-our' })}>
+                  More ›
+                </button>
+              </div>
+            </div>
+            <div className="bbr-poster-grid">
+              {PP_SLOTS.map(game => (
+                <GameCard key={game.id} {...game} />
+              ))}
+            </div>
+          </section>
+
+          {/* 7. OUR GAMES / WINX ORIGINALS SECTION (36 Playable Games with Bento 2x2 Featured #1) */}
           <section id="sec-our" className="bbr-provider-section">
             <div className="bbr-sec-header">
               <div className="bbr-sec-title">
-                <span className="bbr-sec-badge-pill">WINX</span>
-                <span>Our Games ({ourGamesCatalog.length})</span>
+                <span className="bbr-sec-badge-pill winx">WINX</span>
+                <span>WinX Originals</span>
+                <span className="bbr-sec-count">{ourGamesCatalog.length}</span>
               </div>
               <div className="bbr-sec-actions">
                 <button
@@ -365,7 +486,7 @@ export default function Home() {
                   className="bbr-sec-more"
                   onClick={() => toggleExpandSection('our')}
                 >
-                  {expandedSections.our ? 'Show Less' : `More (${ourGamesCatalog.length})`}
+                  {expandedSections.our ? 'Show Less' : `More (${ourGamesCatalog.length}) ›`}
                 </button>
               </div>
             </div>
@@ -389,134 +510,44 @@ export default function Home() {
             )}
           </section>
 
-          {/* 3. JILI SECTION (Bento 2x2 Featured #1 Fortune Gems 500x matching Screenshot 4) */}
-          <section id="sec-jili" className="bbr-provider-section">
-            <div className="bbr-sec-header">
-              <div className="bbr-sec-title">
-                <span className="bbr-sec-badge-pill jili">JILI</span>
-                <span>JILI</span>
-              </div>
-              <div className="bbr-sec-actions">
-                <span className="bbr-sec-nav-pill">&lt;</span>
-                <span className="bbr-sec-nav-pill">&gt;</span>
-                <button type="button" className="bbr-sec-more" onClick={() => handleSidebarClick({ id: 'our', sectionId: 'sec-our' })}>
-                  More
-                </button>
-              </div>
-            </div>
-            <div className="bbr-poster-grid">
-              {JILI_GAMES.map(game => (
-                <GameCard key={game.id} {...game} />
-              ))}
-            </div>
-          </section>
-
-          {/* 4. PG SECTION (Bento 2x2 Featured #1 Wild Bounty Showdown matching Screenshot 4) */}
-          <section id="sec-pg" className="bbr-provider-section">
-            <div className="bbr-sec-header">
-              <div className="bbr-sec-title">
-                <span className="bbr-sec-badge-pill pg">PG</span>
-                <span>PG</span>
-              </div>
-              <div className="bbr-sec-actions">
-                <span className="bbr-sec-nav-pill">&lt;</span>
-                <span className="bbr-sec-nav-pill">&gt;</span>
-                <button type="button" className="bbr-sec-more" onClick={() => handleSidebarClick({ id: 'our', sectionId: 'sec-our' })}>
-                  More
-                </button>
-              </div>
-            </div>
-            <div className="bbr-poster-grid">
-              {PG_GAMES.map(game => (
-                <GameCard key={game.id} {...game} />
-              ))}
-            </div>
-          </section>
-
-          {/* 5. IN-OUT / CRASH SECTION */}
-          <section id="sec-inout" className="bbr-provider-section">
-            <div className="bbr-sec-header">
-              <div className="bbr-sec-title">
-                <span className="bbr-sec-icon">✈️</span>
-                <span>IN-OUT</span>
-              </div>
-              <div className="bbr-sec-actions">
-                <span className="bbr-sec-nav-pill">&lt;</span>
-                <span className="bbr-sec-nav-pill">&gt;</span>
-                <button type="button" className="bbr-sec-more" onClick={() => handleSidebarClick({ id: 'our', sectionId: 'sec-our' })}>
-                  More
-                </button>
-              </div>
-            </div>
-            <div className="bbr-poster-grid">
-              {INOUT_GAMES.map(game => (
-                <GameCard key={game.id} {...game} />
-              ))}
-            </div>
-          </section>
-
-          {/* 6. PP / AMIGO SLOTS SECTION */}
-          <section id="sec-slot" className="bbr-provider-section">
-            <div className="bbr-sec-header">
-              <div className="bbr-sec-title">
-                <span className="bbr-sec-badge-pill pp">PP</span>
-                <span>PP &amp; Amigo Slots</span>
-              </div>
-              <div className="bbr-sec-actions">
-                <span className="bbr-sec-nav-pill">&lt;</span>
-                <span className="bbr-sec-nav-pill">&gt;</span>
-                <button type="button" className="bbr-sec-more" onClick={() => handleSidebarClick({ id: 'our', sectionId: 'sec-our' })}>
-                  More
-                </button>
-              </div>
-            </div>
-            <div className="bbr-poster-grid">
-              {PP_SLOTS.map(game => (
-                <GameCard key={game.id} {...game} />
-              ))}
-            </div>
-          </section>
-
-          {/* 7. CARDS & LIVE CASINO SECTION */}
-          <section id="sec-cards" className="bbr-provider-section">
-            <div className="bbr-sec-header">
-              <div className="bbr-sec-title">
-                <span className="bbr-sec-icon">🃏</span>
-                <span>Cards &amp; Live</span>
-              </div>
-              <div className="bbr-sec-actions">
-                <span className="bbr-sec-nav-pill">&lt;</span>
-                <span className="bbr-sec-nav-pill">&gt;</span>
-                <button type="button" className="bbr-sec-more" onClick={() => handleSidebarClick({ id: 'our', sectionId: 'sec-our' })}>
-                  More
-                </button>
-              </div>
-            </div>
-            <div className="bbr-poster-grid">
-              {CARDS_LIVE_GAMES.map(game => (
-                <GameCard key={game.id} {...game} />
-              ))}
-            </div>
-          </section>
-
-          {/* 8. FISHING / TOP_PLAYER SECTION */}
+          {/* 8. FISHING JOY SECTION */}
           <section id="sec-fish" className="bbr-provider-section">
             <div className="bbr-sec-header">
               <div className="bbr-sec-title">
-                <span className="bbr-sec-icon">💎</span>
-                <span>TOP_PLAYER</span>
+                <span className="bbr-sec-badge-pill fish">FISH</span>
+                <span>Royal Fishing</span>
+                <span className="bbr-sec-count">{FISHING_GAMES.length}</span>
               </div>
               <div className="bbr-sec-actions">
-                <span className="bbr-sec-nav-pill">&lt;</span>
-                <span className="bbr-sec-nav-pill">&gt;</span>
-                <button type="button" className="bbr-sec-more" onClick={() => handleSidebarClick({ id: 'our', sectionId: 'sec-our' })}>
-                  More
+                <button type="button" className="bbr-sec-more" onClick={() => handleSidebarClick({ id: 'cards', sectionId: 'sec-cards' })}>
+                  More ›
                 </button>
               </div>
             </div>
             <div className="bbr-poster-grid">
               {FISHING_GAMES.map(game => (
                 <GameCard key={game.id + game.title} {...game} />
+              ))}
+            </div>
+          </section>
+
+          {/* 9. CARDS & LIVE DEALER SECTION */}
+          <section id="sec-cards" className="bbr-provider-section">
+            <div className="bbr-sec-header">
+              <div className="bbr-sec-title">
+                <span className="bbr-sec-badge-pill cards">CARDS</span>
+                <span>Cards &amp; Live Dealers</span>
+                <span className="bbr-sec-count">{CARDS_LIVE_GAMES.length}</span>
+              </div>
+              <div className="bbr-sec-actions">
+                <button type="button" className="bbr-sec-more" onClick={() => handleSidebarClick({ id: 'sport', sectionId: 'sec-sport' })}>
+                  More ›
+                </button>
+              </div>
+            </div>
+            <div className="bbr-poster-grid">
+              {CARDS_LIVE_GAMES.map(game => (
+                <GameCard key={game.id} {...game} />
               ))}
             </div>
           </section>

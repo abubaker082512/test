@@ -348,24 +348,39 @@ export default function Profile() {
 
       <div style={{ padding: '16px 12px 90px', width: '100%', maxWidth: '480px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '14px', boxSizing: 'border-box', overflowX: 'hidden' }}>
         
-        {/* User Hero Banner (Screenshot 1) */}
-        <div className="glass-panel" style={{ borderRadius: '20px', padding: '16px', boxSizing: 'border-box', overflow: 'hidden' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            {/* Avatar with edit pencil */}
-            <div style={{ position: 'relative' }}>
+        {/* User Hero Banner (Screenshot 5 - Glowing Lime Rim Card) */}
+        <div style={{
+          background: 'radial-gradient(circle at 50% 15%, #193a26 0%, #0d1611 100%)',
+          border: '1.5px solid #6dff38',
+          borderRadius: '20px',
+          padding: '16px',
+          boxShadow: '0 0 22px rgba(109, 255, 56, 0.25)',
+          boxSizing: 'border-box',
+          overflow: 'hidden'
+        }}>
+          {/* Top Row: 3D Avatar, User ID/Phone/Currency Pill, Message Envelope */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+            {/* Left: 3D Avatar with Purple Ring */}
+            <div style={{ position: 'relative', flexShrink: 0 }}>
               <div style={{
-                width: '60px',
-                height: '60px',
+                width: '62px',
+                height: '62px',
                 borderRadius: '50%',
-                background: 'linear-gradient(135deg, #FF6B9D 0%, #7928CA 100%)',
+                background: 'linear-gradient(135deg, #a855f7 0%, #6366f1 100%)',
+                border: '2.5px solid #c084fc',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '28px',
-                border: '2px solid rgba(255, 255, 255, 0.2)',
-                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)'
+                fontSize: '32px',
+                boxShadow: '0 0 16px rgba(168, 85, 247, 0.45)',
+                overflow: 'hidden'
               }}>
-                👩‍🎤
+                <img
+                  src="/banners/down_banner.png"
+                  alt="Avatar"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentNode.textContent = '🤠'; }}
+                />
               </div>
               <div style={{
                 position: 'absolute',
@@ -374,119 +389,218 @@ export default function Profile() {
                 width: '18px',
                 height: '18px',
                 borderRadius: '50%',
-                background: '#00E65B',
+                background: '#6dff38',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '10px',
-                color: '#000',
+                color: '#081a0b',
                 fontWeight: 900,
-                border: '1.5px solid #0B0E14'
+                border: '1.5px solid #0d1611'
               }}>
-                ✎
+                ✓
               </div>
             </div>
 
-            {/* User ID & Phone Info */}
+            {/* Center: ID, username, Flag Currency Capsule */}
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '15px', fontWeight: 800, color: '#fff', letterSpacing: '0.3px' }}>
-                  {user ? userPhone : '03112235935'}
-                </span>
-                <button 
-                  onClick={() => copyToClipboard(userPhone, 'phone')}
-                  style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', padding: '2px' }}
-                  title="Copy Phone"
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                </button>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#94A3B8' }}>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8' }}>
                   ID: {userIdNumber}
                 </span>
                 <button 
                   onClick={() => copyToClipboard(userIdNumber, 'id')}
-                  style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', padding: '2px' }}
+                  style={{ background: 'none', border: 'none', color: '#6dff38', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
                   title="Copy ID"
                 >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6dff38" strokeWidth="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 </button>
-                {copiedField && (
-                  <span style={{ fontSize: '9px', color: '#00E65B', fontWeight: 800 }}>Copied!</span>
+                {copiedField === 'id' && (
+                  <span style={{ fontSize: '9.5px', color: '#6dff38', fontWeight: 900 }}>Copied!</span>
                 )}
               </div>
+
+              <div style={{ fontSize: '14px', fontWeight: 800, color: '#ffffff', letterSpacing: '0.2px', marginTop: '2px' }}>
+                username: {user ? userPhone : '923716757767'}
+              </div>
+
+              {/* Currency Capsule Pill matching Screenshot 5 */}
+              <div style={{
+                marginTop: '6px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'rgba(0, 0, 0, 0.45)',
+                border: '1px solid rgba(109, 255, 56, 0.35)',
+                borderRadius: '999px',
+                padding: '3px 10px',
+                boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.5)'
+              }}>
+                <span style={{ fontSize: '14px' }}>🇵🇰</span>
+                <span style={{ fontSize: '13.5px', fontWeight: 900, color: '#ffd54f', letterSpacing: '0.3px' }}>
+                  Rs {balance.toFixed(2)}
+                </span>
+                <button
+                  onClick={handleRefreshBalance}
+                  style={{ background: 'none', border: 'none', color: '#6dff38', cursor: 'pointer', fontSize: '12px', padding: 0 }}
+                  className={refreshing ? 'coin-spin' : ''}
+                  title="Refresh Balance"
+                >
+                  🔄
+                </button>
+                <Link href="/wallet" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+                  <span style={{
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    background: '#6dff38',
+                    color: '#081a0b',
+                    fontSize: '13px',
+                    fontWeight: 900,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginLeft: '2px',
+                    cursor: 'pointer'
+                  }}>+</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Right: Mail Message Icon with Unread Badge */}
+            <div
+              onClick={() => alert('Message Center: 2 new promotional notifications!')}
+              style={{
+                position: 'relative',
+                cursor: 'pointer',
+                background: 'rgba(255, 255, 255, 0.06)',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+                borderRadius: '12px',
+                width: '38px',
+                height: '38px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}
+            >
+              <span style={{ fontSize: '18px' }}>✉️</span>
+              <span style={{
+                position: 'absolute',
+                top: '-4px',
+                right: '-4px',
+                background: '#ff2a55',
+                color: '#fff',
+                fontSize: '9px',
+                fontWeight: 900,
+                width: '15px',
+                height: '15px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '1.5px solid #0d1611'
+              }}>2</span>
             </div>
           </div>
 
-          {/* Balance Bar with Responsive Action Buttons (Screenshot 1 - Contained strictly within frame) */}
+          {/* Action Buttons Row matching Screenshot 5 */}
           <div style={{
-            marginTop: '16px',
-            paddingTop: '14px',
-            borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '10px',
+            marginTop: '16px'
+          }}>
+            <Link href="/wallet?tab=withdraw" style={{ textDecoration: 'none' }}>
+              <div style={{
+                background: '#18261e',
+                border: '1px solid rgba(255, 255, 255, 0.14)',
+                borderRadius: '12px',
+                padding: '11px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.35)',
+                transition: 'transform 0.15s, background 0.15s'
+              }}>
+                <span style={{ fontSize: '16px', lineHeight: 1 }}>💳</span>
+                <span style={{ fontSize: '13.5px', fontWeight: 800, color: '#ffffff', letterSpacing: '0.2px' }}>Withdrawal</span>
+              </div>
+            </Link>
+
+            <Link href="/wallet" style={{ textDecoration: 'none' }}>
+              <div style={{
+                background: 'linear-gradient(90deg, #6dff38 0%, #46bd20 100%)',
+                borderRadius: '12px',
+                padding: '11px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(109, 255, 56, 0.4)',
+                transition: 'transform 0.15s'
+              }}>
+                <span style={{ fontSize: '16px', lineHeight: 1 }}>👛</span>
+                <span style={{ fontSize: '13.5px', fontWeight: 900, color: '#081a0b', letterSpacing: '0.2px' }}>Deposit</span>
+              </div>
+            </Link>
+          </div>
+        </div>
+
+        {/* USDT 3% Bonus Promotional Banner (Screenshot 5) */}
+        <div
+          onClick={() => router.push('/wallet')}
+          style={{
+            background: 'linear-gradient(135deg, #13241b 0%, #0d1611 100%)',
+            border: '1px solid rgba(109, 255, 56, 0.25)',
+            borderRadius: '16px',
+            padding: '12px 14px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '8px',
-            width: '100%',
-            maxWidth: '100%',
-            boxSizing: 'border-box'
+            gap: '12px',
+            cursor: 'pointer',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '42px',
+              height: '42px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #26a17b 0%, #16634b 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '22px',
+              boxShadow: '0 0 12px rgba(38, 161, 123, 0.45)',
+              flexShrink: 0
+            }}>
+              ₮
+            </div>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 900, color: '#ffffff' }}>
+                Deposit with USDT Now!
+              </div>
+              <div style={{ fontSize: '11.5px', fontWeight: 800, color: '#6dff38', marginTop: '2px' }}>
+                Get 3% Bonus Instantly + TRC20 QR
+              </div>
+            </div>
+          </div>
+          <div style={{
+            background: 'rgba(109, 255, 56, 0.15)',
+            border: '1px solid #6dff38',
+            color: '#6dff38',
+            borderRadius: '8px',
+            padding: '5px 9px',
+            fontSize: '11px',
+            fontWeight: 900,
+            whiteSpace: 'nowrap'
           }}>
-            {/* Balance Pill */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0, flexShrink: 1 }}>
-              <span style={{ fontSize: '18px', flexShrink: 0 }}>🇵🇰</span>
-              <span style={{ fontSize: '17px', fontWeight: 900, color: '#fff', letterSpacing: '0.2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {balance.toFixed(2)}
-              </span>
-              <button 
-                onClick={handleRefreshBalance}
-                style={{ background: 'none', border: 'none', color: '#00E65B', cursor: 'pointer', fontSize: '13px', padding: '2px', flexShrink: 0 }}
-                className={refreshing ? 'coin-spin' : ''}
-                title="Refresh Balance"
-              >
-                🔄
-              </button>
-            </div>
-
-            {/* Responsive Horizontal Action Buttons - 100% Contained within Card Frame */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, minWidth: 0 }}>
-              <Link href="/wallet" style={{ textDecoration: 'none' }}>
-                <div style={{
-                  background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 100%), #141A24',
-                  border: '1px solid rgba(255, 255, 255, 0.14)',
-                  borderRadius: '10px',
-                  padding: '7px 11px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  cursor: 'pointer',
-                  boxShadow: 'inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 2px 8px rgba(0, 0, 0, 0.3)',
-                  transition: 'transform 0.15s'
-                }}>
-                  <span style={{ fontSize: '14px', lineHeight: 1 }}>👛</span>
-                  <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#FFFFFF', whiteSpace: 'nowrap' }}>Deposit</span>
-                </div>
-              </Link>
-
-              <Link href="/wallet" style={{ textDecoration: 'none' }}>
-                <div style={{
-                  background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%), #141A24',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '10px',
-                  padding: '7px 11px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  cursor: 'pointer',
-                  boxShadow: 'inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 2px 8px rgba(0, 0, 0, 0.3)',
-                  transition: 'transform 0.15s'
-                }}>
-                  <span style={{ fontSize: '14px', lineHeight: 1 }}>💳</span>
-                  <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#94A3B8', whiteSpace: 'nowrap' }}>Withdraw</span>
-                </div>
-              </Link>
-            </div>
+            +3% FREE ›
           </div>
         </div>
 
