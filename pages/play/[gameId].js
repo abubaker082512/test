@@ -30,6 +30,7 @@ import CockfightGame from '../../components/games/CockfightGame'
 import WheelGame from '../../components/games/WheelGame'
 import ClassicSlots from '../../components/games/ClassicSlots'
 import SportsBook from '../../components/games/SportsBook'
+import DiamondCasinoGame from '../../components/games/DiamondCasinoGame'
 
 export default function PlayGame() {
   const router = useRouter()
@@ -107,6 +108,9 @@ export default function PlayGame() {
     if (!loading) {
       fetchWallet()
     }
+    const onWalletUpdated = () => fetchWallet()
+    window.addEventListener('wallet-updated', onWalletUpdated)
+    return () => window.removeEventListener('wallet-updated', onWalletUpdated)
   }, [user, loading])
 
   // Sync mode/balance changes to iframe via postMessage
@@ -141,7 +145,13 @@ export default function PlayGame() {
   // Check if slug belongs to our custom WinX Mobile-Theme React Engines (`components/games/*`)
   const isWinXThemeReactSlug = (rawSlug) => {
     const s = String(rawSlug || '').toLowerCase()
-    if (s.startsWith('winx-theme-')) return true
+    if (s.startsWith('winx-theme-') || s.startsWith('diamond-')) return true
+    const diamondTableIds = [
+      'teen20', 'joker20', 'teen', 'teen9', 'ab20', 'abj',
+      'lucky7', 'lucky7eu', 'dt20', 'dtl20', 'card32',
+      'amar', 'btable', 'worli', 'poker20', 'cmatch20', 'superover'
+    ]
+    if (diamondTableIds.includes(s)) return true
     const reactThemeSlugs = [
       'baccarat-royale',
       'video-poker',
@@ -160,7 +170,17 @@ export default function PlayGame() {
 
   // Render our native 480px WinX Mobile-Theme React Game Component
   const renderWinXThemeReactEngine = () => {
-    const slug = String(gameId || '').toLowerCase().replace(/^winx-theme-/, '').replace(/^winx-/, '')
+    const rawLower = String(gameId || '').toLowerCase()
+    const diamondTableIds = [
+      'teen20', 'joker20', 'teen', 'teen9', 'ab20', 'abj',
+      'lucky7', 'lucky7eu', 'dt20', 'dtl20', 'card32',
+      'amar', 'btable', 'worli', 'poker20', 'baccarat', 'cmatch20', 'superover'
+    ]
+    if (rawLower.startsWith('diamond-') || diamondTableIds.includes(rawLower)) {
+      const cleanTableId = rawLower.replace(/^diamond-/, '')
+      return <DiamondCasinoGame initialTableId={cleanTableId} />
+    }
+    const slug = rawLower.replace(/^winx-theme-/, '').replace(/^winx-/, '')
     const props = {
       user: activeUser,
       wallet: activeWalletObj,

@@ -42,6 +42,7 @@ export default function GameCard({
   const shortProvider = (() => {
     if (!provider) return 'WINX'
     const p = provider.toUpperCase()
+    if (p.includes('DIAMOND')) return 'DIAMOND'
     if (p.includes('WINX')) return 'WINX'
     if (p.includes('JILI')) return 'JILI'
     if (p.includes('PG')) return 'PG'

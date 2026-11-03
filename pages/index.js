@@ -125,11 +125,12 @@ const PROMO_MODAL_TABS = [
 // Left Sticky Vertical Sidebar Categories (matching Screenshot 4)
 const SIDEBAR_CATEGORIES = [
   { id: 'hots', label: 'Hots', icon: '🔥', sectionId: 'sec-hots' },
+  { id: 'diamond', label: 'Diamond', icon: '💎', sectionId: 'sec-diamond' },
   { id: 'our', label: 'Our Games', icon: '👑', sectionId: 'sec-our' },
   { id: 'jili', label: 'JILI', icon: '🎰', sectionId: 'sec-jili' },
   { id: 'pg', label: 'PG', icon: '🎮', sectionId: 'sec-pg' },
   { id: 'inout', label: 'IN-OUT', icon: '✈️', sectionId: 'sec-inout' },
-  { id: 'slot', label: 'Slot', icon: '💎', sectionId: 'sec-slot' },
+  { id: 'slot', label: 'Slot', icon: '🍒', sectionId: 'sec-slot' },
   { id: 'cards', label: 'Cards', icon: '🃏', sectionId: 'sec-cards' },
   { id: 'fish', label: 'Fish', icon: '🐟', sectionId: 'sec-fish' },
   { id: 'sport', label: 'Sport', icon: '⚽', sectionId: 'sec-sport' }
@@ -190,7 +191,9 @@ export default function Home() {
     setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }))
   }
 
-  // Prepare Our Games with #1 as 2x2 Bento Featured Card when not expanded, or full 36 grid when expanded
+  // Prepare Diamond Casino & Our Games lists with #1 as 2x2 Bento Featured Card when not expanded
+  const diamondCatalog = ourGamesCatalog.filter(g => g.id && g.id.startsWith('diamond-'))
+  const visibleDiamondGames = expandedSections.diamond ? diamondCatalog : diamondCatalog.slice(0, 9)
   const visibleOurGames = expandedSections.our ? ourGamesCatalog : ourGamesCatalog.slice(0, 9)
 
   return (
@@ -310,6 +313,43 @@ export default function Home() {
                 <GameCard key={game.id} {...game} />
               ))}
             </div>
+          </section>
+
+          {/* 1.5 DIAMOND CASINO (NO GGR) LIVE & VIRTUAL TABLES SECTION */}
+          <section id="sec-diamond" className="bbr-provider-section">
+            <div className="bbr-sec-header">
+              <div className="bbr-sec-title">
+                <span className="bbr-sec-badge-pill" style={{ background: 'linear-gradient(135deg, #00e5ff 0%, #00b0ff 100%)', color: '#001524' }}>DIAMOND</span>
+                <span>Diamond Casino ({diamondCatalog.length})</span>
+              </div>
+              <div className="bbr-sec-actions">
+                <button
+                  type="button"
+                  className="bbr-sec-more"
+                  onClick={() => toggleExpandSection('diamond')}
+                >
+                  {expandedSections.diamond ? 'Show Less' : `More (${diamondCatalog.length})`}
+                </button>
+              </div>
+            </div>
+            <div className="bbr-poster-grid">
+              {visibleDiamondGames.map((game, idx) => (
+                <GameCard
+                  key={game.id}
+                  {...game}
+                  featuredBento={!expandedSections.diamond && idx === 0}
+                />
+              ))}
+            </div>
+            {!expandedSections.diamond && (
+              <button
+                type="button"
+                className="bbr-load-more-bar"
+                onClick={() => toggleExpandSection('diamond')}
+              >
+                View All {diamondCatalog.length} Diamond Casino Tables ▾
+              </button>
+            )}
           </section>
 
           {/* 2. OUR GAMES SECTION (36 Playable Originals & GitHub WebGL/Canvas Games with Bento 2x2 Featured #1) */}
