@@ -30,6 +30,21 @@
     "gameType": "slots"
   },
   {
+    "id": "winx-theme-money-coming",
+    "slug": "winx-theme-money-coming",
+    "title": "Money Coming 10,000x",
+    "provider": "WinX Theme Originals",
+    "rawProvider": "WINX_ORIGINALS",
+    "category": "Our Games",
+    "badge": "💵 Wheel Jackpot",
+    "recommended": true,
+    "theme": "linear-gradient(135deg, #032b17 0%, #011208 100%)",
+    "imageUrl": "https://cdn.betnex.co/images/jiligaming/163.webp",
+    "rtp": "97.0%",
+    "isOurGame": true,
+    "gameType": "slots"
+  },
+  {
     "id": "winx-stake-plinko",
     "slug": "stake-plinko",
     "title": "WinX Plinko 1000x",

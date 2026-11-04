@@ -1,75 +1,70 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { casinoAudio } from '../../utils/casinoAudio'
 
 const QUICK_TABLES = [
   { id: 'teen20', label: '20-20 Teenpatti', icon: '🃏', bg: 'https://cdn.betnex.co/images/jiligaming/133.webp' },
   { id: 'joker20', label: 'Teenpatti Joker', icon: '🤡', bg: 'https://cdn.betnex.co/images/jiligaming/131.png' },
   { id: 'teen', label: '1-Day Teenpatti', icon: '👑', bg: 'https://cdn.betnex.co/images/jiligaming/126.webp' },
-  { id: 'teen9', label: 'Teenpatti Test', icon: '🐯', bg: 'https://cdn.betnex.co/images/jdb/115.png' },
   { id: 'ab20', label: 'Andar Bahar 20', icon: '🎴', bg: 'https://cdn.betnex.co/images/jiligaming/128.png' },
-  { id: 'abj', label: 'Andar Bahar 2', icon: '💎', bg: 'https://cdn.betnex.co/images/evolutionlive/42.webp' },
   { id: 'lucky7', label: 'Lucky 7 - A', icon: '7️⃣', bg: 'https://cdn.betnex.co/images/jiligaming/90.png' },
-  { id: 'lucky7eu', label: 'Lucky 7 - B', icon: '🎰', bg: 'https://cdn.betnex.co/images/jiligaming/17.png' },
   { id: 'dt20', label: 'Dragon Tiger 20', icon: '🐉', bg: 'https://cdn.betnex.co/images/jiligaming/93.png' },
-  { id: 'dtl20', label: 'Dragon Tiger Lion', icon: '🦁', bg: 'https://cdn.betnex.co/images/jiligaming/15.webp' },
   { id: 'card32', label: '32 Cards - A', icon: '🔢', bg: 'https://cdn.betnex.co/images/evolutionlive/17.png' },
   { id: 'amar', label: 'Amar Akbar Anthony', icon: '🎬', bg: 'https://cdn.betnex.co/images/evolutionlive/47.png' },
-  { id: 'btable', label: 'Bollywood Table', icon: '🌟', bg: 'https://cdn.betnex.co/images/jiligaming/39.webp' },
-  { id: 'worli', label: 'Worli Matka', icon: '🏺', bg: 'https://cdn.betnex.co/images/jiligaming/102.png' },
-  { id: 'poker20', label: '20-20 Poker', icon: '♠️', bg: 'https://cdn.betnex.co/images/jiligaming/92.png' },
-  { id: 'baccarat', label: 'Speed Baccarat', icon: '🏦', bg: 'https://cdn.betnex.co/images/jiligaming/174.png' },
-  { id: 'cmatch20', label: 'Cricket 20-20', icon: '🏏', bg: 'https://cdn.betnex.co/images/jiligaming/196.webp' },
-  { id: 'superover', label: 'Super Over PAKvIND', icon: '🏆', bg: 'https://cdn.betnex.co/images/jiligaming/76.png' }
+  { id: 'baccarat', label: 'Speed Baccarat', icon: '🏦', bg: 'https://cdn.betnex.co/images/jiligaming/174.png' }
 ]
 
 const CHIPS = [20, 50, 100, 500, 1000, 5000]
 
-const FULL_DECK = []
-const SUIT_LIST = [
-  { code: 'SS', symbol: '♠', red: false },
-  { code: 'HH', symbol: '♥', red: true },
-  { code: 'CC', symbol: '♣', red: false },
-  { code: 'DD', symbol: '♦', red: true }
+const SUITS = [
+  { symbol: '♠', red: false },
+  { symbol: '♥', red: true },
+  { symbol: '♣', red: false },
+  { symbol: '♦', red: true }
 ]
-const RANK_LIST = [
+const RANKS = [
   { label: 'A', val: 14, num: 1 },
-  { label: '2', val: 2, num: 2 },
-  { label: '3', val: 3, num: 3 },
-  { label: '4', val: 4, num: 4 },
-  { label: '5', val: 5, num: 5 },
-  { label: '6', val: 6, num: 6 },
-  { label: '7', val: 7, num: 7 },
-  { label: '8', val: 8, num: 8 },
-  { label: '9', val: 9, num: 9 },
-  { label: '10', val: 10, num: 10 },
-  { label: 'J', val: 11, num: 11 },
+  { label: 'K', val: 13, num: 13 },
   { label: 'Q', val: 12, num: 12 },
-  { label: 'K', val: 13, num: 13 }
+  { label: 'J', val: 11, num: 11 },
+  { label: '10', val: 10, num: 10 },
+  { label: '9', val: 9, num: 9 },
+  { label: '8', val: 8, num: 8 },
+  { label: '7', val: 7, num: 7 },
+  { label: '6', val: 6, num: 6 },
+  { label: '5', val: 5, num: 5 },
+  { label: '4', val: 4, num: 4 },
+  { label: '3', val: 3, num: 3 },
+  { label: '2', val: 2, num: 2 }
 ]
-for (const s of SUIT_LIST) {
-  for (const r of RANK_LIST) {
-    FULL_DECK.push({
-      code: `${r.label}${s.code}`,
-      rank: r.label,
-      val: r.val,
-      num: r.num,
-      suit: s.symbol,
-      red: s.red
-    })
+
+function generateDeck() {
+  const deck = []
+  for (const s of SUITS) {
+    for (const r of RANKS) {
+      deck.push({
+        rank: r.label,
+        val: r.val,
+        num: r.num,
+        suit: s.symbol,
+        red: s.red
+      })
+    }
   }
+  return deck
 }
 
-function drawUniqueCards(count = 6) {
-  const copy = [...FULL_DECK]
+function drawCards(count = 6) {
+  const d = generateDeck()
   const out = []
   for (let i = 0; i < count; i++) {
-    const idx = Math.floor(Math.random() * copy.length)
-    out.push(copy.splice(idx, 1)[0])
+    const idx = Math.floor(Math.random() * d.length)
+    out.push(d.splice(idx, 1)[0])
   }
   return out
 }
 
-function score3CardHand(cards) {
-  if (!cards || cards.length < 3) return { score: 0, name: 'High Card', isPairPlus: false }
+function score3Cards(cards) {
+  if (!cards || cards.length < 3) return { score: 0, desc: 'High Card', pairPlus: false }
   const sorted = [...cards].sort((a, b) => b.val - a.val)
   const [c1, c2, c3] = sorted
   const isFlush = c1.suit === c2.suit && c2.suit === c3.suit
@@ -79,43 +74,44 @@ function score3CardHand(cards) {
   const isTrail = c1.val === c2.val && c2.val === c3.val
   const isPair = c1.val === c2.val || c2.val === c3.val || c1.val === c3.val
 
-  if (isTrail) return { score: 600 + c1.val, name: `Trail (${c1.rank}-${c1.rank}-${c1.rank})`, isPairPlus: true }
-  if (isFlush && isSeq) return { score: 500 + c1.val, name: 'Pure Sequence', isPairPlus: true }
-  if (isSeq) return { score: 400 + c1.val, name: 'Sequence', isPairPlus: true }
-  if (isFlush) return { score: 300 + c1.val, name: 'Color / Flush', isPairPlus: true }
+  if (isTrail) return { score: 600 + c1.val, desc: `Trail (${c1.rank}-${c1.rank}-${c1.rank})`, pairPlus: true }
+  if (isFlush && isSeq) return { score: 500 + c1.val, desc: 'Pure Sequence', pairPlus: true }
+  if (isSeq) return { score: 400 + c1.val, desc: 'Sequence', pairPlus: true }
+  if (isFlush) return { score: 300 + c1.val, desc: 'Color / Flush', pairPlus: true }
   if (isPair) {
-    const pairVal = c1.val === c2.val ? c1.val : c2.val
-    return { score: 200 + pairVal + c1.val * 0.01, name: `Pair of ${c1.val === c2.val ? c1.rank : c2.rank}s`, isPairPlus: true }
+    const pVal = c1.val === c2.val ? c1.val : c2.val
+    const pRank = c1.val === c2.val ? c1.rank : c2.rank
+    return { score: 200 + pVal, desc: `Pair of ${pRank}s`, pairPlus: true }
   }
-  return { score: 100 + c1.val + c2.val * 0.1 + c3.val * 0.01, name: `${c1.rank} High`, isPairPlus: false }
+  return { score: 100 + c1.val, desc: `${c1.rank} High`, pairPlus: false }
 }
 
-function PlayingCard3D({ card, revealed, highlight }) {
+function PlayingCard({ card, revealed, highlight }) {
   return (
     <div
       style={{
-        width: '44px',
-        height: '62px',
+        width: '46px',
+        height: '66px',
         borderRadius: '8px',
         background: revealed && card
           ? 'linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%)'
-          : 'linear-gradient(135deg, #163a26 0%, #091a10 100%)',
+          : 'linear-gradient(135deg, #14532d 0%, #052e16 100%)',
         border: highlight
-          ? '2px solid #ffd54f'
+          ? '2.5px solid #fbbf24'
           : revealed && card
             ? '1.5px solid #cbd5e1'
-            : '1.5px solid #6dff38',
+            : '1.5px solid #22c55e',
         boxShadow: highlight
-          ? '0 0 14px rgba(255, 213, 79, 0.75)'
+          ? '0 0 16px rgba(251, 191, 36, 0.8)'
           : '0 4px 10px rgba(0,0,0,0.6)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '4px 5px',
-        color: revealed && card ? (card.red ? '#dc2626' : '#0f172a') : '#6dff38',
+        color: revealed && card ? (card.red ? '#dc2626' : '#0f172a') : '#4ade80',
         fontWeight: 900,
-        transition: 'all 0.25s ease',
+        transition: 'transform 0.25s ease, box-shadow 0.25s ease',
         transform: revealed ? 'scale(1)' : 'scale(0.96)',
         userSelect: 'none'
       }}
@@ -129,7 +125,7 @@ function PlayingCard3D({ card, revealed, highlight }) {
       ) : (
         <div style={{ margin: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
           <span style={{ fontSize: '16px' }}>💎</span>
-          <span style={{ fontSize: '7px', color: '#86ff47', letterSpacing: '0.5px' }}>WINX</span>
+          <span style={{ fontSize: '7px', color: '#4ade80', letterSpacing: '0.04em' }}>WINX</span>
         </div>
       )}
     </div>
@@ -149,361 +145,268 @@ export default function DiamondCasinoGame({
   const [tableId, setTableId] = useState(initialTableId)
   const [tableMeta, setTableMeta] = useState(null)
   const [selectedChip, setSelectedChip] = useState(50)
-  const [stagedBets, setStagedBets] = useState([]) // [{ sid, nat, stake, odds, side }]
-  const [lastStagedBets, setLastStagedBets] = useState([])
-  const [dealing, setDealing] = useState(false)
+  const [stagedBets, setStagedBets] = useState([])
+  const [lastBets, setLastBets] = useState([])
+  const [countdown, setCountdown] = useState(10)
+  const [roundState, setRoundState] = useState('BETTING') // 'BETTING' | 'DEALING' | 'RESULT'
+  const [mid, setMid] = useState(() => Math.floor(Date.now() / 1000))
+  const [dealtCards, setDealtCards] = useState(() => drawCards(6))
   const [revealedCount, setRevealedCount] = useState(6)
-  const [dealtCards, setDealtCards] = useState(() => drawUniqueCards(6))
   const [roundOutcome, setRoundOutcome] = useState(null)
-  const [countdown, setCountdown] = useState(12)
-  const [midCounter, setMidCounter] = useState(() => Math.floor(Date.now() / 1000))
-  const [recentResults, setRecentResults] = useState([])
-  const [rulesModal, setRulesModal] = useState(null)
-  const [detailResultModal, setDetailResultModal] = useState(null)
+  const [recentWinners, setRecentWinners] = useState(['A', 'B', 'A', 'A', 'B', 'A', 'B', 'B', 'A', 'A'])
+  const [rulesModal, setRulesModal] = useState(false)
 
-  const stagedBetsRef = useRef(stagedBets)
-  stagedBetsRef.current = stagedBets
-  const dealingRef = useRef(dealing)
-  dealingRef.current = dealing
+  const currentBalance = isDemoMode ? Number(demoBalance || 0) : Number(wallet?.balance ?? 150)
+  const totalStagedStake = stagedBets.reduce((sum, b) => sum + b.stake, 0)
+  const activeTable = QUICK_TABLES.find(t => t.id === tableId) || QUICK_TABLES[0]
 
-  useEffect(() => {
-    if (initialTableId) setTableId(initialTableId)
-  }, [initialTableId])
+  // Safe voice dealer announcer
+  const speakDealer = useCallback((text) => {
+    try {
+      if (typeof window === 'undefined' || !window.speechSynthesis) return
+      window.speechSynthesis.cancel()
+      const utt = new SpeechSynthesisUtterance(text)
+      utt.rate = 1.05
+      utt.pitch = 1.1
+      utt.volume = 0.8
+      window.speechSynthesis.speak(utt)
+    } catch (e) {}
+  }, [])
 
-  // Load table runners & initial results when tableId changes
+  // Poll live table data from RapidAPI
   useEffect(() => {
     let mounted = true
-    setStagedBets([])
-    setRoundOutcome(null)
-    setCountdown(12)
-
     fetch(`/api/diamond/getCasinoTableData?tableid=${encodeURIComponent(tableId)}`)
       .then(r => r.json())
       .then(json => {
         if (!mounted || !json?.data) return
         setTableMeta(json)
-        setRecentResults(json.data.results || [])
-        // Deal an initial visible showcase hand so the table looks alive immediately
-        const initialCards = drawUniqueCards(6)
-        setDealtCards(initialCards)
-        setRevealedCount(6)
       })
       .catch(() => {})
-
     return () => { mounted = false }
   }, [tableId])
 
+  // Runners definition (live odds from API if available, else standard)
   const runners = tableMeta?.data?.t2 || [
-    { sid: '1', nat: 'Player A', short: 'A', b1: 1.98, l1: 2.02 },
-    { sid: '2', nat: 'Player B', short: 'B', b1: 1.98, l1: 2.02 },
-    { sid: '3', nat: 'Pair Plus A', short: 'PA', b1: 3.00, l1: 0 },
-    { sid: '4', nat: 'Pair Plus B', short: 'PB', b1: 3.00, l1: 0 }
+    { sid: '1', nat: 'Player A', b1: 1.98, l1: 2.02 },
+    { sid: '2', nat: 'Player B', b1: 1.98, l1: 2.02 },
+    { sid: '3', nat: 'Pair Plus A', b1: 3.00, l1: 0 },
+    { sid: '4', nat: 'Pair Plus B', b1: 3.00, l1: 0 }
   ]
 
-  const currentQuickTable = QUICK_TABLES.find(q => q.id === tableId) || QUICK_TABLES[0]
-  const totalStagedStake = stagedBets.reduce((sum, b) => sum + b.stake, 0)
-  const currentBalance = isDemoMode ? Number(demoBalance || 0) : Number(wallet?.balance ?? 150)
-
-  // Add a chip bet on a runner (BACK or LAY)
-  const handleStageBet = (runner, side = 'BACK') => {
-    if (dealing) return
+  // Add chip stake to a runner
+  const handlePlaceChip = (runner, side = 'BACK') => {
+    if (roundState !== 'BETTING') return
     const odds = side === 'BACK' ? Number(runner.b1) : Number(runner.l1)
     if (!odds || odds <= 0) return
 
     if (totalStagedStake + selectedChip > currentBalance) {
       setRoundOutcome({
-        won: false,
         isError: true,
-        text: `⚠️ Insufficient balance (Rs ${currentBalance.toFixed(2)}) to add Rs ${selectedChip} chip!`
+        text: `⚠️ Insufficient Balance (Rs ${currentBalance.toFixed(2)}) for Rs ${selectedChip} Chip!`
       })
       return
     }
 
     setRoundOutcome(null)
     setStagedBets(prev => {
-      const existingIdx = prev.findIndex(b => b.sid === runner.sid && b.side === side)
-      if (existingIdx !== -1) {
+      const idx = prev.findIndex(b => b.sid === runner.sid && b.side === side)
+      if (idx !== -1) {
         const copy = [...prev]
-        copy[existingIdx] = {
-          ...copy[existingIdx],
-          stake: copy[existingIdx].stake + selectedChip
-        }
+        copy[idx] = { ...copy[idx], stake: copy[idx].stake + selectedChip }
         return copy
       }
-      return [
-        ...prev,
-        {
-          sid: runner.sid,
-          nat: runner.nat,
-          short: runner.short || runner.nat.charAt(0),
-          stake: selectedChip,
-          odds,
-          side
-        }
-      ]
+      return [...prev, { sid: runner.sid, nat: runner.nat, stake: selectedChip, odds, side }]
     })
+
+    try {
+      casinoAudio.playReelTick()
+    } catch (e) {}
   }
 
-  // Evaluate winner for any of the 18 Diamond tables from the 6 dealt cards
-  const evaluateTableOutcome = (cards) => {
-    const handA = score3CardHand(cards.slice(0, 3))
-    const handB = score3CardHand(cards.slice(3, 6))
-    const primaryCard = cards[0]
-
-    // Lucky 7 tables
-    if (tableId === 'lucky7' || tableId === 'lucky7eu') {
-      const winSids = []
-      let mainWinner = runners[0]
-      if (primaryCard.num < 7) {
-        winSids.push('1')
-        mainWinner = runners[0]
-      } else if (primaryCard.num > 7) {
-        winSids.push('2')
-        mainWinner = runners[1]
-      } else {
-        winSids.push('3')
-        mainWinner = runners[2] || runners[0]
-      }
-      if (primaryCard.num % 2 === 0) winSids.push('4')
-      else winSids.push('5')
-      if (primaryCard.red) winSids.push('6')
-      else winSids.push('7')
-
-      return {
-        winSids,
-        winnerName: `${mainWinner.nat} (${primaryCard.rank}${primaryCard.suit})`,
-        shortLabel: mainWinner.short || (primaryCard.num < 7 ? 'L' : primaryCard.num > 7 ? 'H' : '7'),
-        handDescA: `Card: ${primaryCard.rank}${primaryCard.suit}`,
-        handDescB: primaryCard.num < 7 ? 'Low (A-6)' : primaryCard.num > 7 ? 'High (8-K)' : 'Exact 7!',
-        winningSide: primaryCard.num <= 7 ? 'A' : 'B'
-      }
-    }
-
-    // Dragon Tiger 20-20
-    if (tableId === 'dt20') {
-      const dCard = cards[0]
-      const tCard = cards[3]
-      const winSids = []
-      let mainWinner = runners[0]
-      if (dCard.num > tCard.num) {
-        winSids.push('1')
-        mainWinner = runners[0]
-      } else if (tCard.num > dCard.num) {
-        winSids.push('2')
-        mainWinner = runners[1]
-      } else {
-        winSids.push('3')
-        if (dCard.suit === tCard.suit) winSids.push('4')
-        mainWinner = runners[2]
-      }
-      return {
-        winSids,
-        winnerName: `${mainWinner.nat} (${dCard.rank}${dCard.suit} vs ${tCard.rank}${tCard.suit})`,
-        shortLabel: mainWinner.short || mainWinner.nat.charAt(0),
-        handDescA: `Dragon: ${dCard.rank}${dCard.suit}`,
-        handDescB: `Tiger: ${tCard.rank}${tCard.suit}`,
-        winningSide: dCard.num >= tCard.num ? 'A' : 'B'
-      }
-    }
-
-    // Default / Teenpatti / Andar Bahar / Poker / Baccarat / 32 Cards / Cricket / Bollywood
+  // Evaluate 6 dealt cards
+  const evaluateHands = (cards) => {
+    const handA = score3Cards(cards.slice(0, 3))
+    const handB = score3Cards(cards.slice(3, 6))
     const aWins = handA.score >= handB.score
-    const mainWinner = aWins ? runners[0] : (runners[1] || runners[0])
-    const winSids = [mainWinner.sid]
-    if (handA.isPairPlus) winSids.push('3')
-    if (handB.isPairPlus) winSids.push('4')
+    const winnerNat = aWins ? 'Player A' : 'Player B'
+    const winSids = [aWins ? '1' : '2']
+    if (handA.pairPlus) winSids.push('3')
+    if (handB.pairPlus) winSids.push('4')
 
     return {
-      winSids,
-      winnerName: mainWinner.nat,
-      shortLabel: mainWinner.short || (aWins ? 'A' : 'B'),
-      handDescA: handA.name,
-      handDescB: handB.name,
-      winningSide: aWins ? 'A' : 'B'
+      aWins,
+      winnerNat,
+      winningSide: aWins ? 'A' : 'B',
+      handDescA: handA.desc,
+      handDescB: handB.desc,
+      winSids
     }
   }
 
-  // Execute a full deal (either triggered by "DEAL HAND NOW" button or by the 12s live timer)
-  const executeDealRound = async (customBets) => {
-    if (dealingRef.current) return
-    const betsToPlay = customBets !== undefined ? customBets : stagedBetsRef.current
-    const totalBet = betsToPlay.reduce((s, b) => s + b.stake, 0)
-
-    setDealing(true)
-    setRevealedCount(0)
-    setRoundOutcome(null)
-    const nextMid = midCounter + 1
-    setMidCounter(nextMid)
-
-    // 1. If the player placed chips, debit their wallet first
-    if (totalBet > 0) {
-      setLastStagedBets(betsToPlay)
-      if (isDemoMode) {
-        if (demoBalance < totalBet) {
-          setDealing(false)
-          setRevealedCount(6)
-          setRoundOutcome({ won: false, isError: true, text: '⚠️ Insufficient Demo Balance!' })
-          return
+  // Continuous Game Loop
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          // Transition state
+          if (roundState === 'BETTING') {
+            triggerDealRound()
+            return 3 // 3s dealing animation
+          } else if (roundState === 'DEALING') {
+            triggerResolveRound()
+            return 4 // 4s result showcase
+          } else {
+            // Back to BETTING
+            triggerNewRound()
+            return 12 // 12s betting window
+          }
         }
-        spendDemoBalance(totalBet)
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [roundState, stagedBets])
+
+  // Trigger Deal Round: Lock bets, debit wallet, flip cards
+  const triggerDealRound = async () => {
+    setRoundState('DEALING')
+    speakDealer('Bets are closed.')
+
+    // Debit staged bets
+    const totalStake = stagedBets.reduce((s, b) => s + b.stake, 0)
+    if (totalStake > 0) {
+      setLastBets(stagedBets)
+      if (isDemoMode) {
+        spendDemoBalance(totalStake)
       } else {
         try {
-          const res = await fetch('/api/wallet/bet', {
+          await fetch('/api/wallet/bet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               user_id: user?.id || user?.uid || 'guest_player',
               email: user?.email || '',
-              amount: totalBet,
-              game: `Diamond ${tableMeta?.tableName || tableId}`
+              amount: totalStake,
+              game: `Diamond ${activeTable.label}`
             })
           })
-          const data = await res.json()
-          if (!res.ok || !data.success) {
-            setDealing(false)
-            setRevealedCount(6)
-            setRoundOutcome({ won: false, isError: true, text: `⚠️ ${data.error || 'Insufficient PKR balance!'}` })
-            return
-          }
           if (fetchWallet) fetchWallet()
           window.dispatchEvent(new Event('wallet-updated'))
-        } catch (e) {
-          setDealing(false)
-          setRevealedCount(6)
-          setRoundOutcome({ won: false, isError: true, text: '⚠️ Network error submitting bet.' })
-          return
-        }
+        } catch (e) {}
       }
     }
 
-    // 2. Draw 6 fresh cards and animate card-by-card reveal
-    const newCards = drawUniqueCards(6)
-    setDealtCards(newCards)
+    // Draw new cards and animate flips
+    const freshCards = drawCards(6)
+    setDealtCards(freshCards)
+    setRevealedCount(0)
 
-    for (let step = 1; step <= 6; step++) {
+    for (let i = 1; i <= 6; i++) {
       setTimeout(() => {
-        setRevealedCount(step)
-      }, step * 180)
+        setRevealedCount(i)
+      }, i * 200)
     }
+  }
 
-    // 3. Evaluate outcome after all 6 cards flip face-up
-    setTimeout(async () => {
-      const outcome = evaluateTableOutcome(newCards)
+  // Resolve Round: Payout winnings, speak winner, update history
+  const triggerResolveRound = async () => {
+    setRoundState('RESULT')
+    const evalRes = evaluateHands(dealtCards)
+    speakDealer(`${evalRes.winnerNat} Wins!`)
 
-      setRecentResults(prev => [
-        {
-          mid: String(nextMid),
-          winnerName: outcome.winnerName,
-          shortLabel: outcome.shortLabel,
-          cards: newCards.map(c => `${c.rank}${c.suit}`).join(' ')
-        },
-        ...prev.slice(0, 9)
-      ])
+    setRecentWinners(prev => [evalRes.winningSide, ...prev.slice(0, 9)])
 
-      if (totalBet > 0) {
-        let totalPayout = 0
-        for (const b of betsToPlay) {
-          const isRunnerWin = outcome.winSids.includes(String(b.sid))
-          if (b.side === 'BACK' && isRunnerWin) {
-            totalPayout += Number((b.stake * b.odds).toFixed(2))
-          } else if (b.side === 'LAY' && !isRunnerWin) {
-            totalPayout += Number((b.stake * 1.95).toFixed(2))
-          }
+    const totalStake = stagedBets.reduce((s, b) => s + b.stake, 0)
+    if (totalStake > 0) {
+      let totalPayout = 0
+      for (const b of stagedBets) {
+        const isHit = evalRes.winSids.includes(String(b.sid))
+        if (b.side === 'BACK' && isHit) {
+          totalPayout += Number((b.stake * b.odds).toFixed(2))
+        } else if (b.side === 'LAY' && !isHit) {
+          totalPayout += Number((b.stake * 1.95).toFixed(2))
         }
+      }
 
-        if (totalPayout > 0) {
-          if (isDemoMode) {
-            addDemoBalance(totalPayout)
-          } else {
-            try {
-              const netMult = Number((totalPayout / totalBet).toFixed(4))
-              await fetch('/api/wallet/payout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  user_id: user?.id || user?.uid || 'guest_player',
-                  email: user?.email || '',
-                  bet_amount: totalBet,
-                  win_amount: totalPayout,
-                  multiplier: netMult,
-                  game: `Diamond ${tableMeta?.tableName || tableId}`
-                })
-              })
-              if (fetchWallet) fetchWallet()
-              window.dispatchEvent(new Event('wallet-updated'))
-            } catch (e) {}
-          }
-          setRoundOutcome({
-            won: true,
-            isError: false,
-            winningSide: outcome.winningSide,
-            handDescA: outcome.handDescA,
-            handDescB: outcome.handDescB,
-            text: `🎉 WON Rs ${totalPayout.toLocaleString('en-PK', { minimumFractionDigits: 2 })}! Winner: ${outcome.winnerName}`
-          })
+      if (totalPayout > 0) {
+        if (isDemoMode) {
+          addDemoBalance(totalPayout)
         } else {
-          setRoundOutcome({
-            won: false,
-            isError: false,
-            winningSide: outcome.winningSide,
-            handDescA: outcome.handDescA,
-            handDescB: outcome.handDescB,
-            text: `🏆 Winner: ${outcome.winnerName} (${outcome.winningSide === 'A' ? outcome.handDescA : outcome.handDescB}) — Place chips for next hand!`
-          })
+          try {
+            await fetch('/api/wallet/payout', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                user_id: user?.id || user?.uid || 'guest_player',
+                email: user?.email || '',
+                bet_amount: totalStake,
+                win_amount: totalPayout,
+                multiplier: Number((totalPayout / totalStake).toFixed(2)),
+                game: `Diamond ${activeTable.label}`
+              })
+            })
+            if (fetchWallet) fetchWallet()
+            window.dispatchEvent(new Event('wallet-updated'))
+          } catch (e) {}
         }
-        setStagedBets([])
+        setRoundOutcome({
+          won: true,
+          text: `🎉 WON Rs ${totalPayout.toLocaleString('en-PK', { minimumFractionDigits: 2 })}! ${evalRes.winnerNat} Wins!`
+        })
+        try {
+          casinoAudio.playBigWin()
+        } catch (e) {}
       } else {
         setRoundOutcome({
           won: false,
-          isError: false,
-          neutral: true,
-          winningSide: outcome.winningSide,
-          handDescA: outcome.handDescA,
-          handDescB: outcome.handDescB,
-          text: `🃏 Live Round #${nextMid}: ${outcome.winnerName} Wins (${outcome.winningSide === 'A' ? outcome.handDescA : outcome.handDescB})`
+          text: `🏆 ${evalRes.winnerNat} Wins! Better luck next hand.`
         })
       }
-
-      setDealing(false)
-      setCountdown(12)
-    }, 1250)
-  }
-
-  // Continuous 1-second live countdown clock that auto-deals every 12 seconds
-  useEffect(() => {
-    const iv = setInterval(() => {
-      if (dealingRef.current) return
-      setCountdown(prev => {
-        if (prev <= 1) {
-          executeDealRound()
-          return 12
-        }
-        return prev - 1
+    } else {
+      setRoundOutcome({
+        won: false,
+        neutral: true,
+        text: `Live Round #${mid}: ${evalRes.winnerNat} Wins (${evalRes.winningSide === 'A' ? evalRes.handDescA : evalRes.handDescB})`
       })
-    }, 1000)
-    return () => clearInterval(iv)
-  }, [tableId, midCounter])
-
-  const openRules = async () => {
-    try {
-      const res = await fetch(`/api/diamond/getCasinoRules?tableid=${encodeURIComponent(tableId)}`)
-      const json = await res.json()
-      setRulesModal(json)
-    } catch (e) {}
+    }
   }
 
-  const currentHandEval = evaluateTableOutcome(dealtCards)
+  // Trigger New Round: Reset bets, new MID, announce bets open
+  const triggerNewRound = () => {
+    setRoundState('BETTING')
+    setStagedBets([])
+    setRoundOutcome(null)
+    setMid(prev => prev + 1)
+    setRevealedCount(6) // show previous hand while betting
+    speakDealer('Bets open, place your chips.')
+  }
+
+  const currentEval = evaluateHands(dealtCards)
 
   return (
-    <div style={{ width: '100%', maxWidth: '480px', margin: '0 auto', color: '#fff', fontFamily: 'Outfit, sans-serif', paddingBottom: '24px' }}>
-      {/* Horizontal Quick Table Switcher */}
+    <div style={{
+      width: '100%',
+      maxWidth: '480px',
+      margin: '0 auto',
+      background: 'radial-gradient(ellipse at 50% 0%, #062414 0%, #021208 70%, #000 100%)',
+      color: '#fff',
+      display: 'flex',
+      flexDirection: 'column',
+      padding: '8px 10px 24px',
+      boxSizing: 'border-box',
+      userSelect: 'none',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }}>
+
+      {/* Horizontal Quick Table Selector */}
       <div style={{
         display: 'flex',
         gap: '6px',
         overflowX: 'auto',
-        padding: '8px 10px',
-        background: '#0d1a12',
-        borderBottom: '1px solid rgba(109, 255, 56, 0.2)',
+        paddingBottom: '8px',
+        marginBottom: '6px',
         scrollbarWidth: 'none'
       }}>
         {QUICK_TABLES.map(qt => (
@@ -513,16 +416,16 @@ export default function DiamondCasinoGame({
             onClick={() => setTableId(qt.id)}
             style={{
               background: tableId === qt.id
-                ? 'linear-gradient(180deg, #86ff47 0%, #52e534 100%)'
-                : 'rgba(24, 46, 33, 0.9)',
-              color: tableId === qt.id ? '#06150a' : '#d8f3dc',
-              border: tableId === qt.id ? '1px solid #a6ff78' : '1px solid rgba(255,255,255,0.1)',
+                ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                : 'rgba(255, 255, 255, 0.06)',
+              color: tableId === qt.id ? '#000' : '#e2e8f0',
+              border: tableId === qt.id ? '1px solid #6ee7b7' : '1px solid rgba(255, 255, 255, 0.1)',
+              padding: '5px 10px',
               borderRadius: '999px',
-              padding: '5px 11px',
               fontSize: '11px',
-              fontWeight: 800,
-              whiteSpace: 'nowrap',
+              fontWeight: 900,
               cursor: 'pointer',
+              whiteSpace: 'nowrap',
               display: 'flex',
               alignItems: 'center',
               gap: '4px'
@@ -534,34 +437,18 @@ export default function DiamondCasinoGame({
         ))}
       </div>
 
-      {/* Live Studio Broadcast & 3D Card Table Viewport */}
+      {/* 3D TV Studio Dealer Broadcast Stage */}
       <div style={{
-        position: 'relative',
-        margin: '8px 10px',
-        borderRadius: '14px',
+        borderRadius: '16px',
         overflow: 'hidden',
-        minHeight: '236px',
-        background: 'radial-gradient(circle at 50% 30%, #1d5436 0%, #0b2416 68%, #06120b 100%)',
-        border: '1.5px solid rgba(109, 255, 56, 0.4)',
-        boxShadow: '0 10px 28px rgba(0,0,0,0.7)',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        padding: '10px 12px'
+        background: 'linear-gradient(180deg, #09331d 0%, #03170d 100%)',
+        border: '2px solid rgba(16, 185, 129, 0.45)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.7), inset 0 0 20px rgba(0,0,0,0.8)',
+        padding: '10px 12px',
+        position: 'relative'
       }}>
-        {/* Subtle studio artwork watermark */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: `url(${currentQuickTable.bg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          opacity: 0.14,
-          pointerEvents: 'none'
-        }} />
-
         {/* Top Broadcast Bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', zIndex: 3 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{
               background: '#ef4444',
@@ -570,27 +457,28 @@ export default function DiamondCasinoGame({
               fontWeight: 900,
               padding: '2px 7px',
               borderRadius: '999px',
-              boxShadow: '0 0 8px rgba(239,68,68,0.6)'
+              boxShadow: '0 0 8px rgba(239, 68, 68, 0.6)'
             }}>
-              ● LIVE HD
+              ● LIVE TV STUDIO
             </span>
-            <span style={{ fontSize: '12.5px', fontWeight: 900, color: '#ffd54f' }}>
-              {tableMeta?.tableName || currentQuickTable.label}
+            <span style={{ fontSize: '12px', fontWeight: 900, color: '#fef08a' }}>
+              {activeTable.label}
             </span>
           </div>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '10px', color: '#cbd5e1', fontWeight: 700 }}>
-              MID: #{midCounter}
+            <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 700 }}>
+              MID: #{mid}
             </span>
             <button
               type="button"
-              onClick={openRules}
+              onClick={() => setRulesModal(true)}
               style={{
-                background: 'rgba(255,255,255,0.14)',
-                border: '1px solid rgba(255,255,255,0.22)',
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.15)',
                 color: '#fff',
                 borderRadius: '6px',
-                padding: '2px 7px',
+                padding: '2px 6px',
                 fontSize: '10px',
                 fontWeight: 800,
                 cursor: 'pointer'
@@ -601,512 +489,347 @@ export default function DiamondCasinoGame({
           </div>
         </div>
 
-        {/* Center 3D Dealt Cards Felt Arena */}
+        {/* Felt Card Arena */}
         <div style={{
-          position: 'relative',
-          zIndex: 3,
+          background: 'rgba(4, 20, 11, 0.85)',
+          borderRadius: '12px',
+          border: '1px solid rgba(251, 191, 36, 0.35)',
+          padding: '12px 8px',
           display: 'grid',
           gridTemplateColumns: '1fr auto 1fr',
           alignItems: 'center',
-          gap: '6px',
-          background: 'rgba(6, 18, 11, 0.76)',
-          border: '1px solid rgba(255, 213, 79, 0.35)',
-          borderRadius: '12px',
-          padding: '12px 8px',
-          margin: '8px 0'
+          gap: '6px'
         }}>
-          {/* Side A Cards */}
+          {/* Player A Cards */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 900, color: '#6dff38', textTransform: 'uppercase' }}>
-                {runners[0]?.nat || 'Player A'}
+              <span style={{ fontSize: '11px', fontWeight: 900, color: '#4ade80' }}>
+                PLAYER A
               </span>
-              {revealedCount >= 6 && currentHandEval.winningSide === 'A' && (
-                <span style={{ background: '#ffd54f', color: '#000', fontSize: '8.5px', fontWeight: 900, padding: '1px 5px', borderRadius: '4px' }}>
+              {roundState === 'RESULT' && currentEval.winningSide === 'A' && (
+                <span style={{ background: '#fbbf24', color: '#000', fontSize: '8px', fontWeight: 900, padding: '1px 4px', borderRadius: '4px' }}>
                   WIN
                 </span>
               )}
             </div>
-            <div style={{ display: 'flex', gap: '5px', justifyContent: 'center' }}>
-              <PlayingCard3D card={dealtCards[0]} revealed={revealedCount >= 1} highlight={revealedCount >= 6 && currentHandEval.winningSide === 'A'} />
-              <PlayingCard3D card={dealtCards[1]} revealed={revealedCount >= 3} highlight={revealedCount >= 6 && currentHandEval.winningSide === 'A'} />
-              <PlayingCard3D card={dealtCards[2]} revealed={revealedCount >= 5} highlight={revealedCount >= 6 && currentHandEval.winningSide === 'A'} />
+            <div style={{ display: 'flex', gap: '4px' }}>
+              <PlayingCard card={dealtCards[0]} revealed={revealedCount >= 1} highlight={roundState === 'RESULT' && currentEval.winningSide === 'A'} />
+              <PlayingCard card={dealtCards[1]} revealed={revealedCount >= 3} highlight={roundState === 'RESULT' && currentEval.winningSide === 'A'} />
+              <PlayingCard card={dealtCards[2]} revealed={revealedCount >= 5} highlight={roundState === 'RESULT' && currentEval.winningSide === 'A'} />
             </div>
-            <span style={{ fontSize: '9.5px', fontWeight: 800, color: '#cbd5e1' }}>
-              {revealedCount >= 5 ? currentHandEval.handDescA : 'Dealing...'}
-            </span>
+            <div style={{ fontSize: '9px', fontWeight: 800, color: '#cbd5e1' }}>
+              {revealedCount >= 5 ? currentEval.handDescA : 'Dealing...'}
+            </div>
           </div>
 
           {/* Center VS Badge */}
           <div style={{
-            width: '30px',
-            height: '30px',
+            width: '28px',
+            height: '28px',
             borderRadius: '50%',
-            background: 'rgba(255, 213, 79, 0.16)',
-            border: '1.5px solid #ffd54f',
+            background: 'rgba(251, 191, 36, 0.15)',
+            border: '1.5px solid #fbbf24',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '10px',
             fontWeight: 900,
-            color: '#ffd54f'
+            color: '#fbbf24'
           }}>
             VS
           </div>
 
-          {/* Side B Cards */}
+          {/* Player B Cards */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 900, color: '#72bbef', textTransform: 'uppercase' }}>
-                {runners[1]?.nat || 'Player B'}
+              <span style={{ fontSize: '11px', fontWeight: 900, color: '#38bdf8' }}>
+                PLAYER B
               </span>
-              {revealedCount >= 6 && currentHandEval.winningSide === 'B' && (
-                <span style={{ background: '#ffd54f', color: '#000', fontSize: '8.5px', fontWeight: 900, padding: '1px 5px', borderRadius: '4px' }}>
+              {roundState === 'RESULT' && currentEval.winningSide === 'B' && (
+                <span style={{ background: '#fbbf24', color: '#000', fontSize: '8px', fontWeight: 900, padding: '1px 4px', borderRadius: '4px' }}>
                   WIN
                 </span>
               )}
             </div>
-            <div style={{ display: 'flex', gap: '5px', justifyContent: 'center' }}>
-              <PlayingCard3D card={dealtCards[3]} revealed={revealedCount >= 2} highlight={revealedCount >= 6 && currentHandEval.winningSide === 'B'} />
-              <PlayingCard3D card={dealtCards[4]} revealed={revealedCount >= 4} highlight={revealedCount >= 6 && currentHandEval.winningSide === 'B'} />
-              <PlayingCard3D card={dealtCards[5]} revealed={revealedCount >= 6} highlight={revealedCount >= 6 && currentHandEval.winningSide === 'B'} />
+            <div style={{ display: 'flex', gap: '4px' }}>
+              <PlayingCard card={dealtCards[3]} revealed={revealedCount >= 2} highlight={roundState === 'RESULT' && currentEval.winningSide === 'B'} />
+              <PlayingCard card={dealtCards[4]} revealed={revealedCount >= 4} highlight={roundState === 'RESULT' && currentEval.winningSide === 'B'} />
+              <PlayingCard card={dealtCards[5]} revealed={revealedCount >= 6} highlight={roundState === 'RESULT' && currentEval.winningSide === 'B'} />
             </div>
-            <span style={{ fontSize: '9.5px', fontWeight: 800, color: '#cbd5e1' }}>
-              {revealedCount >= 6 ? currentHandEval.handDescB : 'Dealing...'}
-            </span>
+            <div style={{ fontSize: '9px', fontWeight: 800, color: '#cbd5e1' }}>
+              {revealedCount >= 6 ? currentEval.handDescB : 'Dealing...'}
+            </div>
           </div>
         </div>
 
-        {/* Bottom Status & Live Auto-Deal Countdown */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', zIndex: 3 }}>
-          <div style={{ fontSize: '11px', fontWeight: 800, color: dealing ? '#ffd54f' : '#6dff38' }}>
-            {dealing
-              ? '🃏 DEALING LIVE HAND...'
-              : totalStagedStake > 0
-                ? `✅ Rs ${totalStagedStake} STAGED — TAP DEAL NOW OR WAIT ${countdown}s`
-                : '🟢 TAP BACK / LAY BELOW TO PLACE YOUR BET'}
+        {/* Live Dealer Status & Countdown */}
+        <div style={{
+          marginTop: '8px',
+          background: roundState === 'BETTING'
+            ? 'rgba(16, 185, 129, 0.15)'
+            : roundState === 'DEALING'
+              ? 'rgba(245, 158, 11, 0.15)'
+              : 'rgba(56, 189, 248, 0.15)',
+          border: `1px solid ${roundState === 'BETTING' ? '#10b981' : roundState === 'DEALING' ? '#f59e0b' : '#38bdf8'}`,
+          borderRadius: '8px',
+          padding: '6px 10px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <div style={{ fontSize: '11px', fontWeight: 900, color: '#fff' }}>
+            {roundState === 'BETTING' && '🟢 BETTING OPEN — PLACE YOUR CHIPS'}
+            {roundState === 'DEALING' && '🟡 DEALER DEALING CARDS...'}
+            {roundState === 'RESULT' && '🔵 ROUND RESULT SHOWCASE'}
           </div>
           <div style={{
-            background: countdown <= 3 ? '#dc2626' : '#0f291b',
-            border: '1.5px solid #6dff38',
-            borderRadius: '8px',
-            padding: '3px 10px',
-            fontSize: '13px',
+            background: '#ef4444',
+            color: '#fff',
+            padding: '2px 8px',
+            borderRadius: '6px',
+            fontSize: '11px',
             fontWeight: 900,
-            color: '#ffffff',
-            minWidth: '46px',
-            textAlign: 'center'
+            fontFamily: 'monospace'
           }}>
-            {dealing ? '🃏' : `${countdown}s`}
+            {countdown}s
           </div>
         </div>
       </div>
 
-      {/* Round Result / Payout Notification Banner */}
+      {/* Outcome Banner */}
       {roundOutcome && (
         <div style={{
-          margin: '0 10px 8px',
-          padding: '8px 12px',
-          borderRadius: '10px',
+          marginTop: '8px',
+          padding: '7px 12px',
+          borderRadius: '8px',
           background: roundOutcome.isError
-            ? 'rgba(239, 68, 68, 0.18)'
+            ? 'rgba(239, 68, 68, 0.2)'
             : roundOutcome.won
-              ? 'rgba(109, 255, 56, 0.2)'
-              : 'rgba(255, 213, 79, 0.14)',
-          border: roundOutcome.isError
-            ? '1px solid #ef4444'
-            : roundOutcome.won
-              ? '1.5px solid #6dff38'
-              : '1px solid rgba(255, 213, 79, 0.45)',
-          color: roundOutcome.isError ? '#fca5a5' : roundOutcome.won ? '#6dff38' : '#ffd54f',
-          fontSize: '12px',
+              ? 'rgba(16, 185, 129, 0.25)'
+              : 'rgba(15, 23, 42, 0.75)',
+          border: `1px solid ${roundOutcome.isError ? '#ef4444' : roundOutcome.won ? '#10b981' : 'rgba(255,255,255,0.1)'}`,
+          fontSize: '11px',
           fontWeight: 800,
+          color: roundOutcome.won ? '#34d399' : '#fff',
           textAlign: 'center'
         }}>
           {roundOutcome.text}
         </div>
       )}
 
-      {/* Chip Selector + Instant Deal Action Bar */}
+      {/* Chip Stake Selector */}
       <div style={{
-        margin: '0 10px 8px',
-        padding: '10px',
-        background: '#122218',
-        borderRadius: '12px',
-        border: '1px solid rgba(109, 255, 56, 0.22)',
+        marginTop: '10px',
         display: 'flex',
-        flexDirection: 'column',
-        gap: '8px'
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '6px'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
-          <span style={{ fontSize: '10.5px', fontWeight: 900, color: '#94a3b8', whiteSpace: 'nowrap' }}>
-            SELECT CHIP:
-          </span>
-          <div style={{ display: 'flex', gap: '5px', overflowX: 'auto' }}>
-            {CHIPS.map(chip => (
-              <button
-                key={chip}
-                type="button"
-                onClick={() => setSelectedChip(chip)}
-                style={{
-                  background: selectedChip === chip
-                    ? 'linear-gradient(180deg, #ffd54f 0%, #ff9800 100%)'
-                    : '#1a3022',
-                  color: selectedChip === chip ? '#000' : '#fff',
-                  border: selectedChip === chip ? '1.5px solid #fff' : '1px solid rgba(255,255,255,0.14)',
-                  borderRadius: '999px',
-                  padding: '4px 9px',
-                  fontSize: '11px',
-                  fontWeight: 900,
-                  cursor: 'pointer'
-                }}
-              >
-                Rs {chip}
-              </button>
-            ))}
-          </div>
+        <div style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8' }}>
+          CHIP STAKE:
         </div>
-
-        {/* Instant Deal / Clear / Repeat Control Bar */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: '6px' }}>
-          <button
-            type="button"
-            disabled={dealing}
-            onClick={() => executeDealRound()}
-            style={{
-              background: 'linear-gradient(180deg, #88ff4d 0%, #52e534 100%)',
-              color: '#06150a',
-              border: '1px solid #b2ff87',
-              borderRadius: '10px',
-              padding: '9px 12px',
-              fontSize: '13px',
-              fontWeight: 900,
-              cursor: dealing ? 'not-allowed' : 'pointer',
-              boxShadow: '0 4px 14px rgba(82, 229, 52, 0.35)'
-            }}
-          >
-            {dealing
-              ? '🃏 DEALING CARDS...'
-              : totalStagedStake > 0
-                ? `⚡ DEAL CARDS NOW (Rs ${totalStagedStake})`
-                : '⚡ DEAL CARDS NOW'}
-          </button>
-
-          {totalStagedStake > 0 && (
+        <div style={{ display: 'flex', gap: '5px', overflowX: 'auto' }}>
+          {CHIPS.map(c => (
             <button
+              key={c}
               type="button"
-              disabled={dealing}
-              onClick={() => setStagedBets([])}
+              onClick={() => setSelectedChip(c)}
               style={{
-                background: 'rgba(239, 68, 68, 0.16)',
-                color: '#fca5a5',
-                border: '1px solid rgba(239, 68, 68, 0.4)',
-                borderRadius: '10px',
-                padding: '9px 10px',
+                background: selectedChip === c
+                  ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)'
+                  : 'rgba(255, 255, 255, 0.06)',
+                color: selectedChip === c ? '#000' : '#e2e8f0',
+                border: selectedChip === c ? '1px solid #fef08a' : '1px solid rgba(255, 255, 255, 0.1)',
+                padding: '4px 8px',
+                borderRadius: '8px',
                 fontSize: '11px',
-                fontWeight: 800,
+                fontWeight: 900,
                 cursor: 'pointer'
               }}
             >
-              Clear
+              Rs {c}
             </button>
-          )}
-
-          {totalStagedStake === 0 && lastStagedBets.length > 0 && (
-            <button
-              type="button"
-              disabled={dealing}
-              onClick={() => executeDealRound(lastStagedBets)}
-              style={{
-                background: 'rgba(255, 213, 79, 0.16)',
-                color: '#ffd54f',
-                border: '1px solid rgba(255, 213, 79, 0.45)',
-                borderRadius: '10px',
-                padding: '9px 10px',
-                fontSize: '11px',
-                fontWeight: 800,
-                cursor: 'pointer'
-              }}
-            >
-              🔁 Rebet
-            </button>
-          )}
+          ))}
         </div>
       </div>
 
-      {/* Diamond Exchange Back (Blue) / Lay (Pink) Market Odds Grid */}
+      {/* Live Market Runners (Back & Lay Odds Table) */}
       <div style={{
-        margin: '0 10px',
+        marginTop: '10px',
         borderRadius: '12px',
         overflow: 'hidden',
-        border: '1px solid rgba(109, 255, 56, 0.22)',
-        background: '#111f16'
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        background: '#0a1810'
       }}>
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 84px 84px',
-          background: '#183022',
-          padding: '7px 10px',
-          fontSize: '10.5px',
+          gridTemplateColumns: '1.4fr 1fr 1fr',
+          padding: '6px 10px',
+          background: 'rgba(255,255,255,0.04)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          fontSize: '10px',
           fontWeight: 900,
-          color: '#cbd5e1',
-          borderBottom: '1px solid rgba(255,255,255,0.08)'
+          color: '#94a3b8'
         }}>
-          <span>TAP RUNNER TO BET (MIN: Rs 20)</span>
-          <span style={{ textAlign: 'center', color: '#72bbef' }}>BACK (WIN)</span>
-          <span style={{ textAlign: 'center', color: '#faa9ba' }}>LAY (AGAINST)</span>
+          <div>MARKET RUNNER (MIN: Rs 20)</div>
+          <div style={{ textAlign: 'center', color: '#38bdf8' }}>BACK</div>
+          <div style={{ textAlign: 'center', color: '#f43f5e' }}>LAY</div>
         </div>
 
-        {runners.map(runner => {
-          const backBet = stagedBets.find(b => b.sid === runner.sid && b.side === 'BACK')
-          const layBet = stagedBets.find(b => b.sid === runner.sid && b.side === 'LAY')
+        {runners.map(r => {
+          const stagedBack = stagedBets.find(b => b.sid === r.sid && b.side === 'BACK')
+          const stagedLay = stagedBets.find(b => b.sid === r.sid && b.side === 'LAY')
 
           return (
             <div
-              key={runner.sid}
+              key={r.sid}
               style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr 84px 84px',
+                gridTemplateColumns: '1.4fr 1fr 1fr',
+                padding: '6px 10px',
                 alignItems: 'center',
-                padding: '7px 10px',
-                borderBottom: '1px solid rgba(255,255,255,0.06)',
-                position: 'relative'
+                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                fontSize: '12px',
+                fontWeight: 800
               }}
             >
               <div>
-                <div style={{ fontSize: '13px', fontWeight: 800, color: '#ffffff' }}>
-                  {runner.nat}
-                </div>
-                {(backBet || layBet) && (
-                  <div style={{ fontSize: '10.5px', fontWeight: 900, color: '#6dff38', marginTop: '2px' }}>
-                    {backBet ? `BACK Rs ${backBet.stake} → Win Rs ${(backBet.stake * backBet.odds).toFixed(0)}` : ''}
-                    {layBet ? ` LAY Rs ${layBet.stake}` : ''}
+                <div style={{ color: '#f8fafc' }}>{r.nat}</div>
+                {(stagedBack || stagedLay) && (
+                  <div style={{ fontSize: '9px', color: '#34d399' }}>
+                    Bet: Rs {(stagedBack?.stake || 0) + (stagedLay?.stake || 0)}
                   </div>
                 )}
               </div>
 
-              {/* BACK Blue Box */}
+              {/* Back Button (Blue) */}
               <button
                 type="button"
-                disabled={dealing || !runner.b1}
-                onClick={() => handleStageBet(runner, 'BACK')}
+                disabled={roundState !== 'BETTING' || !r.b1}
+                onClick={() => handlePlaceChip(r, 'BACK')}
                 style={{
-                  height: '40px',
-                  marginRight: '4px',
-                  borderRadius: '8px',
-                  border: backBet ? '2px solid #ffd54f' : 'none',
-                  background: dealing ? '#26382e' : '#72bbef',
-                  color: dealing ? '#64748b' : '#061524',
+                  background: stagedBack ? '#0284c7' : 'linear-gradient(180deg, #38bdf8 0%, #0284c7 100%)',
+                  border: 'none',
+                  borderRadius: '6px',
+                  color: '#fff',
+                  padding: '6px 4px',
+                  margin: '0 4px',
+                  cursor: roundState === 'BETTING' ? 'pointer' : 'not-allowed',
+                  textAlign: 'center',
                   fontWeight: 900,
-                  fontSize: '13px',
-                  cursor: dealing ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: backBet ? '0 0 10px rgba(255, 213, 79, 0.6)' : 'none'
+                  fontSize: '12px'
                 }}
               >
-                <span>{runner.b1 ? Number(runner.b1).toFixed(2) : '-'}</span>
-                <span style={{ fontSize: '8px', fontWeight: 800 }}>
-                  {backBet ? `Rs ${backBet.stake}` : 'BACK'}
-                </span>
+                <div>{r.b1 || '—'}</div>
+                <div style={{ fontSize: '8px', opacity: 0.8 }}>BACK</div>
               </button>
 
-              {/* LAY Pink Box */}
+              {/* Lay Button (Pink) */}
               <button
                 type="button"
-                disabled={dealing || !runner.l1}
-                onClick={() => handleStageBet(runner, 'LAY')}
+                disabled={roundState !== 'BETTING' || !r.l1}
+                onClick={() => handlePlaceChip(r, 'LAY')}
                 style={{
-                  height: '40px',
-                  borderRadius: '8px',
-                  border: layBet ? '2px solid #ffd54f' : 'none',
-                  background: dealing || !runner.l1 ? '#26382e' : '#faa9ba',
-                  color: dealing || !runner.l1 ? '#64748b' : '#2b0710',
+                  background: stagedLay ? '#e11d48' : 'linear-gradient(180deg, #fb7185 0%, #e11d48 100%)',
+                  border: 'none',
+                  borderRadius: '6px',
+                  color: '#fff',
+                  padding: '6px 4px',
+                  margin: '0 4px',
+                  cursor: roundState === 'BETTING' ? 'pointer' : 'not-allowed',
+                  textAlign: 'center',
                   fontWeight: 900,
-                  fontSize: '13px',
-                  cursor: dealing || !runner.l1 ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: layBet ? '0 0 10px rgba(255, 213, 79, 0.6)' : 'none'
+                  fontSize: '12px'
                 }}
               >
-                <span>{runner.l1 ? Number(runner.l1).toFixed(2) : '-'}</span>
-                <span style={{ fontSize: '8px', fontWeight: 800 }}>
-                  {layBet ? `Rs ${layBet.stake}` : 'LAY'}
-                </span>
+                <div>{r.l1 || '—'}</div>
+                <div style={{ fontSize: '8px', opacity: 0.8 }}>LAY</div>
               </button>
             </div>
           )
         })}
       </div>
 
-      {/* Last 10 Round Results Bead Road */}
+      {/* Last 10 Results Bar */}
       <div style={{
-        margin: '10px 10px 0',
-        padding: '10px 12px',
-        background: '#111f16',
-        borderRadius: '12px',
-        border: '1px solid rgba(255,255,255,0.08)'
+        marginTop: '10px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        background: 'rgba(0,0,0,0.4)',
+        padding: '6px 10px',
+        borderRadius: '8px',
+        border: '1px solid rgba(255,255,255,0.06)'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 900, color: '#cbd5e1', textTransform: 'uppercase' }}>
-            📊 Last 10 Results ({tableMeta?.tableName || currentQuickTable.label})
-          </span>
-          <span style={{ fontSize: '10px', color: '#6dff38', fontWeight: 700 }}>
-            Tap bubble for details
-          </span>
-        </div>
-        <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
-          {recentResults.map((resItem, idx) => (
-            <button
-              key={`${resItem.mid}-${idx}`}
-              type="button"
-              onClick={() => setDetailResultModal(resItem)}
+        <span style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8' }}>
+          LAST 10 RESULTS:
+        </span>
+        <div style={{ display: 'flex', gap: '4px' }}>
+          {recentWinners.map((w, idx) => (
+            <span
+              key={idx}
               style={{
-                minWidth: '28px',
-                height: '28px',
-                padding: '0 5px',
-                borderRadius: '999px',
-                border: '1px solid rgba(255,255,255,0.25)',
-                background: idx === 0
-                  ? 'linear-gradient(135deg, #6dff38 0%, #1b8a12 100%)'
-                  : resItem.shortLabel === 'A' || resItem.shortLabel === 'D' || resItem.shortLabel === 'L'
-                    ? '#1e3a5f'
-                    : '#3b1d2e',
-                color: idx === 0 ? '#051409' : '#ffd54f',
+                width: '18px',
+                height: '18px',
+                borderRadius: '50%',
+                background: w === 'A' ? '#10b981' : '#38bdf8',
+                color: '#000',
+                fontSize: '9px',
                 fontWeight: 900,
-                fontSize: '11px',
-                cursor: 'pointer'
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
-              title={`MID #${resItem.mid}: ${resItem.winnerName}`}
             >
-              {resItem.shortLabel || 'W'}
-            </button>
+              {w}
+            </span>
           ))}
         </div>
       </div>
 
-      {/* Round Details Result Modal */}
-      {detailResultModal && (
-        <div
-          onClick={() => setDetailResultModal(null)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.75)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1300,
-            padding: '16px'
-          }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              background: '#13261b',
-              border: '1.5px solid #6dff38',
-              borderRadius: '14px',
-              padding: '18px',
-              width: '100%',
-              maxWidth: '340px',
-              textAlign: 'center'
-            }}
-          >
-            <div style={{ fontSize: '14px', fontWeight: 900, color: '#6dff38', marginBottom: '6px' }}>
-              Diamond Casino Result Verified
-            </div>
-            <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '10px' }}>
-              Round ID (MID): #{detailResultModal.mid}
-            </div>
-            <div style={{
-              padding: '10px',
-              borderRadius: '8px',
-              background: 'rgba(109, 255, 56, 0.12)',
-              color: '#ffd54f',
-              fontWeight: 900,
-              fontSize: '14px',
-              marginBottom: '12px'
-            }}>
-              🏆 Winner: {detailResultModal.winnerName}
-              {detailResultModal.cards && (
-                <div style={{ fontSize: '11px', color: '#fff', marginTop: '4px' }}>
-                  Cards: {detailResultModal.cards}
-                </div>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={() => setDetailResultModal(null)}
-              style={{
-                background: '#6dff38',
-                color: '#06150a',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '7px 18px',
-                fontWeight: 900,
-                cursor: 'pointer'
-              }}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Rules Modal */}
       {rulesModal && (
-        <div
-          onClick={() => setRulesModal(null)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.75)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1300,
-            padding: '16px'
-          }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              background: '#13261b',
-              border: '1.5px solid #6dff38',
-              borderRadius: '14px',
-              padding: '18px',
-              width: '100%',
-              maxWidth: '360px'
-            }}
-          >
-            <div style={{ fontSize: '15px', fontWeight: 900, color: '#6dff38', marginBottom: '10px' }}>
-              {rulesModal.tableName} — Official Rules
-            </div>
-            <ul style={{ paddingLeft: '18px', fontSize: '12px', color: '#d8f3dc', lineHeight: 1.6, marginBottom: '14px' }}>
-              {(rulesModal.rules || []).map((r, i) => (
-                <li key={i}>{r}</li>
-              ))}
-            </ul>
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.85)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 100,
+          padding: '16px'
+        }}>
+          <div style={{
+            background: '#0d2416',
+            border: '1px solid #10b981',
+            borderRadius: '16px',
+            padding: '18px',
+            maxWidth: '380px',
+            color: '#fff'
+          }}>
+            <h3 style={{ margin: '0 0 10px', color: '#fef08a' }}>{activeTable.label} Rules</h3>
+            <p style={{ fontSize: '12px', lineHeight: 1.5, color: '#cbd5e1' }}>
+              • Highest hand wins: Trail (Trio) &gt; Pure Sequence &gt; Sequence &gt; Color (Flush) &gt; Pair &gt; High Card.<br />
+              • Place BACK to bet on a player to win.<br />
+              • Place LAY to bet against that player.<br />
+              • Pair Plus bets pay 3.00x if that player holds a Pair or better.
+            </p>
             <button
               type="button"
-              onClick={() => setRulesModal(null)}
+              onClick={() => setRulesModal(false)}
               style={{
+                marginTop: '12px',
                 width: '100%',
-                background: '#6dff38',
-                color: '#06150a',
+                background: '#10b981',
+                color: '#000',
                 border: 'none',
-                borderRadius: '8px',
                 padding: '8px',
+                borderRadius: '8px',
                 fontWeight: 900,
                 cursor: 'pointer'
               }}
             >
-              Got It
+              GOT IT
             </button>
           </div>
         </div>

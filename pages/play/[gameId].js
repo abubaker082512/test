@@ -31,6 +31,9 @@ import WheelGame from '../../components/games/WheelGame'
 import ClassicSlots from '../../components/games/ClassicSlots'
 import SportsBook from '../../components/games/SportsBook'
 import DiamondCasinoGame from '../../components/games/DiamondCasinoGame'
+import MoneyComing from '../../components/games/MoneyComing'
+import SpribeOfficialEngine from '../../components/games/SpribeOfficialEngine'
+import PragmaticOfficialEngine from '../../components/games/PragmaticOfficialEngine'
 
 export default function PlayGame() {
   const router = useRouter()
@@ -142,30 +145,45 @@ export default function PlayGame() {
     return () => window.removeEventListener('message', handleBridgeMessage)
   }, [demoBalance, spendDemoBalance, addDemoBalance])
 
-  // Check if slug belongs to our custom WinX Mobile-Theme React Engines (`components/games/*`)
+  // Check if slug belongs to our authentic React Engines / Official Embeds
   const isWinXThemeReactSlug = (rawSlug) => {
     const s = String(rawSlug || '').toLowerCase()
     if (s.startsWith('winx-theme-') || s.startsWith('diamond-')) return true
     const diamondTableIds = [
       'teen20', 'joker20', 'teen', 'teen9', 'ab20', 'abj',
       'lucky7', 'lucky7eu', 'dt20', 'dtl20', 'card32',
-      'amar', 'btable', 'worli', 'poker20', 'cmatch20', 'superover'
+      'amar', 'btable', 'worli', 'poker20', 'cmatch20', 'superover', 'baccarat'
     ]
     if (diamondTableIds.includes(s)) return true
-    const reactThemeSlugs = [
-      'baccarat-royale',
-      'video-poker',
-      'dragon-tiger-pro',
-      'penalty-shootout-pro',
-      'royal-derby',
-      'fishing-joy-cannon',
-      'mahjong-ways-gold',
-      'wild-bounty-gold',
-      'cockfight-arena',
-      'sports-nfl-live',
-      'sports-soccer-live'
+
+    // Direct authentic provider engine keys
+    const flagshipKeywords = [
+      'super-ace', 'fortune-gem', 'money-coming', 'mahjong', 'bounty',
+      'aviator', 'plinko', 'mines', 'dice', 'crash',
+      'olympus', 'sweet-bonanza', 'sugar-rush', 'starlight', 'big-bass',
+      'baccarat', 'dragon-tiger', 'video-poker', 'fishing', 'penalty',
+      'derby', 'cockfight', 'sicbo', 'sic-bo', 'coin-flip', 'wheel',
+      'roulette', 'blackjack', 'limbo', 'hilo', 'keno', 'sport'
     ]
-    return reactThemeSlugs.includes(s) || reactThemeSlugs.includes(s.replace(/^winx-/, ''))
+    if (flagshipKeywords.some(k => s.includes(k))) return true
+
+    // Specific hex game IDs from home page
+    const homeHexIds = [
+      'e30cd08c54817096e863975e309bb457', // Gates of Olympus
+      '8a0b30eb466a8a07027cbddc19369d0f', // Sweet Bonanza
+      '259ad8e105ef217dad404bffe0fff257', // Mahjong Wins
+      'ba3dc54ad1f451262910dda6c61001ce', // Aztec Gems
+      '3a557646c3abb12201c0b8810a8c0966', // Money Coming
+      'c98bb64436826fe9a2c62955ff70cba9', // Wild Bounty Showdown
+      'ba2adf72179e1ead9e3dae8f0a7d4c07', // Mahjong Ways 2
+      '1189baca156e1bbbecc3b26651a63565', // Mahjong Ways
+      'bdfb23c974a2517198c5443adeea77a8', // Super Ace
+      '664fba4da609ee82b78820b1f570f4ad', // Fortune Gems
+      'a04d1f3eb8ccec8a4823bdf18e3f0e84', // Aviator
+      '981f5f9675002fbeaaf24c4128b938d7', // Boxing King
+      '8c62471fd4e28c084a61811a3958f7a1'  // Crazy 777
+    ]
+    return homeHexIds.includes(s)
   }
 
   // Render our native 480px WinX Mobile-Theme React Game Component
@@ -202,10 +220,42 @@ export default function PlayGame() {
       addDemoBalance
     }
 
-    if (slug.includes('super-ace')) return <SuperAce {...props} />
-    if (slug.includes('fortune-gem')) return <FortuneGems {...props} />
-    if (slug.includes('mahjong')) return <MahjongWays {...props} />
-    if (slug.includes('wild-bounty') || slug.includes('bounty')) return <WildBounty {...props} />
+    // Official Pragmatic Play Slots
+    if (
+      slug.includes('olympus') ||
+      slug === 'e30cd08c54817096e863975e309bb457' ||
+      slug.includes('sweet-bonanza') ||
+      slug === '8a0b30eb466a8a07027cbddc19369d0f' ||
+      slug.includes('sugar-rush') ||
+      slug.includes('starlight') ||
+      slug.includes('aztec') ||
+      slug === 'ba3dc54ad1f451262910dda6c61001ce' ||
+      slug === '259ad8e105ef217dad404bffe0fff257'
+    ) {
+      return <PragmaticOfficialEngine {...props} gameSlug={slug} />
+    }
+
+    // Official Spribe Instant / Crash Games
+    if (
+      slug.includes('aviator') ||
+      slug === 'a04d1f3eb8ccec8a4823bdf18e3f0e84' ||
+      slug.includes('stake-mines') ||
+      slug.includes('stake-plinko') ||
+      slug.includes('stake-crash')
+    ) {
+      return <SpribeOfficialEngine {...props} gameSlug={slug} />
+    }
+
+    // JILI Flagship Games
+    if (slug.includes('super-ace') || slug === 'bdfb23c974a2517198c5443adeea77a8') return <SuperAce {...props} />
+    if (slug.includes('fortune-gem') || slug === '664fba4da609ee82b78820b1f570f4ad') return <FortuneGems {...props} />
+    if (slug.includes('money-coming') || slug === '3a557646c3abb12201c0b8810a8c0966') return <MoneyComing {...props} />
+
+    // PG Soft Flagship Games
+    if (slug.includes('mahjong') || slug === 'ba2adf72179e1ead9e3dae8f0a7d4c07' || slug === '1189baca156e1bbbecc3b26651a63565') return <MahjongWays {...props} />
+    if (slug.includes('wild-bounty') || slug.includes('bounty') || slug === 'c98bb64436826fe9a2c62955ff70cba9') return <WildBounty {...props} />
+
+    // Other Authentic WinX Originals
     if (slug.includes('baccarat')) return <BaccaratGame {...props} />
     if (slug.includes('dragon-tiger') || slug.includes('dragon')) return <DragonTigerGame {...props} />
     if (slug.includes('video-poker') || slug.includes('poker')) return <VideoPokerGame {...props} />
@@ -408,7 +458,25 @@ export default function PlayGame() {
   const getGameTitle = () => {
     if (apiGameName && apiGameName.length < 30) return apiGameName
     if (!gameId) return 'Live Casino Game'
-    if (gameId.length === 32) return 'BetNex Live Game'
+
+    const hexTitles = {
+      'e30cd08c54817096e863975e309bb457': 'Gates of Olympus',
+      '8a0b30eb466a8a07027cbddc19369d0f': 'Sweet Bonanza',
+      '259ad8e105ef217dad404bffe0fff257': 'Mahjong Wins',
+      'ba3dc54ad1f451262910dda6c61001ce': 'Aztec Gems',
+      '3a557646c3abb12201c0b8810a8c0966': 'Money Coming',
+      'c98bb64436826fe9a2c62955ff70cba9': 'Wild Bounty Showdown',
+      'ba2adf72179e1ead9e3dae8f0a7d4c07': 'Mahjong Ways 2',
+      '1189baca156e1bbbecc3b26651a63565': 'Mahjong Ways',
+      'bdfb23c974a2517198c5443adeea77a8': 'Super Ace',
+      '664fba4da609ee82b78820b1f570f4ad': 'Fortune Gems 500x',
+      'a04d1f3eb8ccec8a4823bdf18e3f0e84': 'Spribe Aviator',
+      '981f5f9675002fbeaaf24c4128b938d7': 'Boxing King',
+      '8c62471fd4e28c084a61811a3958f7a1': 'Crazy 777'
+    }
+    if (hexTitles[gameId]) return hexTitles[gameId]
+    if (gameId.length === 32) return 'Live Casino Slot'
+
     const words = String(gameId).replace(/^winx-theme-/, '').replace(/^winx-/, '').replace(/[-_]/g, ' ').split(' ')
     return words.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
   }

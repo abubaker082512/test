@@ -12,11 +12,11 @@ import ourGamesCatalog from '../data/ourGamesCatalog.json'
 const HOTS_GAMES = [
   { id: 'bdfb23c974a2517198c5443adeea77a8', slug: 'winx-theme-super-ace', title: 'Super Ace', provider: 'JILI', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/37.png' },
   { id: 'a990de177577a2e6a889aaac5f57b429', slug: 'winx-theme-fortune-gems', title: 'Fortune Gems 500', provider: 'JILI', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/48.webp' },
-  { id: '80aad2a10ae6a95068b50160d6c78897', slug: 'super-ace-deluxe', title: 'Super Ace Deluxe', provider: 'JILI', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/143.png' },
+  { id: '80aad2a10ae6a95068b50160d6c78897', slug: 'winx-theme-super-ace', title: 'Super Ace Deluxe', provider: 'JILI', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/143.png' },
   { id: '1189baca156e1bbbecc3b26651a63565', slug: 'winx-theme-mahjong-ways', title: 'Mahjong Ways', provider: 'PG', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/pgsoft/0.webp' },
   { id: 'c98bb64436826fe9a2c62955ff70cba9', slug: 'winx-theme-wild-bounty', title: 'Wild Bounty Showdown', provider: 'PG', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/pgsoft/16.png' },
   { id: '490096198e28f770a3f85adb6ee49e0f', slug: '490096198e28f770a3f85adb6ee49e0f', title: 'Golden Empire', provider: 'JILI', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/47.webp' },
-  { id: 'db249defce63610fccabfa829a405232', slug: 'vegas-slots', title: 'Money Coming', provider: 'JILI', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/38.webp' },
+  { id: 'db249defce63610fccabfa829a405232', slug: 'winx-theme-money-coming', title: 'Money Coming', provider: 'JILI', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/38.webp' },
   { id: 'a04d1f3eb8ccec8a4823bdf18e3f0e84', slug: 'aviator-pro', title: 'Aviator', provider: 'Spribe', category: 'Crash', imageUrl: 'https://cdn.betnex.co/images/spribe/0.png' },
   { id: 'f08cc025e23ee049b570517867c74be0', slug: 'f08cc025e23ee049b570517867c74be0', title: 'Pinata Wins', provider: 'PG', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/pgsoft/123.png' },
   { id: '981f5f9675002fbeaaf24c4128b938d7', slug: '981f5f9675002fbeaaf24c4128b938d7', title: 'Boxing King', provider: 'JILI', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/41.webp' },
@@ -27,13 +27,13 @@ const HOTS_GAMES = [
 // JILI Section with Bento 2x2 Featured #1 Card matching Screenshot 4
 const JILI_GAMES = [
   { id: '664fba4da609ee82b78820b1f570f4ad', slug: 'winx-theme-fortune-gems', title: 'Fortune Gems 500x', provider: 'JILI', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/74.webp', featuredBento: true },
-  { id: '3a557646c3abb12201c0b8810a8c0966', slug: 'vegas-slots', title: 'Money Coming Expand', provider: 'JILI', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/163.webp' },
+  { id: '3a557646c3abb12201c0b8810a8c0966', slug: 'winx-theme-money-coming', title: 'Money Coming Expand', provider: 'JILI', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/163.webp' },
   { id: 'c7a3c072d2330f0eb602ccc6016cff4b', slug: 'winx-theme-classic-slots', title: 'Crazy 777 II', provider: 'JILI', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/211.png' },
   { id: 'bdfb23c974a2517198c5443adeea77a8', slug: 'winx-theme-super-ace', title: 'Super Ace', provider: 'JILI', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/37.png' },
   { id: '984615c9385c42b3dad0db4a9ef89070', slug: '984615c9385c42b3dad0db4a9ef89070', title: 'Charge Buffalo', provider: 'JILI', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/35.webp' },
   { id: '490096198e28f770a3f85adb6ee49e0f', slug: '490096198e28f770a3f85adb6ee49e0f', title: 'Golden Empire', provider: 'JILI', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/47.webp' },
-  { id: '63927e939636f45e9d6d0b3717b3b1c1', slug: 'fortune-gems-2', title: 'Fortune Gems 3', provider: 'JILI', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/142.png' },
-  { id: 'eba92b1d3abd5f0d37dfbe112abdf0e2', slug: 'super-ace-deluxe', title: 'Mega Ace', provider: 'JILI', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/55.png' },
+  { id: '63927e939636f45e9d6d0b3717b3b1c1', slug: 'winx-theme-fortune-gems', title: 'Fortune Gems 3', provider: 'JILI', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/142.png' },
+  { id: 'eba92b1d3abd5f0d37dfbe112abdf0e2', slug: 'winx-theme-super-ace', title: 'Mega Ace', provider: 'JILI', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/55.png' },
   { id: '6a7e156ceec5c581cd6b9251854fe504', slug: 'mystical-forest-slot', title: 'Fortune Tree', provider: 'JILI', category: 'Slots', imageUrl: 'https://cdn.betnex.co/images/jiligaming/14.webp' }
 ]
 
