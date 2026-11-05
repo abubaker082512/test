@@ -385,6 +385,38 @@ export default function PlayGame() {
       return
     }
 
+    // Direct NexusGGR Game API Launch support
+    if (String(gameId).startsWith('nexus-')) {
+      try {
+        const parts = String(gameId).replace(/^nexus-/, '').split('-')
+        const providerCode = parts[0]?.toUpperCase() || 'PRAGMATIC'
+        const gameCode = parts.slice(1).join('-') || ''
+        const cleanUser = (activeUser.email || activeUser.displayName || 'player').split('@')[0].slice(0, 16)
+
+        const res = await fetch('/api/nexus/game-launch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_code: cleanUser,
+            provider_code: providerCode,
+            game_code: gameCode,
+            lang: 'en'
+          })
+        })
+        const json = await res.json()
+        if (json.status === 1 && json.launch_url) {
+          setLiveGameUrl(json.launch_url)
+          setApiGameName(gameCode || `${providerCode} Game`)
+          setApiProvider(providerCode)
+          setGameMode('api')
+          setApiLoading(false)
+          return
+        }
+      } catch (e) {
+        console.warn('Nexus launch fallback:', e)
+      }
+    }
+
     const cleanSlug = String(gameId).toLowerCase().replace(/^winx-/, '')
     if (
       String(gameId).toLowerCase().startsWith('winx-') ||
