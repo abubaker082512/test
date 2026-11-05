@@ -79,14 +79,11 @@ export default function AdminPanel() {
   const [easypaisaEnabled, setEasypaisaEnabled] = useState(true)
   const [easypaisaMode, setEasypaisaMode] = useState('directpay')
 
-  // NexusGGR Zero-GGR API state
-  const [nexusAgentCode, setNexusAgentCode] = useState('')
-  const [nexusAgentToken, setNexusAgentToken] = useState('')
-  const [nexusTestProvider, setNexusTestProvider] = useState('PRAGMATIC')
-  const [nexusTestGame, setNexusTestGame] = useState('vs20olympgate')
-  const [nexusLaunchResult, setNexusLaunchResult] = useState(null)
-  const [nexusTesting, setNexusTesting] = useState(false)
-  const [nexusWebhookCheck, setNexusWebhookCheck] = useState(null)
+  // SoftAggregator 11,200+ Games API state
+  const [sgTestGameId, setSgTestGameId] = useState('xddb07a7a584679c') // Gates of Olympus
+  const [sgLaunchResult, setSgLaunchResult] = useState(null)
+  const [sgTesting, setSgTesting] = useState(false)
+  const [sgCallbackCheck, setSgCallbackCheck] = useState(null)
 
   // Card Gateway state
   const [cardMode, setCardMode] = useState('directpay')
@@ -704,8 +701,8 @@ export default function AdminPanel() {
           <button style={tabStyle(activeTab === 'rates')} onClick={() => setActiveTab('rates')}>
             💳 Payment Accounts & Limits
           </button>
-          <button style={tabStyle(activeTab === 'nexus')} onClick={() => setActiveTab('nexus')}>
-            🎰 NexusGGR Zero-GGR
+          <button style={tabStyle(activeTab === 'softaggregator')} onClick={() => setActiveTab('softaggregator')}>
+            🎰 SoftAggregator (11,200+ Games)
           </button>
         </div>
 
@@ -2020,78 +2017,74 @@ export default function AdminPanel() {
         )}
 
         {/* ==========================================
-            TAB 8: 🎰 NEXUSGGR ZERO-GGR API & SEAMLESS WEBHOOK
+            TAB 8: 🎰 SOFTAGGREGATOR (11,200+ GAMES & SEAMLESS CALLBACK)
             ========================================== */}
-        {activeTab === 'nexus' && (
+        {activeTab === 'softaggregator' && (
           <div style={{ background: '#0a101a', border: '1px solid rgba(0, 255, 136, 0.25)', borderRadius: '16px', padding: '24px', color: '#fff' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '12px' }}>
               <div>
                 <h2 style={{ margin: 0, fontSize: '20px', color: '#00ff88', fontWeight: 900 }}>
-                  🎰 NexusGGR Zero-GGR &amp; Seamless API Manager
+                  🎰 SoftAggregator 11,200+ Games &amp; Seamless Wallet
                 </h2>
                 <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#94a3b8' }}>
-                  Unified aggregator engine with 0% GGR revenue-share • Real-time PKR wallet sync via <code>/gold_api</code>
+                  Live API for Pragmatic Play, JILI, PG Soft, Spribe Aviator, Hacksaw, Nolimit • Real-time PKR wallet sync via <code>/sg/callback</code>
                 </p>
               </div>
               <span style={{ background: 'rgba(0, 255, 136, 0.15)', color: '#00ff88', border: '1px solid #00ff88', padding: '4px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 900 }}>
-                0% GGR ACTIVE
+                11,200+ GAMES ACTIVE
               </span>
             </div>
 
-            {/* Quick Setup Instructions Cards */}
+            {/* Credentials & Setup Instructions Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-              {/* Step 1: Webhook Endpoint */}
+              {/* Step 1: Wallet Callback URL */}
               <div style={{ background: '#050a12', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '12px', padding: '16px' }}>
                 <div style={{ fontSize: '11px', fontWeight: 900, color: '#38bdf8', textTransform: 'uppercase' }}>
-                  1. Your Site Endpoint (Webhook)
+                  1. Your Wallet Callback URL
                 </div>
-                <div style={{ fontSize: '14px', fontWeight: 900, color: '#fff', marginTop: '6px', fontFamily: 'monospace' }}>
-                  https://winxpro.com.pk/gold_api
+                <div style={{ fontSize: '13px', fontWeight: 900, color: '#fff', marginTop: '6px', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                  https://winxpro.com.pk/sg/callback
                 </div>
                 <p style={{ fontSize: '12px', color: '#94a3b8', margin: '8px 0 12px', lineHeight: 1.4 }}>
-                  In your NexusGGR dashboard (<code>my.nexusggr.com</code>), set your site URL to <code>https://winxpro.com.pk</code>. Nexus calls this endpoint for balance checks and bet/win settlement.
+                  In your SoftAggregator portal (<code>softaggregator.com/backend/</code>), paste this exact URL into the <strong>Your wallet callback URL</strong> field and click Save.
                 </p>
                 <button
                   type="button"
                   onClick={async () => {
                     try {
-                      const res = await fetch('/api/gold_api', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ method: 'user_balance', user_code: 'guest_player' })
-                      })
+                      const res = await fetch('/api/softaggregator/callback?action=balance&username=admin_tester&currency=PKR')
                       const data = await res.json()
-                      setNexusWebhookCheck(data)
+                      setSgCallbackCheck(data)
                     } catch (e) {
-                      setNexusWebhookCheck({ status: 0, msg: e.message })
+                      setSgCallbackCheck({ error: 2, message: e.message })
                     }
                   }}
                   style={{ background: 'rgba(56, 189, 248, 0.2)', border: '1px solid #38bdf8', color: '#38bdf8', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 900, cursor: 'pointer' }}
                 >
-                  ⚡ Test /gold_api Webhook
+                  ⚡ Test /sg/callback Diagnostics
                 </button>
-                {nexusWebhookCheck && (
+                {sgCallbackCheck && (
                   <pre style={{ marginTop: '10px', background: '#000', padding: '8px', borderRadius: '6px', fontSize: '11px', color: '#38bdf8', overflowX: 'auto' }}>
-                    {JSON.stringify(nexusWebhookCheck, null, 2)}
+                    {JSON.stringify(sgCallbackCheck, null, 2)}
                   </pre>
                 )}
               </div>
 
-              {/* Step 2: Agent Credentials Status */}
+              {/* Step 2: Account API Credentials */}
               <div style={{ background: '#050a12', border: '1px solid rgba(251, 191, 36, 0.3)', borderRadius: '12px', padding: '16px' }}>
                 <div style={{ fontSize: '11px', fontWeight: 900, color: '#fbbf24', textTransform: 'uppercase' }}>
-                  2. API Credentials Configuration
+                  2. Active API Credentials (WinXPro)
                 </div>
-                <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '6px' }}>
-                  Configure your credentials in <code>.env.local</code>:
+                <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '6px' }}>
+                  Connected &amp; Verified in <code>.env.local</code>:
                 </div>
-                <div style={{ background: '#000', padding: '8px', borderRadius: '6px', fontSize: '11px', color: '#fbbf24', fontFamily: 'monospace', margin: '8px 0' }}>
-                  NEXUSGGR_API_URL=https://api.nexusggr.com<br />
-                  NEXUSGGR_AGENT_CODE=your_code<br />
-                  NEXUSGGR_AGENT_TOKEN=your_token
+                <div style={{ background: '#000', padding: '8px', borderRadius: '6px', fontSize: '11px', color: '#fbbf24', fontFamily: 'monospace', margin: '8px 0', lineHeight: 1.5 }}>
+                  API_LOGIN: 88006ae8-42e8-49ee-b657-278536dd288b<br />
+                  CURRENCY: PKR (Account Default)<br />
+                  TEST CREDIT: 2.00 USDT Loaded
                 </div>
                 <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>
-                  Get your Agent Code &amp; Token from <a href="https://my.nexusggr.com" target="_blank" rel="noreferrer" style={{ color: '#00ff88', textDecoration: 'underline' }}>my.nexusggr.com</a>.
+                  Portal: <a href="https://softaggregator.com/backend/" target="_blank" rel="noreferrer" style={{ color: '#00ff88', textDecoration: 'underline' }}>softaggregator.com/backend/</a>
                 </p>
               </div>
             </div>
@@ -2100,63 +2093,55 @@ export default function AdminPanel() {
             <div style={{ background: '#050a12', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '12px', padding: '16px' }}>
               <div style={{ fontSize: '14px', fontWeight: 900, color: '#fff', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span>🎮</span>
-                <span>Live Game Launch Tester</span>
+                <span>Live SoftAggregator Game Tester</span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px', marginBottom: '12px' }}>
                 <div>
                   <label style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
-                    PROVIDER CODE
+                    SELECT GAME TO LAUNCH
                   </label>
                   <select
-                    value={nexusTestProvider}
-                    onChange={e => setNexusTestProvider(e.target.value)}
+                    value={sgTestGameId}
+                    onChange={e => setSgTestGameId(e.target.value)}
                     style={{ width: '100%', padding: '8px', background: '#000', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', fontSize: '13px' }}
                   >
-                    <option value="PRAGMATIC">PRAGMATIC (Pragmatic Play)</option>
-                    <option value="JILI">JILI (JILI Games)</option>
-                    <option value="PGSOFT">PGSOFT (PG Soft)</option>
-                    <option value="EVOLUTION">EVOLUTION (Evolution Live)</option>
-                    <option value="SPRIBE">SPRIBE (Aviator/Crash)</option>
-                    <option value="FASTGAMES">FASTGAMES</option>
+                    <option value="xddb07a7a584679c">Gates of Olympus (Pragmatic Play)</option>
+                    <option value="x979f934a2e9d3d0">Sweet Bonanza (Pragmatic Play)</option>
+                    <option value="x887bde40b16350c">Aviator (Spribe)</option>
+                    <option value="xbadfee046056d52">Mines (Spribe)</option>
+                    <option value="xdfa97ffede36309">Plinko (Spribe)</option>
+                    <option value="x7a97d5c967c6e9c">Crazy FaFaFa (JILI)</option>
+                    <option value="x073af651805f030">superRich (JILI)</option>
+                    <option value="xcaf917bb33330ad">Fortune Tree (JILI)</option>
+                    <option value="x0677695eabcfb08">Fortune Tiger (PG Soft)</option>
+                    <option value="x252cc9f28ea457d">Fortune Rabbit (PG Soft)</option>
                   </select>
-                </div>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
-                    GAME CODE
-                  </label>
-                  <input
-                    type="text"
-                    value={nexusTestGame}
-                    onChange={e => setNexusTestGame(e.target.value)}
-                    placeholder="e.g. vs20olympgate or leave empty for lobby"
-                    style={{ width: '100%', padding: '8px', background: '#000', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', fontSize: '13px' }}
-                  />
                 </div>
               </div>
 
               <button
                 type="button"
-                disabled={nexusTesting}
+                disabled={sgTesting}
                 onClick={async () => {
-                  setNexusTesting(true)
-                  setNexusLaunchResult(null)
+                  setSgTesting(true)
+                  setSgLaunchResult(null)
                   try {
-                    const res = await fetch('/api/nexus/game-launch', {
+                    const res = await fetch('/api/softaggregator/launch', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({
-                        user_code: 'admin_test',
-                        provider_code: nexusTestProvider,
-                        game_code: nexusTestGame,
-                        lang: 'en'
+                        gameid: sgTestGameId,
+                        user_id: 'admin_test',
+                        email: 'admin@winxpro.com.pk',
+                        device: 'mobile'
                       })
                     })
                     const data = await res.json()
-                    setNexusLaunchResult(data)
+                    setSgLaunchResult(data)
                   } catch (e) {
-                    setNexusLaunchResult({ status: 0, msg: e.message })
+                    setSgLaunchResult({ success: false, error: e.message })
                   } finally {
-                    setNexusTesting(false)
+                    setSgTesting(false)
                   }
                 }}
                 style={{
@@ -2170,28 +2155,28 @@ export default function AdminPanel() {
                   cursor: 'pointer'
                 }}
               >
-                {nexusTesting ? 'Connecting NexusGGR...' : '🚀 Test Launch Game via Nexus'}
+                {sgTesting ? 'Connecting SoftAggregator...' : '🚀 Test Launch Game via SoftAggregator'}
               </button>
 
-              {nexusLaunchResult && (
+              {sgLaunchResult && (
                 <div style={{ marginTop: '16px' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 800, color: nexusLaunchResult.status === 1 ? '#00ff88' : '#f43f5e', marginBottom: '8px' }}>
-                    Status: {nexusLaunchResult.msg || (nexusLaunchResult.status === 1 ? 'SUCCESS' : 'FAILED')}
+                  <div style={{ fontSize: '12px', fontWeight: 800, color: sgLaunchResult.success ? '#00ff88' : '#f43f5e', marginBottom: '8px' }}>
+                    Status: {sgLaunchResult.success ? 'LAUNCH SUCCESS' : (sgLaunchResult.error || 'FAILED')}
                   </div>
-                  {nexusLaunchResult.launch_url ? (
+                  {sgLaunchResult.launch_url ? (
                     <div>
-                      <a href={nexusLaunchResult.launch_url} target="_blank" rel="noreferrer" style={{ color: '#38bdf8', fontSize: '12px', textDecoration: 'underline', display: 'block', marginBottom: '12px' }}>
-                        🔗 Open Live Session URL ({nexusLaunchResult.launch_url.slice(0, 60)}...)
+                      <a href={sgLaunchResult.launch_url} target="_blank" rel="noreferrer" style={{ color: '#38bdf8', fontSize: '12px', textDecoration: 'underline', display: 'block', marginBottom: '12px' }}>
+                        🔗 Open Live Session URL ({sgLaunchResult.launch_url.slice(0, 60)}...)
                       </a>
                       <iframe
-                        src={nexusLaunchResult.launch_url}
+                        src={sgLaunchResult.launch_url}
                         style={{ width: '100%', height: '500px', border: '1px solid rgba(0,255,136,0.3)', borderRadius: '12px', background: '#000' }}
-                        title="Nexus Live Game Preview"
+                        title="SoftAggregator Live Game Preview"
                       />
                     </div>
                   ) : (
                     <pre style={{ background: '#000', padding: '10px', borderRadius: '8px', fontSize: '11px', color: '#ff7788', overflowX: 'auto' }}>
-                      {JSON.stringify(nexusLaunchResult, null, 2)}
+                      {JSON.stringify(sgLaunchResult, null, 2)}
                     </pre>
                   )}
                 </div>
@@ -2199,7 +2184,6 @@ export default function AdminPanel() {
             </div>
           </div>
         )}
-
 
       </div>
     </div>

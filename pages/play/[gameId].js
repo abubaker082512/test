@@ -364,6 +364,37 @@ export default function PlayGame() {
     setApiLoading(true)
     setApiError(null)
 
+    // 1. SoftAggregator 11,200+ Games Official Launch (Pragmatic, JILI, PG Soft, Spribe Aviator, Hacksaw)
+    try {
+      const cleanUser = (activeUser.email || activeUser.displayName || 'player')
+        .split('@')[0]
+        .replace(/[^a-zA-Z0-9_-]/g, '')
+        .slice(0, 24) || 'player'
+
+      const res = await fetch('/api/softaggregator/launch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gameid: gameId,
+          user_id: activeUser.id || activeUser.uid || cleanUser,
+          email: activeUser.email || '',
+          demo: isDemoMode,
+          device: 'mobile'
+        })
+      })
+      const json = await res.json()
+      if (json.success && json.launch_url) {
+        setLiveGameUrl(json.launch_url)
+        setGameMode('api')
+        setApiLoading(false)
+        return
+      } else if (json.details?.message && json.details.message.includes('callback URL is not set')) {
+        setApiError('SoftAggregator callback URL needs to be saved in portal: https://winxpro.com.pk/sg/callback')
+      }
+    } catch (e) {
+      console.warn('SoftAggregator launch attempt:', e)
+    }
+
     if (String(gameId).startsWith('ftg-') || String(gameId).startsWith('ftg_')) {
       try {
         const cleanId = String(gameId).replace(/^ftg[-_]/, '')
