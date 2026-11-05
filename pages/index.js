@@ -8,77 +8,139 @@ import AuthModal from '../components/AuthModal'
 import GameCard from '../components/GameCard'
 import softCatalog from '../data/softaggregator_catalog.json'
 
-// Curated SoftAggregator 11,200+ Games Feed
-const HOTS_GAMES = (softCatalog?.hots || []).map(g => ({
-  id: g.id_hash,
-  slug: g.id_hash,
-  title: g.name,
-  provider: g.provider_name || g.provider,
-  imageUrl: g.image_portrait || g.image || g.image_square,
-  category: g.game_type || 'Slots'
-}))
-
-// JILI Section with Bento 2x2 Featured #1 Card
-const JILI_GAMES = (softCatalog?.jili || []).map((g, idx) => ({
-  id: g.id_hash,
-  slug: g.id_hash,
-  title: g.name,
-  provider: 'JILI',
-  imageUrl: g.image_portrait || g.image || g.image_square,
-  category: 'Slots',
-  featuredBento: idx === 0
-}))
-
-// PG Section with Bento 2x2 Featured #1 Card
-const PG_GAMES = (softCatalog?.pgsoft || []).map((g, idx) => ({
-  id: g.id_hash,
-  slug: g.id_hash,
-  title: g.name,
-  provider: 'PG',
-  imageUrl: g.image_portrait || g.image || g.image_square,
-  category: 'Slots',
-  featuredBento: idx === 0
-}))
-
-// IN-OUT / Crash & Instant (Aviator, Mines, Plinko)
-const INOUT_GAMES = (softCatalog?.crash || []).map(g => ({
-  id: g.id_hash,
-  slug: g.id_hash,
-  title: g.name,
-  provider: g.provider === 'spribe' ? 'Spribe' : 'Crash',
-  imageUrl: g.image_portrait || g.image || g.image_square,
-  category: 'Crash'
-}))
-
-// Pragmatic Play Slots
-const PP_SLOTS = (softCatalog?.pragmatic || []).map(g => ({
-  id: g.id_hash,
-  slug: g.id_hash,
-  title: g.name,
-  provider: 'PP',
-  imageUrl: g.image_portrait || g.image || g.image_square,
-  category: 'Slots'
-}))
-
-// Live Casino Games
-const LIVE_GAMES = (softCatalog?.live || []).map(g => ({
-  id: g.id_hash,
-  slug: g.id_hash,
-  title: g.name,
-  provider: g.provider_name || 'Live',
-  imageUrl: g.image_portrait || g.image || g.image_square,
-  category: 'Live'
-}))
-
-// Table Games
-const TABLE_GAMES = (softCatalog?.table || []).map(g => ({
-  id: g.id_hash,
-  slug: g.id_hash,
-  title: g.name,
-  provider: g.provider_name || 'Table',
-  imageUrl: g.image_portrait || g.image || g.image_square,
-  category: 'Table'
-}))
+// Top Providers List directly from SoftAggregator with official logos and catalog counts
+const PROVIDERS_CONFIG = [
+  {
+    id: 'hots',
+    label: 'Hots',
+    icon: '🔥',
+    sectionId: 'sec-hots',
+    name: 'Hots',
+    logo: null,
+    badgeColor: '#f97316',
+    games: (softCatalog?.hots || []).slice(0, 24)
+  },
+  {
+    id: 'jili',
+    label: 'JILI',
+    icon: '🎰',
+    sectionId: 'sec-jili',
+    name: 'JILI Gaming',
+    logo: 'https://cdn.imagesai.org/p/jili.png?v=20261014-1',
+    badgeColor: '#eab308',
+    games: (softCatalog?.jili || []).slice(0, 36)
+  },
+  {
+    id: 'pgsoft',
+    label: 'PG Soft',
+    icon: '🎮',
+    sectionId: 'sec-pgsoft',
+    name: 'PG Soft',
+    logo: 'https://cdn.imagesai.org/p/pgsoft.png?v=20261014-1',
+    badgeColor: '#3b82f6',
+    games: (softCatalog?.pgsoft || []).slice(0, 36)
+  },
+  {
+    id: 'spribe',
+    label: 'IN-OUT',
+    icon: '✈️',
+    sectionId: 'sec-spribe',
+    name: 'Spribe Crash & Instant',
+    logo: 'https://cdn.imagesai.org/p/spribe.png?v=20261014-1',
+    badgeColor: '#ef4444',
+    games: (softCatalog?.spribe || []).slice(0, 24)
+  },
+  {
+    id: 'pragmaticplay',
+    label: 'PP Slots',
+    icon: '⚡',
+    sectionId: 'sec-pragmaticplay',
+    name: 'Pragmatic Play',
+    logo: 'https://cdn.imagesai.org/p/pragmaticplay.png?v=20261014-1',
+    badgeColor: '#eab308',
+    games: (softCatalog?.pragmaticplay || []).slice(0, 36)
+  },
+  {
+    id: 'hacksawgaming',
+    label: 'Hacksaw',
+    icon: '🪚',
+    sectionId: 'sec-hacksawgaming',
+    name: 'Hacksaw Gaming',
+    logo: 'https://cdn.imagesai.org/p/hacksawgaming.png?v=20261014-1',
+    badgeColor: '#f59e0b',
+    games: (softCatalog?.hacksawgaming || []).slice(0, 30)
+  },
+  {
+    id: 'nolimitcity',
+    label: 'Nolimit',
+    icon: '🧨',
+    sectionId: 'sec-nolimitcity',
+    name: 'Nolimit City',
+    logo: null,
+    badgeColor: '#dc2626',
+    games: (softCatalog?.nolimitcity || []).slice(0, 30)
+  },
+  {
+    id: 'playngo',
+    label: "Play'n GO",
+    icon: '👑',
+    sectionId: 'sec-playngo',
+    name: "Play'n GO",
+    logo: 'https://cdn.imagesai.org/p/playngo.png?v=20261014-1',
+    badgeColor: '#8b5cf6',
+    games: (softCatalog?.playngo || []).slice(0, 30)
+  },
+  {
+    id: 'kagaming',
+    label: 'KA Gaming',
+    icon: '🐉',
+    sectionId: 'sec-kagaming',
+    name: 'KA Gaming',
+    logo: 'https://cdn.imagesai.org/p/kagaming.png?v=20261014-1',
+    badgeColor: '#10b981',
+    games: (softCatalog?.kagaming || []).slice(0, 30)
+  },
+  {
+    id: 'relaxgaming',
+    label: 'Relax',
+    icon: '🚂',
+    sectionId: 'sec-relaxgaming',
+    name: 'Relax Gaming',
+    logo: 'https://cdn.imagesai.org/p/relaxgaming.png?v=20261014-1',
+    badgeColor: '#06b6d4',
+    games: (softCatalog?.relaxgaming || []).slice(0, 30)
+  },
+  {
+    id: 'greentube',
+    label: 'Greentube',
+    icon: '🏛',
+    sectionId: 'sec-greentube',
+    name: 'Greentube Novomatic',
+    logo: 'https://cdn.imagesai.org/p/greentube.png?v=20261014-1',
+    badgeColor: '#059669',
+    games: (softCatalog?.greentube || []).slice(0, 30)
+  },
+  {
+    id: 'egt',
+    label: 'EGT',
+    icon: '👑',
+    sectionId: 'sec-egt',
+    name: 'EGT Gaming',
+    logo: 'https://cdn.imagesai.org/p/egt.png?v=20261014-1',
+    badgeColor: '#d97706',
+    games: (softCatalog?.egt || []).slice(0, 30)
+  },
+  {
+    id: 'netent',
+    label: 'NetEnt',
+    icon: '💎',
+    sectionId: 'sec-netent',
+    name: 'NetEnt',
+    logo: 'https://cdn.imagesai.org/p/netent.png?v=20261014-1',
+    badgeColor: '#0284c7',
+    games: (softCatalog?.netent || []).slice(0, 30)
+  }
+]
 
 // 3-Tab Welcome Promotional Modal Data (matching Screenshots 1, 2, 3)
 const PROMO_MODAL_TABS = [
@@ -102,23 +164,11 @@ const PROMO_MODAL_TABS = [
   }
 ]
 
-// Left Sticky Vertical Sidebar Categories (matching bbrssms1.com)
-const SIDEBAR_CATEGORIES = [
-  { id: 'hots', label: 'Hots', icon: '🔥', sectionId: 'sec-hots' },
-  { id: 'jili', label: 'JILI', icon: '🎰', sectionId: 'sec-jili' },
-  { id: 'pg', label: 'PG Soft', icon: '🎮', sectionId: 'sec-pg' },
-  { id: 'inout', label: 'IN-OUT', icon: '✈️', sectionId: 'sec-inout' },
-  { id: 'slot', label: 'PP Slots', icon: '🍒', sectionId: 'sec-slot' },
-  { id: 'live', label: 'Live Casino', icon: '💎', sectionId: 'sec-live' },
-  { id: 'table', label: 'Table Games', icon: '🃏', sectionId: 'sec-table' }
-]
-
 export default function Home() {
   const router = useRouter()
   const { user } = useAuth()
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [activeSidebar, setActiveSidebar] = useState('hots')
-  const [expandedSections, setExpandedSections] = useState({ our: false })
 
   // 3-Tab Welcome Promo Popup Modal state (Screenshots 1, 2, 3)
   const [showPromoModal, setShowPromoModal] = useState(false)
@@ -140,8 +190,8 @@ export default function Home() {
   useEffect(() => {
     const handleScroll = () => {
       const scrollPos = window.scrollY + 200
-      for (let i = SIDEBAR_CATEGORIES.length - 1; i >= 0; i--) {
-        const item = SIDEBAR_CATEGORIES[i]
+      for (let i = PROVIDERS_CONFIG.length - 1; i >= 0; i--) {
+        const item = PROVIDERS_CONFIG[i]
         const el = document.getElementById(item.sectionId)
         if (el && el.offsetTop <= scrollPos) {
           setActiveSidebar(item.id)
@@ -153,36 +203,12 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Handle ?tab= query parameter (e.g., ?tab=our-games)
-  useEffect(() => {
-    if (!router.isReady) return
-    const { tab } = router.query
-    if (tab) {
-      const t = String(tab).toLowerCase()
-      if (t.includes('our')) {
-        setActiveSidebar('our')
-        setExpandedSections(prev => ({ ...prev, our: true }))
-        setTimeout(() => {
-          const el = document.getElementById('sec-our')
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        }, 150)
-      }
-    }
-  }, [router.isReady, router.query])
-
   const handleSidebarClick = (item) => {
     setActiveSidebar(item.id)
-    if (item.id === 'our') {
-      setExpandedSections(prev => ({ ...prev, our: true }))
-    }
     const el = document.getElementById(item.sectionId)
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
-  }
-
-  const toggleExpandSection = (key) => {
-    setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }))
   }
 
   return (
@@ -270,188 +296,111 @@ export default function Home() {
         <span className="bbr-marquee-speaker">🔊</span>
         <div className="bbr-marquee-track-wrap">
           <span className="bbr-marquee-scroll">
-            Welcome to WINX Official! JazzCash &amp; Easypaisa QR instant top-up is live • USDT-TRC20 deposits get +3% instant bonus • Invite friends to claim Rs 1,500 + 800 + 2,000 immediately!
+            Welcome to WINX Official! 11,200+ Games live from SoftAggregator • JazzCash &amp; Easypaisa QR instant top-up is live • USDT-TRC20 deposits get +3% instant bonus • Invite friends to claim Rs 1,500 + 800 + 2,000 immediately!
           </span>
         </div>
       </div>
 
       {/* Two-Column Split Lobby: Left Sticky Vertical Category Sidebar + Right Game Sections (matching Screenshot 4) */}
       <div className="bbr-lobby-split">
-        {/* Left Sticky Vertical Sidebar */}
+        {/* Left Sticky Vertical Sidebar Listing SoftAggregator Providers */}
         <aside className="bbr-left-sidebar">
-          {SIDEBAR_CATEGORIES.map(item => (
+          {PROVIDERS_CONFIG.map(item => (
             <button
               key={item.id}
               type="button"
               className={`bbr-side-btn ${activeSidebar === item.id ? 'active' : ''}`}
               onClick={() => handleSidebarClick(item)}
             >
-              <span className="bbr-side-icon">{item.icon}</span>
+              {item.logo ? (
+                <img
+                  src={item.logo}
+                  alt={item.label}
+                  style={{
+                    height: '16px',
+                    maxWidth: '42px',
+                    objectFit: 'contain',
+                    filter: activeSidebar === item.id ? 'brightness(1.2)' : 'brightness(0.9)'
+                  }}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none'
+                  }}
+                />
+              ) : (
+                <span className="bbr-side-icon">{item.icon}</span>
+              )}
               <span className="bbr-side-label">{item.label}</span>
             </button>
           ))}
         </aside>
 
-        {/* Right Scrollable Game Grid Sections */}
+        {/* Right Scrollable Game Grid Sections for Each SoftAggregator Provider */}
         <main className="bbr-right-sections">
-          {/* 1. HOTS SECTION */}
-          <section id="sec-hots" className="bbr-provider-section">
-            <div className="bbr-sec-header">
-              <div className="bbr-sec-title">
-                <span className="bbr-sec-icon">🔥</span>
-                <span>Hots</span>
-                <span className="bbr-sec-count">{HOTS_GAMES.length}</span>
-              </div>
-              <div className="bbr-sec-actions">
-                <button type="button" className="bbr-sec-more" onClick={() => handleSidebarClick({ id: 'jili', sectionId: 'sec-jili' })}>
-                  More ›
-                </button>
-              </div>
-            </div>
-            <div className="bbr-poster-grid">
-              {HOTS_GAMES.map(game => (
-                <GameCard key={game.id} {...game} />
-              ))}
-            </div>
-          </section>
+          {PROVIDERS_CONFIG.map((prov, pIdx) => {
+            const nextProv = PROVIDERS_CONFIG[(pIdx + 1) % PROVIDERS_CONFIG.length]
+            const prevProv = PROVIDERS_CONFIG[(pIdx - 1 + PROVIDERS_CONFIG.length) % PROVIDERS_CONFIG.length]
 
-          {/* 2. JILI SECTION (Bento 2x2 Featured #1 Fortune Gems 500x matching Screenshot 4) */}
-          <section id="sec-jili" className="bbr-provider-section">
-            <div className="bbr-sec-header">
-              <div className="bbr-sec-title">
-                <span className="bbr-sec-badge-pill jili">JILI</span>
-                <span>JILI Gaming</span>
-                <span className="bbr-sec-count">{JILI_GAMES.length}</span>
-              </div>
-              <div className="bbr-sec-actions">
-                <span className="bbr-sec-nav-pill">&lt;</span>
-                <span className="bbr-sec-nav-pill">&gt;</span>
-                <button type="button" className="bbr-sec-more" onClick={() => handleSidebarClick({ id: 'pg', sectionId: 'sec-pg' })}>
-                  More ›
-                </button>
-              </div>
-            </div>
-            <div className="bbr-poster-grid">
-              {JILI_GAMES.map(game => (
-                <GameCard key={game.id} {...game} />
-              ))}
-            </div>
-          </section>
+            return (
+              <section key={prov.id} id={prov.sectionId} className="bbr-provider-section">
+                <div className="bbr-sec-header">
+                  <div className="bbr-sec-title">
+                    {prov.logo ? (
+                      <img
+                        src={prov.logo}
+                        alt={prov.name}
+                        style={{ height: '20px', maxWidth: '64px', objectFit: 'contain' }}
+                        onError={(e) => { e.currentTarget.style.display = 'none' }}
+                      />
+                    ) : (
+                      <span className="bbr-sec-icon">{prov.icon}</span>
+                    )}
+                    <span>{prov.name}</span>
+                    <span className="bbr-sec-count">{prov.games.length}</span>
+                  </div>
+                  <div className="bbr-sec-actions">
+                    <button
+                      type="button"
+                      className="bbr-sec-nav-pill"
+                      onClick={() => handleSidebarClick(prevProv)}
+                      title={`Go to ${prevProv.name}`}
+                    >
+                      &lt;
+                    </button>
+                    <button
+                      type="button"
+                      className="bbr-sec-nav-pill"
+                      onClick={() => handleSidebarClick(nextProv)}
+                      title={`Go to ${nextProv.name}`}
+                    >
+                      &gt;
+                    </button>
+                    <button
+                      type="button"
+                      className="bbr-sec-more"
+                      onClick={() => handleSidebarClick(nextProv)}
+                    >
+                      More ›
+                    </button>
+                  </div>
+                </div>
 
-          {/* 3. PG SECTION (Bento 2x2 Featured #1 Wild Bounty Showdown matching Screenshot 4) */}
-          <section id="sec-pg" className="bbr-provider-section">
-            <div className="bbr-sec-header">
-              <div className="bbr-sec-title">
-                <span className="bbr-sec-badge-pill pg">PG</span>
-                <span>PG Soft</span>
-                <span className="bbr-sec-count">{PG_GAMES.length}</span>
-              </div>
-              <div className="bbr-sec-actions">
-                <span className="bbr-sec-nav-pill">&lt;</span>
-                <span className="bbr-sec-nav-pill">&gt;</span>
-                <button type="button" className="bbr-sec-more" onClick={() => handleSidebarClick({ id: 'inout', sectionId: 'sec-inout' })}>
-                  More ›
-                </button>
-              </div>
-            </div>
-            <div className="bbr-poster-grid">
-              {PG_GAMES.map(game => (
-                <GameCard key={game.id} {...game} />
-              ))}
-            </div>
-          </section>
-
-          {/* 4. IN-OUT / SPRIBE CRASH SECTION */}
-          <section id="sec-inout" className="bbr-provider-section">
-            <div className="bbr-sec-header">
-              <div className="bbr-sec-title">
-                <span className="bbr-sec-badge-pill inout">IN-OUT</span>
-                <span>Crash &amp; Instant</span>
-                <span className="bbr-sec-count">{INOUT_GAMES.length}</span>
-              </div>
-              <div className="bbr-sec-actions">
-                <span className="bbr-sec-nav-pill">&lt;</span>
-                <span className="bbr-sec-nav-pill">&gt;</span>
-                <button type="button" className="bbr-sec-more" onClick={() => handleSidebarClick({ id: 'diamond', sectionId: 'sec-diamond' })}>
-                  More ›
-                </button>
-              </div>
-            </div>
-            <div className="bbr-poster-grid">
-              {INOUT_GAMES.map(game => (
-                <GameCard key={game.id} {...game} />
-              ))}
-            </div>
-          </section>
-
-          {/* 5. PP / PRAGMATIC PLAY SLOTS SECTION */}
-          <section id="sec-slot" className="bbr-provider-section">
-            <div className="bbr-sec-header">
-              <div className="bbr-sec-title">
-                <span className="bbr-sec-badge-pill pp">PP</span>
-                <span>Pragmatic Play</span>
-                <span className="bbr-sec-count">{PP_SLOTS.length}</span>
-              </div>
-              <div className="bbr-sec-actions">
-                <span className="bbr-sec-nav-pill">&lt;</span>
-                <span className="bbr-sec-nav-pill">&gt;</span>
-                <button type="button" className="bbr-sec-more" onClick={() => handleSidebarClick({ id: 'live', sectionId: 'sec-live' })}>
-                  More ›
-                </button>
-              </div>
-            </div>
-            <div className="bbr-poster-grid">
-              {PP_SLOTS.map(game => (
-                <GameCard key={game.id} {...game} />
-              ))}
-            </div>
-          </section>
-
-          {/* 6. LIVE CASINO SECTION */}
-          <section id="sec-live" className="bbr-provider-section">
-            <div className="bbr-sec-header">
-              <div className="bbr-sec-title">
-                <span className="bbr-sec-badge-pill live">LIVE</span>
-                <span>Live Casino</span>
-                <span className="bbr-sec-count">{LIVE_GAMES.length}</span>
-              </div>
-              <div className="bbr-sec-actions">
-                <button
-                  type="button"
-                  className="bbr-sec-more"
-                  onClick={() => handleSidebarClick({ id: 'table', sectionId: 'sec-table' })}
-                >
-                  More ›
-                </button>
-              </div>
-            </div>
-            <div className="bbr-poster-grid">
-              {LIVE_GAMES.map(game => (
-                <GameCard key={game.id} {...game} />
-              ))}
-            </div>
-          </section>
-
-          {/* 7. TABLE GAMES SECTION */}
-          <section id="sec-table" className="bbr-provider-section">
-            <div className="bbr-sec-header">
-              <div className="bbr-sec-title">
-                <span className="bbr-sec-badge-pill cards">TABLE</span>
-                <span>Table &amp; Card Games</span>
-                <span className="bbr-sec-count">{TABLE_GAMES.length}</span>
-              </div>
-              <div className="bbr-sec-actions">
-                <button type="button" className="bbr-sec-more" onClick={() => handleSidebarClick({ id: 'hots', sectionId: 'sec-hots' })}>
-                  Top ▴
-                </button>
-              </div>
-            </div>
-            <div className="bbr-poster-grid">
-              {TABLE_GAMES.map(game => (
-                <GameCard key={game.id} {...game} />
-              ))}
-            </div>
-          </section>
+                <div className="bbr-poster-grid">
+                  {prov.games.map((game, gIdx) => (
+                    <GameCard
+                      key={game.id_hash || game.id}
+                      id={game.id_hash}
+                      slug={game.id_hash}
+                      title={game.name}
+                      provider={game.provider_name || prov.label}
+                      imageUrl={game.image_portrait || game.image || game.image_square}
+                      category={game.game_type || 'Slots'}
+                      featuredBento={prov.id !== 'hots' && gIdx === 0}
+                    />
+                  ))}
+                </div>
+              </section>
+            )
+          })}
         </main>
       </div>
 
@@ -471,7 +420,7 @@ export default function Home() {
 
         <div className="bbr-footer-copy">
           <p>
-            <strong>WINX.COM</strong> is one of the best and most popular online slot websites in Pakistan and draws inspiration from classic casinos. An entertaining showcase, a safe, fun, different, thrilling, interactive, and benchmarked multiplayer game platform; we are committed and faithful to providing modern sensibilities to players seeking high-end and reliable online slot gaming experiences.
+            <strong>WINX.COM</strong> is one of the best and most popular online slot websites in Pakistan powered by official SoftAggregator game servers. Over 11,200 authentic titles including JILI, PG Soft, Spribe Aviator, Pragmatic Play, Hacksaw, Nolimit City, and live tables. Real-time PKR balances synchronized seamlessly.
           </p>
           <ul>
             <li>1. This product is for users aged 18 and above only.</li>

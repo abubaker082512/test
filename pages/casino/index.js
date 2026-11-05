@@ -6,16 +6,16 @@ import { useAuth } from '../../context/AuthContext'
 import AuthModal from '../../components/AuthModal'
 
 const FEATURED_PROVIDERS = [
-  { id: 'ALL', name: 'All Games', icon: '🔥', count: '2,458 Games' },
-  { id: 'FreeToGame', name: 'Free Games', icon: '🎁', count: '421 Games' },
-  { id: 'JILI', name: 'JILI Games', icon: '🎰', count: '253 Games' },
-  { id: 'PG', name: 'PG Soft', icon: '🐲', count: '161 Games' },
-  { id: 'PRAGMATIC', name: 'Pragmatic Play', icon: '⚡', count: '694 Games' },
-  { id: 'SPRIBE', name: 'Spribe Crash', icon: '🚀', count: '16 Games' },
-  { id: 'EVOLUTION', name: 'Evolution Live', icon: '💃', count: '420 Games' },
-  { id: 'FACHAI', name: 'Fa Chai', icon: '🏮', count: '76 Games' },
-  { id: 'JDB', name: 'JDB Gaming', icon: '🪙', count: '144 Games' },
-  { id: 'CQ9', name: 'CQ9 Gaming', icon: '💎', count: '269 Games' }
+  { id: 'ALL', name: 'All Games', icon: '🔥', count: '11,200+ Games' },
+  { id: 'jili', name: 'JILI Games', icon: '🎰', count: '96 Games' },
+  { id: 'pgsoft', name: 'PG Soft', icon: '🐲', count: '163 Games' },
+  { id: 'spribe', name: 'Spribe Crash', icon: '✈️', count: '13 Games' },
+  { id: 'pragmaticplay', name: 'Pragmatic Play', icon: '⚡', count: '891 Games' },
+  { id: 'hacksawgaming', name: 'Hacksaw Gaming', icon: '🪚', count: '184 Games' },
+  { id: 'nolimitcity', name: 'Nolimit City', icon: '🧨', count: '98 Games' },
+  { id: 'playngo', name: "Play'n GO", icon: '👑', count: '453 Games' },
+  { id: 'kagaming', name: 'KA Gaming', icon: '🐉', count: '808 Games' },
+  { id: 'relaxgaming', name: 'Relax Gaming', icon: '🚂', count: '339 Games' }
 ]
 
 export default function CasinoLobby() {
@@ -92,10 +92,10 @@ export default function CasinoLobby() {
         }}>
           <span style={{ fontSize: '36px' }}>👑</span>
           <h1 style={{ color: 'var(--accent)', fontSize: '24px', margin: '8px 0 4px', fontWeight: '900' }}>
-            BETNEX LIVE CASINO LOBBY
+            WINX OFFICIAL CASINO LOBBY
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '13px', maxWidth: '500px', margin: '0 auto' }}>
-            Play authentic BetNex B2B slots, Spribe Aviator crash, JILI fishing games, and Evolution live tables. Real-time PKR balances synchronized.
+            Play authentic slots, Spribe Aviator crash, JILI games, and live tables powered by SoftAggregator API. Real-time PKR balances synchronized.
           </p>
         </div>
 

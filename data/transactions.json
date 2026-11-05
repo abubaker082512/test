@@ -1,5 +1,45 @@
 [
   {
+    "id": "call_test_124",
+    "user_id": "test_player_winx",
+    "email": "",
+    "type": "win",
+    "amount": 50,
+    "status": "pending",
+    "method": "DirectPay",
+    "tx_id": "call_test_124",
+    "notes": "",
+    "metadata": {
+      "call_id": "call_test_124",
+      "round_id": "rnd_1",
+      "game_id": "xddb07a7a584679c",
+      "type": "win",
+      "source": "softaggregator"
+    },
+    "created_at": "2026-11-05T19:12:25.958Z",
+    "updated_at": "2026-11-05T19:12:25.958Z"
+  },
+  {
+    "id": "call_test_123",
+    "user_id": "test_player_winx",
+    "email": "",
+    "type": "bet",
+    "amount": 20,
+    "status": "pending",
+    "method": "DirectPay",
+    "tx_id": "call_test_123",
+    "notes": "",
+    "metadata": {
+      "call_id": "call_test_123",
+      "round_id": "rnd_1",
+      "game_id": "xddb07a7a584679c",
+      "type": "bet",
+      "source": "softaggregator"
+    },
+    "created_at": "2026-11-05T19:12:25.937Z",
+    "updated_at": "2026-11-05T19:12:25.937Z"
+  },
+  {
     "id": "tx-mw3cejx6-mjjt",
     "user_id": "guest_player",
     "email": "",
