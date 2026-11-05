@@ -3,6 +3,23 @@
 
 import { launchGame, launchDemoGame } from '../../../utils/softAggregatorClient.js';
 
+function extractLaunchUrl(response) {
+  if (!response) return null;
+  if (typeof response === 'string' && response.startsWith('http')) return response;
+  if (typeof response === 'object') {
+    if (typeof response.gameurl === 'string' && response.gameurl.startsWith('http')) {
+      return response.gameurl;
+    }
+    if (typeof response.url === 'string' && response.url.startsWith('http')) {
+      return response.url;
+    }
+    if (typeof response.link === 'string' && response.link.startsWith('http')) {
+      return response.link;
+    }
+  }
+  return null;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
@@ -37,10 +54,11 @@ export default async function handler(req, res) {
   try {
     if (demo) {
       const demoRes = await launchDemoGame({ gameid, homeurl });
-      if (demoRes && demoRes.error === 0 && demoRes.response) {
+      const demoUrl = extractLaunchUrl(demoRes?.response);
+      if (demoRes && demoRes.error === 0 && demoUrl) {
         return res.status(200).json({
           success: true,
-          launch_url: demoRes.response,
+          launch_url: demoUrl,
           mode: 'demo'
         });
       }
@@ -57,10 +75,11 @@ export default async function handler(req, res) {
       device
     });
 
-    if (launchRes && launchRes.error === 0 && launchRes.response) {
+    const realUrl = extractLaunchUrl(launchRes?.response);
+    if (launchRes && launchRes.error === 0 && realUrl) {
       return res.status(200).json({
         success: true,
-        launch_url: launchRes.response,
+        launch_url: realUrl,
         username,
         mode: 'real'
       });

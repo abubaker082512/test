@@ -74,6 +74,13 @@ export default function PlayGame() {
     return () => window.removeEventListener('wallet-updated', onWalletUpdated)
   }, [user, authLoading])
 
+  // Prevent recursive iframe embedding
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.self !== window.top) {
+      window.top.location.href = window.location.href
+    }
+  }, [])
+
   // Resolve target hash ID
   const resolvedTargetId = SLUG_ALIASES[gameId] || gameId
 
@@ -112,8 +119,18 @@ export default function PlayGame() {
       })
 
       const json = await res.json()
-      if (json.success && json.launch_url) {
-        setLaunchUrl(json.launch_url)
+
+      let finalUrl = null
+      if (typeof json.launch_url === 'string' && json.launch_url.startsWith('http')) {
+        finalUrl = json.launch_url
+      } else if (json.launch_url && typeof json.launch_url.gameurl === 'string' && json.launch_url.gameurl.startsWith('http')) {
+        finalUrl = json.launch_url.gameurl
+      } else if (json.launch_url && typeof json.launch_url.url === 'string' && json.launch_url.url.startsWith('http')) {
+        finalUrl = json.launch_url.url
+      }
+
+      if (json.success && finalUrl) {
+        setLaunchUrl(finalUrl)
         setLaunchLoading(false)
       } else {
         setLaunchError(json.error || json.details?.message || 'Unable to launch game session.')
