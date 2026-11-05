@@ -1,9 +1,21 @@
 {
   "version": 2,
-  "builds": [
-    { "src": "package.json", "use": "@vercel/next" }
-  ],
   "routes": [
-    { "src": "/(.*)", "dest": "/$1" }
+    {
+      "src": "^/sg/callback/?$",
+      "dest": "/api/softaggregator/callback"
+    },
+    {
+      "src": "^/sg/(.*)$",
+      "dest": "/api/softaggregator/$1"
+    },
+    {
+      "src": "^/gold_api/(.*)$",
+      "dest": "/api/gold_api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
   ]
 }
