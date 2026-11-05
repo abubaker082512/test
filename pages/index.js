@@ -253,7 +253,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Dual Action Bar Directly Below Hero Banner (matching Screenshot 4) */}
+      {/* Dual Action Bar Directly Below Hero Banner (matching Screenshot 4 / bbrssms1.com) */}
       <div className="bbr-dual-cta-bar">
         {!user ? (
           <>
@@ -276,17 +276,17 @@ export default function Home() {
           <>
             <button
               type="button"
-              className="bbr-cta-outline"
+              className="bbr-cta-lime"
               onClick={() => router.push('/wallet')}
             >
-              💳 Deposit +35%
+              💳 Deposit
             </button>
             <button
               type="button"
-              className="bbr-cta-lime"
-              onClick={() => setShowPromoModal(true)}
+              className="bbr-cta-outline"
+              onClick={() => router.push('/wallet?tab=withdraw')}
             >
-              🎁 QR & Bonus Info
+              🏧 Withdraw
             </button>
           </>
         )}

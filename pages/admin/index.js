@@ -79,6 +79,15 @@ export default function AdminPanel() {
   const [easypaisaEnabled, setEasypaisaEnabled] = useState(true)
   const [easypaisaMode, setEasypaisaMode] = useState('directpay')
 
+  // NexusGGR Zero-GGR API state
+  const [nexusAgentCode, setNexusAgentCode] = useState('')
+  const [nexusAgentToken, setNexusAgentToken] = useState('')
+  const [nexusTestProvider, setNexusTestProvider] = useState('PRAGMATIC')
+  const [nexusTestGame, setNexusTestGame] = useState('vs20olympgate')
+  const [nexusLaunchResult, setNexusLaunchResult] = useState(null)
+  const [nexusTesting, setNexusTesting] = useState(false)
+  const [nexusWebhookCheck, setNexusWebhookCheck] = useState(null)
+
   // Card Gateway state
   const [cardMode, setCardMode] = useState('directpay')
 
@@ -694,6 +703,9 @@ export default function AdminPanel() {
           </button>
           <button style={tabStyle(activeTab === 'rates')} onClick={() => setActiveTab('rates')}>
             💳 Payment Accounts & Limits
+          </button>
+          <button style={tabStyle(activeTab === 'nexus')} onClick={() => setActiveTab('nexus')}>
+            🎰 NexusGGR Zero-GGR
           </button>
         </div>
 
@@ -2006,6 +2018,188 @@ export default function AdminPanel() {
             </form>
           </div>
         )}
+
+        {/* ==========================================
+            TAB 8: 🎰 NEXUSGGR ZERO-GGR API & SEAMLESS WEBHOOK
+            ========================================== */}
+        {activeTab === 'nexus' && (
+          <div style={{ background: '#0a101a', border: '1px solid rgba(0, 255, 136, 0.25)', borderRadius: '16px', padding: '24px', color: '#fff' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '12px' }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: '20px', color: '#00ff88', fontWeight: 900 }}>
+                  🎰 NexusGGR Zero-GGR &amp; Seamless API Manager
+                </h2>
+                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#94a3b8' }}>
+                  Unified aggregator engine with 0% GGR revenue-share • Real-time PKR wallet sync via <code>/gold_api</code>
+                </p>
+              </div>
+              <span style={{ background: 'rgba(0, 255, 136, 0.15)', color: '#00ff88', border: '1px solid #00ff88', padding: '4px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 900 }}>
+                0% GGR ACTIVE
+              </span>
+            </div>
+
+            {/* Quick Setup Instructions Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+              {/* Step 1: Webhook Endpoint */}
+              <div style={{ background: '#050a12', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '12px', padding: '16px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 900, color: '#38bdf8', textTransform: 'uppercase' }}>
+                  1. Your Site Endpoint (Webhook)
+                </div>
+                <div style={{ fontSize: '14px', fontWeight: 900, color: '#fff', marginTop: '6px', fontFamily: 'monospace' }}>
+                  https://winxpro.com.pk/gold_api
+                </div>
+                <p style={{ fontSize: '12px', color: '#94a3b8', margin: '8px 0 12px', lineHeight: 1.4 }}>
+                  In your NexusGGR dashboard (<code>my.nexusggr.com</code>), set your site URL to <code>https://winxpro.com.pk</code>. Nexus calls this endpoint for balance checks and bet/win settlement.
+                </p>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const res = await fetch('/api/gold_api', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ method: 'user_balance', user_code: 'guest_player' })
+                      })
+                      const data = await res.json()
+                      setNexusWebhookCheck(data)
+                    } catch (e) {
+                      setNexusWebhookCheck({ status: 0, msg: e.message })
+                    }
+                  }}
+                  style={{ background: 'rgba(56, 189, 248, 0.2)', border: '1px solid #38bdf8', color: '#38bdf8', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 900, cursor: 'pointer' }}
+                >
+                  ⚡ Test /gold_api Webhook
+                </button>
+                {nexusWebhookCheck && (
+                  <pre style={{ marginTop: '10px', background: '#000', padding: '8px', borderRadius: '6px', fontSize: '11px', color: '#38bdf8', overflowX: 'auto' }}>
+                    {JSON.stringify(nexusWebhookCheck, null, 2)}
+                  </pre>
+                )}
+              </div>
+
+              {/* Step 2: Agent Credentials Status */}
+              <div style={{ background: '#050a12', border: '1px solid rgba(251, 191, 36, 0.3)', borderRadius: '12px', padding: '16px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 900, color: '#fbbf24', textTransform: 'uppercase' }}>
+                  2. API Credentials Configuration
+                </div>
+                <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '6px' }}>
+                  Configure your credentials in <code>.env.local</code>:
+                </div>
+                <div style={{ background: '#000', padding: '8px', borderRadius: '6px', fontSize: '11px', color: '#fbbf24', fontFamily: 'monospace', margin: '8px 0' }}>
+                  NEXUSGGR_API_URL=https://api.nexusggr.com<br />
+                  NEXUSGGR_AGENT_CODE=your_code<br />
+                  NEXUSGGR_AGENT_TOKEN=your_token
+                </div>
+                <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>
+                  Get your Agent Code &amp; Token from <a href="https://my.nexusggr.com" target="_blank" rel="noreferrer" style={{ color: '#00ff88', textDecoration: 'underline' }}>my.nexusggr.com</a>.
+                </p>
+              </div>
+            </div>
+
+            {/* Live Interactive Game Launch Tester */}
+            <div style={{ background: '#050a12', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '12px', padding: '16px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 900, color: '#fff', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>🎮</span>
+                <span>Live Game Launch Tester</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
+                    PROVIDER CODE
+                  </label>
+                  <select
+                    value={nexusTestProvider}
+                    onChange={e => setNexusTestProvider(e.target.value)}
+                    style={{ width: '100%', padding: '8px', background: '#000', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', fontSize: '13px' }}
+                  >
+                    <option value="PRAGMATIC">PRAGMATIC (Pragmatic Play)</option>
+                    <option value="JILI">JILI (JILI Games)</option>
+                    <option value="PGSOFT">PGSOFT (PG Soft)</option>
+                    <option value="EVOLUTION">EVOLUTION (Evolution Live)</option>
+                    <option value="SPRIBE">SPRIBE (Aviator/Crash)</option>
+                    <option value="FASTGAMES">FASTGAMES</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
+                    GAME CODE
+                  </label>
+                  <input
+                    type="text"
+                    value={nexusTestGame}
+                    onChange={e => setNexusTestGame(e.target.value)}
+                    placeholder="e.g. vs20olympgate or leave empty for lobby"
+                    style={{ width: '100%', padding: '8px', background: '#000', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', fontSize: '13px' }}
+                  />
+                </div>
+              </div>
+
+              <button
+                type="button"
+                disabled={nexusTesting}
+                onClick={async () => {
+                  setNexusTesting(true)
+                  setNexusLaunchResult(null)
+                  try {
+                    const res = await fetch('/api/nexus/game-launch', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        user_code: 'admin_test',
+                        provider_code: nexusTestProvider,
+                        game_code: nexusTestGame,
+                        lang: 'en'
+                      })
+                    })
+                    const data = await res.json()
+                    setNexusLaunchResult(data)
+                  } catch (e) {
+                    setNexusLaunchResult({ status: 0, msg: e.message })
+                  } finally {
+                    setNexusTesting(false)
+                  }
+                }}
+                style={{
+                  background: 'linear-gradient(135deg, #00ff88, #00bb66)',
+                  color: '#000',
+                  border: 'none',
+                  padding: '10px 20px',
+                  borderRadius: '8px',
+                  fontWeight: 900,
+                  fontSize: '13px',
+                  cursor: 'pointer'
+                }}
+              >
+                {nexusTesting ? 'Connecting NexusGGR...' : '🚀 Test Launch Game via Nexus'}
+              </button>
+
+              {nexusLaunchResult && (
+                <div style={{ marginTop: '16px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 800, color: nexusLaunchResult.status === 1 ? '#00ff88' : '#f43f5e', marginBottom: '8px' }}>
+                    Status: {nexusLaunchResult.msg || (nexusLaunchResult.status === 1 ? 'SUCCESS' : 'FAILED')}
+                  </div>
+                  {nexusLaunchResult.launch_url ? (
+                    <div>
+                      <a href={nexusLaunchResult.launch_url} target="_blank" rel="noreferrer" style={{ color: '#38bdf8', fontSize: '12px', textDecoration: 'underline', display: 'block', marginBottom: '12px' }}>
+                        🔗 Open Live Session URL ({nexusLaunchResult.launch_url.slice(0, 60)}...)
+                      </a>
+                      <iframe
+                        src={nexusLaunchResult.launch_url}
+                        style={{ width: '100%', height: '500px', border: '1px solid rgba(0,255,136,0.3)', borderRadius: '12px', background: '#000' }}
+                        title="Nexus Live Game Preview"
+                      />
+                    </div>
+                  ) : (
+                    <pre style={{ background: '#000', padding: '10px', borderRadius: '8px', fontSize: '11px', color: '#ff7788', overflowX: 'auto' }}>
+                      {JSON.stringify(nexusLaunchResult, null, 2)}
+                    </pre>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
 
       </div>
     </div>
