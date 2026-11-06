@@ -6,13 +6,13 @@ import { supabase } from '../utils/supabase'
 import AuthModal from '../components/AuthModal'
 import BottomNav from '../components/BottomNav'
 
-// Recharge Methods with Official Brand SVG Logos
+// Recharge Methods with Official Brand Logos
 const RECHARGE_METHODS = [
   { id: 'qr', name: 'QR', icon: '/icons/qr-pay.svg' },
-  { id: 'jazzcash', name: 'JazzCash', icon: '/icons/jazzcash.svg' },
-  { id: 'easypaisa', name: 'Easypaisa', icon: '/icons/easypaisa.svg' },
-  { id: 'usdt', name: 'USDT', badge: '+3%', icon: '/icons/usdt.svg' },
-  { id: 'jazzcash_qr', name: 'JAZZCASH_QR', icon: '/icons/jazzcash-qr.svg' }
+  { id: 'jazzcash', name: 'JazzCash', icon: '/icons/jazzcash.jpeg' },
+  { id: 'easypaisa', name: 'Easypaisa', icon: '/icons/easypaisa.webp' },
+  { id: 'usdt', name: 'USDT', badge: '+3%', icon: '/icons/usdt.png' },
+  { id: 'jazzcash_qr', name: 'JAZZCASH_QR', icon: '/icons/jazzcash-qr.png' }
 ]
 
 // Preset Recharge Amounts (Rs 200 min up to Rs 100,000)
@@ -604,9 +604,10 @@ export default function WalletPage() {
                           src={m.icon}
                           alt={m.name}
                           style={{
-                            width: '30px',
-                            height: '30px',
-                            objectFit: 'contain'
+                            width: '32px',
+                            height: '32px',
+                            objectFit: 'contain',
+                            borderRadius: '6px'
                           }}
                         />
                       </div>
@@ -859,8 +860,8 @@ export default function WalletPage() {
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                   {[
-                    { id: 'EasyPaisa', label: 'Easypaisa', icon: '/icons/easypaisa.svg' },
-                    { id: 'JazzCash', label: 'JazzCash', icon: '/icons/jazzcash.svg' },
+                    { id: 'EasyPaisa', label: 'Easypaisa', icon: '/icons/easypaisa.webp' },
+                    { id: 'JazzCash', label: 'JazzCash', icon: '/icons/jazzcash.jpeg' },
                     { id: 'Bank Transfer', label: 'Bank Transfer', icon: '/icons/qr-pay.svg' }
                   ].map(m => {
                     const isSel = witMethod === m.id

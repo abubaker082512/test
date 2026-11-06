@@ -52,6 +52,15 @@ export default function AdminPanel() {
   // Search query
   const [searchQuery, setSearchQuery] = useState('')
 
+  // 24/7 Live Support Chat states
+  const [chatThreads, setChatThreads] = useState([])
+  const [selectedChatUser, setSelectedChatUser] = useState(null)
+  const [chatMessages, setChatMessages] = useState([])
+  const [adminReplyText, setAdminReplyText] = useState('')
+  const [adminReplyImage, setAdminReplyImage] = useState(null)
+  const [adminReplyLoading, setAdminReplyLoading] = useState(false)
+  const [chatSearch, setChatSearch] = useState('')
+
   // Transaction Category Sub-Filters
   const [autoTxFilter, setAutoTxFilter] = useState('all') // 'all' | 'completed' | 'failed' | 'pending'
   const [manualTxFilter, setManualTxFilter] = useState('all') // 'all' | 'pending' | 'completed' | 'failed'
@@ -268,9 +277,72 @@ export default function AdminPanel() {
     }
   }
 
+  const fetchChatThreads = async () => {
+    try {
+      const res = await fetch('/api/admin/support/threads')
+      const data = await res.json()
+      if (data.success && Array.isArray(data.threads)) {
+        setChatThreads(data.threads)
+        if (!selectedChatUser && data.threads.length > 0) {
+          setSelectedChatUser(data.threads[0].user_key)
+        }
+      }
+    } catch (e) {}
+  }
+
+  const fetchActiveThreadMessages = async (userKey) => {
+    if (!userKey) return
+    try {
+      const res = await fetch('/api/admin/support/threads?user_key=' + encodeURIComponent(userKey))
+      const data = await res.json()
+      if (data.success && Array.isArray(data.messages)) {
+        setChatMessages(data.messages)
+      }
+    } catch (e) {}
+  }
+
+  const handleSendAdminReply = async (e, textOverride = null) => {
+    if (e) e.preventDefault()
+    const textToSend = textOverride !== null ? textOverride : adminReplyText
+    if (!selectedChatUser || (!textToSend.trim() && !adminReplyImage)) return
+
+    setAdminReplyLoading(true)
+    try {
+      const res = await fetch('/api/admin/support/reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_key: selectedChatUser,
+          admin_name: 'WinX Pro Support Specialist',
+          text: textToSend.trim(),
+          image: adminReplyImage
+        })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setAdminReplyText('')
+        setAdminReplyImage(null)
+        if (data.messages) setChatMessages(data.messages)
+        fetchChatThreads()
+      }
+    } catch (err) {
+      alert('Failed to send reply: ' + err.message)
+    } finally {
+      setAdminReplyLoading(false)
+    }
+  }
+
   const fetchRiskData = async () => {
     await Promise.all([fetchLiveAnalytics(), fetchRiskConfig()])
   }
+
+  useEffect(() => {
+    if (authed && selectedChatUser) {
+      fetchActiveThreadMessages(selectedChatUser)
+      const poll = setInterval(() => fetchActiveThreadMessages(selectedChatUser), 3000)
+      return () => clearInterval(poll)
+    }
+  }, [authed, selectedChatUser])
 
   useEffect(() => {
     if (authed) {
@@ -703,6 +775,30 @@ export default function AdminPanel() {
           </button>
           <button style={tabStyle(activeTab === 'softaggregator')} onClick={() => setActiveTab('softaggregator')}>
             🎰 SoftAggregator (11,200+ Games)
+          </button>
+          <button
+            style={{
+              ...tabStyle(activeTab === 'support'),
+              background: activeTab === 'support' ? '#00ff88' : 'rgba(0, 255, 136, 0.12)',
+              color: activeTab === 'support' ? '#000' : '#00ff88',
+              border: '1.5px solid #00ff88',
+              fontWeight: 900
+            }}
+            onClick={() => setActiveTab('support')}
+          >
+            💬 24/7 Live Support ({chatThreads.length}) {chatThreads.reduce((acc, t) => acc + (t.unread_admin || 0), 0) > 0 && (
+              <span style={{
+                background: '#ff0055',
+                color: '#fff',
+                borderRadius: '999px',
+                padding: '2px 7px',
+                fontSize: '10px',
+                fontWeight: 900,
+                marginLeft: '6px'
+              }}>
+                {chatThreads.reduce((acc, t) => acc + (t.unread_admin || 0), 0)} New
+              </span>
+            )}
           </button>
         </div>
 
@@ -2184,6 +2280,344 @@ export default function AdminPanel() {
             </div>
           </div>
         )}
+
+        {/* ==========================================
+            TAB 9: 💬 24/7 LIVE SUPPORT CHAT DESK
+            ========================================== */}
+        {activeTab === 'support' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Header Metrics */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+              <div style={{ background: 'var(--card)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 800 }}>ACTIVE CONVERSATIONS</div>
+                <div style={{ fontSize: '24px', fontWeight: 900, color: '#00ff88', marginTop: '4px' }}>
+                  {chatThreads.length}
+                </div>
+              </div>
+              <div style={{ background: 'var(--card)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 800 }}>UNREAD MESSAGES</div>
+                <div style={{ fontSize: '24px', fontWeight: 900, color: '#ff3366', marginTop: '4px' }}>
+                  {chatThreads.reduce((acc, t) => acc + (t.unread_admin || 0), 0)}
+                </div>
+              </div>
+              <div style={{ background: 'var(--card)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 800 }}>AGENT STATUS</div>
+                <div style={{ fontSize: '16px', fontWeight: 900, color: '#38bdf8', marginTop: '6px' }}>
+                  🟢 Live (24/7 Connected)
+                </div>
+              </div>
+            </div>
+
+            {/* Chat Workspace */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'minmax(280px, 340px) 1fr',
+              gap: '16px',
+              minHeight: '620px',
+              background: '#0a1017',
+              borderRadius: '16px',
+              border: '1px solid rgba(0, 255, 136, 0.25)',
+              overflow: 'hidden'
+            }}>
+              {/* Left Column: Conversations List */}
+              <div style={{
+                borderRight: '1px solid rgba(255, 255, 255, 0.08)',
+                display: 'flex',
+                flexDirection: 'column',
+                background: '#0d151f'
+              }}>
+                <div style={{ padding: '14px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#ffffff', marginBottom: '8px' }}>
+                    User Support Inbox
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search by user email or ID..."
+                    value={chatSearch}
+                    onChange={e => setChatSearch(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      background: '#070b12',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      color: '#ffffff',
+                      fontSize: '12px',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
+                <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+                  {chatThreads.filter(t => !chatSearch || (t.user_key && t.user_key.toLowerCase().includes(chatSearch.toLowerCase()))).length === 0 ? (
+                    <div style={{ padding: '24px', textAlign: 'center', color: '#64748b', fontSize: '12px' }}>
+                      No support conversations yet.
+                    </div>
+                  ) : (
+                    chatThreads
+                      .filter(t => !chatSearch || (t.user_key && t.user_key.toLowerCase().includes(chatSearch.toLowerCase())))
+                      .map(t => {
+                        const isSelected = selectedChatUser === t.user_key
+                        return (
+                          <div
+                            key={t.user_key}
+                            onClick={() => {
+                              setSelectedChatUser(t.user_key)
+                              fetchActiveThreadMessages(t.user_key)
+                            }}
+                            style={{
+                              padding: '12px 14px',
+                              borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                              background: isSelected ? 'rgba(0, 255, 136, 0.12)' : 'transparent',
+                              borderLeft: isSelected ? '3px solid #00ff88' : '3px solid transparent',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '4px',
+                              transition: 'background 0.15s'
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontSize: '12.5px', fontWeight: 800, color: isSelected ? '#00ff88' : '#ffffff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                👤 {t.email || t.user_key}
+                              </span>
+                              {t.unread_admin > 0 && (
+                                <span style={{
+                                  background: '#ff0055',
+                                  color: '#ffffff',
+                                  fontSize: '10px',
+                                  fontWeight: 900,
+                                  borderRadius: '999px',
+                                  padding: '1px 6px'
+                                }}>
+                                  {t.unread_admin}
+                                </span>
+                              )}
+                            </div>
+
+                            <div style={{ fontSize: '11px', color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {t.last_message?.text || 'No message text'}
+                            </div>
+
+                            <div style={{ fontSize: '9.5px', color: '#556677' }}>
+                              {t.last_message?.time || new Date(t.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          </div>
+                        )
+                      })
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column: Chat Stream & Message Composer */}
+              <div style={{ display: 'flex', flexDirection: 'column', background: '#070c14' }}>
+                {selectedChatUser ? (
+                  <>
+                    {/* Chat Header */}
+                    <div style={{
+                      padding: '12px 16px',
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#0d1520'
+                    }}>
+                      <div>
+                        <div style={{ fontSize: '14px', fontWeight: 900, color: '#ffffff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span>💬 Chat with</span>
+                          <span style={{ color: '#00ff88' }}>{selectedChatUser}</span>
+                        </div>
+                        <div style={{ fontSize: '10.5px', color: '#38bdf8', marginTop: '2px' }}>
+                          ● Active Session • Synced with Client Live App
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => fetchActiveThreadMessages(selectedChatUser)}
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.08)',
+                          border: 'none',
+                          color: '#00ff88',
+                          padding: '6px 12px',
+                          borderRadius: '8px',
+                          fontSize: '11px',
+                          fontWeight: 800,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        🔄 Refresh Chat
+                      </button>
+                    </div>
+
+                    {/* Chat Messages Stream */}
+                    <div style={{
+                      flex: 1,
+                      padding: '16px',
+                      overflowY: 'auto',
+                      maxHeight: '460px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px',
+                      background: '#050910'
+                    }}>
+                      {chatMessages.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '36px', color: '#64748b', fontSize: '12px' }}>
+                          No messages in this conversation yet.
+                        </div>
+                      ) : (
+                        chatMessages.map(m => {
+                          const isUser = m.sender === 'user'
+                          return (
+                            <div
+                              key={m.id}
+                              style={{
+                                maxWidth: '78%',
+                                alignSelf: isUser ? 'flex-start' : 'flex-end',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '3px'
+                              }}
+                            >
+                              <div style={{ fontSize: '10px', color: isUser ? '#38bdf8' : '#00ff88', fontWeight: 800, padding: '0 4px' }}>
+                                {isUser ? `👤 User (${selectedChatUser})` : `🛡️ ${m.admin_name || 'Admin Support'}`}
+                              </div>
+
+                              <div style={{
+                                padding: '10px 14px',
+                                borderRadius: '12px',
+                                fontSize: '13px',
+                                lineHeight: '1.4',
+                                background: isUser ? '#162332' : 'linear-gradient(135deg, #00ff88 0%, #00bb66 100%)',
+                                color: isUser ? '#ffffff' : '#000000',
+                                fontWeight: isUser ? 500 : 700,
+                                border: isUser ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
+                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+                              }}>
+                                {m.text && <div>{m.text}</div>}
+
+                                {/* Image Attachment (Clickable) */}
+                                {(m.image || m.imageUrl) && (
+                                  <div style={{ marginTop: m.text ? '8px' : 0 }}>
+                                    <a href={m.image || m.imageUrl} target="_blank" rel="noreferrer">
+                                      <img
+                                        src={m.image || m.imageUrl}
+                                        alt="Screenshot"
+                                        style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '8px', display: 'block', border: '1px solid rgba(0,0,0,0.2)' }}
+                                      />
+                                    </a>
+                                  </div>
+                                )}
+
+                                {/* Voice Note Audio Player */}
+                                {(m.audio || m.audioUrl) && (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '180px', marginTop: '6px' }}>
+                                    <span style={{ fontSize: '16px' }}>🎙</span>
+                                    <audio controls src={m.audio || m.audioUrl} style={{ width: '200px', height: '32px' }} />
+                                  </div>
+                                )}
+                              </div>
+
+                              <div style={{ fontSize: '9.5px', color: '#556677', alignSelf: isUser ? 'flex-start' : 'flex-end', padding: '0 4px' }}>
+                                {m.time}
+                              </div>
+                            </div>
+                          )
+                        })
+                      )}
+                    </div>
+
+                    {/* Quick Reply Chips */}
+                    <div style={{
+                      padding: '8px 14px',
+                      background: '#09111c',
+                      borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+                      display: 'flex',
+                      gap: '6px',
+                      overflowX: 'auto'
+                    }}>
+                      {[
+                        'Please provide your 11-digit TID from your receipt.',
+                        '✅ Your deposit has been verified and added to balance.',
+                        '🏧 Your withdrawal request has been approved and dispatched.',
+                        '👋 Assalam-o-Alaikum! How can we assist you with WinX Pro today?'
+                      ].map((quick, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleSendAdminReply(null, quick)}
+                          style={{
+                            background: 'rgba(0, 255, 136, 0.08)',
+                            border: '1px solid rgba(0, 255, 136, 0.25)',
+                            color: '#00ff88',
+                            borderRadius: '8px',
+                            padding: '4px 10px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            whiteSpace: 'nowrap',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {quick.slice(0, 32)}...
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Message Composer */}
+                    <form onSubmit={handleSendAdminReply} style={{
+                      padding: '12px 14px',
+                      background: '#0d1520',
+                      borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                      display: 'flex',
+                      gap: '10px',
+                      alignItems: 'center'
+                    }}>
+                      <input
+                        type="text"
+                        placeholder="Type response to user..."
+                        value={adminReplyText}
+                        onChange={e => setAdminReplyText(e.target.value)}
+                        style={{
+                          flex: 1,
+                          padding: '10px 14px',
+                          borderRadius: '8px',
+                          background: '#070b12',
+                          border: '1px solid rgba(0, 255, 136, 0.3)',
+                          color: '#ffffff',
+                          fontSize: '13px',
+                          outline: 'none'
+                        }}
+                      />
+
+                      <button
+                        type="submit"
+                        disabled={adminReplyLoading}
+                        style={{
+                          background: 'linear-gradient(135deg, #00ff88, #00bb66)',
+                          color: '#000',
+                          border: 'none',
+                          padding: '10px 20px',
+                          borderRadius: '8px',
+                          fontWeight: 900,
+                          fontSize: '13px',
+                          cursor: adminReplyLoading ? 'not-allowed' : 'pointer',
+                          opacity: adminReplyLoading ? 0.7 : 1
+                        }}
+                      >
+                        {adminReplyLoading ? 'Sending...' : 'Send Reply'}
+                      </button>
+                    </form>
+                  </>
+                ) : (
+                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: '13px' }}>
+                    Select a conversation from the left to view messages and reply.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
 
       </div>
     </div>

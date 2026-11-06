@@ -31,7 +31,21 @@ export default function Support() {
   const audioChunksRef = useRef([])
   const timerIntervalRef = useRef(null)
 
-  // Load persistent chat history from localStorage
+  // Load persistent chat history from server & localStorage
+  const fetchServerMessages = async () => {
+    if (!userKey) return
+    try {
+      const res = await fetch(`/api/support/messages?user_key=${encodeURIComponent(userKey)}`)
+      const data = await res.json()
+      if (data.success && Array.isArray(data.messages) && data.messages.length > 0) {
+        setMessages(data.messages)
+        try {
+          localStorage.setItem(`winx_support_messages_${userKey}`, JSON.stringify(data.messages))
+        } catch (e) {}
+      }
+    } catch (e) {}
+  }
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -44,6 +58,9 @@ export default function Support() {
         }
       } catch (e) {}
     }
+    fetchServerMessages()
+    const poll = setInterval(fetchServerMessages, 3500)
+    return () => clearInterval(poll)
   }, [userKey])
 
   // Save persistent chat history on change
@@ -124,38 +141,72 @@ export default function Support() {
     }
   }
 
-  const sendVoiceMessage = (audioUrl, duration) => {
+  const sendVoiceMessage = async (audioUrl, duration) => {
+    const tempId = `msg-${Date.now()}`
     const newMsg = {
-      id: `msg-${Date.now()}`,
+      id: tempId,
       sender: 'user',
       type: 'audio',
       audioUrl,
+      audio: audioUrl,
       duration: duration || 1,
+      audio_duration: duration || 1,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
     setMessages(prev => [...prev, newMsg])
+
+    try {
+      await fetch('/api/support/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_key: userKey,
+          email: user?.email || userKey,
+          name: user?.user_metadata?.full_name || user?.email || userKey,
+          audio: audioUrl,
+          audio_duration: duration || 1
+        })
+      })
+    } catch (e) {}
+
     triggerAgentReply('voice note')
   }
 
-  const handleSend = (e) => {
+  const handleSend = async (e) => {
     e?.preventDefault()
     if (!userInput.trim() && !selectedImage) return
 
     const userText = userInput.trim()
     const imgToSend = selectedImage
 
+    const tempId = `msg-${Date.now()}`
     const newMsg = {
-      id: `msg-${Date.now()}`,
+      id: tempId,
       sender: 'user',
       type: imgToSend ? 'image' : 'text',
       text: userText || (imgToSend ? 'Sent an image attachment' : ''),
       imageUrl: imgToSend || null,
+      image: imgToSend || null,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
 
     setMessages(prev => [...prev, newMsg])
     setUserInput('')
     setSelectedImage(null)
+
+    try {
+      await fetch('/api/support/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_key: userKey,
+          email: user?.email || userKey,
+          name: user?.user_metadata?.full_name || user?.email || userKey,
+          text: userText,
+          image: imgToSend
+        })
+      })
+    } catch (e) {}
 
     triggerAgentReply(userText)
   }
@@ -529,14 +580,21 @@ export default function Support() {
                       borderBottomLeftRadius: isUser ? '14px' : '2px',
                       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
                     }}>
+                      {/* Agent / Admin Name Header */}
+                      {!isUser && m.admin_name && (
+                        <div style={{ fontSize: '10.5px', color: '#6dff38', fontWeight: 800, marginBottom: '4px' }}>
+                          🛡️ {m.admin_name}
+                        </div>
+                      )}
+
                       {/* Text */}
                       {m.text && <div>{m.text}</div>}
 
                       {/* Image Attachment */}
-                      {m.imageUrl && (
+                      {(m.imageUrl || m.image) && (
                         <div style={{ marginTop: m.text ? '8px' : 0 }}>
                           <img
-                            src={m.imageUrl}
+                            src={m.imageUrl || m.image}
                             alt="Attachment"
                             style={{
                               maxWidth: '100%',
@@ -549,10 +607,10 @@ export default function Support() {
                       )}
 
                       {/* Voice Note Audio Player */}
-                      {m.type === 'audio' && m.audioUrl && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '160px', marginTop: '2px' }}>
+                      {(m.audioUrl || m.audio) && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '160px', marginTop: '4px' }}>
                           <span style={{ fontSize: '18px' }}>🎙</span>
-                          <audio controls src={m.audioUrl} style={{ width: '180px', height: '32px' }} />
+                          <audio controls src={m.audioUrl || m.audio} style={{ width: '180px', height: '32px' }} />
                         </div>
                       )}
                     </div>
