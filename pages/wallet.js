@@ -6,17 +6,41 @@ import { supabase } from '../utils/supabase'
 import AuthModal from '../components/AuthModal'
 import BottomNav from '../components/BottomNav'
 
-// Recharge Methods matching Screenshots 1 & 2
+// Recharge Methods with Official Brand SVG Logos
 const RECHARGE_METHODS = [
-  { id: 'qr', name: 'QR', isHot: true },
-  { id: 'jazzcash', name: 'JazzCash' },
-  { id: 'easypaisa', name: 'Easypaisa' },
-  { id: 'usdt', name: 'USDT', badge: '+3%' },
-  { id: 'jazzcash_qr', name: 'JAZZCASH_QR' }
+  { id: 'qr', name: 'QR', icon: '/icons/qr-pay.svg' },
+  { id: 'jazzcash', name: 'JazzCash', icon: '/icons/jazzcash.svg' },
+  { id: 'easypaisa', name: 'Easypaisa', icon: '/icons/easypaisa.svg' },
+  { id: 'usdt', name: 'USDT', badge: '+3%', icon: '/icons/usdt.svg' },
+  { id: 'jazzcash_qr', name: 'JAZZCASH_QR', icon: '/icons/jazzcash-qr.svg' }
 ]
 
-// Recharge Amounts matching Screenshots 1 & 2
-const RECHARGE_AMOUNTS = [100, 300, 1000, 2000, 3000, 5000, 10000]
+// Preset Recharge Amounts (Rs 200 min up to Rs 100,000)
+const RECHARGE_AMOUNTS = [200, 500, 1000, 1500, 2000, 3000, 5000, 10000, 15000, 20000, 30000, 50000, 100000]
+
+// Top Pakistani Commercial Banks for 1LINK Transfers
+const PAKISTAN_BANKS = [
+  'Meezan Bank',
+  'Habib Bank Limited (HBL)',
+  'Bank Alfalah',
+  'United Bank Limited (UBL)',
+  'MCB Bank',
+  'Allied Bank Limited (ABL)',
+  'Askari Bank',
+  'Standard Chartered Bank',
+  'Faysal Bank',
+  'Bank of Punjab (BOP)',
+  'JS Bank',
+  'Soneri Bank',
+  'Dubai Islamic Bank',
+  'BankIslami Pakistan',
+  'Al Baraka Bank',
+  'Samba Bank',
+  'Sindh Bank',
+  'NayaPay',
+  'SadaPay',
+  'Other Bank'
+]
 
 export default function WalletPage() {
   const router = useRouter()
@@ -24,14 +48,15 @@ export default function WalletPage() {
   const [wallet, setWallet] = useState(null)
   const [transactions, setTransactions] = useState([])
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState('deposit') // 'deposit' | 'withdraw' | 'history'
+  const [activeTab, setActiveTab] = useState('deposit') // 'deposit' | 'withdraw' | 'records'
+  const [recordsFilter, setRecordsFilter] = useState('all') // 'all' | 'deposit' | 'withdraw' | 'payout'
   const [refreshing, setRefreshing] = useState(false)
   const [copiedField, setCopiedField] = useState(null)
 
   // Deposit States matching Screenshots 1 & 2
   const [rechargeMethod, setRechargeMethod] = useState('qr')
   const [rechargeChannel, setRechargeChannel] = useState('qr_code') // 'qr_code' | 'transfer'
-  const [amount, setAmount] = useState('100')
+  const [amount, setAmount] = useState('200')
   const [showPaymentModal, setShowPaymentModal] = useState(false)
 
   // Payment Form States
@@ -44,6 +69,7 @@ export default function WalletPage() {
   // Withdrawal States
   const [witAmount, setWitAmount] = useState('')
   const [witMethod, setWitMethod] = useState('EasyPaisa')
+  const [witBankName, setWitBankName] = useState('Meezan Bank')
   const [witAccount, setWitAccount] = useState('')
   const [witTitle, setWitTitle] = useState('')
   const [witMsg, setWitMsg] = useState(null)
@@ -53,8 +79,8 @@ export default function WalletPage() {
   const [rates, setRates] = useState({
     pkr_rate: 1.0,
     usd_rate: 280.0,
-    min_deposit: 100,
-    max_deposit: 20000,
+    min_deposit: 200,
+    max_deposit: 100000,
     min_withdraw: 500,
     max_withdraw: 50000,
     manual_jazzcash_title: 'WinX Pro Official',
@@ -70,7 +96,7 @@ export default function WalletPage() {
     if (!router.isReady) return
     const { tab } = router.query
     if (tab === 'withdraw') setActiveTab('withdraw')
-    else if (tab === 'history') setActiveTab('history')
+    else if (tab === 'records' || tab === 'history') setActiveTab('records')
     else if (tab === 'crypto') setRechargeMethod('usdt')
   }, [router.isReady, router.query])
 
@@ -176,8 +202,8 @@ export default function WalletPage() {
       return
     }
     const val = parseFloat(amount)
-    if (isNaN(val) || val < 100) {
-      alert('Minimum deposit amount is Rs 100.')
+    if (isNaN(val) || val < 200) {
+      alert('Minimum deposit amount is Rs 200.')
       return
     }
     setDepositMsg(null)
@@ -256,7 +282,7 @@ export default function WalletPage() {
     }
   }
 
-  // Handle Withdrawal Request
+  // Handle Withdrawal Request with Immediate Balance Deduction
   const handleWithdraw = async (e) => {
     e.preventDefault()
     if (!user) {
@@ -272,11 +298,15 @@ export default function WalletPage() {
       return
     }
     if (val > currentBal) {
-      setWitMsg({ type: 'error', text: 'Insufficient wallet balance.' })
+      setWitMsg({ type: 'error', text: `Insufficient wallet balance. You have Rs ${currentBal.toFixed(2)}` })
       return
     }
     if (!witAccount || witAccount.trim().length < 8) {
-      setWitMsg({ type: 'error', text: 'Please enter a valid mobile or account number.' })
+      setWitMsg({ type: 'error', text: 'Please enter a valid mobile number or bank account/IBAN.' })
+      return
+    }
+    if (witMethod === 'Bank Transfer' && !witBankName) {
+      setWitMsg({ type: 'error', text: 'Please select your bank name.' })
       return
     }
 
@@ -284,21 +314,37 @@ export default function WalletPage() {
     setWitMsg(null)
 
     try {
+      const isBank = witMethod === 'Bank Transfer'
+      const payload = {
+        user_id: user.id || user.uid,
+        email: user.email || '',
+        amount: val,
+        method: witMethod,
+        bank_name: isBank ? witBankName : null,
+        account_title: witTitle.trim() || 'N/A',
+        account_number: witAccount.trim(),
+        notes: isBank 
+          ? `Withdrawal to ${witBankName} | Title: ${witTitle || 'N/A'} | A/C: ${witAccount}`
+          : `Withdrawal to ${witMethod} | Title: ${witTitle || 'N/A'} | Number: ${witAccount}`
+      }
+
       const res = await fetch('/api/wallet/withdraw', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: user.id || user.uid,
-          amount: val,
-          notes: `Withdrawal to ${witMethod} | Title: ${witTitle || 'N/A'} | Number: ${witAccount}`
-        })
+        body: JSON.stringify(payload)
       })
       const data = await res.json()
       if (data.success) {
-        setWitMsg({ type: 'success', text: `✅ Payout request of Rs ${val.toLocaleString()} submitted successfully!` })
+        setWitMsg({ type: 'success', text: `✅ Payout request of Rs ${val.toLocaleString()} submitted! Amount deducted from your balance.` })
         setWitAmount('')
         setWitAccount('')
         setWitTitle('')
+        if (data.new_balance !== undefined) {
+          setWallet(prev => ({ ...(prev || {}), balance: data.new_balance }))
+        }
+        if (data.transaction) {
+          setTransactions(prev => [data.transaction, ...(prev || [])])
+        }
         fetchData()
         window.dispatchEvent(new Event('wallet-updated'))
       } else {
@@ -325,7 +371,7 @@ export default function WalletPage() {
 
   return (
     <div className="app bbr-deposit-page">
-      {/* 1. Header (matching Screenshots 1 & 2: ← Deposit 📋) */}
+      {/* 1. Header */}
       <div style={{
         padding: '14px 16px',
         display: 'flex',
@@ -348,21 +394,21 @@ export default function WalletPage() {
           ←
         </button>
         <div style={{ fontSize: '17px', fontWeight: 800, color: '#ffffff', letterSpacing: '0.2px' }}>
-          {activeTab === 'withdraw' ? 'Withdrawal' : activeTab === 'history' ? 'Deposit Records' : 'Deposit'}
+          {activeTab === 'withdraw' ? 'Withdrawal' : activeTab === 'records' ? 'My Records' : 'Deposit'}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <button
-            onClick={() => setActiveTab(activeTab === 'history' ? 'deposit' : 'history')}
+            onClick={() => setActiveTab(activeTab === 'records' ? 'deposit' : 'records')}
             style={{
               background: 'none',
               border: 'none',
-              color: activeTab === 'history' ? '#6dff38' : '#ffd54f',
+              color: activeTab === 'records' ? '#6dff38' : '#ffd54f',
               fontSize: '20px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center'
             }}
-            title="Deposit Records"
+            title="My Records"
           >
             📋
           </button>
@@ -436,24 +482,56 @@ export default function WalletPage() {
           </button>
         </div>
 
-        {/* Tab Switcher if on Withdraw / History */}
+        {/* Tab Switcher if on Withdraw / Records */}
         {activeTab !== 'deposit' && (
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
               onClick={() => setActiveTab('deposit')}
               style={{
                 flex: 1,
-                padding: '9px',
-                borderRadius: '10px',
-                border: '1px solid #6dff38',
-                background: 'rgba(109, 255, 56, 0.15)',
+                padding: '10px',
+                borderRadius: '12px',
+                border: '1px solid rgba(109, 255, 56, 0.4)',
+                background: 'rgba(109, 255, 56, 0.1)',
                 color: '#6dff38',
                 fontWeight: 800,
                 fontSize: '13px',
                 cursor: 'pointer'
               }}
             >
-              ← Back to Deposit
+              ← Deposit
+            </button>
+            <button
+              onClick={() => setActiveTab('withdraw')}
+              style={{
+                flex: 1,
+                padding: '10px',
+                borderRadius: '12px',
+                border: activeTab === 'withdraw' ? '1.5px solid #6dff38' : '1px solid rgba(255, 255, 255, 0.1)',
+                background: activeTab === 'withdraw' ? 'rgba(109, 255, 56, 0.2)' : 'rgba(255, 255, 255, 0.04)',
+                color: activeTab === 'withdraw' ? '#6dff38' : '#9bb0a2',
+                fontWeight: 800,
+                fontSize: '13px',
+                cursor: 'pointer'
+              }}
+            >
+              Withdraw
+            </button>
+            <button
+              onClick={() => setActiveTab('records')}
+              style={{
+                flex: 1,
+                padding: '10px',
+                borderRadius: '12px',
+                border: activeTab === 'records' ? '1.5px solid #6dff38' : '1px solid rgba(255, 255, 255, 0.1)',
+                background: activeTab === 'records' ? 'rgba(109, 255, 56, 0.2)' : 'rgba(255, 255, 255, 0.04)',
+                color: activeTab === 'records' ? '#6dff38' : '#9bb0a2',
+                fontWeight: 800,
+                fontSize: '13px',
+                cursor: 'pointer'
+              }}
+            >
+              Records
             </button>
           </div>
         )}
@@ -513,95 +591,24 @@ export default function WalletPage() {
                         </span>
                       )}
 
-                      {/* Icon */}
+                      {/* Official SVG Icon */}
                       <div style={{
-                        width: '32px',
-                        height: '32px',
+                        width: '34px',
+                        height: '34px',
                         borderRadius: '8px',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '18px'
+                        justifyContent: 'center'
                       }}>
-                        {m.id === 'qr' && (
-                          <div style={{
-                            width: '28px',
-                            height: '28px',
-                            background: '#ffffff',
-                            borderRadius: '6px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '16px'
-                          }}>
-                            🏁
-                          </div>
-                        )}
-                        {m.id === 'jazzcash' && (
-                          <div style={{
-                            width: '28px',
-                            height: '28px',
-                            background: '#d61a20',
-                            borderRadius: '6px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#ffeb3b',
-                            fontSize: '15px',
-                            fontWeight: 900
-                          }}>
-                            🔥
-                          </div>
-                        )}
-                        {m.id === 'easypaisa' && (
-                          <div style={{
-                            width: '28px',
-                            height: '28px',
-                            background: '#00a852',
-                            borderRadius: '6px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#ffffff',
-                            fontSize: '16px',
-                            fontWeight: 900
-                          }}>
-                            e
-                          </div>
-                        )}
-                        {m.id === 'usdt' && (
-                          <div style={{
-                            width: '28px',
-                            height: '28px',
-                            background: '#26a17b',
-                            borderRadius: '6px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#ffffff',
-                            fontSize: '16px',
-                            fontWeight: 900
-                          }}>
-                            ₮
-                          </div>
-                        )}
-                        {m.id === 'jazzcash_qr' && (
-                          <div style={{
-                            width: '28px',
-                            height: '28px',
-                            background: '#d61a20',
-                            borderRadius: '6px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#ffffff',
-                            fontSize: '14px',
-                            position: 'relative'
-                          }}>
-                            🔥
-                            <span style={{ position: 'absolute', bottom: -2, right: -2, fontSize: '9px' }}>📱</span>
-                          </div>
-                        )}
+                        <img
+                          src={m.icon}
+                          alt={m.name}
+                          style={{
+                            width: '30px',
+                            height: '30px',
+                            objectFit: 'contain'
+                          }}
+                        />
                       </div>
 
                       {/* Title */}
@@ -737,7 +744,7 @@ export default function WalletPage() {
                 <span style={{ fontSize: '14px', fontWeight: 900, color: '#6dff38' }}>Rs</span>
                 <input
                   type="number"
-                  placeholder="Rs 100 ~ 20000"
+                  placeholder="Rs 200 ~ 100,000"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   style={{
@@ -749,8 +756,8 @@ export default function WalletPage() {
                     fontWeight: 800,
                     width: '100%'
                   }}
-                  min="100"
-                  max="20000"
+                  min="200"
+                  max="100000"
                 />
               </div>
               {amount && (
@@ -799,64 +806,134 @@ export default function WalletPage() {
           </>
         )}
 
-        {/* WITHDRAWAL TAB */}
+        {/* CLASSY WITHDRAWAL TAB */}
         {activeTab === 'withdraw' && (
           <div style={{
-            background: '#152219',
-            border: '1px solid rgba(109, 255, 56, 0.2)',
-            borderRadius: '16px',
-            padding: '16px'
+            background: 'linear-gradient(145deg, #16261d 0%, #101c15 100%)',
+            border: '1.5px solid rgba(109, 255, 56, 0.28)',
+            borderRadius: '20px',
+            padding: '20px 18px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(109, 255, 56, 0.12)'
           }}>
-            <div style={{ fontSize: '15px', fontWeight: 800, color: '#ffffff', marginBottom: '4px' }}>
-              Instant Withdrawal Request
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+              <div style={{ fontSize: '17px', fontWeight: 900, color: '#ffffff', letterSpacing: '0.2px' }}>
+                ⚡ Instant Withdrawal
+              </div>
+              <span style={{
+                background: 'rgba(109, 255, 56, 0.15)',
+                border: '1px solid rgba(109, 255, 56, 0.4)',
+                color: '#6dff38',
+                fontSize: '11px',
+                fontWeight: 900,
+                padding: '3px 9px',
+                borderRadius: '999px'
+              }}>
+                VIP 1LINK
+              </span>
             </div>
-            <div style={{ fontSize: '11px', color: '#9bb0a2', marginBottom: '14px' }}>
-              Minimum withdrawal: Rs {rates.min_withdraw || 500}. Direct payout in minutes.
+
+            <div style={{ fontSize: '11.5px', color: '#9bb0a2', marginBottom: '16px', lineHeight: 1.4 }}>
+              Minimum withdrawal: <span style={{ color: '#ffd54f', fontWeight: 800 }}>Rs {rates.min_withdraw || 500}</span>. Balance is deducted instantly upon submission.
             </div>
 
             {witMsg && (
               <div style={{
-                padding: '10px 12px',
-                borderRadius: '10px',
-                fontSize: '12px',
-                fontWeight: 700,
-                marginBottom: '12px',
-                background: witMsg.type === 'error' ? 'rgba(255, 51, 102, 0.15)' : 'rgba(109, 255, 56, 0.15)',
-                border: `1px solid ${witMsg.type === 'error' ? '#ff3366' : '#6dff38'}`,
-                color: witMsg.type === 'error' ? '#ff3366' : '#6dff38'
+                padding: '12px 14px',
+                borderRadius: '12px',
+                fontSize: '12.5px',
+                fontWeight: 800,
+                marginBottom: '16px',
+                background: witMsg.type === 'error' ? 'rgba(255, 51, 102, 0.16)' : 'rgba(109, 255, 56, 0.16)',
+                border: `1.5px solid ${witMsg.type === 'error' ? '#ff3366' : '#6dff38'}`,
+                color: witMsg.type === 'error' ? '#ff6688' : '#6dff38',
+                lineHeight: 1.4
               }}>
                 {witMsg.text}
               </div>
             )}
 
-            <form onSubmit={handleWithdraw} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <form onSubmit={handleWithdraw} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
-                <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#9bb0a2', display: 'block', marginBottom: '4px' }}>
-                  Payout Method
+                <label style={{ fontSize: '12px', fontWeight: 800, color: '#c4d7ca', display: 'block', marginBottom: '6px' }}>
+                  Payout Method *
                 </label>
-                <select
-                  value={witMethod}
-                  onChange={e => setWitMethod(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '11px 12px',
-                    borderRadius: '10px',
-                    background: '#101a14',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    color: '#ffffff',
-                    fontSize: '13px',
-                    fontWeight: 800
-                  }}
-                >
-                  <option value="EasyPaisa">EasyPaisa</option>
-                  <option value="JazzCash">JazzCash</option>
-                  <option value="Bank Transfer">Bank Transfer (1LINK)</option>
-                </select>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                  {[
+                    { id: 'EasyPaisa', label: 'Easypaisa', icon: '/icons/easypaisa.svg' },
+                    { id: 'JazzCash', label: 'JazzCash', icon: '/icons/jazzcash.svg' },
+                    { id: 'Bank Transfer', label: 'Bank Transfer', icon: '/icons/qr-pay.svg' }
+                  ].map(m => {
+                    const isSel = witMethod === m.id
+                    return (
+                      <div
+                        key={m.id}
+                        onClick={() => setWitMethod(m.id)}
+                        style={{
+                          background: isSel ? '#70e434' : '#101a14',
+                          border: isSel ? '1.5px solid #85f34b' : '1px solid rgba(255, 255, 255, 0.08)',
+                          borderRadius: '12px',
+                          padding: '10px 6px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          cursor: 'pointer',
+                          boxShadow: isSel ? '0 0 14px rgba(112, 228, 52, 0.35)' : 'none',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        <img src={m.icon} alt={m.label} style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
+                        <span style={{
+                          fontSize: '11px',
+                          fontWeight: 900,
+                          color: isSel ? '#081a0b' : '#ffffff',
+                          textAlign: 'center',
+                          lineHeight: 1.1
+                        }}>
+                          {m.label}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
 
+              {/* Dynamic Bank Name Dropdown for Bank Transfer */}
+              {witMethod === 'Bank Transfer' && (
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 800, color: '#6dff38', display: 'block', marginBottom: '6px' }}>
+                    Select Pakistani Bank *
+                  </label>
+                  <select
+                    value={witBankName}
+                    onChange={e => setWitBankName(e.target.value)}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '12px 14px',
+                      borderRadius: '12px',
+                      background: '#101a14',
+                      border: '1.5px solid #6dff38',
+                      color: '#ffffff',
+                      fontSize: '13.5px',
+                      fontWeight: 800,
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  >
+                    {PAKISTAN_BANKS.map(bank => (
+                      <option key={bank} value={bank} style={{ background: '#101a14', color: '#ffffff' }}>
+                        {bank}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div>
-                <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#9bb0a2', display: 'block', marginBottom: '4px' }}>
-                  Account Title (Recipient Name)
+                <label style={{ fontSize: '12px', fontWeight: 800, color: '#c4d7ca', display: 'block', marginBottom: '6px' }}>
+                  Account Title (Recipient Name) *
                 </label>
                 <input
                   type="text"
@@ -866,62 +943,113 @@ export default function WalletPage() {
                   required
                   style={{
                     width: '100%',
-                    padding: '11px 12px',
-                    borderRadius: '10px',
+                    padding: '12px 14px',
+                    borderRadius: '12px',
                     background: '#101a14',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
                     color: '#ffffff',
-                    fontSize: '13px',
+                    fontSize: '13.5px',
+                    fontWeight: 700,
+                    outline: 'none',
                     boxSizing: 'border-box'
                   }}
                 />
               </div>
 
               <div>
-                <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#9bb0a2', display: 'block', marginBottom: '4px' }}>
-                  Account Mobile / IBAN Number
+                <label style={{ fontSize: '12px', fontWeight: 800, color: '#c4d7ca', display: 'block', marginBottom: '6px' }}>
+                  {witMethod === 'Bank Transfer' ? 'Bank Account Number / IBAN *' : 'Mobile Account Number *'}
                 </label>
                 <input
                   type="text"
-                  placeholder="03xxxxxxxxx or Bank Account Number"
+                  placeholder={witMethod === 'Bank Transfer' ? 'e.g. PK00MEZN0000000000000000' : '03xxxxxxxxx (11 digits)'}
                   value={witAccount}
                   onChange={e => setWitAccount(e.target.value)}
                   required
                   style={{
                     width: '100%',
-                    padding: '11px 12px',
-                    borderRadius: '10px',
+                    padding: '12px 14px',
+                    borderRadius: '12px',
                     background: '#101a14',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
                     color: '#ffffff',
-                    fontSize: '13px',
+                    fontSize: '13.5px',
+                    fontWeight: 700,
+                    outline: 'none',
                     boxSizing: 'border-box'
                   }}
                 />
               </div>
 
               <div>
-                <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#9bb0a2', display: 'block', marginBottom: '4px' }}>
-                  Amount in PKR (Min {rates.min_withdraw || 500})
-                </label>
-                <input
-                  type="number"
-                  placeholder="e.g. 1000"
-                  value={witAmount}
-                  onChange={e => setWitAmount(e.target.value)}
-                  required
-                  min={rates.min_withdraw || 500}
-                  style={{
-                    width: '100%',
-                    padding: '11px 12px',
-                    borderRadius: '10px',
-                    background: '#101a14',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    color: '#ffffff',
-                    fontSize: '13px',
-                    boxSizing: 'border-box'
-                  }}
-                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 800, color: '#c4d7ca' }}>
+                    Withdrawal Amount (PKR) *
+                  </label>
+                  <span style={{ fontSize: '11px', color: '#ffd54f', fontWeight: 800 }}>
+                    Available: Rs {wallet ? parseFloat(wallet.balance).toFixed(2) : '0.00'}
+                  </span>
+                </div>
+                <div style={{
+                  background: '#101a14',
+                  border: '1.5px solid rgba(109, 255, 56, 0.3)',
+                  borderRadius: '12px',
+                  padding: '10px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <span style={{ fontSize: '14px', fontWeight: 900, color: '#6dff38' }}>Rs</span>
+                  <input
+                    type="number"
+                    placeholder={`Min ${rates.min_withdraw || 500}`}
+                    value={witAmount}
+                    onChange={e => setWitAmount(e.target.value)}
+                    required
+                    min={rates.min_withdraw || 500}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      outline: 'none',
+                      color: '#ffffff',
+                      fontSize: '15px',
+                      fontWeight: 800,
+                      width: '100%'
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setWitAmount(String(Math.floor(wallet ? parseFloat(wallet.balance) : 0)))}
+                    style={{
+                      background: 'rgba(109, 255, 56, 0.15)',
+                      border: '1px solid #6dff38',
+                      color: '#6dff38',
+                      fontSize: '10.5px',
+                      fontWeight: 900,
+                      borderRadius: '6px',
+                      padding: '3px 8px',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    ALL
+                  </button>
+                </div>
+              </div>
+
+              <div style={{
+                background: 'rgba(255, 213, 79, 0.08)',
+                border: '1px solid rgba(255, 213, 79, 0.25)',
+                borderRadius: '12px',
+                padding: '10px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '11px',
+                color: '#ffd54f'
+              }}>
+                <span>ℹ️</span>
+                <span>Submitting will immediately deduct the funds from your balance. The transaction will appear in <strong>My Records</strong> with status <strong>Pending</strong> until approved.</span>
               </div>
 
               <button
@@ -929,91 +1057,222 @@ export default function WalletPage() {
                 disabled={witLoading}
                 style={{
                   width: '100%',
-                  padding: '14px',
+                  padding: '15px',
                   borderRadius: '999px',
                   background: 'linear-gradient(90deg, #5ec831 0%, #43a31e 100%)',
                   border: 'none',
                   color: '#081a0b',
-                  fontSize: '15px',
+                  fontSize: '16px',
                   fontWeight: 900,
-                  cursor: 'pointer',
-                  marginTop: '6px'
+                  letterSpacing: '0.3px',
+                  cursor: witLoading ? 'not-allowed' : 'pointer',
+                  opacity: witLoading ? 0.7 : 1,
+                  boxShadow: '0 4px 18px rgba(94, 200, 49, 0.4)',
+                  marginTop: '4px'
                 }}
               >
-                {witLoading ? 'Submitting Request...' : 'Submit Payout Request'}
+                {witLoading ? 'Deducting & Submitting...' : 'Submit Withdrawal'}
               </button>
             </form>
           </div>
         )}
 
-        {/* DEPOSIT RECORDS / HISTORY TAB */}
-        {activeTab === 'history' && (
+        {/* DEDICATED MY RECORDS TAB */}
+        {activeTab === 'records' && (
           <div style={{
-            background: '#152219',
-            border: '1px solid rgba(109, 255, 56, 0.2)',
-            borderRadius: '16px',
-            padding: '16px'
+            background: 'linear-gradient(145deg, #16261d 0%, #101c15 100%)',
+            border: '1.5px solid rgba(109, 255, 56, 0.2)',
+            borderRadius: '20px',
+            padding: '18px 16px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.45)'
           }}>
-            <div style={{ fontSize: '15px', fontWeight: 800, color: '#ffffff', marginBottom: '14px' }}>
-              Transaction History
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+              <div style={{ fontSize: '17px', fontWeight: 900, color: '#ffffff' }}>
+                📋 My Transaction Records
+              </div>
+              <button
+                onClick={handleRefresh}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '50%',
+                  width: '30px',
+                  height: '30px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#6dff38',
+                  fontSize: '13px',
+                  cursor: 'pointer'
+                }}
+                className={refreshing ? 'coin-spin' : ''}
+                title="Refresh Records"
+              >
+                🔄
+              </button>
             </div>
 
-            {transactions.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '24px', color: '#7a8f82', fontSize: '12px' }}>
-                No recorded transactions yet.
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {transactions.map(tx => (
-                  <div
-                    key={tx.id || tx.tx_id}
+            {/* Filter Pills: All / Deposits / Withdrawals / Bonuses */}
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '14px', overflowX: 'auto', paddingBottom: '2px' }}>
+              {[
+                { id: 'all', label: 'All' },
+                { id: 'deposit', label: 'Deposits' },
+                { id: 'withdraw', label: 'Withdrawals' },
+                { id: 'payout', label: 'Bonuses & Wins' }
+              ].map(f => {
+                const isActive = recordsFilter === f.id
+                return (
+                  <button
+                    key={f.id}
+                    onClick={() => setRecordsFilter(f.id)}
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '12px',
-                      borderRadius: '12px',
-                      background: 'rgba(255, 255, 255, 0.03)',
-                      border: '1px solid rgba(255, 255, 255, 0.06)'
+                      padding: '6px 14px',
+                      borderRadius: '999px',
+                      background: isActive ? '#70e434' : 'rgba(255, 255, 255, 0.05)',
+                      color: isActive ? '#081a0b' : '#c4d7ca',
+                      border: isActive ? '1px solid #85f34b' : '1px solid rgba(255, 255, 255, 0.08)',
+                      fontSize: '11.5px',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.15s ease'
                     }}
                   >
-                    <div>
-                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#ffffff' }}>
-                        {tx.type === 'deposit' ? '🟢 Deposit' : '🔴 Withdrawal'} ({tx.method || tx.metadata?.channel || 'QR / P2P'})
-                      </div>
-                      {tx.metadata?.tid && (
-                        <div style={{ fontSize: '11px', color: '#6dff38', marginTop: '3px', fontFamily: 'monospace' }}>
-                          TID: {tx.metadata.tid}
-                        </div>
-                      )}
-                      <div style={{ fontSize: '10px', color: '#7a8f82', marginTop: '2px' }}>
-                        {new Date(tx.created_at).toLocaleString()}
-                      </div>
-                    </div>
+                    {f.label}
+                  </button>
+                )
+              })}
+            </div>
 
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{
-                        fontSize: '13.5px',
-                        fontWeight: 900,
-                        color: tx.type === 'deposit' ? '#6dff38' : '#ff3366'
-                      }}>
-                        {tx.type === 'deposit' ? '+' : '-'}Rs {parseFloat(tx.amount).toFixed(2)}
-                      </div>
-                      <span style={{
-                        fontSize: '9.5px',
-                        fontWeight: 900,
-                        padding: '2px 7px',
-                        borderRadius: '6px',
-                        background: tx.status === 'completed' ? 'rgba(109, 255, 56, 0.15)' : 'rgba(255, 184, 0, 0.15)',
-                        color: tx.status === 'completed' ? '#6dff38' : '#ffd54f'
-                      }}>
-                        {tx.status}
-                      </span>
-                    </div>
+            {/* Records List */}
+            {(() => {
+              const filtered = transactions.filter(tx => {
+                if (recordsFilter === 'all') return true
+                if (recordsFilter === 'deposit') return tx.type === 'deposit'
+                if (recordsFilter === 'withdraw') return tx.type === 'withdraw'
+                if (recordsFilter === 'payout') return tx.type === 'payout' || tx.type === 'bonus' || tx.type === 'win'
+                return true
+              })
+
+              if (filtered.length === 0) {
+                return (
+                  <div style={{ textAlign: 'center', padding: '36px 16px', color: '#7a8f82', fontSize: '13px' }}>
+                    <div style={{ fontSize: '32px', marginBottom: '8px' }}>📂</div>
+                    No {recordsFilter === 'all' ? '' : recordsFilter} records found.
                   </div>
-                ))}
-              </div>
-            )}
+                )
+              }
+
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {filtered.map(tx => {
+                    const isCredit = tx.type === 'deposit' || tx.type === 'payout' || tx.type === 'bonus' || tx.type === 'win'
+                    const statusStr = (tx.status || 'pending').toLowerCase()
+                    const isApproved = statusStr === 'completed' || statusStr === 'approved' || statusStr === 'success'
+                    const isPending = statusStr === 'pending' || statusStr === 'processing'
+                    const isRejected = statusStr === 'rejected' || statusStr === 'failed' || statusStr === 'cancelled'
+
+                    const tidCode = tx.metadata?.tid || tx.metadata?.transaction_id || tx.transaction_id || tx.id || tx.tx_id
+
+                    return (
+                      <div
+                        key={tx.id || tx.tx_id || `${tx.created_at}-${tx.amount}`}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '12px 14px',
+                          borderRadius: '14px',
+                          background: 'rgba(0, 0, 0, 0.35)',
+                          border: '1px solid rgba(255, 255, 255, 0.06)'
+                        }}
+                      >
+                        <div style={{ flex: 1, minWidth: 0, marginRight: '10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontSize: '14px' }}>
+                              {tx.type === 'deposit' ? '🟢' : tx.type === 'withdraw' ? '🔴' : '🎁'}
+                            </span>
+                            <span style={{ fontSize: '13.5px', fontWeight: 800, color: '#ffffff', textTransform: 'capitalize' }}>
+                              {tx.type === 'withdraw' ? 'Withdrawal' : tx.type === 'deposit' ? 'Deposit' : 'Bonus Reward'}
+                            </span>
+                          </div>
+
+                          <div style={{ fontSize: '11px', color: '#9bb0a2', marginTop: '3px' }}>
+                            {tx.method || tx.metadata?.channel || tx.metadata?.bank_name || 'Direct Transfer'}
+                          </div>
+
+                          {tx.notes && (
+                            <div style={{ fontSize: '10px', color: '#7a8f82', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {tx.notes}
+                            </div>
+                          )}
+
+                          <div style={{ fontSize: '9.5px', color: '#55665b', marginTop: '4px' }}>
+                            {new Date(tx.created_at || Date.now()).toLocaleString('en-PK', {
+                              dateStyle: 'medium',
+                              timeStyle: 'short'
+                            })}
+                          </div>
+                        </div>
+
+                        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                          <div style={{
+                            fontSize: '14.5px',
+                            fontWeight: 900,
+                            color: isCredit ? '#6dff38' : '#ff4d6d',
+                            letterSpacing: '0.2px'
+                          }}>
+                            {isCredit ? '+' : '-'}Rs {parseFloat(tx.amount || 0).toFixed(2)}
+                          </div>
+
+                          {/* Status Pill */}
+                          <span style={{
+                            fontSize: '10px',
+                            fontWeight: 900,
+                            padding: '2px 8px',
+                            borderRadius: '999px',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.4px',
+                            background: isApproved 
+                              ? 'rgba(109, 255, 56, 0.18)' 
+                              : isPending 
+                                ? 'rgba(255, 213, 79, 0.18)' 
+                                : 'rgba(255, 51, 102, 0.18)',
+                            color: isApproved 
+                              ? '#6dff38' 
+                              : isPending 
+                                ? '#ffd54f' 
+                                : '#ff4d6d',
+                            border: `1px solid ${isApproved ? 'rgba(109, 255, 56, 0.35)' : isPending ? 'rgba(255, 213, 79, 0.35)' : 'rgba(255, 51, 102, 0.35)'}`
+                          }}>
+                            {isApproved ? 'Approved' : isPending ? 'Pending' : 'Rejected'}
+                          </span>
+
+                          {tidCode && (
+                            <button
+                              type="button"
+                              onClick={() => copyToClipboard(String(tidCode), `tid-${tidCode}`)}
+                              style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: copiedField === `tid-${tidCode}` ? '#6dff38' : '#7a8f82',
+                                fontSize: '9.5px',
+                                fontFamily: 'monospace',
+                                cursor: 'pointer',
+                                padding: 0,
+                                marginTop: '2px'
+                              }}
+                            >
+                              {copiedField === `tid-${tidCode}` ? '✓ Copied' : `TID: ${String(tidCode).slice(0, 10)}...`}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })()}
           </div>
         )}
 

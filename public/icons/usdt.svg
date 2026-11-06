@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <linearGradient id="usdtGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#26a17b"/>
+      <stop offset="100%" stop-color="#196f53"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="44" height="44" rx="10" fill="url(#usdtGrad)"/>
+  <!-- Tether USDT Symbol -->
+  <path d="M24 12 C16.5 12 10.5 14.5 10.5 17.5 C10.5 20.2 15.3 22.4 21.5 22.9 L21.5 28.5 C17 28.3 13 27.2 13 25.8 L13 23.5 C11.5 23 10.5 22.2 10.5 21.2 L10.5 25.5 C10.5 28 15 30 21.5 30.5 L21.5 37 L26.5 37 L26.5 30.5 C33 30 37.5 28 37.5 25.5 L37.5 21.2 C37.5 22.2 36.5 23 35 23.5 L35 25.8 C35 27.2 31 28.3 26.5 28.5 L26.5 22.9 C32.7 22.4 37.5 20.2 37.5 17.5 C37.5 14.5 31.5 12 24 12 Z M24 20.8 C17.8 20.8 13.5 19.3 13.5 17.5 C13.5 15.7 17.8 14.2 24 14.2 C30.2 14.2 34.5 15.7 34.5 17.5 C34.5 19.3 30.2 20.8 24 20.8 Z" fill="#ffffff"/>
+  <rect x="18" y="16" width="12" height="3" fill="#ffffff"/>
+</svg>

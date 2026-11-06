@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <linearGradient id="epGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00a859"/>
+      <stop offset="100%" stop-color="#006837"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="44" height="44" rx="10" fill="url(#epGrad)"/>
+  <!-- Easypaisa iconic 'e' -->
+  <circle cx="24" cy="24" r="14" fill="#ffffff"/>
+  <circle cx="24" cy="24" r="8" fill="url(#epGrad)"/>
+  <rect x="22" y="10" width="12" height="6" rx="2" fill="#ffffff"/>
+  <path d="M24 16 L34 24 L24 24 Z" fill="#ffffff"/>
+  <text x="24" y="27" font-family="'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="12" fill="#ffffff" text-anchor="middle">e</text>
+  <text x="24" y="44" font-family="Arial, sans-serif" font-weight="900" font-size="6.5" fill="#ffffff" text-anchor="middle" letter-spacing="0.5">EASYPAISA</text>
+</svg>

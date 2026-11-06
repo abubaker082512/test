@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <linearGradient id="jcGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e60000"/>
+      <stop offset="100%" stop-color="#990000"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="44" height="44" rx="10" fill="url(#jcGrad)"/>
+  <!-- JazzCash Flame / Crown Emblem -->
+  <path d="M24 8 C25.5 13 30 16 30 21 C30 25.5 26.5 29 22 29 C24 26 23.5 24 22 22 C20 25 18 27 18 30 C18 35 22 39 27 39 C34 39 39 33 39 25 C39 16 29 11 24 8 Z" fill="#ffcc00"/>
+  <path d="M21 23 C22.5 26 24 27.5 24 30 C24 32.5 22 34.5 19.5 34.5 C17 34.5 15.5 32.5 15.5 30 C15.5 27 18 24.5 21 23 Z" fill="#ffffff"/>
+  <text x="24" y="44" font-family="Arial, sans-serif" font-weight="900" font-size="7" fill="#ffffff" text-anchor="middle" letter-spacing="0.5">JAZZCASH</text>
+</svg>

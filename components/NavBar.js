@@ -4,10 +4,12 @@ import { useAuth } from '../context/AuthContext'
 import AuthModal from './AuthModal'
 import SideDrawer from './SideDrawer'
 import CurrencyFlag from './CurrencyFlag'
+import InstallAppModal from './InstallAppModal'
 
 export default function NavBar({ onOpenPromoModal }) {
   const { user, logOut, isDemoMode, demoBalance, toggleDemoMode } = useAuth()
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [isInstallModalOpen, setIsInstallModalOpen] = useState(false)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [balance, setBalance] = useState(0.0)
   const [showMenu, setShowMenu] = useState(false)
@@ -70,10 +72,7 @@ export default function NavBar({ onOpenPromoModal }) {
             <button
               type="button"
               className="bbr-install-btn"
-              onClick={() => {
-                if (onOpenPromoModal) onOpenPromoModal()
-                else alert('WinX Pro Official Android & iOS Web App Ready! Add to Home Screen to claim PKR 8,888 bonus.')
-              }}
+              onClick={() => setIsInstallModalOpen(true)}
             >
               ⬇ Install
             </button>
@@ -305,6 +304,7 @@ export default function NavBar({ onOpenPromoModal }) {
         </div>
       </nav>
 
+      <InstallAppModal isOpen={isInstallModalOpen} onClose={() => setIsInstallModalOpen(false)} />
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       <SideDrawer 
         isOpen={isDrawerOpen} 

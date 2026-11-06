@@ -5,11 +5,13 @@ import NavBar from '../components/NavBar'
 import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
 import AuthModal from '../components/AuthModal'
+import InstallAppModal from '../components/InstallAppModal'
 
 export default function Profile() {
   const router = useRouter()
   const { user, logOut } = useAuth()
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [isInstallModalOpen, setIsInstallModalOpen] = useState(false)
   const [balance, setBalance] = useState(0.00)
   const [copiedField, setCopiedField] = useState(null)
   const [refreshing, setRefreshing] = useState(false)
@@ -158,7 +160,7 @@ export default function Profile() {
           <line x1="8" y1="17" x2="12" y2="17" />
         </svg>
       ),
-      action: () => router.push('/wallet')
+      action: () => router.push('/wallet?tab=records')
     },
     { 
       name: 'Manage withdrawal', 
@@ -261,7 +263,7 @@ export default function Profile() {
           <path d="M12 6v6m3-3-3 3-3-3" />
         </svg>
       ),
-      action: () => window.open('/android_builds/WinXPro-release.apk', '_blank')
+      action: () => setIsInstallModalOpen(true)
     },
     { 
       name: 'Night mode', 
@@ -792,6 +794,7 @@ export default function Profile() {
 
       </div>
 
+      <InstallAppModal isOpen={isInstallModalOpen} onClose={() => setIsInstallModalOpen(false)} />
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       <BottomNav />
     </div>

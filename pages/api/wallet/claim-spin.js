@@ -2,11 +2,11 @@ import { getUserWallet, creditUserBalance, recordTransactionRecord, getUserTrans
 import { updateWalletBalance, addTransaction } from '../../../utils/firebaseDb'
 
 const SPIN_PRIZES = [
-  { text: 'Pi 10.00 Free Bet', amount: 10.00 },
-  { text: 'Pi 88.88 Lucky Reward', amount: 88.88 },
-  { text: 'Pi 155.55 Referral Bonus', amount: 155.55 },
+  { text: 'Rs 10.00 Free Bet', amount: 10.00 },
+  { text: 'Rs 88.88 Lucky Reward', amount: 88.88 },
+  { text: 'Rs 155.55 Bonus Reward', amount: 155.55 },
   { text: 'Try Again Tomorrow', amount: 0.00 },
-  { text: 'Pi 8,888.00 MEGA JACKPOT!', amount: 8888.00 }
+  { text: 'Rs 8,888.00 MEGA JACKPOT!', amount: 8888.00 }
 ]
 
 export default async function handler(req, res) {

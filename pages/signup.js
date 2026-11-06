@@ -122,10 +122,10 @@ export default function SignupPage() {
               Welcome Registration Gift
             </div>
             <div style={{ fontSize: '13px', color: '#00e676', fontWeight: 800, marginTop: '2px' }}>
-              Instant <span style={{ textDecoration: 'underline' }}>Pi 100.00 Free Cash</span> credited upon signup!
+              Instant <span style={{ textDecoration: 'underline' }}>Rs 100.00 Free Cash</span> credited upon signup!
             </div>
             <div style={{ fontSize: '11px', color: '#ffd700', marginTop: '2px', fontWeight: 600 }}>
-              💸 Refer friends to earn Pi 155.55 + 5% lifetime rebate
+              💸 Refer friends to earn Rs 155.55 + 5% lifetime rebate
             </div>
           </div>
         </div>

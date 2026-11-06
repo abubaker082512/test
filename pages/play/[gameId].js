@@ -45,12 +45,14 @@ export default function PlayGame() {
   const activeUser = user || {
     id: 'guest_player',
     uid: 'guest_player',
-    email: 'guest@winxpro.com.pk',
-    displayName: 'Guest Player'
+    email: '',
+    displayName: 'Player'
   }
 
-  // Active wallet balance
-  const activeBalance = wallet && wallet.balance !== undefined ? parseFloat(wallet.balance) : 150.0
+  // Active wallet balance (strict single-source-of-truth from walletStore/Firestore)
+  const activeBalance = wallet && wallet.balance !== undefined 
+    ? parseFloat(wallet.balance) 
+    : (user?.balance !== undefined ? parseFloat(user.balance) : 0.0)
 
   // Fetch real wallet balance
   const fetchWallet = async () => {
@@ -68,6 +70,8 @@ export default function PlayGame() {
   useEffect(() => {
     if (!authLoading) {
       fetchWallet()
+      const poll = setInterval(fetchWallet, 4000)
+      return () => clearInterval(poll)
     }
     const onWalletUpdated = () => fetchWallet()
     window.addEventListener('wallet-updated', onWalletUpdated)
@@ -100,7 +104,8 @@ export default function PlayGame() {
     setLaunchLoading(true)
     setLaunchError(null)
 
-    const cleanUser = (activeUser.email || activeUser.displayName || 'player')
+    const rawId = user ? (user.id || user.uid || user.email || 'player') : 'guest_player'
+    const cleanUser = String(rawId)
       .split('@')[0]
       .replace(/[^a-zA-Z0-9_-]/g, '')
       .slice(0, 24) || 'player'
@@ -111,8 +116,8 @@ export default function PlayGame() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           gameid: resolvedTargetId,
-          user_id: activeUser.id || activeUser.uid || cleanUser,
-          email: activeUser.email || '',
+          user_id: user ? (user.id || user.uid || cleanUser) : 'guest_player',
+          email: user?.email || '',
           demo: isDemoMode,
           device: 'mobile'
         })
@@ -143,10 +148,10 @@ export default function PlayGame() {
   }
 
   useEffect(() => {
-    if (resolvedTargetId) {
+    if (resolvedTargetId && !authLoading) {
       launchSoftAggregatorGame()
     }
-  }, [resolvedTargetId, isDemoMode, user])
+  }, [resolvedTargetId, isDemoMode, user, authLoading])
 
   const toggleFullscreen = () => {
     try {
