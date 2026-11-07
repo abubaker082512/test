@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import CurrencyFlag from '../../components/CurrencyFlag'
 
 const ADMIN_PASSWORD = 'Admin@123'
@@ -52,7 +52,7 @@ export default function AdminPanel() {
   // Search query
   const [searchQuery, setSearchQuery] = useState('')
 
-  // 24/7 Live Support Chat states
+  // 24/7 Live Support Chat states (persisted & retained)
   const [chatThreads, setChatThreads] = useState([])
   const [selectedChatUser, setSelectedChatUser] = useState(null)
   const [chatMessages, setChatMessages] = useState([])
@@ -60,6 +60,7 @@ export default function AdminPanel() {
   const [adminReplyImage, setAdminReplyImage] = useState(null)
   const [adminReplyLoading, setAdminReplyLoading] = useState(false)
   const [chatSearch, setChatSearch] = useState('')
+  const adminChatEndRef = useRef(null)
 
   // Transaction Category Sub-Filters
   const [autoTxFilter, setAutoTxFilter] = useState('all') // 'all' | 'completed' | 'failed' | 'pending'
@@ -356,6 +357,13 @@ export default function AdminPanel() {
       return () => clearInterval(poll)
     }
   }, [authed, selectedChatUser])
+
+  // Auto scroll chat to latest message for admin
+  useEffect(() => {
+    if (chatMessages.length > 0) {
+      adminChatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [chatMessages])
 
   // Refresh immediately when clicking the support tab
   useEffect(() => {
@@ -2476,7 +2484,8 @@ export default function AdminPanel() {
                       flex: 1,
                       padding: '16px',
                       overflowY: 'auto',
-                      maxHeight: '460px',
+                      minHeight: '460px',
+                      maxHeight: '580px',
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '12px',
@@ -2546,6 +2555,7 @@ export default function AdminPanel() {
                           )
                         })
                       )}
+                      <div ref={adminChatEndRef} />
                     </div>
 
                     {/* Quick Reply Chips */}

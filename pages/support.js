@@ -255,24 +255,7 @@ export default function Support() {
     }
   }
 
-  const clearChatHistory = () => {
-    if (confirm('Clear support conversation history on this device?')) {
-      const reset = [
-        {
-          id: 'welcome',
-          sender: 'agent',
-          admin_name: 'WinX Pro Official VIP Support',
-          text: '👋 Assalam-o-Alaikum! Welcome to WinX Pro Official 24/7 VIP Support. How can we help you with your deposits, withdrawals, or games today?',
-          time: 'Just now',
-          timestamp: Date.now()
-        }
-      ]
-      setMessages(reset)
-      if (typeof window !== 'undefined' && userKey) {
-        localStorage.removeItem(`winx_support_messages_${userKey}`)
-      }
-    }
-  }
+
 
   return (
     <div className="app bbr-theme-app" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#070a14' }}>
@@ -498,22 +481,7 @@ export default function Support() {
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button
-                  type="button"
-                  onClick={clearChatHistory}
-                  title="Clear conversation"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.08)',
-                    border: 'none',
-                    color: '#94a3b8',
-                    padding: '4px 8px',
-                    borderRadius: '6px',
-                    fontSize: '11px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Clear
-                </button>
+
                 <button
                   type="button"
                   onClick={() => setChatOpen(false)}
