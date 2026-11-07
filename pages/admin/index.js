@@ -283,9 +283,12 @@ export default function AdminPanel() {
       const data = await res.json()
       if (data.success && Array.isArray(data.threads)) {
         setChatThreads(data.threads)
-        if (!selectedChatUser && data.threads.length > 0) {
-          setSelectedChatUser(data.threads[0].user_key)
-        }
+        setSelectedChatUser(prev => {
+          if (prev && data.threads.some(t => t.user_key === prev)) {
+            return prev
+          }
+          return data.threads.length > 0 ? data.threads[0].user_key : null
+        })
       }
     } catch (e) {}
   }
@@ -336,13 +339,31 @@ export default function AdminPanel() {
     await Promise.all([fetchLiveAnalytics(), fetchRiskConfig()])
   }
 
+  // Poll all support chat threads regularly so admin sees incoming chats instantly
+  useEffect(() => {
+    if (authed) {
+      fetchChatThreads()
+      const poll = setInterval(fetchChatThreads, 3000)
+      return () => clearInterval(poll)
+    }
+  }, [authed])
+
+  // Poll active thread messages
   useEffect(() => {
     if (authed && selectedChatUser) {
       fetchActiveThreadMessages(selectedChatUser)
-      const poll = setInterval(() => fetchActiveThreadMessages(selectedChatUser), 3000)
+      const poll = setInterval(() => fetchActiveThreadMessages(selectedChatUser), 2000)
       return () => clearInterval(poll)
     }
   }, [authed, selectedChatUser])
+
+  // Refresh immediately when clicking the support tab
+  useEffect(() => {
+    if (authed && activeTab === 'support') {
+      fetchChatThreads()
+      if (selectedChatUser) fetchActiveThreadMessages(selectedChatUser)
+    }
+  }, [authed, activeTab])
 
   useEffect(() => {
     if (authed) {

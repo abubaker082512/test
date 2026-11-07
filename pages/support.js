@@ -10,8 +10,22 @@ export default function Support() {
   // Default to live chat open directly so user can chat immediately
   const [chatOpen, setChatOpen] = useState(true)
   
-  // Stable userKey computation: either user's email, or persistent guest id from localStorage
-  const [userKey, setUserKey] = useState('')
+  const resolveUserKey = () => {
+    if (user?.email) return user.email.toLowerCase().trim()
+    if (user?.id) return String(user.id).trim()
+    if (user?.uid) return String(user.uid).trim()
+    if (typeof window !== 'undefined') {
+      let guestId = localStorage.getItem('winx_guest_user_key')
+      if (!guestId) {
+        guestId = 'guest_' + Math.random().toString(36).substring(2, 9)
+        localStorage.setItem('winx_guest_user_key', guestId)
+      }
+      return guestId
+    }
+    return 'guest'
+  }
+
+  const [userKey, setUserKey] = useState('guest')
 
   const [messages, setMessages] = useState([
     {
@@ -35,51 +49,33 @@ export default function Support() {
   const audioChunksRef = useRef([])
   const timerIntervalRef = useRef(null)
 
-  // Initialize persistent userKey
+  // Keep userKey synced
   useEffect(() => {
-    let key = ''
-    if (user?.email) {
-      key = user.email.toLowerCase().trim()
-    } else if (user?.id || user?.uid) {
-      key = String(user.id || user.uid).trim()
-    } else if (typeof window !== 'undefined') {
-      let guestId = localStorage.getItem('winx_guest_user_key')
-      if (!guestId) {
-        guestId = 'guest_' + Math.random().toString(36).substring(2, 9)
-        localStorage.setItem('winx_guest_user_key', guestId)
-      }
-      key = guestId
-    } else {
-      key = 'guest'
-    }
-    setUserKey(key)
+    const k = resolveUserKey()
+    setUserKey(k)
   }, [user])
 
   // Load chat history from server & localStorage
-  const fetchServerMessages = async (targetKey = userKey) => {
-    if (!targetKey) return
+  const fetchServerMessages = async (targetKey = null) => {
+    const activeKey = targetKey || resolveUserKey()
+    if (!activeKey) return
     try {
-      const res = await fetch(`/api/support/messages?user_key=${encodeURIComponent(targetKey)}`)
+      const res = await fetch(`/api/support/messages?user_key=${encodeURIComponent(activeKey)}`)
       const data = await res.json()
       if (data.success && Array.isArray(data.messages) && data.messages.length > 0) {
-        setMessages(prev => {
-          // Merge to preserve any pending message that hasn't completed
-          const serverIds = new Set(data.messages.map(m => m.id))
-          const pending = prev.filter(m => m.id && m.id.startsWith('temp_') && !serverIds.has(m.id))
-          return [...data.messages, ...pending]
-        })
+        setMessages(data.messages)
         try {
-          localStorage.setItem(`winx_support_messages_${targetKey}`, JSON.stringify(data.messages))
+          localStorage.setItem(`winx_support_messages_${activeKey}`, JSON.stringify(data.messages))
         } catch (e) {}
       }
     } catch (e) {}
   }
 
   useEffect(() => {
-    if (!userKey) return
+    const k = resolveUserKey()
     if (typeof window !== 'undefined') {
       try {
-        const saved = localStorage.getItem(`winx_support_messages_${userKey}`)
+        const saved = localStorage.getItem(`winx_support_messages_${k}`)
         if (saved) {
           const parsed = JSON.parse(saved)
           if (Array.isArray(parsed) && parsed.length > 0) {
@@ -88,10 +84,10 @@ export default function Support() {
         }
       } catch (e) {}
     }
-    fetchServerMessages(userKey)
-    const poll = setInterval(() => fetchServerMessages(userKey), 3000)
+    fetchServerMessages(k)
+    const poll = setInterval(() => fetchServerMessages(k), 2500)
     return () => clearInterval(poll)
-  }, [userKey])
+  }, [user])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -166,7 +162,7 @@ export default function Support() {
 
   const sendVoiceMessage = async (audioUrl, duration) => {
     if (!audioUrl) return
-    const activeKey = userKey || 'guest'
+    const activeKey = resolveUserKey()
     const tempId = `temp_${Date.now()}`
     const timeNow = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
     const newMsg = {
@@ -213,7 +209,7 @@ export default function Support() {
 
     if (!userText && !imgToSend) return
 
-    const activeKey = userKey || 'guest'
+    const activeKey = resolveUserKey()
     const tempId = `temp_${Date.now()}`
     const timeNow = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
     const newMsg = {
