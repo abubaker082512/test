@@ -6,28 +6,60 @@ const TMP_CHATS_FILE = path.join('/tmp', 'winxpro_support_chats.json')
 
 let memoryChats = {}
 
+function mergeThreads(target, source) {
+  if (!source || typeof source !== 'object') return target
+  for (const [k, thread] of Object.entries(source)) {
+    if (!thread || typeof thread !== 'object') continue
+    if (!target[k]) {
+      target[k] = { ...thread, messages: Array.isArray(thread.messages) ? [...thread.messages] : [] }
+    } else {
+      const existingIds = new Set(target[k].messages.map(m => m.id))
+      const sourceMessages = Array.isArray(thread.messages) ? thread.messages : []
+      for (const m of sourceMessages) {
+        if (!existingIds.has(m.id)) {
+          target[k].messages.push(m)
+          existingIds.add(m.id)
+        }
+      }
+      target[k].messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
+      target[k].updated_at = thread.updated_at || target[k].updated_at
+      if (thread.email) target[k].email = thread.email
+      if (thread.name) target[k].name = thread.name
+      if (thread.unread_admin !== undefined) target[k].unread_admin = thread.unread_admin
+      if (thread.unread_user !== undefined) target[k].unread_user = thread.unread_user
+    }
+  }
+  return target
+}
+
 function loadChats() {
   try {
     if (fs.existsSync(CHATS_FILE)) {
       const data = JSON.parse(fs.readFileSync(CHATS_FILE, 'utf8'))
-      memoryChats = { ...memoryChats, ...data }
-    } else if (fs.existsSync(TMP_CHATS_FILE)) {
+      mergeThreads(memoryChats, data)
+    }
+  } catch (e) {}
+
+  try {
+    if (fs.existsSync(TMP_CHATS_FILE)) {
       const data = JSON.parse(fs.readFileSync(TMP_CHATS_FILE, 'utf8'))
-      memoryChats = { ...memoryChats, ...data }
+      mergeThreads(memoryChats, data)
     }
   } catch (e) {}
 }
 
 function persistChats() {
+  // Always write to /tmp first so it succeeds reliably on serverless environments
+  try {
+    fs.writeFileSync(TMP_CHATS_FILE, JSON.stringify(memoryChats, null, 2), 'utf8')
+  } catch (err) {}
+
+  // Also write to local project directory if writable
   try {
     const dir = path.dirname(CHATS_FILE)
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
     fs.writeFileSync(CHATS_FILE, JSON.stringify(memoryChats, null, 2), 'utf8')
-  } catch (e) {
-    try {
-      fs.writeFileSync(TMP_CHATS_FILE, JSON.stringify(memoryChats, null, 2), 'utf8')
-    } catch (err) {}
-  }
+  } catch (e) {}
 }
 
 // Initial load

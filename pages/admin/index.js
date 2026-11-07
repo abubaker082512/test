@@ -2563,6 +2563,30 @@ export default function AdminPanel() {
                       ))}
                     </div>
 
+                    {/* Admin Image Attachment Preview */}
+                    {adminReplyImage && (
+                      <div style={{
+                        padding: '6px 14px',
+                        background: '#071018',
+                        borderTop: '1px solid rgba(0, 255, 136, 0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <img src={adminReplyImage} alt="Attachment" style={{ width: '36px', height: '36px', borderRadius: '4px', objectFit: 'cover' }} />
+                          <span style={{ fontSize: '11px', color: '#00ff88', fontWeight: 700 }}>Image ready to send</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setAdminReplyImage(null)}
+                          style={{ background: 'none', border: 'none', color: '#ff4444', fontSize: '14px', cursor: 'pointer' }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
+
                     {/* Message Composer */}
                     <form onSubmit={handleSendAdminReply} style={{
                       padding: '12px 14px',
@@ -2572,6 +2596,34 @@ export default function AdminPanel() {
                       gap: '10px',
                       alignItems: 'center'
                     }}>
+                      <label style={{
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '8px',
+                        background: 'rgba(255, 255, 255, 0.06)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        flexShrink: 0
+                      }}>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                              if (ev.target?.result) setAdminReplyImage(ev.target.result);
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                        />
+                        <span style={{ fontSize: '16px' }}>📷</span>
+                      </label>
                       <input
                         type="text"
                         placeholder="Type response to user..."

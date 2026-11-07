@@ -7,20 +7,24 @@ import { useAuth } from '../context/AuthContext'
 
 export default function Support() {
   const { user } = useAuth()
-  const [chatOpen, setChatOpen] = useState(false)
+  // Default to live chat open directly so user can chat immediately
+  const [chatOpen, setChatOpen] = useState(true)
   
-  const userKey = user ? (user.email || user.id || user.uid || 'guest') : 'guest'
+  // Stable userKey computation: either user's email, or persistent guest id from localStorage
+  const [userKey, setUserKey] = useState('')
 
   const [messages, setMessages] = useState([
     {
       id: 'welcome',
       sender: 'agent',
+      admin_name: 'WinX Pro Official VIP Support',
       text: '👋 Assalam-o-Alaikum! Welcome to WinX Pro Official 24/7 VIP Support. How can we help you with your deposits, withdrawals, or games today?',
-      time: 'Just now'
+      time: 'Just now',
+      timestamp: Date.now()
     }
   ])
   const [userInput, setUserInput] = useState('')
-  const [typing, setTyping] = useState(false)
+  const [sending, setSending] = useState(false)
   const [selectedImage, setSelectedImage] = useState(null)
   const [isRecording, setIsRecording] = useState(false)
   const [recordDuration, setRecordDuration] = useState(0)
@@ -31,22 +35,48 @@ export default function Support() {
   const audioChunksRef = useRef([])
   const timerIntervalRef = useRef(null)
 
-  // Load persistent chat history from server & localStorage
-  const fetchServerMessages = async () => {
-    if (!userKey) return
+  // Initialize persistent userKey
+  useEffect(() => {
+    let key = ''
+    if (user?.email) {
+      key = user.email.toLowerCase().trim()
+    } else if (user?.id || user?.uid) {
+      key = String(user.id || user.uid).trim()
+    } else if (typeof window !== 'undefined') {
+      let guestId = localStorage.getItem('winx_guest_user_key')
+      if (!guestId) {
+        guestId = 'guest_' + Math.random().toString(36).substring(2, 9)
+        localStorage.setItem('winx_guest_user_key', guestId)
+      }
+      key = guestId
+    } else {
+      key = 'guest'
+    }
+    setUserKey(key)
+  }, [user])
+
+  // Load chat history from server & localStorage
+  const fetchServerMessages = async (targetKey = userKey) => {
+    if (!targetKey) return
     try {
-      const res = await fetch(`/api/support/messages?user_key=${encodeURIComponent(userKey)}`)
+      const res = await fetch(`/api/support/messages?user_key=${encodeURIComponent(targetKey)}`)
       const data = await res.json()
       if (data.success && Array.isArray(data.messages) && data.messages.length > 0) {
-        setMessages(data.messages)
+        setMessages(prev => {
+          // Merge to preserve any pending message that hasn't completed
+          const serverIds = new Set(data.messages.map(m => m.id))
+          const pending = prev.filter(m => m.id && m.id.startsWith('temp_') && !serverIds.has(m.id))
+          return [...data.messages, ...pending]
+        })
         try {
-          localStorage.setItem(`winx_support_messages_${userKey}`, JSON.stringify(data.messages))
+          localStorage.setItem(`winx_support_messages_${targetKey}`, JSON.stringify(data.messages))
         } catch (e) {}
       }
     } catch (e) {}
   }
 
   useEffect(() => {
+    if (!userKey) return
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem(`winx_support_messages_${userKey}`)
@@ -58,26 +88,19 @@ export default function Support() {
         }
       } catch (e) {}
     }
-    fetchServerMessages()
-    const poll = setInterval(fetchServerMessages, 3500)
+    fetchServerMessages(userKey)
+    const poll = setInterval(() => fetchServerMessages(userKey), 3000)
     return () => clearInterval(poll)
   }, [userKey])
-
-  // Save persistent chat history on change
-  useEffect(() => {
-    if (typeof window !== 'undefined' && messages.length > 1) {
-      try {
-        localStorage.setItem(`winx_support_messages_${userKey}`, JSON.stringify(messages))
-      } catch (e) {}
-    }
-  }, [messages, userKey])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
   useEffect(() => {
-    if (chatOpen) scrollToBottom()
+    if (chatOpen) {
+      scrollToBottom()
+    }
   }, [messages, chatOpen])
 
   // Handle Image Upload
@@ -142,7 +165,10 @@ export default function Support() {
   }
 
   const sendVoiceMessage = async (audioUrl, duration) => {
-    const tempId = `msg-${Date.now()}`
+    if (!audioUrl) return
+    const activeKey = userKey || 'guest'
+    const tempId = `temp_${Date.now()}`
+    const timeNow = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
     const newMsg = {
       id: tempId,
       sender: 'user',
@@ -151,35 +177,45 @@ export default function Support() {
       audio: audioUrl,
       duration: duration || 1,
       audio_duration: duration || 1,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      time: timeNow,
+      timestamp: Date.now()
     }
     setMessages(prev => [...prev, newMsg])
 
     try {
-      await fetch('/api/support/messages', {
+      const res = await fetch('/api/support/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_key: userKey,
-          email: user?.email || userKey,
-          name: user?.user_metadata?.full_name || user?.email || userKey,
+          user_key: activeKey,
+          email: user?.email || activeKey,
+          name: user?.user_metadata?.full_name || user?.displayName || user?.email || activeKey,
           audio: audioUrl,
           audio_duration: duration || 1
         })
       })
-    } catch (e) {}
-
-    triggerAgentReply('voice note')
+      const data = await res.json()
+      if (data.success && Array.isArray(data.messages)) {
+        setMessages(data.messages)
+        try {
+          localStorage.setItem(`winx_support_messages_${activeKey}`, JSON.stringify(data.messages))
+        } catch (e) {}
+      }
+    } catch (e) {
+      console.error('Error sending voice message:', e)
+    }
   }
 
-  const handleSend = async (e) => {
-    e?.preventDefault()
-    if (!userInput.trim() && !selectedImage) return
-
-    const userText = userInput.trim()
+  const handleSend = async (e, textOverride = null) => {
+    if (e) e.preventDefault()
+    const userText = textOverride !== null ? String(textOverride).trim() : userInput.trim()
     const imgToSend = selectedImage
 
-    const tempId = `msg-${Date.now()}`
+    if (!userText && !imgToSend) return
+
+    const activeKey = userKey || 'guest'
+    const tempId = `temp_${Date.now()}`
+    const timeNow = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
     const newMsg = {
       id: tempId,
       sender: 'user',
@@ -187,75 +223,56 @@ export default function Support() {
       text: userText || (imgToSend ? 'Sent an image attachment' : ''),
       imageUrl: imgToSend || null,
       image: imgToSend || null,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      time: timeNow,
+      timestamp: Date.now()
     }
 
     setMessages(prev => [...prev, newMsg])
     setUserInput('')
     setSelectedImage(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+    setSending(true)
 
     try {
-      await fetch('/api/support/messages', {
+      const res = await fetch('/api/support/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_key: userKey,
-          email: user?.email || userKey,
-          name: user?.user_metadata?.full_name || user?.email || userKey,
+          user_key: activeKey,
+          email: user?.email || activeKey,
+          name: user?.user_metadata?.full_name || user?.displayName || user?.email || activeKey,
           text: userText,
           image: imgToSend
         })
       })
-    } catch (e) {}
-
-    triggerAgentReply(userText)
-  }
-
-  const triggerAgentReply = (queryText) => {
-    setTyping(true)
-
-    setTimeout(() => {
-      let reply = "Thank you for reaching out to WinX Official Support. Our 24/7 senior agent has received your request and is reviewing your account details."
-      
-      const textLower = (queryText || '').toLowerCase()
-      if (textLower.includes('deposit') || textLower.includes('recharge') || textLower.includes('jazzcash') || textLower.includes('easypaisa') || textLower.includes('qr')) {
-        reply = "💳 Deposit Status: JazzCash & Easypaisa QR deposits are credited instantly once verified. Please share the 11-digit Transaction ID (TID) from your receipt slip if you need us to speed up manual approval!"
-      } else if (textLower.includes('withdraw') || textLower.includes('bank') || textLower.includes('payout')) {
-        reply = "🏧 Withdrawal Inquiry: Minimum withdrawal is Rs 500. All Bank Transfer (1LINK), JazzCash, and Easypaisa requests are debited immediately and settled to your account within 10 to 60 minutes."
-      } else if (textLower.includes('bonus') || textLower.includes('free') || textLower.includes('claim')) {
-        reply = "🎁 Bonus & Rewards: Daily check-in gives Rs 5.00 everyday, first deposit gets a +35% instant bonus, and referring friends awards Rs 100 per friend! All bonuses credit directly into your PKR balance."
-      } else if (textLower.includes('game') || textLower.includes('aviator') || textLower.includes('jili') || textLower.includes('pg') || textLower.includes('pragmatic')) {
-        reply = "🎰 Game Support: Over 11,200 games from JILI, PG Soft, Spribe Aviator, and Pragmatic Play are fully operational with real-time PKR wallet balance sync!"
-      } else if (textLower.includes('voice note') || textLower.includes('image')) {
-        reply = "🎧 We have received your attachment/voice note! Our technical team is reviewing it right now."
+      const data = await res.json()
+      if (data.success && Array.isArray(data.messages)) {
+        setMessages(data.messages)
+        try {
+          localStorage.setItem(`winx_support_messages_${activeKey}`, JSON.stringify(data.messages))
+        } catch (e) {}
       }
-
-      setMessages(prev => [
-        ...prev,
-        {
-          id: `reply-${Date.now()}`,
-          sender: 'agent',
-          type: 'text',
-          text: reply,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }
-      ])
-      setTyping(false)
-    }, 1400)
+    } catch (e) {
+      console.error('Failed to post support message:', e)
+    } finally {
+      setSending(false)
+    }
   }
 
   const clearChatHistory = () => {
-    if (confirm('Clear support conversation history?')) {
+    if (confirm('Clear support conversation history on this device?')) {
       const reset = [
         {
           id: 'welcome',
           sender: 'agent',
-          text: '👋 Assalam-o-Alaikum! Welcome to WinX Pro Official 24/7 VIP Support. How can we help you today?',
-          time: 'Just now'
+          admin_name: 'WinX Pro Official VIP Support',
+          text: '👋 Assalam-o-Alaikum! Welcome to WinX Pro Official 24/7 VIP Support. How can we help you with your deposits, withdrawals, or games today?',
+          time: 'Just now',
+          timestamp: Date.now()
         }
       ]
       setMessages(reset)
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && userKey) {
         localStorage.removeItem(`winx_support_messages_${userKey}`)
       }
     }
@@ -269,10 +286,11 @@ export default function Support() {
 
       <NavBar />
       
-      <div style={{ flex: 1, padding: '16px 14px 80px', maxWidth: '480px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+      <div style={{ flex: 1, padding: '12px 14px 80px', maxWidth: '520px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
         
         {!chatOpen ? (
           <div>
+            {/* Header Banner */}
             <div style={{
               background: 'linear-gradient(135deg, #0e1e14 0%, #173622 60%, #0a140d 100%)',
               borderRadius: '20px',
@@ -292,6 +310,7 @@ export default function Support() {
               </p>
             </div>
             
+            {/* Action Buttons */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
               <button 
                 type="button"
@@ -317,17 +336,17 @@ export default function Support() {
               </button>
               
               <a href="mailto:support@winxpro.com.pk" style={{ textDecoration: 'none' }}>
-                <button
+                <button 
                   type="button"
                   style={{
                     width: '100%',
                     padding: '14px',
-                    borderRadius: '12px',
-                    background: '#121c15',
+                    borderRadius: '14px',
+                    background: '#131b26',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                     color: '#ffffff',
                     fontWeight: 800,
-                    fontSize: '13px',
+                    fontSize: '14px',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -340,18 +359,18 @@ export default function Support() {
                 </button>
               </a>
 
-              <a href="https://t.me/winxpro_official" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                <button
+              <a href="https://t.me/winxpro_official" target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
+                <button 
                   type="button"
                   style={{
                     width: '100%',
                     padding: '14px',
-                    borderRadius: '12px',
-                    background: '#121c15',
+                    borderRadius: '14px',
+                    background: '#131b26',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                     color: '#ffffff',
                     fontWeight: 800,
-                    fontSize: '13px',
+                    fontSize: '14px',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -360,13 +379,18 @@ export default function Support() {
                   }}
                 >
                   <span style={{ fontSize: '18px' }}>📱</span>
-                  <span>Connect on Telegram (@winxpro_official)</span>
+                  <span>Connect on Telegram</span>
                 </button>
               </a>
             </div>
 
             {/* FAQs */}
-            <div style={{ background: '#121c15', padding: '18px 16px', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+            <div style={{
+              background: '#0d1520',
+              borderRadius: '16px',
+              padding: '18px',
+              border: '1px solid rgba(255, 255, 255, 0.08)'
+            }}>
               <div style={{ fontSize: '13.5px', fontWeight: 900, color: '#ffffff', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span>💡</span>
                 <span>Frequently Asked Questions</span>
@@ -388,7 +412,7 @@ export default function Support() {
             </div>
           </div>
         ) : (
-          /* AKHUWAT-GRADE 24/7 INTERACTIVE LIVE CHAT ROOM */
+          /* WINX PRO 24/7 INTERACTIVE LIVE CHAT ROOM */
           <div style={{
             background: '#0d1510',
             border: '1.5px solid #6dff38',
@@ -396,7 +420,7 @@ export default function Support() {
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
-            height: 'calc(100vh - 150px)',
+            height: 'calc(100vh - 145px)',
             boxShadow: '0 12px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(109, 255, 56, 0.2)'
           }}>
             {/* Verified Support Header */}
@@ -412,6 +436,7 @@ export default function Support() {
                 <button
                   type="button"
                   onClick={() => setChatOpen(false)}
+                  title="View FAQ & Contact Info"
                   style={{
                     background: 'none',
                     border: 'none',
@@ -459,19 +484,19 @@ export default function Support() {
                       display: 'inline-flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      width: '14px',
-                      height: '14px',
+                      width: '15px',
+                      height: '15px',
                       borderRadius: '50%',
                       background: '#38bdf8',
                       color: '#081a0b',
-                      fontSize: '9px',
+                      fontSize: '10px',
                       fontWeight: 900
                     }}>
                       ✓
                     </span>
                   </div>
-                  <div style={{ fontSize: '10px', color: '#6dff38', fontWeight: 700 }}>
-                    ● Online 24/7 Dedicated Support
+                  <div style={{ fontSize: '10.5px', color: '#6dff38', fontWeight: 700 }}>
+                    ● Online 24/7 Dedicated VIP Support
                   </div>
                 </div>
               </div>
@@ -499,7 +524,7 @@ export default function Support() {
                   style={{
                     background: 'none',
                     border: 'none',
-                    color: '#ef4444',
+                    color: '#94a3b8',
                     fontSize: '16px',
                     cursor: 'pointer',
                     fontWeight: 900
@@ -519,27 +544,30 @@ export default function Support() {
               overflowX: 'auto',
               borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
             }}>
-              {['💳 Deposit Help', '🏧 Withdrawal Status', '🎁 Bonus Details', '🎰 Game Issue'].map((chip, idx) => (
+              {[
+                { label: '💳 Deposit Help', query: 'I need assistance regarding my deposit / recharge.' },
+                { label: '🏧 Withdrawal Status', query: 'Please check the status of my withdrawal request.' },
+                { label: '🎁 VIP Bonus Details', query: 'How do I claim my VIP bonus or daily check-in reward?' },
+                { label: '🎰 Game Issue', query: 'I need help with a casino/slots game.' }
+              ].map((chip, idx) => (
                 <button
                   key={idx}
                   type="button"
-                  onClick={() => {
-                    setUserInput(chip)
-                    setTimeout(() => handleSend(), 50)
-                  }}
+                  onClick={() => handleSend(null, chip.query)}
                   style={{
                     background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
                     color: '#cbd5e1',
                     borderRadius: '12px',
-                    padding: '4px 10px',
-                    fontSize: '10.5px',
+                    padding: '5px 10px',
+                    fontSize: '11px',
                     fontWeight: 700,
                     whiteSpace: 'nowrap',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    flexShrink: 0
                   }}
                 >
-                  {chip}
+                  {chip.label}
                 </button>
               ))}
             </div>
@@ -560,7 +588,7 @@ export default function Support() {
                   <div
                     key={m.id}
                     style={{
-                      maxWidth: '82%',
+                      maxWidth: '84%',
                       alignSelf: isUser ? 'flex-end' : 'flex-start',
                       display: 'flex',
                       flexDirection: 'column',
@@ -581,9 +609,9 @@ export default function Support() {
                       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
                     }}>
                       {/* Agent / Admin Name Header */}
-                      {!isUser && m.admin_name && (
+                      {!isUser && (
                         <div style={{ fontSize: '10.5px', color: '#6dff38', fontWeight: 800, marginBottom: '4px' }}>
-                          🛡️ {m.admin_name}
+                          🛡️ {m.admin_name || 'WinX Pro Support Agent'}
                         </div>
                       )}
 
@@ -593,16 +621,19 @@ export default function Support() {
                       {/* Image Attachment */}
                       {(m.imageUrl || m.image) && (
                         <div style={{ marginTop: m.text ? '8px' : 0 }}>
-                          <img
-                            src={m.imageUrl || m.image}
-                            alt="Attachment"
-                            style={{
-                              maxWidth: '100%',
-                              maxHeight: '180px',
-                              borderRadius: '8px',
-                              display: 'block'
-                            }}
-                          />
+                          <a href={m.imageUrl || m.image} target="_blank" rel="noreferrer">
+                            <img
+                              src={m.imageUrl || m.image}
+                              alt="Attachment"
+                              style={{
+                                maxWidth: '100%',
+                                maxHeight: '200px',
+                                borderRadius: '8px',
+                                display: 'block',
+                                border: '1px solid rgba(0,0,0,0.2)'
+                              }}
+                            />
+                          </a>
                         </div>
                       )}
 
@@ -610,7 +641,7 @@ export default function Support() {
                       {(m.audioUrl || m.audio) && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '160px', marginTop: '4px' }}>
                           <span style={{ fontSize: '18px' }}>🎙</span>
-                          <audio controls src={m.audioUrl || m.audio} style={{ width: '180px', height: '32px' }} />
+                          <audio controls src={m.audioUrl || m.audio} style={{ width: '190px', height: '32px' }} />
                         </div>
                       )}
                     </div>
@@ -627,24 +658,6 @@ export default function Support() {
                 )
               })}
 
-              {typing && (
-                <div style={{
-                  alignSelf: 'flex-start',
-                  color: '#6dff38',
-                  fontSize: '11.5px',
-                  background: '#142218',
-                  padding: '6px 12px',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(109, 255, 56, 0.2)',
-                  fontStyle: 'italic',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}>
-                  <span>✍️</span> WinX Agent is typing...
-                </div>
-              )}
-
               <div ref={messagesEndRef} />
             </div>
 
@@ -659,12 +672,15 @@ export default function Support() {
                 borderTop: '1px solid rgba(255, 255, 255, 0.08)'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <img src={selectedImage} alt="Preview" style={{ width: '36px', height: '36px', borderRadius: '6px', objectFit: 'cover' }} />
+                  <img src={selectedImage} alt="Preview" style={{ width: '38px', height: '38px', borderRadius: '6px', objectFit: 'cover' }} />
                   <span style={{ fontSize: '11px', color: '#6dff38', fontWeight: 700 }}>Image Ready to Send</span>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setSelectedImage(null)}
+                  onClick={() => {
+                    setSelectedImage(null)
+                    if (fileInputRef.current) fileInputRef.current.value = ''
+                  }}
                   style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '16px', cursor: 'pointer' }}
                 >
                   ✕
@@ -783,13 +799,13 @@ export default function Support() {
                   fontSize: '13px',
                   outline: 'none'
                 }}
-                disabled={typing || isRecording}
+                disabled={isRecording}
               />
 
               {/* Send Button */}
               <button 
                 type="submit" 
-                disabled={typing || isRecording || (!userInput.trim() && !selectedImage)}
+                disabled={isRecording || sending || (!userInput.trim() && !selectedImage)}
                 style={{
                   width: '38px',
                   height: '36px',
