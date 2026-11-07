@@ -123,6 +123,47 @@ export function saveChatMessage(userKey, msg) {
   return { success: true, message: newMsg, thread }
 }
 
+export function syncClientMessages(userKey, clientMessages, email = '', name = '') {
+  loadChats()
+  const key = (userKey || 'guest').toLowerCase().trim()
+  const thread = getChatThread(key)
+  const existingIds = new Set(thread.messages.map(m => m.id))
+  let added = false
+  if (Array.isArray(clientMessages)) {
+    for (const m of clientMessages) {
+      if (m && m.id && !existingIds.has(m.id)) {
+        thread.messages.push(m)
+        existingIds.add(m.id)
+        added = true
+      }
+    }
+  }
+  if (added) {
+    thread.messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
+    thread.updated_at = new Date().toISOString()
+  }
+  if (email) thread.email = email
+  if (name) thread.name = name
+  memoryChats[key] = thread
+  persistChats()
+  return thread
+}
+
+export function syncThreads(incomingThreads) {
+  loadChats()
+  if (Array.isArray(incomingThreads)) {
+    for (const t of incomingThreads) {
+      if (t && t.user_key) {
+        mergeThreads(memoryChats, { [t.user_key]: t })
+      }
+    }
+  } else if (incomingThreads && typeof incomingThreads === 'object') {
+    mergeThreads(memoryChats, incomingThreads)
+  }
+  persistChats()
+  return memoryChats
+}
+
 export function getAllChatThreads() {
   loadChats()
   const threads = Object.values(memoryChats).map(t => {

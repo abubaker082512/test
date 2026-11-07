@@ -170,7 +170,7 @@ export default function Profile() {
           <line x1="2" y1="10" x2="22" y2="10" />
         </svg>
       ),
-      action: () => router.push('/wallet')
+      action: () => router.push('/wallet?tab=withdraw')
     },
     { 
       name: 'VIP', 

@@ -597,59 +597,85 @@ export default function WalletPage() {
           </button>
         </div>
 
-        {/* Tab Switcher if on Withdraw / Records */}
-        {activeTab !== 'deposit' && (
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              onClick={() => setActiveTab('deposit')}
-              style={{
-                flex: 1,
-                padding: '10px',
-                borderRadius: '12px',
-                border: '1px solid rgba(109, 255, 56, 0.4)',
-                background: 'rgba(109, 255, 56, 0.1)',
-                color: '#6dff38',
-                fontWeight: 800,
-                fontSize: '13px',
-                cursor: 'pointer'
-              }}
-            >
-              ← Deposit
-            </button>
-            <button
-              onClick={() => setActiveTab('withdraw')}
-              style={{
-                flex: 1,
-                padding: '10px',
-                borderRadius: '12px',
-                border: activeTab === 'withdraw' ? '1.5px solid #6dff38' : '1px solid rgba(255, 255, 255, 0.1)',
-                background: activeTab === 'withdraw' ? 'rgba(109, 255, 56, 0.2)' : 'rgba(255, 255, 255, 0.04)',
-                color: activeTab === 'withdraw' ? '#6dff38' : '#9bb0a2',
-                fontWeight: 800,
-                fontSize: '13px',
-                cursor: 'pointer'
-              }}
-            >
-              Withdraw
-            </button>
-            <button
-              onClick={() => setActiveTab('records')}
-              style={{
-                flex: 1,
-                padding: '10px',
-                borderRadius: '12px',
-                border: activeTab === 'records' ? '1.5px solid #6dff38' : '1px solid rgba(255, 255, 255, 0.1)',
-                background: activeTab === 'records' ? 'rgba(109, 255, 56, 0.2)' : 'rgba(255, 255, 255, 0.04)',
-                color: activeTab === 'records' ? '#6dff38' : '#9bb0a2',
-                fontWeight: 800,
-                fontSize: '13px',
-                cursor: 'pointer'
-              }}
-            >
-              Records
-            </button>
-          </div>
-        )}
+        {/* Top 3-Way Segmented Navigation Bar: Deposit, Withdraw, My Records */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr',
+          gap: '6px',
+          background: 'rgba(255, 255, 255, 0.04)',
+          padding: '5px',
+          borderRadius: '14px',
+          border: '1px solid rgba(255, 255, 255, 0.08)'
+        }}>
+          <button
+            type="button"
+            onClick={() => setActiveTab('deposit')}
+            style={{
+              padding: '10px 4px',
+              borderRadius: '10px',
+              border: activeTab === 'deposit' ? '1.5px solid #6dff38' : '1px solid transparent',
+              background: activeTab === 'deposit' ? 'linear-gradient(135deg, rgba(109, 255, 56, 0.25) 0%, rgba(109, 255, 56, 0.08) 100%)' : 'transparent',
+              color: activeTab === 'deposit' ? '#6dff38' : '#94a3b8',
+              fontWeight: 900,
+              fontSize: '12.5px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <span>📥</span>
+            <span>Deposit</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('withdraw')}
+            style={{
+              padding: '10px 4px',
+              borderRadius: '10px',
+              border: activeTab === 'withdraw' ? '1.5px solid #6dff38' : '1px solid transparent',
+              background: activeTab === 'withdraw' ? 'linear-gradient(135deg, rgba(109, 255, 56, 0.25) 0%, rgba(109, 255, 56, 0.08) 100%)' : 'transparent',
+              color: activeTab === 'withdraw' ? '#6dff38' : '#94a3b8',
+              fontWeight: 900,
+              fontSize: '12.5px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <span>📤</span>
+            <span>Withdraw</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('records')}
+            style={{
+              padding: '10px 4px',
+              borderRadius: '10px',
+              border: activeTab === 'records' ? '1.5px solid #6dff38' : '1px solid transparent',
+              background: activeTab === 'records' ? 'linear-gradient(135deg, rgba(109, 255, 56, 0.25) 0%, rgba(109, 255, 56, 0.08) 100%)' : 'transparent',
+              color: activeTab === 'records' ? '#6dff38' : '#94a3b8',
+              fontWeight: 900,
+              fontSize: '12.5px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <span>📋</span>
+            <span>My Records</span>
+          </button>
+        </div>
 
         {/* MAIN DEPOSIT SCREEN (Screenshots 1 & 2) */}
         {activeTab === 'deposit' && (

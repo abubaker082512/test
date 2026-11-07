@@ -168,68 +168,94 @@ export default function InvitePage() {
               marginBottom: '18px',
               boxShadow: '0 8px 24px rgba(0, 0, 0, 0.45)'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ color: '#94a3b8', fontSize: '11px', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px' }}>
-                  Your Unique Invite Code
-                </span>
-                <button
-                  type="button"
-                  onClick={handleCopyCode}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: copiedCode ? '#6dff38' : '#38bdf8',
-                    fontSize: '11.5px',
-                    fontWeight: 800,
-                    cursor: 'pointer'
-                  }}
-                >
-                  {copiedCode ? '✓ Copied' : 'Copy Code'}
-                </button>
-              </div>
-
+              {/* Unique Invite Code Box */}
               <div style={{
-                background: '#09120c',
-                padding: '12px 16px',
-                borderRadius: '12px',
-                fontSize: '20px',
-                fontWeight: 900,
-                letterSpacing: '1px',
-                color: '#ffffff',
-                border: '1px dashed rgba(109, 255, 56, 0.35)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
+                background: 'linear-gradient(135deg, #09140d 0%, #102116 100%)',
+                padding: '16px 18px',
+                borderRadius: '16px',
+                border: '1.5px solid rgba(109, 255, 56, 0.4)',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                marginBottom: '16px'
               }}>
-                <span style={{ wordBreak: 'break-all' }}>{emailPrefix}</span>
-                <span style={{ fontSize: '11px', background: '#6dff38', color: '#081a0b', padding: '3px 8px', borderRadius: '6px', fontWeight: 900 }}>
-                  ACTIVE
-                </span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ color: '#ffd54f', fontSize: '12px' }}>👑</span>
+                    <span style={{ color: '#94a3b8', fontSize: '11px', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.6px' }}>
+                      VIP Referral Code
+                    </span>
+                  </div>
+                  <span style={{ fontSize: '10px', background: 'rgba(109, 255, 56, 0.15)', border: '1px solid #6dff38', color: '#6dff38', padding: '2px 8px', borderRadius: '12px', fontWeight: 900 }}>
+                    ● ACTIVE
+                  </span>
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '12px',
+                  background: '#060d09',
+                  padding: '12px 14px',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.08)'
+                }}>
+                  <span style={{
+                    fontSize: '18px',
+                    fontWeight: 900,
+                    color: '#ffffff',
+                    letterSpacing: '1px',
+                    fontFamily: 'monospace',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {emailPrefix}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleCopyCode}
+                    style={{
+                      background: copiedCode ? '#6dff38' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      color: copiedCode ? '#061309' : '#ffffff',
+                      border: 'none',
+                      padding: '8px 14px',
+                      borderRadius: '8px',
+                      fontSize: '11.5px',
+                      fontWeight: 900,
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                      boxShadow: '0 4px 12px rgba(16, 185, 129, 0.35)',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {copiedCode ? '✓ Copied' : 'Copy Code'}
+                  </button>
+                </div>
               </div>
 
               {/* Shareable Link Box */}
-              <div style={{ marginTop: '16px' }}>
-                <div style={{ color: '#94a3b8', fontSize: '11px', marginBottom: '6px', fontWeight: 700 }}>
-                  Shareable Invitation Link
+              <div style={{ marginBottom: '18px' }}>
+                <div style={{ color: '#94a3b8', fontSize: '11px', marginBottom: '6px', fontWeight: 700, letterSpacing: '0.3px' }}>
+                  Your Official Invite URL
                 </div>
                 <div style={{
                   background: '#09120c',
-                  padding: '8px 10px 8px 14px',
-                  borderRadius: '10px',
+                  padding: '10px 12px',
+                  borderRadius: '12px',
                   border: '1px solid rgba(255, 255, 255, 0.08)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   gap: '10px'
                 }}>
-                  <span style={{ fontSize: '11.5px', color: '#6dff38', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: '11.5px', color: '#6dff38', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                     {referralLink}
                   </span>
                   <button
                     type="button"
                     onClick={handleCopyLink}
                     style={{
-                      background: 'linear-gradient(135deg, #6dff38 0%, #46bd1f 100%)',
+                      background: copiedLink ? '#38bdf8' : 'linear-gradient(135deg, #6dff38 0%, #3ebd1b 100%)',
                       color: '#081a0b',
                       border: 'none',
                       padding: '8px 14px',
@@ -237,7 +263,8 @@ export default function InvitePage() {
                       fontWeight: 900,
                       fontSize: '11.5px',
                       cursor: 'pointer',
-                      flexShrink: 0
+                      flexShrink: 0,
+                      boxShadow: '0 4px 14px rgba(109, 255, 56, 0.3)'
                     }}
                   >
                     {copiedLink ? '✓ Copied' : 'Copy Link'}
@@ -245,101 +272,173 @@ export default function InvitePage() {
                 </div>
               </div>
 
-              {/* Quick Share Grid */}
-              <div style={{ marginTop: '18px' }}>
-                <div style={{ color: '#94a3b8', fontSize: '10.5px', fontWeight: 800, textTransform: 'uppercase', marginBottom: '10px', textAlign: 'center', letterSpacing: '0.4px' }}>
-                  One-Click Quick Share
+              {/* Classy One-Click Quick Share Grid */}
+              <div style={{ marginTop: '20px' }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  marginBottom: '12px'
+                }}>
+                  <span style={{ height: '1px', flex: 1, background: 'rgba(255, 255, 255, 0.08)' }} />
+                  <span style={{ color: '#cbd5e1', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+                    Instant Share &amp; Earn
+                  </span>
+                  <span style={{ height: '1px', flex: 1, background: 'rgba(255, 255, 255, 0.08)' }} />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+                  {/* WhatsApp VIP Card */}
                   <button
                     type="button"
                     onClick={shareWhatsApp}
                     style={{
-                      background: '#128C7E',
-                      color: '#ffffff',
-                      border: 'none',
-                      padding: '10px 4px',
-                      borderRadius: '10px',
-                      fontWeight: 800,
-                      fontSize: '11px',
+                      background: 'linear-gradient(135deg, #1f4333 0%, #12281e 100%)',
+                      border: '1px solid rgba(37, 211, 102, 0.4)',
+                      borderRadius: '14px',
+                      padding: '12px 14px',
                       cursor: 'pointer',
                       display: 'flex',
-                      flexDirection: 'column',
                       alignItems: 'center',
-                      gap: '4px',
-                      boxShadow: '0 4px 12px rgba(18, 140, 126, 0.3)'
+                      gap: '10px',
+                      boxShadow: '0 6px 18px rgba(0, 0, 0, 0.4), 0 0 16px rgba(37, 211, 102, 0.15)',
+                      transition: 'transform 0.15s ease'
                     }}
                   >
-                    <span style={{ fontSize: '18px' }}>💬</span>
-                    <span>WhatsApp</span>
+                    <div style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '10px',
+                      background: '#25d366',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="#ffffff">
+                        <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.694.074-2.21-.555-1.936-.803-3.175-2.775-3.27-2.902-.095-.128-.778-1.035-.778-1.975 0-.94.492-1.402.667-1.593.175-.19.38-.238.508-.238.127 0 .254.002.365.007.119.006.277-.045.433.329.16.386.548 1.336.595 1.433.048.096.08.209.016.335-.064.126-.096.205-.19.317-.095.11-.2.247-.286.332-.096.096-.196.2-.084.393.111.192.494.815 1.06 1.319.73.651 1.344.853 1.536.949.19.095.302.079.413-.048.111-.127.476-.554.603-.745.127-.19.254-.158.428-.095.175.063 1.111.524 1.302.619.19.095.317.143.365.222.048.079.048.46-.096.865z" />
+                      </svg>
+                    </div>
+                    <div style={{ textAlign: 'left', overflow: 'hidden' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 900, color: '#ffffff' }}>WhatsApp</div>
+                      <div style={{ fontSize: '10px', color: '#25d366', fontWeight: 700 }}>Direct Message</div>
+                    </div>
                   </button>
 
+                  {/* Telegram VIP Card */}
                   <button
                     type="button"
                     onClick={shareTelegram}
                     style={{
-                      background: '#0088cc',
-                      color: '#ffffff',
-                      border: 'none',
-                      padding: '10px 4px',
-                      borderRadius: '10px',
-                      fontWeight: 800,
-                      fontSize: '11px',
+                      background: 'linear-gradient(135deg, #17374a 0%, #0d212e 100%)',
+                      border: '1px solid rgba(0, 136, 204, 0.4)',
+                      borderRadius: '14px',
+                      padding: '12px 14px',
                       cursor: 'pointer',
                       display: 'flex',
-                      flexDirection: 'column',
                       alignItems: 'center',
-                      gap: '4px',
-                      boxShadow: '0 4px 12px rgba(0, 136, 204, 0.3)'
+                      gap: '10px',
+                      boxShadow: '0 6px 18px rgba(0, 0, 0, 0.4), 0 0 16px rgba(0, 136, 204, 0.15)',
+                      transition: 'transform 0.15s ease'
                     }}
                   >
-                    <span style={{ fontSize: '18px' }}>✈️</span>
-                    <span>Telegram</span>
+                    <div style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '10px',
+                      background: '#0088cc',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff">
+                        <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z" />
+                      </svg>
+                    </div>
+                    <div style={{ textAlign: 'left', overflow: 'hidden' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 900, color: '#ffffff' }}>Telegram</div>
+                      <div style={{ fontSize: '10px', color: '#38bdf8', fontWeight: 700 }}>Channels &amp; Groups</div>
+                    </div>
                   </button>
 
+                  {/* Facebook VIP Card */}
                   <button
                     type="button"
                     onClick={shareFacebook}
                     style={{
-                      background: '#1877F2',
-                      color: '#ffffff',
-                      border: 'none',
-                      padding: '10px 4px',
-                      borderRadius: '10px',
-                      fontWeight: 800,
-                      fontSize: '11px',
+                      background: 'linear-gradient(135deg, #182b4a 0%, #0d1729 100%)',
+                      border: '1px solid rgba(24, 119, 242, 0.4)',
+                      borderRadius: '14px',
+                      padding: '12px 14px',
                       cursor: 'pointer',
                       display: 'flex',
-                      flexDirection: 'column',
                       alignItems: 'center',
-                      gap: '4px',
-                      boxShadow: '0 4px 12px rgba(24, 119, 242, 0.3)'
+                      gap: '10px',
+                      boxShadow: '0 6px 18px rgba(0, 0, 0, 0.4), 0 0 16px rgba(24, 119, 242, 0.15)',
+                      transition: 'transform 0.15s ease'
                     }}
                   >
-                    <span style={{ fontSize: '18px' }}>📘</span>
-                    <span>Facebook</span>
+                    <div style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '10px',
+                      background: '#1877f2',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="#ffffff">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                      </svg>
+                    </div>
+                    <div style={{ textAlign: 'left', overflow: 'hidden' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 900, color: '#ffffff' }}>Facebook</div>
+                      <div style={{ fontSize: '10px', color: '#60a5fa', fontWeight: 700 }}>Feed &amp; Story</div>
+                    </div>
                   </button>
 
+                  {/* Share All Card */}
                   <button
                     type="button"
                     onClick={handleNativeShare}
                     style={{
-                      background: 'rgba(255, 255, 255, 0.08)',
-                      color: '#ffffff',
+                      background: 'linear-gradient(135deg, #242c22 0%, #151a14 100%)',
                       border: '1px solid rgba(255, 255, 255, 0.15)',
-                      padding: '10px 4px',
-                      borderRadius: '10px',
-                      fontWeight: 800,
-                      fontSize: '11px',
+                      borderRadius: '14px',
+                      padding: '12px 14px',
                       cursor: 'pointer',
                       display: 'flex',
-                      flexDirection: 'column',
                       alignItems: 'center',
-                      gap: '4px'
+                      gap: '10px',
+                      boxShadow: '0 6px 18px rgba(0, 0, 0, 0.4)',
+                      transition: 'transform 0.15s ease'
                     }}
                   >
-                    <span style={{ fontSize: '18px' }}>↗️</span>
-                    <span>Share All</span>
+                    <div style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '10px',
+                      background: 'rgba(255, 255, 255, 0.12)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6dff38" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="18" cy="5" r="3" />
+                        <circle cx="6" cy="12" r="3" />
+                        <circle cx="18" cy="19" r="3" />
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                      </svg>
+                    </div>
+                    <div style={{ textAlign: 'left', overflow: 'hidden' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 900, color: '#ffffff' }}>More Apps</div>
+                      <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 700 }}>System Share</div>
+                    </div>
                   </button>
                 </div>
               </div>

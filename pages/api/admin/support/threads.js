@@ -1,4 +1,12 @@
-import { getAllChatThreads, getChatThread, markThreadAsRead } from '../../../../utils/chatStore'
+import { getAllChatThreads, getChatThread, markThreadAsRead, syncThreads } from '../../../../utils/chatStore'
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb'
+    }
+  }
+}
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
@@ -9,6 +17,15 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, thread, messages: thread.messages })
     }
 
+    const threads = getAllChatThreads()
+    return res.status(200).json({ success: true, threads })
+  }
+
+  if (req.method === 'POST') {
+    const { sync_threads } = req.body
+    if (Array.isArray(sync_threads) || (sync_threads && typeof sync_threads === 'object')) {
+      syncThreads(sync_threads)
+    }
     const threads = getAllChatThreads()
     return res.status(200).json({ success: true, threads })
   }

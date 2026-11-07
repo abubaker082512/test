@@ -254,40 +254,63 @@ export default function PlayGame() {
           </div>
         </div>
 
-        {/* Right: Wallet Balance + Sync + Fullscreen */}
+        {/* Right: Wallet Balance + Deposit Quick Action + Sync + Fullscreen */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
           <div
             style={{
-              background: 'rgba(5, 24, 15, 0.85)',
-              border: '1px solid rgba(16, 185, 129, 0.35)',
-              padding: '3px 8px',
+              background: 'rgba(5, 24, 15, 0.95)',
+              border: '1px solid rgba(16, 185, 129, 0.45)',
+              padding: '4px 8px',
               borderRadius: '8px',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px'
+              gap: '6px',
+              boxShadow: '0 0 10px rgba(16, 185, 129, 0.2)'
             }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-              <span style={{ fontSize: '8px', fontWeight: 800, color: '#34d399', letterSpacing: '0.04em' }}>
+              <span style={{ fontSize: '7.5px', fontWeight: 900, color: '#34d399', letterSpacing: '0.04em' }}>
                 PKR WALLET
               </span>
               <span style={{ fontSize: '12px', fontWeight: 900, color: '#ffd54f', fontFamily: 'monospace' }}>
                 Rs {activeBalance.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
+            <Link href="/wallet" target="_blank" style={{ textDecoration: 'none' }}>
+              <button
+                type="button"
+                style={{
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  border: 'none',
+                  color: '#ffffff',
+                  padding: '3px 7px',
+                  borderRadius: '5px',
+                  fontSize: '10px',
+                  fontWeight: 900,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '2px'
+                }}
+                title="Quick Deposit to recharge balance"
+              >
+                <span>+</span>
+                <span>Deposit</span>
+              </button>
+            </Link>
           </div>
 
           <button
             type="button"
             onClick={fetchWallet}
             style={{
-              width: '30px',
-              height: '30px',
+              width: '28px',
+              height: '28px',
               background: 'rgba(255,255,255,0.05)',
               border: '1px solid rgba(255,255,255,0.12)',
               color: '#e2e8f0',
               borderRadius: '8px',
-              fontSize: '12px',
+              fontSize: '11px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -302,13 +325,13 @@ export default function PlayGame() {
             type="button"
             onClick={toggleFullscreen}
             style={{
-              width: '30px',
-              height: '30px',
+              width: '28px',
+              height: '28px',
               background: 'rgba(255,255,255,0.05)',
               border: '1px solid rgba(255,255,255,0.12)',
               color: '#e2e8f0',
               borderRadius: '8px',
-              fontSize: '12px',
+              fontSize: '11px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',

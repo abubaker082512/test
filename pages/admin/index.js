@@ -283,26 +283,76 @@ export default function AdminPanel() {
       const res = await fetch('/api/admin/support/threads')
       const data = await res.json()
       if (data.success && Array.isArray(data.threads)) {
-        setChatThreads(data.threads)
-        setSelectedChatUser(prev => {
-          if (prev && data.threads.some(t => t.user_key === prev)) {
-            return prev
+        if (data.threads.length > 0) {
+          setChatThreads(data.threads)
+          if (typeof window !== 'undefined') {
+            try { localStorage.setItem('winx_admin_cached_threads', JSON.stringify(data.threads)) } catch (e) {}
           }
-          return data.threads.length > 0 ? data.threads[0].user_key : null
-        })
+          setSelectedChatUser(prev => {
+            if (prev && data.threads.some(t => t.user_key === prev)) {
+              return prev
+            }
+            return data.threads[0].user_key
+          })
+        } else {
+          if (typeof window !== 'undefined') {
+            try {
+              const cached = JSON.parse(localStorage.getItem('winx_admin_cached_threads') || '[]')
+              if (cached && cached.length > 0) {
+                setChatThreads(cached)
+                setSelectedChatUser(prev => (prev && cached.some(t => t.user_key === prev) ? prev : cached[0].user_key))
+                fetch('/api/admin/support/threads', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ sync_threads: cached })
+                }).catch(() => {})
+              }
+            } catch (e) {}
+          }
+        }
       }
     } catch (e) {}
   }
 
   const fetchActiveThreadMessages = async (userKey) => {
     if (!userKey) return
+    let localMsgs = []
+    if (typeof window !== 'undefined') {
+      try {
+        localMsgs = JSON.parse(localStorage.getItem('winx_admin_msg_' + userKey) || '[]')
+      } catch (e) {}
+    }
+
     try {
       const res = await fetch('/api/admin/support/threads?user_key=' + encodeURIComponent(userKey))
       const data = await res.json()
       if (data.success && Array.isArray(data.messages)) {
-        setChatMessages(data.messages)
+        const serverMsgs = data.messages
+        const map = new Map()
+        localMsgs.forEach(m => { if (m && m.id) map.set(m.id, m) })
+        serverMsgs.forEach(m => { if (m && m.id) map.set(m.id, m) })
+        const merged = Array.from(map.values()).sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
+
+        setChatMessages(merged)
+        if (typeof window !== 'undefined') {
+          try { localStorage.setItem('winx_admin_msg_' + userKey, JSON.stringify(merged)) } catch (e) {}
+        }
+
+        if (merged.length > serverMsgs.length) {
+          fetch('/api/support/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'sync',
+              user_key: userKey,
+              messages: merged
+            })
+          }).catch(() => {})
+        }
       }
-    } catch (e) {}
+    } catch (e) {
+      if (localMsgs.length > 0) setChatMessages(localMsgs)
+    }
   }
 
   const handleSendAdminReply = async (e, textOverride = null) => {

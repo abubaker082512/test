@@ -168,30 +168,56 @@ export default function InstallAppModal({ isOpen, onClose }) {
         )}
 
         {/* 1-Tap Install / Action Button */}
-        <button
-          type="button"
-          onClick={handleInstallClick}
-          style={{
-            width: '100%',
-            padding: '14px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #6dff38 0%, #46bd1f 100%)',
-            border: 'none',
-            color: '#081a0b',
-            fontWeight: 900,
-            fontSize: '14px',
-            cursor: 'pointer',
-            boxShadow: '0 6px 20px rgba(109, 255, 56, 0.45)',
-            marginBottom: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px'
-          }}
-        >
-          <span>📲</span>
-          <span>{isStandalone ? 'App Already Installed' : 'Install WinX Pro to Home Screen'}</span>
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+          <a
+            href="/WinXPro-release.apk"
+            download="WinXPro-release.apk"
+            style={{
+              textDecoration: 'none',
+              width: '100%',
+              boxSizing: 'border-box',
+              padding: '13px 14px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #6dff38 0%, #3ebd1b 100%)',
+              border: 'none',
+              color: '#081a0b',
+              fontWeight: 900,
+              fontSize: '13.5px',
+              cursor: 'pointer',
+              boxShadow: '0 6px 20px rgba(109, 255, 56, 0.45)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}
+          >
+            <span>🤖</span>
+            <span>Download Android APK (13.8 MB)</span>
+          </a>
+
+          <button
+            type="button"
+            onClick={handleInstallClick}
+            style={{
+              width: '100%',
+              padding: '12px 14px',
+              borderRadius: '12px',
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1.5px solid rgba(109, 255, 56, 0.5)',
+              color: '#6dff38',
+              fontWeight: 800,
+              fontSize: '13px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}
+          >
+            <span>📲</span>
+            <span>{isStandalone ? 'App Already Installed' : 'Add to Home Screen (PWA)'}</span>
+          </button>
+        </div>
 
         {/* Manual Step Guidance for iOS / Unsupported Browsers */}
         <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '12px' }}>

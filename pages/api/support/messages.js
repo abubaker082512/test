@@ -1,4 +1,4 @@
-import { getChatThread, saveChatMessage, markThreadAsRead } from '../../../utils/chatStore'
+import { getChatThread, saveChatMessage, syncClientMessages, markThreadAsRead } from '../../../utils/chatStore'
 
 export const config = {
   api: {
@@ -18,8 +18,14 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const { user_key, email, name, text, image, audio, audio_duration } = req.body
+    const { user_key, email, name, text, image, audio, audio_duration, action, messages: clientMessages } = req.body
     if (!user_key) return res.status(400).json({ error: 'Missing user_key' })
+
+    // Two-way self-healing sync from client localStorage
+    if (action === 'sync' && Array.isArray(clientMessages)) {
+      const thread = syncClientMessages(user_key, clientMessages, email, name)
+      return res.status(200).json({ success: true, thread, messages: thread.messages })
+    }
 
     if (!text && !image && !audio) {
       return res.status(400).json({ error: 'Empty message' })
