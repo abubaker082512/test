@@ -710,7 +710,7 @@ export default function AdminPanel() {
   )
 
   if (!authed) return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div className="admin-full-screen" style={{ minHeight: '100vh', background: 'var(--bg)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
       <div style={{ background: 'var(--card)', border: '2px solid var(--accent)', borderRadius: '16px', padding: '40px', width: '90%', maxWidth: '360px', textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔐</div>
         <h2 style={{ color: 'var(--accent)', marginTop: 0 }}>WinX Pro Admin Console</h2>
@@ -746,8 +746,8 @@ export default function AdminPanel() {
   })
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: '#fff', padding: '24px 16px', boxSizing: 'border-box' }}>
-      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+    <div className="admin-full-screen" style={{ minHeight: '100vh', background: 'var(--bg)', color: '#fff', padding: '24px 28px', boxSizing: 'border-box', width: '100%' }}>
+      <div style={{ maxWidth: '1600px', margin: '0 auto', width: '100%' }}>
         
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>

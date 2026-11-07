@@ -21,6 +21,19 @@ function ReferralTracker() {
 }
 
 function MyApp({ Component, pageProps }) {
+  const router = useRouter()
+  const isAdmin = router.pathname ? router.pathname.startsWith('/admin') : false
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      if (isAdmin) {
+        document.body.classList.add('admin-mode')
+      } else {
+        document.body.classList.remove('admin-mode')
+      }
+    }
+  }, [isAdmin, router.pathname])
+
   return (
     <AuthProvider>
       <Head>
@@ -44,4 +57,3 @@ function MyApp({ Component, pageProps }) {
 }
 
 export default MyApp
-

@@ -88,6 +88,26 @@ body {
   box-sizing: border-box;
 }
 
+/* Full-screen responsive mode for Admin Management Console */
+body.admin-mode,
+body:has(.admin-full-screen) {
+  display: block !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  justify-content: unset !important;
+}
+
+body.admin-mode #__next,
+#__next:has(.admin-full-screen),
+body:has(.admin-full-screen) #__next {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+  border-left: none !important;
+  border-right: none !important;
+  box-shadow: none !important;
+}
+
 @media (max-width: 480px) {
   html, body {
     width: 100%;
