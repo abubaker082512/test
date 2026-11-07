@@ -45,10 +45,10 @@ export function buildDirectPayUrl({
   // Convert PKR amount to paisas (1 PKR = 100 paisas)
   const amountInPaisas = Math.round(Number(amountInPKR) * 100).toString();
 
-  // Validate amount limits (1000 to 5000000 paisas -> 10.00 to 50000.00 PKR)
+  // Validate amount limits (1000 to 10000000 paisas -> 10.00 to 100,000.00 PKR)
   const paisasNum = parseInt(amountInPaisas, 10);
-  if (isNaN(paisasNum) || paisasNum < 1000 || paisasNum > 5000000) {
-    throw new Error('Amount must be between 10.00 and 50,000.00 PKR');
+  if (isNaN(paisasNum) || paisasNum < 1000 || paisasNum > 10000000) {
+    throw new Error('Amount must be between 10.00 and 100,000.00 PKR');
   }
 
   // Clean description (max 500 chars)

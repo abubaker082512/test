@@ -12,20 +12,18 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { user_id, amountInPKR, payer_name, email, msisdn, currency = 'PKR', payment_method = 'Easypaisa' } = req.body;
+  const { user_id, amountInPKR, amount, payer_name, email, msisdn, phone, mobile, currency = 'PKR', payment_method = 'Easypaisa' } = req.body;
 
   if (!user_id) {
     return res.status(400).json({ error: 'User authentication required' });
   }
 
-  const numAmount = parseFloat(amountInPKR);
-  if (isNaN(numAmount) || numAmount < 10 || numAmount > 50000) {
-    return res.status(400).json({ error: 'Amount must be between 10.00 and 50,000.00 PKR' });
+  const numAmount = parseFloat(amountInPKR || amount);
+  if (isNaN(numAmount) || numAmount < 10 || numAmount > 100000) {
+    return res.status(400).json({ error: 'Amount must be between 10.00 and 100,000.00 PKR' });
   }
 
-  if (!msisdn) {
-    return res.status(400).json({ error: 'Mobile number is required (03xxxxxxxxx)' });
-  }
+  const payerPhone = msisdn || phone || mobile || '03001234567';
 
   try {
     let pkrRate = 1.0;
@@ -79,7 +77,7 @@ export default async function handler(req, res) {
       description: 'sheikh abu baker group deposit',
       payerName: payer_name || 'Player',
       email: email || 'player@winxpro.com.pk',
-      msisdn: msisdn || '03001234567',
+      msisdn: payerPhone,
       currency,
       successRedirectUrl,
       failedRedirectUrl
@@ -96,11 +94,11 @@ export default async function handler(req, res) {
         status: 'pending',
         method: `DirectPay (${payment_method})`,
         tx_id: clientTransactionId,
-        notes: `DirectPay ${payment_method} Deposit: ${currency} ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Phone: ${msisdn}`,
+        notes: `DirectPay ${payment_method} Deposit: Rs ${numAmount.toFixed(2)} | Mobile: ${payerPhone}`,
         metadata: {
           clientTransactionId,
-          account_number: msisdn,
-          msisdn,
+          account_number: payerPhone,
+          msisdn: payerPhone,
           amountInPKR: numAmount,
           currency,
           payment_method,
@@ -116,11 +114,11 @@ export default async function handler(req, res) {
         type: 'deposit',
         amount: inGameAmount,
         status: 'pending',
-        notes: `DirectPay ${payment_method} Deposit: ${currency} ${numAmount.toFixed(2)} (Pi ${inGameAmount}) | Phone: ${msisdn}`,
+        notes: `DirectPay ${payment_method} Deposit: Rs ${numAmount.toFixed(2)} | Mobile: ${payerPhone}`,
         metadata: {
           clientTransactionId,
-          account_number: msisdn,
-          msisdn,
+          account_number: payerPhone,
+          msisdn: payerPhone,
           amountInPKR: numAmount,
           currency,
           payment_method,

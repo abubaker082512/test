@@ -8,9 +8,11 @@ import BottomNav from '../components/BottomNav'
 
 // Recharge Methods with Official Brand Logos
 const RECHARGE_METHODS = [
-  { id: 'qr', name: 'QR', icon: '/icons/qr-pay.svg' },
-  { id: 'jazzcash', name: 'JazzCash', icon: '/icons/jazzcash.jpeg' },
-  { id: 'easypaisa', name: 'Easypaisa', icon: '/icons/easypaisa.webp' },
+  { id: 'easypaisa', name: 'Easypaisa', icon: '/icons/easypaisa.webp', badge: 'DirectPay' },
+  { id: 'jazzcash', name: 'JazzCash', icon: '/icons/jazzcash.jpeg', badge: 'DirectPay' },
+  { id: 'card', name: 'Cards (Visa/MC)', icon: '/icons/card.svg', badge: 'Instant' },
+  { id: 'wallets', name: 'Bank Wallets', icon: '/icons/wallet.svg', badge: '1LINK' },
+  { id: 'qr', name: 'QR Pay', icon: '/icons/qr-pay.svg' },
   { id: 'usdt', name: 'USDT', badge: '+3%', icon: '/icons/usdt.png' },
   { id: 'jazzcash_qr', name: 'JAZZCASH_QR', icon: '/icons/jazzcash-qr.png' }
 ]
@@ -54,8 +56,10 @@ export default function WalletPage() {
   const [copiedField, setCopiedField] = useState(null)
 
   // Deposit States matching Screenshots 1 & 2
-  const [rechargeMethod, setRechargeMethod] = useState('qr')
-  const [rechargeChannel, setRechargeChannel] = useState('qr_code') // 'qr_code' | 'transfer'
+  const [rechargeMethod, setRechargeMethod] = useState('easypaisa')
+  const [rechargeChannel, setRechargeChannel] = useState('directpay') // 'directpay' | 'transfer'
+  const [directPayLoading, setDirectPayLoading] = useState(false)
+  const [directPayStatusModal, setDirectPayStatusModal] = useState(null)
   const [amount, setAmount] = useState('200')
   const [showPaymentModal, setShowPaymentModal] = useState(false)
 
@@ -91,14 +95,81 @@ export default function WalletPage() {
     manual_crypto_address: 'TP2B4tF9qK8jZ1sL5vN8mM9eR7wX4yP1aB'
   })
 
-  // Handle Query Parameters
+  // Handle Query Parameters & DirectPay return
   useEffect(() => {
     if (!router.isReady) return
-    const { tab } = router.query
+    const { tab, directpay_status, txn_id, amount: dpAmount } = router.query
     if (tab === 'withdraw') setActiveTab('withdraw')
     else if (tab === 'records' || tab === 'history') setActiveTab('records')
     else if (tab === 'crypto') setRechargeMethod('usdt')
+
+    if (directpay_status && txn_id) {
+      if (directpay_status === 'success') {
+        handleVerifyDirectPay(txn_id, dpAmount)
+      } else if (directpay_status === 'failed') {
+        handleFailDirectPay(txn_id)
+      }
+    }
   }, [router.isReady, router.query])
+
+  const handleVerifyDirectPay = async (txnId, dpAmount) => {
+    setDirectPayLoading(true)
+    setDirectPayStatusModal({ status: 'verifying', text: 'Verifying payment with DirectPay...' })
+    try {
+      const activeUid = user?.id || user?.uid || ''
+      const res = await fetch('/api/payments/directpay/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          txn_id: txnId,
+          user_id: activeUid,
+          amount: dpAmount,
+          email: user?.email || ''
+        })
+      })
+      const data = await res.json()
+      if (data.success && data.status === 'completed') {
+        setDirectPayStatusModal({
+          status: 'success',
+          text: `🎉 Payment of Rs ${parseFloat(data.creditedAmount || dpAmount || 0).toLocaleString()} successfully verified! Your balance is updated.`,
+          balance: data.balance
+        })
+        if (data.balance !== undefined) {
+          setWallet(prev => ({ ...(prev || {}), balance: data.balance }))
+        }
+        fetchData()
+        window.dispatchEvent(new Event('wallet-updated'))
+      } else {
+        setDirectPayStatusModal({
+          status: 'error',
+          text: data.message || 'Payment verification failed. Please contact support with TxID: ' + txnId
+        })
+      }
+    } catch (err) {
+      setDirectPayStatusModal({
+        status: 'error',
+        text: 'Network error verifying DirectPay transaction. Please refresh or contact support.'
+      })
+    } finally {
+      setDirectPayLoading(false)
+      router.replace('/wallet', undefined, { shallow: true })
+    }
+  }
+
+  const handleFailDirectPay = async (txnId) => {
+    try {
+      await fetch('/api/payments/directpay/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ txn_id: txnId, status: 'failed' })
+      })
+    } catch (e) {}
+    setDirectPayStatusModal({
+      status: 'error',
+      text: 'DirectPay transaction was cancelled or declined. No money was deducted.'
+    })
+    router.replace('/wallet', undefined, { shallow: true })
+  }
 
   const fetchRates = async () => {
     try {
@@ -195,8 +266,8 @@ export default function WalletPage() {
   }
   const calculatedTotal = numAmount * (1 + bonusRate)
 
-  // Handle Deposit Initiation
-  const handleInitiateDeposit = () => {
+  // Handle Deposit Initiation (DirectPay & Manual)
+  const handleInitiateDeposit = async () => {
     if (!user) {
       setIsAuthModalOpen(true)
       return
@@ -206,8 +277,52 @@ export default function WalletPage() {
       alert('Minimum deposit amount is Rs 200.')
       return
     }
-    setDepositMsg(null)
-    setShowPaymentModal(true)
+
+    // DirectPay flow for Easypaisa, JazzCash, Card, and Bank Wallets
+    const isDirectPay = (rechargeChannel === 'directpay' || rechargeMethod === 'card' || rechargeMethod === 'wallets') && rechargeMethod !== 'usdt'
+
+    if (isDirectPay) {
+      setDirectPayLoading(true)
+      setDepositMsg(null)
+      try {
+        let paymentMethodName = 'Easypaisa'
+        if (rechargeMethod === 'jazzcash') paymentMethodName = 'JazzCash'
+        else if (rechargeMethod === 'card') paymentMethodName = 'Card'
+        else if (rechargeMethod === 'wallets') paymentMethodName = 'Wallet'
+        else if (rechargeMethod === 'qr') paymentMethodName = 'QR'
+
+        const res = await fetch('/api/payments/directpay/initiate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: user.id || user.uid,
+            amountInPKR: val,
+            payer_name: user.user_metadata?.full_name || user.email || 'Player',
+            email: user.email || 'player@winxpro.com.pk',
+            msisdn: senderPhone || user.phone || '03001234567',
+            payment_method: paymentMethodName
+          })
+        })
+
+        const data = await res.json()
+        if (data.success && data.paymentUrl) {
+          // Immediately redirect to official DirectPay secure portal
+          window.location.href = data.paymentUrl
+          return
+        } else {
+          alert(data.error || 'DirectPay initiation failed. Opening manual transfer modal.')
+          setShowPaymentModal(true)
+        }
+      } catch (err) {
+        alert('Error initiating DirectPay: ' + err.message)
+        setShowPaymentModal(true)
+      } finally {
+        setDirectPayLoading(false)
+      }
+    } else {
+      setDepositMsg(null)
+      setShowPaymentModal(true)
+    }
   }
 
   const handleConfirmDeposit = async (e) => {
@@ -636,45 +751,87 @@ export default function WalletPage() {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                <button
-                  type="button"
-                  onClick={() => setRechargeChannel('qr_code')}
-                  style={{
-                    background: rechargeChannel === 'qr_code' ? '#70e434' : '#1c261f',
-                    border: rechargeChannel === 'qr_code' ? '1.5px solid #85f34b' : '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '12px',
-                    padding: '10px 8px',
-                    cursor: 'pointer',
-                    boxShadow: rechargeChannel === 'qr_code' ? '0 0 14px rgba(112, 228, 52, 0.35)' : 'none'
-                  }}
-                >
-                  <div style={{ fontSize: '12px', fontWeight: 900, color: rechargeChannel === 'qr_code' ? '#081a0b' : '#ffffff', lineHeight: 1.3 }}>
-                    {rechargeMethod === 'usdt' ? 'USDT TRC20' : 'JazzCash / Easypaisa'}
-                  </div>
-                  <div style={{ fontSize: '11px', fontWeight: 800, color: rechargeChannel === 'qr_code' ? '#081a0b' : '#94a3b8' }}>
-                    {rechargeMethod === 'usdt' ? '(Instant 3% Bonus)' : 'QR code'}
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setRechargeChannel('transfer')}
-                  style={{
-                    background: rechargeChannel === 'transfer' ? '#70e434' : '#1c261f',
-                    border: rechargeChannel === 'transfer' ? '1.5px solid #85f34b' : '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '12px',
-                    padding: '10px 8px',
-                    cursor: 'pointer',
-                    boxShadow: rechargeChannel === 'transfer' ? '0 0 14px rgba(112, 228, 52, 0.35)' : 'none'
-                  }}
-                >
-                  <div style={{ fontSize: '12px', fontWeight: 900, color: rechargeChannel === 'transfer' ? '#081a0b' : '#ffffff', lineHeight: 1.3 }}>
-                    {rechargeMethod === 'usdt' ? 'USDT BEP20' : 'QR Code'}
-                  </div>
-                  <div style={{ fontSize: '11px', fontWeight: 800, color: rechargeChannel === 'transfer' ? '#081a0b' : '#94a3b8' }}>
-                    {rechargeMethod === 'usdt' ? '(Binance Smart Chain)' : 'Use transfer'}
-                  </div>
-                </button>
+                {rechargeMethod === 'usdt' ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setRechargeChannel('trc20')}
+                      style={{
+                        background: rechargeChannel !== 'bep20' ? '#70e434' : '#1c261f',
+                        border: rechargeChannel !== 'bep20' ? '1.5px solid #85f34b' : '1px solid rgba(255, 255, 255, 0.08)',
+                        borderRadius: '12px',
+                        padding: '10px 8px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <div style={{ fontSize: '12px', fontWeight: 900, color: rechargeChannel !== 'bep20' ? '#081a0b' : '#ffffff', lineHeight: 1.3 }}>
+                        USDT TRC20
+                      </div>
+                      <div style={{ fontSize: '11px', fontWeight: 800, color: rechargeChannel !== 'bep20' ? '#081a0b' : '#94a3b8' }}>
+                        (Instant +3% Bonus)
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRechargeChannel('bep20')}
+                      style={{
+                        background: rechargeChannel === 'bep20' ? '#70e434' : '#1c261f',
+                        border: rechargeChannel === 'bep20' ? '1.5px solid #85f34b' : '1px solid rgba(255, 255, 255, 0.08)',
+                        borderRadius: '12px',
+                        padding: '10px 8px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <div style={{ fontSize: '12px', fontWeight: 900, color: rechargeChannel === 'bep20' ? '#081a0b' : '#ffffff', lineHeight: 1.3 }}>
+                        USDT BEP20
+                      </div>
+                      <div style={{ fontSize: '11px', fontWeight: 800, color: rechargeChannel === 'bep20' ? '#081a0b' : '#94a3b8' }}>
+                        (Binance Smart Chain)
+                      </div>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setRechargeChannel('directpay')}
+                      style={{
+                        background: rechargeChannel === 'directpay' ? '#70e434' : '#1c261f',
+                        border: rechargeChannel === 'directpay' ? '1.5px solid #85f34b' : '1px solid rgba(255, 255, 255, 0.08)',
+                        borderRadius: '12px',
+                        padding: '10px 8px',
+                        cursor: 'pointer',
+                        boxShadow: rechargeChannel === 'directpay' ? '0 0 14px rgba(112, 228, 52, 0.35)' : 'none'
+                      }}
+                    >
+                      <div style={{ fontSize: '12px', fontWeight: 900, color: rechargeChannel === 'directpay' ? '#081a0b' : '#ffffff', lineHeight: 1.3 }}>
+                        ⚡ DirectPay (Auto)
+                      </div>
+                      <div style={{ fontSize: '11px', fontWeight: 800, color: rechargeChannel === 'directpay' ? '#081a0b' : '#94a3b8' }}>
+                        Instant Auto Credited
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRechargeChannel('transfer')}
+                      style={{
+                        background: rechargeChannel === 'transfer' ? '#70e434' : '#1c261f',
+                        border: rechargeChannel === 'transfer' ? '1.5px solid #85f34b' : '1px solid rgba(255, 255, 255, 0.08)',
+                        borderRadius: '12px',
+                        padding: '10px 8px',
+                        cursor: 'pointer',
+                        boxShadow: rechargeChannel === 'transfer' ? '0 0 14px rgba(112, 228, 52, 0.35)' : 'none'
+                      }}
+                    >
+                      <div style={{ fontSize: '12px', fontWeight: 900, color: rechargeChannel === 'transfer' ? '#081a0b' : '#ffffff', lineHeight: 1.3 }}>
+                        📱 Manual Transfer
+                      </div>
+                      <div style={{ fontSize: '11px', fontWeight: 800, color: rechargeChannel === 'transfer' ? '#081a0b' : '#94a3b8' }}>
+                        Scan QR &amp; Enter TID
+                      </div>
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
@@ -784,10 +941,11 @@ export default function WalletPage() {
               )}
             </div>
 
-            {/* 8. Full-Width Vibrant Green Deposit Button (Screenshots 1 & 2) */}
+            {/* 8. Full-Width Vibrant Green Deposit Button (DirectPay & Manual) */}
             <button
               type="button"
               onClick={handleInitiateDeposit}
+              disabled={directPayLoading}
               style={{
                 background: 'linear-gradient(90deg, #5ec831 0%, #43a31e 100%)',
                 border: 'none',
@@ -797,12 +955,13 @@ export default function WalletPage() {
                 fontSize: '16.5px',
                 fontWeight: 900,
                 letterSpacing: '0.4px',
-                cursor: 'pointer',
+                cursor: directPayLoading ? 'not-allowed' : 'pointer',
+                opacity: directPayLoading ? 0.7 : 1,
                 boxShadow: '0 4px 18px rgba(94, 200, 49, 0.45)',
                 transition: 'transform 0.15s, opacity 0.15s'
               }}
             >
-              Deposit
+              {directPayLoading ? 'Connecting DirectPay Gateway...' : rechargeChannel === 'directpay' && rechargeMethod !== 'usdt' ? '⚡ Pay with DirectPay (Instant)' : 'Deposit'}
             </button>
           </>
         )}
@@ -1532,6 +1691,65 @@ export default function WalletPage() {
             >
               {isSubmitting ? 'Submitting Payment...' : `Confirm & Submit Deposit`}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* DIRECTPAY VERIFICATION MODAL */}
+      {directPayStatusModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.85)',
+          backdropFilter: 'blur(6px)',
+          zIndex: 110,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px'
+        }}>
+          <div style={{
+            background: '#121e16',
+            border: directPayStatusModal.status === 'success' ? '2px solid #6dff38' : directPayStatusModal.status === 'error' ? '2px solid #ff3366' : '2px solid #ffd54f',
+            borderRadius: '20px',
+            maxWidth: '420px',
+            width: '100%',
+            padding: '24px 20px',
+            textAlign: 'center',
+            boxShadow: '0 0 35px rgba(0, 0, 0, 0.8)'
+          }}>
+            <div style={{ fontSize: '42px', marginBottom: '12px' }}>
+              {directPayStatusModal.status === 'success' ? '🎉' : directPayStatusModal.status === 'error' ? '❌' : '⏳'}
+            </div>
+            <div style={{
+              fontSize: '18px',
+              fontWeight: 900,
+              color: directPayStatusModal.status === 'success' ? '#6dff38' : directPayStatusModal.status === 'error' ? '#ff3366' : '#ffd54f',
+              marginBottom: '10px'
+            }}>
+              {directPayStatusModal.status === 'success' ? 'Payment Verified!' : directPayStatusModal.status === 'error' ? 'Payment Notice' : 'Verifying Payment...'}
+            </div>
+            <div style={{ fontSize: '13.5px', color: '#c4d7ca', lineHeight: 1.5, marginBottom: '20px' }}>
+              {directPayStatusModal.text}
+            </div>
+            {directPayStatusModal.status !== 'verifying' && (
+              <button
+                type="button"
+                onClick={() => setDirectPayStatusModal(null)}
+                style={{
+                  background: directPayStatusModal.status === 'success' ? 'linear-gradient(90deg, #5ec831 0%, #43a31e 100%)' : 'rgba(255, 255, 255, 0.1)',
+                  color: directPayStatusModal.status === 'success' ? '#081a0b' : '#ffffff',
+                  border: 'none',
+                  borderRadius: '999px',
+                  padding: '12px 28px',
+                  fontSize: '14px',
+                  fontWeight: 900,
+                  cursor: 'pointer'
+                }}
+              >
+                {directPayStatusModal.status === 'success' ? 'Play Games Now' : 'Close'}
+              </button>
+            )}
           </div>
         </div>
       )}
