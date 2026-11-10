@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Message content cannot be empty' })
   }
 
-  const result = saveChatMessage(user_key, {
+  const result = await saveChatMessage(user_key, {
     sender: 'agent',
     admin_name: admin_name || 'WinX Pro VIP Support Agent',
     text,

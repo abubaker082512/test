@@ -6,12 +6,12 @@ import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
 
 export default function Support() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [chatOpen, setChatOpen] = useState(true)
   
   const resolveUserKey = () => {
     if (user?.email) return user.email.toLowerCase().trim()
-    if (user?.id) return String(user.id).trim()
+    if (user?.id && !user.id.startsWith('guest_')) return String(user.id).trim()
     if (user?.uid) return String(user.uid).trim()
     if (typeof window !== 'undefined') {
       let guestId = localStorage.getItem('winx_guest_user_key')
@@ -47,11 +47,38 @@ export default function Support() {
   const mediaRecorderRef = useRef(null)
   const audioChunksRef = useRef([])
   const timerIntervalRef = useRef(null)
+  const durationRef = useRef(0)
 
-  // Keep userKey synced
+  // Keep userKey synced & auto-merge any previous guest messages when logging in
   useEffect(() => {
     const k = resolveUserKey()
     setUserKey(k)
+
+    if (user?.email && typeof window !== 'undefined') {
+      const guestKey = localStorage.getItem('winx_guest_user_key')
+      if (guestKey && guestKey !== k) {
+        try {
+          const guestSaved = localStorage.getItem(`winx_support_messages_${guestKey}`)
+          if (guestSaved) {
+            const guestMsgs = JSON.parse(guestSaved)
+            if (Array.isArray(guestMsgs) && guestMsgs.length > 1) {
+              // Sync guest messages under logged-in email
+              fetch('/api/support/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  action: 'sync',
+                  user_key: k,
+                  email: user.email,
+                  name: user.displayName || user.email,
+                  messages: guestMsgs
+                })
+              }).catch(() => {})
+            }
+          }
+        } catch (e) {}
+      }
+    }
   }, [user])
 
   // Bidirectional self-healing sync
@@ -102,7 +129,7 @@ export default function Support() {
     } catch (e) {}
   }
 
-  // Load cached messages immediately on mount
+  // Load cached messages immediately on mount & poll every 1.8s
   useEffect(() => {
     const k = resolveUserKey()
     if (typeof window !== 'undefined') {
@@ -117,7 +144,7 @@ export default function Support() {
       } catch (e) {}
     }
     fetchServerMessages(k)
-    const poll = setInterval(() => fetchServerMessages(k), 2200)
+    const poll = setInterval(() => fetchServerMessages(k), 1800)
     return () => clearInterval(poll)
   }, [user])
 
@@ -164,7 +191,7 @@ export default function Support() {
         const reader = new FileReader()
         reader.onloadend = () => {
           const base64Audio = reader.result
-          sendVoiceMessage(base64Audio, recordDuration)
+          sendVoiceMessage(base64Audio, durationRef.current || 1)
         }
         reader.readAsDataURL(audioBlob)
 
@@ -174,9 +201,14 @@ export default function Support() {
       mediaRecorderRef.current.start()
       setIsRecording(true)
       setRecordDuration(0)
+      durationRef.current = 0
 
       timerIntervalRef.current = setInterval(() => {
-        setRecordDuration(prev => prev + 1)
+        setRecordDuration(prev => {
+          const next = prev + 1
+          durationRef.current = next
+          return next
+        })
       }, 1000)
     } catch (err) {
       alert('Microphone access is required to record voice notes. Please allow microphone permissions in your browser.')
@@ -299,9 +331,17 @@ export default function Support() {
   }
 
   return (
-    <div className="app bbr-theme-app" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#070a14', overflow: 'hidden' }}>
+    <div className="app bbr-theme-app" style={{ 
+      height: '100dvh', 
+      maxHeight: '100dvh',
+      display: 'flex', 
+      flexDirection: 'column', 
+      background: '#070a14', 
+      overflow: 'hidden',
+      position: 'relative'
+    }}>
       <Head>
-        <title>24/7 Live Support | WinX Pro Official</title>
+        <title>24/7 VIP Live Support | WinX Pro Official</title>
       </Head>
 
       <NavBar />
@@ -309,19 +349,19 @@ export default function Support() {
       {/* Main Support Viewport Container (Perfect fit between NavBar and BottomNav) */}
       <div style={{
         flex: 1,
-        padding: '6px 8px 0',
+        padding: '4px 6px 0',
         maxWidth: '480px',
         margin: '0 auto',
         width: '100%',
         boxSizing: 'border-box',
-        height: 'calc(100vh - 65px)',
         overflow: 'hidden',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        paddingBottom: '68px' /* Clean margin above fixed BottomNav */
       }}>
         
         {!chatOpen ? (
-          <div style={{ overflowY: 'auto', paddingBottom: '70px' }}>
+          <div style={{ overflowY: 'auto', padding: '12px 6px 20px', flex: 1 }}>
             {/* Header Banner */}
             <div style={{
               background: 'linear-gradient(135deg, #0e1e14 0%, #173622 60%, #0a140d 100%)',
@@ -452,12 +492,11 @@ export default function Support() {
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
-            height: 'calc(100vh - 128px)',
-            maxHeight: 'calc(100vh - 128px)',
+            height: '100%',
             background: '#0b141a',
             borderRadius: '16px',
             overflow: 'hidden',
-            border: '1px solid rgba(37, 211, 102, 0.25)',
+            border: '1.5px solid rgba(37, 211, 102, 0.35)',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.7)'
           }}>
             {/* WhatsApp Top Navigation Bar */}
@@ -519,7 +558,7 @@ export default function Support() {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                     <span style={{ fontSize: '14px', fontWeight: 800, color: '#e9edef' }}>WinX Pro Official</span>
-                    {/* Blue Verified Tick */}
+                    {/* Verified Green Tick */}
                     <span style={{
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -536,22 +575,22 @@ export default function Support() {
                     </span>
                   </div>
                   <div style={{ fontSize: '11px', color: '#25d366', fontWeight: 600 }}>
-                    online
+                    online 24/7
                   </div>
                 </div>
               </div>
 
               {/* Status Pill */}
               <div style={{
-                background: 'rgba(37, 211, 102, 0.1)',
-                border: '1px solid rgba(37, 211, 102, 0.3)',
-                padding: '3px 8px',
+                background: 'rgba(37, 211, 102, 0.15)',
+                border: '1px solid rgba(37, 211, 102, 0.4)',
+                padding: '3px 9px',
                 borderRadius: '999px',
-                fontSize: '10.5px',
+                fontSize: '11px',
                 color: '#25d366',
-                fontWeight: 700
+                fontWeight: 800
               }}>
-                24/7 VIP
+                VIP Support
               </div>
             </div>
 
@@ -577,7 +616,7 @@ export default function Support() {
                   onClick={() => handleSend(null, chip.query)}
                   style={{
                     background: '#182229',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    border: '1px solid rgba(37, 211, 102, 0.2)',
                     color: '#8696a0',
                     borderRadius: '16px',
                     padding: '4px 10px',
@@ -602,7 +641,7 @@ export default function Support() {
               flexDirection: 'column',
               gap: '8px',
               background: '#0b141a',
-              backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0)',
+              backgroundImage: 'radial-gradient(rgba(37, 211, 102, 0.06) 1px, transparent 0)',
               backgroundSize: '16px 16px'
             }}>
               {/* WhatsApp Date Chip */}

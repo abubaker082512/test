@@ -73,25 +73,25 @@
     "id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "user_id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "email": "abtandco18@gmail.com",
-    "balance": 1011.9,
+    "balance": 1021.9,
     "currency": "PKR",
-    "updated_at": "2026-11-10T16:45:52.707+00:00"
+    "updated_at": "2026-11-10T18:17:42.726+00:00"
   },
   "abtandco18@gmail.com": {
     "id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "user_id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "email": "abtandco18@gmail.com",
-    "balance": 1011.9,
+    "balance": 1021.9,
     "currency": "PKR",
-    "updated_at": "2026-11-10T16:45:52.707+00:00"
+    "updated_at": "2026-11-10T18:17:42.726+00:00"
   },
   "abtandco18": {
     "id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "user_id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "email": "abtandco18@gmail.com",
-    "balance": 1011.9,
+    "balance": 961.9,
     "currency": "PKR",
-    "updated_at": "2026-11-10T16:45:52.707+00:00"
+    "updated_at": "2026-11-10T18:17:42.465Z"
   },
   "d3fd1e06-7a45-490a-8ce7-1a812e982b8d": {
     "id": "d3fd1e06-7a45-490a-8ce7-1a812e982b8d",
@@ -172,5 +172,29 @@
     "balance": 0,
     "currency": "PKR",
     "updated_at": "2026-09-13T16:38:22.684387+00:00"
+  },
+  "5a2da2fd-c652-4aaf-a3ea-8cc7223d5a75": {
+    "id": "5a2da2fd-c652-4aaf-a3ea-8cc7223d5a75",
+    "user_id": "5a2da2fd-c652-4aaf-a3ea-8cc7223d5a75",
+    "email": "player_auto_1794331009976@winxpro.com.pk",
+    "balance": 0,
+    "currency": "PKR",
+    "updated_at": "2026-11-10T17:16:49.962875+00:00"
+  },
+  "player_auto_1794331009976@winxpro.com.pk": {
+    "id": "5a2da2fd-c652-4aaf-a3ea-8cc7223d5a75",
+    "user_id": "5a2da2fd-c652-4aaf-a3ea-8cc7223d5a75",
+    "email": "player_auto_1794331009976@winxpro.com.pk",
+    "balance": 0,
+    "currency": "PKR",
+    "updated_at": "2026-11-10T17:16:49.962875+00:00"
+  },
+  "player_auto_1794331009976": {
+    "id": "5a2da2fd-c652-4aaf-a3ea-8cc7223d5a75",
+    "user_id": "5a2da2fd-c652-4aaf-a3ea-8cc7223d5a75",
+    "email": "player_auto_1794331009976@winxpro.com.pk",
+    "balance": 0,
+    "currency": "PKR",
+    "updated_at": "2026-11-10T17:16:49.962875+00:00"
   }
 }

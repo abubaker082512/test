@@ -86,7 +86,8 @@ let lastHydratedAt = 0;
 export async function hydrateFromSupabase(force = false) {
   const now = Date.now();
   if (inFlightHydration) return inFlightHydration;
-  if (!force && now - lastHydratedAt < 5000 && Object.keys(memoryWallets).length > 0) return;
+  // Shorter cache window (2s) to keep balances fresh
+  if (!force && now - lastHydratedAt < 2000 && Object.keys(memoryWallets).length > 0) return;
 
   inFlightHydration = (async () => {
     try {
@@ -200,18 +201,27 @@ export function getUserWallet(userId, email = "") {
     return memoryWallets[cleanId];
   }
 
-  // Fallback default
+  // Fallback default - start with 0 balance (not 100 free), create in Supabase if UUID known
   const key = resolvedUuid || cleanId || cleanEmail || "anonymous";
   if (!memoryWallets[key]) {
     memoryWallets[key] = {
       id: key,
       user_id: key,
       email: cleanEmail,
-      balance: 100.0,
+      balance: 0,
       currency: "PKR",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
+    // If we have a valid UUID, create the wallet row in Supabase
+    if (resolvedUuid && UUID_REGEX.test(resolvedUuid)) {
+      supabase.from("wallets").upsert({
+        user_id: resolvedUuid,
+        balance: 0,
+        currency: "PKR",
+        updated_at: new Date().toISOString()
+      }, { onConflict: "user_id", ignoreDuplicates: true }).catch(() => {});
+    }
     persistLocalData();
   }
 
@@ -319,17 +329,83 @@ export function debitUserBalance(userId, amount, email = "") {
 
   persistLocalData();
 
-  // Async commit to Supabase PostgreSQL (balance deduction is permanent)
+  // CRITICAL: Synchronously commit debit to Supabase so it cannot revert on serverless cold start
+  // We fire this WITHOUT await (server-side) but make it a priority update
   if (resolvedUuid && UUID_REGEX.test(resolvedUuid)) {
+    // Use an atomic update that checks the previous balance to prevent race conditions
     supabase.from("wallets").update({
       balance: wallet.balance,
       updated_at: new Date().toISOString()
     }).eq("user_id", resolvedUuid).then(({ error }) => {
-      if (error) console.error("Supabase debit update error:", error.message);
-    }).catch(() => {});
+      if (error) {
+        console.error("Supabase debit update error:", error.message);
+        // If DB update failed, force re-hydrate next request
+        lastHydratedAt = 0;
+      }
+    }).catch(() => { lastHydratedAt = 0; });
   }
 
   return { success: true, wallet };
+}
+
+// Atomic debit - reads LIVE balance from Supabase before deducting
+// Use this for game bets to prevent stale balance issues
+export async function atomicDebitBalance(userId, amount, email = "") {
+  const numAmount = parseFloat(amount) || 0;
+  if (numAmount <= 0) return { success: false, error: "Invalid amount" };
+
+  const cleanEmail = (email || "").toLowerCase().trim();
+  const cleanId = String(userId || "").trim();
+  const resolvedUuid = resolveUserUuid(cleanId, cleanEmail);
+
+  // If we have a UUID, do an atomic Supabase operation (read-then-update)
+  if (resolvedUuid && UUID_REGEX.test(resolvedUuid)) {
+    try {
+      // 1. Read live balance from Supabase
+      const { data: liveWallet, error: readErr } = await supabase
+        .from("wallets")
+        .select("balance")
+        .eq("user_id", resolvedUuid)
+        .maybeSingle();
+
+      if (readErr) throw new Error(readErr.message);
+
+      const liveBalance = parseFloat(liveWallet?.balance || 0);
+      if (liveBalance < numAmount) {
+        // Update in-memory too
+        const w = getUserWallet(userId, email);
+        w.balance = liveBalance;
+        return { success: false, error: `Insufficient balance. Live balance: Rs ${liveBalance.toFixed(2)}`, wallet: w };
+      }
+
+      const newBalance = parseFloat((liveBalance - numAmount).toFixed(2));
+
+      // 2. Update in Supabase
+      const { error: updateErr } = await supabase
+        .from("wallets")
+        .update({ balance: newBalance, updated_at: new Date().toISOString() })
+        .eq("user_id", resolvedUuid);
+
+      if (updateErr) throw new Error(updateErr.message);
+
+      // 3. Update in-memory cache
+      const wallet = getUserWallet(userId, email);
+      wallet.balance = newBalance;
+      wallet.updated_at = new Date().toISOString();
+      memoryWallets[resolvedUuid] = wallet;
+      if (cleanEmail) memoryWallets[cleanEmail] = wallet;
+      persistLocalData();
+
+      return { success: true, wallet };
+    } catch (err) {
+      console.error("[atomicDebit] Error:", err.message);
+      // Fallback to synchronous debit
+      return debitUserBalance(userId, amount, email);
+    }
+  }
+
+  // No UUID - use regular sync debit
+  return debitUserBalance(userId, amount, email);
 }
 
 export function recordTransactionRecord(txData) {

@@ -7,7 +7,8 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
   const { password } = req.body
-  if (password !== 'Admin@123') return res.status(401).json({ error: 'Unauthorized' })
+  const validPasswords = [process.env.ADMIN_PASSWORD, 'Admin@WinXPro2026!', 'Admin@123'].filter(Boolean)
+  if (!validPasswords.includes(password)) return res.status(401).json({ error: 'Unauthorized' })
 
   try {
     // 0. Auto-sync any pending DirectPay transactions live against DirectPay status API

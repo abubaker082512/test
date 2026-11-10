@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     const { user_key } = req.query
     if (!user_key) return res.status(400).json({ error: 'Missing user_key' })
-    const thread = getChatThread(user_key)
+    const thread = await getChatThread(user_key)
     markThreadAsRead(user_key, 'user')
     return res.status(200).json({ success: true, thread, messages: thread.messages })
   }
@@ -23,7 +23,7 @@ export default async function handler(req, res) {
 
     // Two-way self-healing sync from client localStorage
     if (action === 'sync' && Array.isArray(clientMessages)) {
-      const thread = syncClientMessages(user_key, clientMessages, email, name)
+      const thread = await syncClientMessages(user_key, clientMessages, email, name)
       return res.status(200).json({ success: true, thread, messages: thread.messages })
     }
 
@@ -31,7 +31,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Empty message' })
     }
 
-    const result = saveChatMessage(user_key, {
+    const result = await saveChatMessage(user_key, {
       sender: 'user',
       email: email || user_key,
       name: name || user_key,

@@ -1,1 +1,47 @@
-{}
+{
+  "abtandco18@gmail.com": {
+    "user_key": "abtandco18@gmail.com",
+    "email": "abtandco18@gmail.com",
+    "name": "Abt Player",
+    "created_at": "2026-11-10T18:08:23.655Z",
+    "updated_at": "2026-11-10T18:08:31.983Z",
+    "unread_admin": 0,
+    "unread_user": 0,
+    "messages": [
+      {
+        "id": "welcome_abtandco18@gmail.com",
+        "sender": "agent",
+        "admin_name": "WinX Pro Official VIP Support",
+        "text": "👋 Assalam-o-Alaikum! Welcome to WinX Pro Official 24/7 VIP Support. How can we help you with your deposits, withdrawals, or games today?",
+        "time": "11:08 PM",
+        "timestamp": 1794334103655
+      },
+      {
+        "id": "msg_1794334103659_pb38vc",
+        "sender": "user",
+        "text": "Hello, testing 24/7 VIP live support!",
+        "image": null,
+        "imageUrl": null,
+        "audio": null,
+        "audioUrl": null,
+        "audio_duration": 0,
+        "time": "11:08 PM",
+        "timestamp": 1794334103659,
+        "admin_name": null
+      },
+      {
+        "id": "msg_1794334111983_wwoxsd",
+        "sender": "agent",
+        "text": "Welcome! Your deposit has been confirmed successfully.",
+        "image": null,
+        "imageUrl": null,
+        "audio": null,
+        "audioUrl": null,
+        "audio_duration": 0,
+        "time": "11:08 PM",
+        "timestamp": 1794334111983,
+        "admin_name": "WinX Pro VIP Specialist"
+      }
+    ]
+  }
+}

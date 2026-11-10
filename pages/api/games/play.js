@@ -1,5 +1,6 @@
-import { debitUserBalance, creditUserBalance, recordTransactionRecord, getUserWallet } from '../../../utils/walletStore';
+import { atomicDebitBalance, creditUserBalance, recordTransactionRecord, getUserWallet, resolveUserUuid } from '../../../utils/walletStore';
 import { updateWalletBalance, addTransaction } from '../../../utils/firebaseDb';
+import { supabase } from '../../../utils/supabaseClient';
 import {
   calculateCrashOutcome,
   calculateSuperAceSpin,
@@ -31,8 +32,8 @@ export default async function handler(req, res) {
   const risk = getRiskControls();
   const isRestricted = (risk.restrictedUsers || []).includes(user_id);
 
-  // 2. Debit Bet Amount
-  const debitRes = debitUserBalance(user_id, parsedBet, email);
+  // 2. Atomic Debit Bet Amount (Synchronously updates Supabase PostgreSQL to prevent reversion)
+  const debitRes = await atomicDebitBalance(user_id, parsedBet, email);
   if (!debitRes.success) {
     return res.status(400).json({
       success: false,
@@ -40,9 +41,12 @@ export default async function handler(req, res) {
     });
   }
 
+  const resolvedUid = resolveUserUuid(user_id, email) || debitRes.wallet.user_id || user_id;
+
   // Record wager transaction
   recordTransactionRecord({
-    user_id,
+    user_id: resolvedUid,
+    email,
     type: 'bet',
     amount: parsedBet,
     status: 'completed',
@@ -51,8 +55,8 @@ export default async function handler(req, res) {
   });
 
   try {
-    updateWalletBalance(user_id, debitRes.wallet.balance).catch(() => {});
-    addTransaction({ user_id, type: 'bet', amount: parsedBet, status: 'completed' }).catch(() => {});
+    updateWalletBalance(resolvedUid, debitRes.wallet.balance).catch(() => {});
+    addTransaction({ user_id: resolvedUid, type: 'bet', amount: parsedBet, status: 'completed' }).catch(() => {});
   } catch (e) {}
 
   let gameResult = {};
@@ -98,54 +102,42 @@ export default async function handler(req, res) {
       break;
     }
 
-    case 'mines':
-    case 'stake-mines': {
-      const totalMines = Number(params.mines || 3);
-      const openedCount = Number(params.openedTiles || 1);
-      const mult = calculateMinesOutcome(totalMines, openedCount, normalizedGame);
-      gameResult = {
-        multiplier: mult,
-        safe: true
-      };
-      finalPayout = parseFloat((parsedBet * mult).toFixed(2));
+    case 'mines': {
+      const minesCount = parseInt(params.mines) || 3;
+      const roundOutcome = calculateMinesOutcome(parsedBet, minesCount, params.revealedTiles || 1);
+      gameResult = roundOutcome;
+      finalPayout = roundOutcome.payout || 0;
       break;
     }
 
-    case 'plinko':
-    case 'stake-plinko': {
-      const rows = Number(params.rows || 12);
-      const riskLevel = params.risk || 'medium';
-      const plinkoRes = calculatePlinkoOutcome(rows, riskLevel, normalizedGame);
-      gameResult = plinkoRes;
-      finalPayout = parseFloat((parsedBet * plinkoRes.multiplier).toFixed(2));
+    case 'plinko': {
+      const rows = parseInt(params.rows) || 16;
+      const riskLevel = params.riskLevel || 'medium';
+      const outcome = calculatePlinkoOutcome(parsedBet, rows, riskLevel);
+      gameResult = outcome;
+      finalPayout = outcome.payout || 0;
       break;
     }
 
-    case 'limbo':
-    case 'limbo-rocket': {
-      const targetMult = parseFloat(params.targetMultiplier || 2.0);
-      const limboRes = calculateLimboOutcome(targetMult, normalizedGame);
-      gameResult = limboRes;
-      if (limboRes.isWin) {
-        finalPayout = parseFloat((parsedBet * targetMult).toFixed(2));
-      }
+    case 'limbo': {
+      const targetMult = parseFloat(params.targetMultiplier) || 2.0;
+      const outcome = calculateLimboOutcome(parsedBet, targetMult);
+      gameResult = outcome;
+      finalPayout = outcome.payout || 0;
       break;
     }
 
-    case 'roulette':
-    case 'roulette-pro': {
-      const outcome = calculateRouletteOutcome(normalizedGame);
-      const betType = params.betType || 'red';
+    case 'roulette': {
+      const outcome = calculateRouletteOutcome();
+      const betType = params.betType || 'color';
+      const betValue = params.betValue || 'red';
       let isWin = false;
       let mult = 0;
 
-      if (betType === outcome.color) {
+      if (betType === 'color' && outcome.color === betValue) {
         isWin = true;
         mult = 2.0;
-      } else if (betType === 'even' && outcome.isEven) {
-        isWin = true;
-        mult = 2.0;
-      } else if (Number(params.chosenNumber) === outcome.number) {
+      } else if (betType === 'number' && outcome.number === parseInt(betValue)) {
         isWin = true;
         mult = 36.0;
       }
@@ -171,10 +163,10 @@ export default async function handler(req, res) {
       gameResult.capped = true;
     }
 
-    // 5. Credit Payout to User
+    // 5. Credit Payout to User (permanently updates Supabase)
     const creditRes = creditUserBalance(user_id, finalPayout, email, `Won in ${game}`);
     recordTransactionRecord({
-      user_id: creditRes.user_id || user_id,
+      user_id: resolvedUid,
       email,
       type: 'payout',
       amount: finalPayout,
@@ -183,9 +175,24 @@ export default async function handler(req, res) {
       notes: `Won Rs ${finalPayout.toFixed(2)} on ${game}`
     });
 
+    // Record to bet_history
+    supabase.from('bet_history').insert({
+      user_id: resolvedUid,
+      user_email: email,
+      game_id: normalizedGame,
+      game_name: game || 'Casino Game',
+      bet_amount: parsedBet,
+      win_amount: finalPayout,
+      result: 'win',
+      multiplier: parsedBet > 0 ? parseFloat((finalPayout / parsedBet).toFixed(2)) : 1.0,
+      balance_before: parseFloat((debitRes.wallet.balance + parsedBet).toFixed(2)),
+      balance_after: creditRes.balance,
+      status: 'completed'
+    }).then(({ error }) => { if (error) console.error('bet_history win error:', error.message); });
+
     try {
-      updateWalletBalance(creditRes.user_id || user_id, creditRes.balance).catch(() => {});
-      addTransaction({ user_id: creditRes.user_id || user_id, type: 'payout', amount: finalPayout, status: 'completed' }).catch(() => {});
+      updateWalletBalance(resolvedUid, creditRes.balance).catch(() => {});
+      addTransaction({ user_id: resolvedUid, type: 'payout', amount: finalPayout, status: 'completed' }).catch(() => {});
     } catch (e) {}
 
     return res.status(200).json({
@@ -197,6 +204,21 @@ export default async function handler(req, res) {
       result: gameResult
     });
   }
+
+  // Record Loss in bet_history
+  supabase.from('bet_history').insert({
+    user_id: resolvedUid,
+    user_email: email,
+    game_id: normalizedGame,
+    game_name: game || 'Casino Game',
+    bet_amount: parsedBet,
+    win_amount: 0,
+    result: 'loss',
+    multiplier: 0,
+    balance_before: parseFloat((debitRes.wallet.balance + parsedBet).toFixed(2)),
+    balance_after: debitRes.wallet.balance,
+    status: 'completed'
+  }).then(({ error }) => { if (error) console.error('bet_history loss error:', error.message); });
 
   // Loss response
   const currentWallet = getUserWallet(user_id, email);

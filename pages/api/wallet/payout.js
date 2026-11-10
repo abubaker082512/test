@@ -1,6 +1,7 @@
 import { getActiveRiskConfig } from '../admin/risk-settings'
-import { creditUserBalance, recordTransactionRecord, getUserWallet } from '../../../utils/walletStore'
+import { creditUserBalance, recordTransactionRecord, resolveUserUuid } from '../../../utils/walletStore'
 import { updateWalletBalance, addTransaction } from '../../../utils/firebaseDb'
+import { supabase } from '../../../utils/supabaseClient'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
@@ -29,12 +30,13 @@ export default async function handler(req, res) {
   const maxCap = riskConfig.max_win_cap || 50000
   const payout = Math.min(rawPayout, maxCap)
 
-  // Credit payout
+  // Credit payout (permanent update to Supabase)
   const updatedWallet = creditUserBalance(user_id, payout, email || '', `Cashed out at ${effectiveMult}x`)
+  const resolvedUid = resolveUserUuid(user_id, email) || updatedWallet.user_id || user_id
 
   // Log transaction
   recordTransactionRecord({
-    user_id: updatedWallet.user_id || user_id,
+    user_id: resolvedUid,
     email: email || updatedWallet.email || '',
     type: 'payout',
     amount: payout,
@@ -43,17 +45,38 @@ export default async function handler(req, res) {
     notes: `Won Rs ${payout.toFixed(2)} (${effectiveMult}x)`
   })
 
+  // Record to bet_history
+  supabase.from('bet_history').insert({
+    user_id: resolvedUid,
+    user_email: email || updatedWallet.email || '',
+    game_id: game ? String(game).toLowerCase().replace(/\s+/g, '-') : 'custom-game',
+    game_name: game || 'Casino Game',
+    bet_amount: parseFloat(bet_amount || 0),
+    win_amount: payout,
+    result: payout > 0 ? 'win' : 'loss',
+    multiplier: effectiveMult,
+    balance_before: parseFloat((updatedWallet.balance - payout).toFixed(2)),
+    balance_after: updatedWallet.balance,
+    status: 'completed'
+  }).then(({ error }) => { if (error) console.error('bet_history payout error:', error.message); })
+
   // Background Firestore sync
   try {
-    updateWalletBalance(updatedWallet.user_id || user_id, updatedWallet.balance).catch(() => {})
+    updateWalletBalance(resolvedUid, updatedWallet.balance).catch(() => {})
     addTransaction({
-      user_id: updatedWallet.user_id || user_id,
+      user_id: resolvedUid,
       type: 'payout',
       amount: payout,
       status: 'completed',
-      notes: `Cashed out at ${effectiveMult}x`
+      multiplier: effectiveMult
     }).catch(() => {})
   } catch (e) {}
 
-  return res.status(200).json({ success: true, payout, new_balance: updatedWallet.balance, wallet: updatedWallet })
+  return res.status(200).json({
+    success: true,
+    payout,
+    multiplier: effectiveMult,
+    new_balance: updatedWallet.balance,
+    wallet: updatedWallet
+  })
 }

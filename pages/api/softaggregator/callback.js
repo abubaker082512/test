@@ -4,7 +4,8 @@
 // Balances & amounts are integers in cents (minor units, e.g. Rs 100.00 -> 10000 cents)
 
 import crypto from 'crypto';
-import { getUserWallet, getLiveUserWallet, creditUserBalance, debitUserBalance, recordTransactionRecord } from '../../../utils/walletStore.js';
+import { getUserWallet, getLiveUserWallet, creditUserBalance, atomicDebitBalance, recordTransactionRecord, resolveUserUuid } from '../../../utils/walletStore.js';
+import { supabase } from '../../../utils/supabaseClient.js';
 
 const SALT_KEY = process.env.SOFTAGGREGATOR_SALT_KEY || '748b7a8c4aada521';
 
@@ -51,7 +52,6 @@ export default async function handler(req, res) {
   }
 
   // Normalize username (SoftAggregator prefixes or passes user_username)
-  // e.g. "c1000273_test_player_winx" or "test_player_winx" or user ID
   const cleanUsername = String(username || '').replace(/^c\d+_/, '');
   const wallet = await getLiveUserWallet(cleanUsername, cleanUsername.includes('@') ? cleanUsername : '');
 
@@ -97,23 +97,43 @@ export default async function handler(req, res) {
       });
     }
 
-    const debitRes = debitUserBalance(cleanUsername, numAmountPkr);
-    const newBalPkr = parseFloat(debitRes.wallet?.balance || (currentBalPkr - numAmountPkr));
+    const targetUserId = wallet?.user_id || cleanUsername;
+    const targetEmail = wallet?.email || (cleanUsername.includes('@') ? cleanUsername : '');
+    const debitRes = await atomicDebitBalance(targetUserId, numAmountPkr, targetEmail);
+
+    const newBalPkr = parseFloat(debitRes.wallet?.balance !== undefined ? debitRes.wallet.balance : (currentBalPkr - numAmountPkr));
     const newBalCents = Math.round(newBalPkr * 100);
+    const resolvedUid = resolveUserUuid(targetUserId, targetEmail) || targetUserId;
 
     // Record ledger transaction
     const txId = call_id || `sg-debit-${Date.now()}`;
     recordTransactionRecord({
       id: txId,
       tx_id: txId,
-      user_id: wallet.user_id || cleanUsername,
+      user_id: resolvedUid,
+      email: targetEmail,
       type: 'bet',
       amount: numAmountPkr,
       balance_after: newBalPkr,
-      description: `SoftAggregator Bet | Game: ${game_id || 'Casino'} | Round: ${round_id || 'N/A'}`,
-      game_id: game_id,
+      method: `SoftAggregator ${game_id || 'Casino'}`,
+      notes: `SoftAggregator Bet | Game: ${game_id || 'Casino'} | Round: ${round_id || 'N/A'}`,
       metadata: { call_id, round_id, game_id, type, rb, source: 'softaggregator' }
     });
+
+    // Record in bet_history table in Supabase
+    supabase.from('bet_history').insert({
+      user_id: resolvedUid,
+      user_email: targetEmail,
+      game_id: game_id || 'softaggregator',
+      game_name: game_id ? `SoftAggregator (${game_id})` : 'Live Casino Game',
+      bet_amount: numAmountPkr,
+      win_amount: 0,
+      result: 'pending',
+      multiplier: 1.0,
+      balance_before: currentBalPkr,
+      balance_after: newBalPkr,
+      status: 'completed'
+    }).then(({ error }) => { if (error) console.error('bet_history debit error:', error.message); });
 
     if (call_id) seenCallIds.set(call_id, { timestamp: Date.now(), balance: newBalCents });
 
@@ -125,22 +145,42 @@ export default async function handler(req, res) {
 
   // 5. action: credit (add win - can arrive with no matching debit e.g. Free Spins/Jackpot)
   if (action === 'credit') {
-    const creditRes = creditUserBalance(cleanUsername, numAmountPkr);
-    const newBalPkr = parseFloat(creditRes?.balance || (currentBalPkr + numAmountPkr));
+    const targetUserId = wallet?.user_id || cleanUsername;
+    const targetEmail = wallet?.email || (cleanUsername.includes('@') ? cleanUsername : '');
+    const creditRes = creditUserBalance(targetUserId, numAmountPkr, targetEmail, `SoftAggregator Win on ${game_id || 'Casino'}`);
+
+    const newBalPkr = parseFloat(creditRes?.balance !== undefined ? creditRes.balance : (currentBalPkr + numAmountPkr));
     const newBalCents = Math.round(newBalPkr * 100);
+    const resolvedUid = resolveUserUuid(targetUserId, targetEmail) || targetUserId;
 
     const txId = call_id || `sg-credit-${Date.now()}`;
     recordTransactionRecord({
       id: txId,
       tx_id: txId,
-      user_id: wallet.user_id || cleanUsername,
+      user_id: resolvedUid,
+      email: targetEmail,
       type: 'win',
       amount: numAmountPkr,
       balance_after: newBalPkr,
-      description: `SoftAggregator Win | Game: ${game_id || 'Casino'} | Round: ${round_id || 'N/A'}`,
-      game_id: game_id,
+      method: `SoftAggregator Win ${game_id || 'Casino'}`,
+      notes: `SoftAggregator Win | Game: ${game_id || 'Casino'} | Round: ${round_id || 'N/A'}`,
       metadata: { call_id, round_id, game_id, type, rb, source: 'softaggregator' }
     });
+
+    // Record in bet_history table in Supabase
+    supabase.from('bet_history').insert({
+      user_id: resolvedUid,
+      user_email: targetEmail,
+      game_id: game_id || 'softaggregator',
+      game_name: game_id ? `SoftAggregator (${game_id})` : 'Live Casino Game',
+      bet_amount: 0,
+      win_amount: numAmountPkr,
+      result: 'win',
+      multiplier: 1.0,
+      balance_before: currentBalPkr,
+      balance_after: newBalPkr,
+      status: 'completed'
+    }).then(({ error }) => { if (error) console.error('bet_history credit error:', error.message); });
 
     if (call_id) seenCallIds.set(call_id, { timestamp: Date.now(), balance: newBalCents });
 

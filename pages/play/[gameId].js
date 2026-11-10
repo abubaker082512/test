@@ -74,8 +74,18 @@ export default function PlayGame() {
       return () => clearInterval(poll)
     }
     const onWalletUpdated = () => fetchWallet()
+    const onFrameMessage = (e) => {
+      if (e.data && e.data.type === 'WINX_BALANCE_SYNC' && typeof e.data.balance === 'number') {
+        setWallet(prev => prev ? ({ ...prev, balance: e.data.balance }) : { balance: e.data.balance, currency: 'PKR' })
+        window.dispatchEvent(new Event('wallet-updated'))
+      }
+    }
     window.addEventListener('wallet-updated', onWalletUpdated)
-    return () => window.removeEventListener('wallet-updated', onWalletUpdated)
+    window.addEventListener('message', onFrameMessage)
+    return () => {
+      window.removeEventListener('wallet-updated', onWalletUpdated)
+      window.removeEventListener('message', onFrameMessage)
+    }
   }, [user, authLoading])
 
   // Prevent recursive iframe embedding

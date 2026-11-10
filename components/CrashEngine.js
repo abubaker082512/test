@@ -93,13 +93,14 @@ export default function CrashEngine() {
     const res = await fetch('/api/wallet/bet', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: user.id, amount: betAmount })
+      body: JSON.stringify({ user_id: user.id, email: user.email, amount: betAmount, game: 'Crash' })
     })
     const data = await res.json()
     if (data.success) {
       setActiveBet({ amount: betAmount })
       setWallet(w => ({ ...w, balance: data.new_balance }))
-      setMessage({ type: 'success', text: `Bet Pi ${betAmount} placed! Cash out before it crashes!` })
+      if (typeof window !== 'undefined') window.dispatchEvent(new Event('wallet-updated'))
+      setMessage({ type: 'success', text: `Bet Rs ${betAmount} placed! Cash out before it crashes!` })
     } else {
       setMessage({ type: 'error', text: data.error })
     }
@@ -110,13 +111,14 @@ export default function CrashEngine() {
     const res = await fetch('/api/wallet/payout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: user.id, bet_amount: activeBet.amount, multiplier: displayMultiplier })
+      body: JSON.stringify({ user_id: user.id, email: user.email, bet_amount: activeBet.amount, multiplier: displayMultiplier, game: 'Crash' })
     })
     const data = await res.json()
     if (data.success) {
       setActiveBet(null)
       setWallet(w => ({ ...w, balance: data.new_balance }))
-      setMessage({ type: 'success', text: `Cashed out! +Pi ${data.payout.toFixed(2)} at ${displayMultiplier}x` })
+      if (typeof window !== 'undefined') window.dispatchEvent(new Event('wallet-updated'))
+      setMessage({ type: 'success', text: `Cashed out! +Rs ${data.payout.toFixed(2)} at ${displayMultiplier}x` })
     }
   }
 
