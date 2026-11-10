@@ -2,6 +2,7 @@
 // Launches a real-money or demo game on SoftAggregator and returns the session iframe URL
 
 import { launchGame, launchDemoGame } from '../../../utils/softAggregatorClient.js';
+import { registerPlayerUsername, getLiveUserWallet } from '../../../utils/walletStore.js';
 
 function extractLaunchUrl(response) {
   if (!response) return null;
@@ -38,14 +39,24 @@ export default async function handler(req, res) {
     return res.status(400).json({ success: false, error: 'gameid is required' });
   }
 
-  // Determine username
-  let username = user_id || '';
-  if (!username && email) {
-    username = email.split('@')[0].replace(/[^a-zA-Z0-9_-]/g, '');
+  // 1. Determine clean alphanumeric username for SoftAggregator
+  let username = '';
+  if (email && email.includes('@')) {
+    username = email.split('@')[0].replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 24);
+  } else if (user_id && !String(user_id).startsWith('user_')) {
+    username = String(user_id).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 24);
   }
   if (!username) {
     username = 'guest_player';
   }
+
+  // 2. Pre-register all username variants in walletStore so SoftAggregator callbacks instantly return full balance
+  registerPlayerUsername(username, user_id, email);
+  if (user_id) registerPlayerUsername(user_id, user_id, email);
+  registerPlayerUsername('c1000273_' + username, user_id, email);
+
+  // Warm up live wallet from Supabase
+  await getLiveUserWallet(user_id || username, email || '');
 
   const host = req.headers.host || 'winxpro.com.pk';
   const protocol = req.headers['x-forwarded-proto'] || 'https';

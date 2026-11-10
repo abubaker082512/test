@@ -12,10 +12,18 @@ let memoryWallets = {};
 let memoryTransactions = [];
 let memoryUserUuidMap = {};
 
+// Helper to compute local session safeId (matching AuthContext setLocalSession)
+export function computeSafeId(email) {
+  if (!email) return "";
+  return "user_" + Buffer.from(email.toLowerCase()).toString("base64").replace(/[^a-zA-Z0-9]/g, "").substring(0, 24);
+}
+
 // Known predefined UUID mapping
 const KNOWN_USERS = {
   "abtandco18@gmail.com": "23b47415-9592-4a87-a5ef-3a537cc31b27",
   "abtandco18": "23b47415-9592-4a87-a5ef-3a537cc31b27",
+  "user_YWJ0YW5kY28xOEBnbWFpbC5j": "23b47415-9592-4a87-a5ef-3a537cc31b27",
+  "user_YWJ0YW5kY28xOGdtYWlsY29t": "23b47415-9592-4a87-a5ef-3a537cc31b27",
   "akhuwat.com.pk@gmail.com": "d3fd1e06-7a45-490a-8ce7-1a812e982b8d",
   "akhuwat": "d3fd1e06-7a45-490a-8ce7-1a812e982b8d",
   "ca7adc60-4f05-42fa-8029-6ebf04b84fa6": "ca7adc60-4f05-42fa-8029-6ebf04b84fa6",
@@ -26,9 +34,31 @@ const KNOWN_USERS = {
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+export function stripOperatorPrefix(str) {
+  return String(str || "").trim().replace(/^c\d+_/, "");
+}
+
+export function registerPlayerUsername(username, userId = "", email = "") {
+  const cleanU = stripOperatorPrefix(username).toLowerCase().replace(/[^a-zA-Z0-9_-]/g, "");
+  const cleanEmail = (email || "").toLowerCase().trim();
+  const cleanId = stripOperatorPrefix(userId);
+  const resolvedUuid = resolveUserUuid(cleanId, cleanEmail);
+
+  if (cleanU) {
+    if (resolvedUuid) memoryUserUuidMap[cleanU] = resolvedUuid;
+    else if (cleanEmail) memoryUserUuidMap[cleanU] = cleanEmail;
+
+    const w = getUserWallet(cleanEmail || cleanId || cleanU);
+    if (w && w.balance !== undefined) {
+      memoryWallets[cleanU] = w;
+      memoryWallets['c1000273_' + cleanU] = w;
+    }
+  }
+}
+
 export function resolveUserUuid(userId, email = "") {
   const cleanEmail = (email || "").toLowerCase().trim();
-  const cleanId = String(userId || "").trim();
+  const cleanId = stripOperatorPrefix(userId);
 
   if (UUID_REGEX.test(cleanId)) return cleanId;
   if (cleanEmail && KNOWN_USERS[cleanEmail]) return KNOWN_USERS[cleanEmail];
@@ -36,10 +66,42 @@ export function resolveUserUuid(userId, email = "") {
   if (cleanEmail && memoryUserUuidMap[cleanEmail]) return memoryUserUuidMap[cleanEmail];
   if (cleanId && memoryUserUuidMap[cleanId]) return memoryUserUuidMap[cleanId];
 
+  // Check if cleanId is a safeId starting with 'user_'
+  if (cleanId.startsWith("user_")) {
+    for (const [em, uid] of Object.entries(memoryUserUuidMap)) {
+      if (em.includes("@")) {
+        const computed = computeSafeId(em);
+        if (computed === cleanId || cleanId.startsWith(computed.substring(0, 16))) {
+          memoryUserUuidMap[cleanId] = uid;
+          return uid;
+        }
+      }
+    }
+    for (const [em, uid] of Object.entries(KNOWN_USERS)) {
+      if (em.includes("@")) {
+        const computed = computeSafeId(em);
+        if (computed === cleanId || cleanId.startsWith(computed.substring(0, 16))) {
+          memoryUserUuidMap[cleanId] = uid;
+          return uid;
+        }
+      }
+    }
+  }
+
   // Check username prefix e.g. "abtandco18" from "abtandco18@gmail.com"
   const prefix = cleanEmail ? cleanEmail.split("@")[0] : (cleanId.includes("@") ? cleanId.split("@")[0] : cleanId);
   if (prefix && KNOWN_USERS[prefix]) return KNOWN_USERS[prefix];
   if (prefix && memoryUserUuidMap[prefix]) return memoryUserUuidMap[prefix];
+
+  // Search memoryUserUuidMap for any email starting with cleanId prefix
+  if (cleanId && !cleanId.includes("@")) {
+    for (const [em, uid] of Object.entries(memoryUserUuidMap)) {
+      if (em.includes("@") && em.toLowerCase().startsWith(cleanId.toLowerCase() + "@")) {
+        memoryUserUuidMap[cleanId] = uid;
+        return uid;
+      }
+    }
+  }
 
   return null;
 }
@@ -48,7 +110,17 @@ export function resolveUserUuid(userId, email = "") {
 function loadLocalData() {
   try {
     if (fs.existsSync(WALLETS_FILE)) {
-      memoryWallets = { ...memoryWallets, ...JSON.parse(fs.readFileSync(WALLETS_FILE, "utf8")) };
+      const loaded = JSON.parse(fs.readFileSync(WALLETS_FILE, "utf8"));
+      // Clean up any zero-balance safeId override entries or stale operator prefixes
+      for (const k of Object.keys(loaded)) {
+        if ((k.startsWith("user_") || /^c\d+_/.test(k)) && loaded[k]?.balance === 0) {
+          delete loaded[k];
+        }
+        if (/^c\d+_/.test(k)) {
+          delete loaded[k];
+        }
+      }
+      memoryWallets = { ...memoryWallets, ...loaded };
     } else if (fs.existsSync(TMP_WALLETS_FILE)) {
       memoryWallets = { ...memoryWallets, ...JSON.parse(fs.readFileSync(TMP_WALLETS_FILE, "utf8")) };
     }
@@ -98,8 +170,13 @@ export async function hydrateFromSupabase(force = false) {
           if (u.id && u.email) {
             const email = u.email.toLowerCase();
             const prefix = email.split("@")[0];
+            const safeId = computeSafeId(email);
+            const safeId2 = "user_" + Buffer.from(email.replace(/[^a-zA-Z0-9]/g, "")).toString("base64").replace(/[^a-zA-Z0-9]/g, "").substring(0, 24);
+
             memoryUserUuidMap[email] = u.id;
             memoryUserUuidMap[prefix] = u.id;
+            memoryUserUuidMap[safeId] = u.id;
+            memoryUserUuidMap[safeId2] = u.id;
             memoryUserUuidMap[u.id] = u.id;
           }
         }
@@ -125,6 +202,10 @@ export async function hydrateFromSupabase(force = false) {
             memoryWallets[email] = walletObj;
             const prefix = email.split("@")[0];
             memoryWallets[prefix] = walletObj;
+            const safeId = computeSafeId(email);
+            const safeId2 = "user_" + Buffer.from(email.replace(/[^a-zA-Z0-9]/g, "")).toString("base64").replace(/[^a-zA-Z0-9]/g, "").substring(0, 24);
+            memoryWallets[safeId] = walletObj;
+            memoryWallets[safeId2] = walletObj;
           }
         }
       }
@@ -174,34 +255,63 @@ export async function hydrateFromSupabase(force = false) {
 loadLocalData();
 hydrateFromSupabase().catch(() => {});
 
-export function getWalletsMap() {
-  return memoryWallets;
-}
-
 export function getAllWalletsList() {
   return Object.values(memoryWallets);
 }
 
 export function getUserWallet(userId, email = "") {
-  const cleanEmail = (email || "").toLowerCase().trim();
-  const cleanId = String(userId || "").trim();
-  const resolvedUuid = resolveUserUuid(cleanId, cleanEmail);
+  let cleanEmail = (email || "").toLowerCase().trim();
+  const cleanId = stripOperatorPrefix(userId);
 
+  // If cleanEmail is empty, try to derive it from cleanId
+  if (!cleanEmail) {
+    if (cleanId.includes("@")) {
+      cleanEmail = cleanId;
+    } else if (memoryWallets[cleanId]?.email) {
+      cleanEmail = memoryWallets[cleanId].email.toLowerCase().trim();
+    }
+  }
+
+  let resolvedUuid = resolveUserUuid(cleanId, cleanEmail);
+
+  // If resolved to a known user UUID, ALWAYS return the authoritative wallet
   if (resolvedUuid && memoryWallets[resolvedUuid]) {
     const w = memoryWallets[resolvedUuid];
     if (cleanEmail && !w.email) w.email = cleanEmail;
+    if (cleanId) memoryWallets[cleanId] = w;
+    if (cleanEmail) memoryWallets[cleanEmail] = w;
     return w;
   }
 
   if (cleanEmail && memoryWallets[cleanEmail]) {
-    return memoryWallets[cleanEmail];
+    const w = memoryWallets[cleanEmail];
+    if (cleanId) memoryWallets[cleanId] = w;
+    return w;
   }
 
-  if (cleanId && memoryWallets[cleanId]) {
+  // If guest player, ensure active trial balance
+  if (cleanId === "guest_player" || cleanId.startsWith("guest_")) {
+    if (!memoryWallets[cleanId] || memoryWallets[cleanId].balance < 500) {
+      memoryWallets[cleanId] = {
+        id: cleanId,
+        user_id: cleanId,
+        email: "guest@winxpro.com.pk",
+        balance: 10000.0,
+        currency: "PKR",
+        isTrial: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      persistLocalData();
+    }
     return memoryWallets[cleanId];
   }
 
-  // Fallback default - start with 0 balance (not 100 free), create in Supabase if UUID known
+  if (cleanId && memoryWallets[cleanId] && memoryWallets[cleanId].balance > 0) {
+    return memoryWallets[cleanId];
+  }
+
+  // Fallback default
   const key = resolvedUuid || cleanId || cleanEmail || "anonymous";
   if (!memoryWallets[key]) {
     memoryWallets[key] = {
@@ -213,7 +323,6 @@ export function getUserWallet(userId, email = "") {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
-    // If we have a valid UUID, create the wallet row in Supabase
     if (resolvedUuid && UUID_REGEX.test(resolvedUuid)) {
       supabase.from("wallets").upsert({
         user_id: resolvedUuid,
@@ -230,8 +339,47 @@ export function getUserWallet(userId, email = "") {
 
 // Real-time async wallet fetch from Supabase
 export async function getLiveUserWallet(userId, email = "") {
-  const cleanEmail = (email || "").toLowerCase().trim();
-  const cleanId = String(userId || "").trim();
+  let cleanEmail = (email || "").toLowerCase().trim();
+  const cleanId = stripOperatorPrefix(userId);
+
+  // If cleanEmail is empty, try to derive it from cleanId or memoryWallets
+  if (!cleanEmail) {
+    if (cleanId.includes("@")) {
+      cleanEmail = cleanId;
+    } else if (memoryWallets[cleanId]?.email) {
+      cleanEmail = memoryWallets[cleanId].email.toLowerCase().trim();
+    } else if (cleanId.startsWith("user_")) {
+      for (const [em, uid] of Object.entries(memoryUserUuidMap)) {
+        if (em.includes("@")) {
+          const computed = computeSafeId(em);
+          if (computed === cleanId || cleanId.startsWith(computed.substring(0, 16))) {
+            cleanEmail = em.toLowerCase();
+            break;
+          }
+        }
+      }
+      if (!cleanEmail) {
+        for (const [em, uid] of Object.entries(KNOWN_USERS)) {
+          if (em.includes("@")) {
+            const computed = computeSafeId(em);
+            if (computed === cleanId || cleanId.startsWith(computed.substring(0, 16))) {
+              cleanEmail = em.toLowerCase();
+              break;
+            }
+          }
+        }
+      }
+    } else {
+      // Check if cleanId matches any username prefix e.g. "abtandco18"
+      for (const em of Object.keys(memoryUserUuidMap)) {
+        if (em.includes("@") && em.toLowerCase().startsWith(cleanId.toLowerCase() + "@")) {
+          cleanEmail = em.toLowerCase();
+          break;
+        }
+      }
+    }
+  }
+
   let resolvedUuid = resolveUserUuid(cleanId, cleanEmail);
 
   // If new user not in mapping yet, query/create in Supabase
@@ -270,29 +418,36 @@ export async function getLiveUserWallet(userId, email = "") {
         };
         memoryWallets[resolvedUuid] = walletObj;
         if (cleanEmail) memoryWallets[cleanEmail] = walletObj;
+        if (cleanId) memoryWallets[cleanId] = walletObj;
         persistLocalData();
         return walletObj;
       }
     } catch (e) {}
   }
 
-  return getUserWallet(userId, email);
+  return getUserWallet(userId, cleanEmail);
 }
 
 export function creditUserBalance(userId, amount, email = "", notes = "") {
   const numAmount = parseFloat(amount) || 0;
-  if (numAmount <= 0) return getUserWallet(userId, email);
+  const cleanId = stripOperatorPrefix(userId);
+  let cleanEmail = (email || "").toLowerCase().trim();
+  if (numAmount <= 0) return getUserWallet(cleanId, cleanEmail);
 
-  const wallet = getUserWallet(userId, email);
+  const wallet = getUserWallet(cleanId, cleanEmail);
   wallet.balance = parseFloat((wallet.balance + numAmount).toFixed(2));
   wallet.updated_at = new Date().toISOString();
-  if (email && !wallet.email) wallet.email = email.toLowerCase().trim();
+  if (cleanEmail && !wallet.email) wallet.email = cleanEmail;
 
-  const resolvedUuid = resolveUserUuid(userId, email) || wallet.user_id;
+  const resolvedUuid = resolveUserUuid(cleanId, cleanEmail) || wallet.user_id;
 
   memoryWallets[wallet.user_id] = wallet;
+  if (cleanId) {
+    memoryWallets[cleanId] = wallet;
+    memoryWallets['c1000273_' + cleanId] = wallet;
+  }
   if (resolvedUuid && memoryWallets[resolvedUuid]) memoryWallets[resolvedUuid] = wallet;
-  if (email && memoryWallets[email.toLowerCase()]) memoryWallets[email.toLowerCase()] = wallet;
+  if (cleanEmail && memoryWallets[cleanEmail]) memoryWallets[cleanEmail] = wallet;
 
   persistLocalData();
 
@@ -311,7 +466,9 @@ export function creditUserBalance(userId, amount, email = "", notes = "") {
 
 export function debitUserBalance(userId, amount, email = "") {
   const numAmount = parseFloat(amount) || 0;
-  const wallet = getUserWallet(userId, email);
+  const cleanId = stripOperatorPrefix(userId);
+  let cleanEmail = (email || "").toLowerCase().trim();
+  const wallet = getUserWallet(cleanId, cleanEmail);
 
   if (wallet.balance < numAmount) {
     return { success: false, error: "Insufficient balance", wallet };
@@ -319,27 +476,28 @@ export function debitUserBalance(userId, amount, email = "") {
 
   wallet.balance = parseFloat((wallet.balance - numAmount).toFixed(2));
   wallet.updated_at = new Date().toISOString();
-  if (email && !wallet.email) wallet.email = email.toLowerCase().trim();
+  if (cleanEmail && !wallet.email) wallet.email = cleanEmail;
 
-  const resolvedUuid = resolveUserUuid(userId, email) || wallet.user_id;
+  const resolvedUuid = resolveUserUuid(cleanId, cleanEmail) || wallet.user_id;
 
   memoryWallets[wallet.user_id] = wallet;
+  if (cleanId) {
+    memoryWallets[cleanId] = wallet;
+    memoryWallets['c1000273_' + cleanId] = wallet;
+  }
   if (resolvedUuid && memoryWallets[resolvedUuid]) memoryWallets[resolvedUuid] = wallet;
-  if (email && memoryWallets[email.toLowerCase()]) memoryWallets[email.toLowerCase()] = wallet;
+  if (cleanEmail && memoryWallets[cleanEmail]) memoryWallets[cleanEmail] = wallet;
 
   persistLocalData();
 
   // CRITICAL: Synchronously commit debit to Supabase so it cannot revert on serverless cold start
-  // We fire this WITHOUT await (server-side) but make it a priority update
   if (resolvedUuid && UUID_REGEX.test(resolvedUuid)) {
-    // Use an atomic update that checks the previous balance to prevent race conditions
     supabase.from("wallets").update({
       balance: wallet.balance,
       updated_at: new Date().toISOString()
     }).eq("user_id", resolvedUuid).then(({ error }) => {
       if (error) {
         console.error("Supabase debit update error:", error.message);
-        // If DB update failed, force re-hydrate next request
         lastHydratedAt = 0;
       }
     }).catch(() => { lastHydratedAt = 0; });
@@ -349,16 +507,24 @@ export function debitUserBalance(userId, amount, email = "") {
 }
 
 // Atomic debit - reads LIVE balance from Supabase before deducting
-// Use this for game bets to prevent stale balance issues
 export async function atomicDebitBalance(userId, amount, email = "") {
   const numAmount = parseFloat(amount) || 0;
   if (numAmount <= 0) return { success: false, error: "Invalid amount" };
 
-  const cleanEmail = (email || "").toLowerCase().trim();
-  const cleanId = String(userId || "").trim();
+  let cleanEmail = (email || "").toLowerCase().trim();
+  const cleanId = stripOperatorPrefix(userId);
+
+  // If email not provided, derive it
+  if (!cleanEmail) {
+    if (cleanId.includes("@")) {
+      cleanEmail = cleanId;
+    } else if (memoryWallets[cleanId]?.email) {
+      cleanEmail = memoryWallets[cleanId].email.toLowerCase().trim();
+    }
+  }
+
   const resolvedUuid = resolveUserUuid(cleanId, cleanEmail);
 
-  // If we have a UUID, do an atomic Supabase operation (read-then-update)
   if (resolvedUuid && UUID_REGEX.test(resolvedUuid)) {
     try {
       // 1. Read live balance from Supabase
@@ -372,7 +538,6 @@ export async function atomicDebitBalance(userId, amount, email = "") {
 
       const liveBalance = parseFloat(liveWallet?.balance || 0);
       if (liveBalance < numAmount) {
-        // Update in-memory too
         const w = getUserWallet(userId, email);
         w.balance = liveBalance;
         return { success: false, error: `Insufficient balance. Live balance: Rs ${liveBalance.toFixed(2)}`, wallet: w };
@@ -394,17 +559,16 @@ export async function atomicDebitBalance(userId, amount, email = "") {
       wallet.updated_at = new Date().toISOString();
       memoryWallets[resolvedUuid] = wallet;
       if (cleanEmail) memoryWallets[cleanEmail] = wallet;
+      if (cleanId) memoryWallets[cleanId] = wallet;
       persistLocalData();
 
       return { success: true, wallet };
     } catch (err) {
       console.error("[atomicDebit] Error:", err.message);
-      // Fallback to synchronous debit
       return debitUserBalance(userId, amount, email);
     }
   }
 
-  // No UUID - use regular sync debit
   return debitUserBalance(userId, amount, email);
 }
 
@@ -448,20 +612,35 @@ export function recordTransactionRecord(txData) {
       type: record.type,
       amount: record.amount,
       status: record.status,
-      method: record.method || null,
-      tx_id: String(record.tx_id || ""),
-      notes: record.notes || null,
+      method: record.method,
+      tx_id: record.tx_id,
+      notes: record.notes,
       created_at: record.created_at
     }).then(({ error }) => {
-      if (error) console.error("Supabase transaction insert error:", error.message);
+      if (error) console.error("Supabase insert transaction error:", error.message);
     }).catch(() => {});
   }
 
   return record;
 }
 
-export function getAllTransactionsList() {
-  return memoryTransactions.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+export function updateTransactionStatus(txId, status, notes = "") {
+  const tx = memoryTransactions.find(t => String(t.id) === String(txId) || String(t.tx_id) === String(txId));
+  if (tx) {
+    tx.status = status;
+    if (notes) tx.notes = notes;
+    tx.updated_at = new Date().toISOString();
+    persistLocalData();
+
+    if (tx.user_id && UUID_REGEX.test(tx.user_id)) {
+      supabase.from("transactions").update({
+        status,
+        notes: tx.notes,
+        updated_at: tx.updated_at
+      }).eq("id", tx.id).catch(() => {});
+    }
+  }
+  return tx;
 }
 
 export function getUserTransactionsList(userId, email = "") {
@@ -471,10 +650,10 @@ export function getUserTransactionsList(userId, email = "") {
 
   return memoryTransactions.filter(t => {
     if (resolvedUuid && t.user_id === resolvedUuid) return true;
-    if (cleanId && t.user_id === cleanId) return true;
     if (cleanEmail && t.email && t.email.toLowerCase() === cleanEmail) return true;
+    if (cleanId && (t.user_id === cleanId || String(t.user_id) === cleanId)) return true;
     return false;
-  }).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  });
 }
 
 export async function getLiveUserTransactions(userId, email = "") {
@@ -484,18 +663,24 @@ export async function getLiveUserTransactions(userId, email = "") {
 
   if (resolvedUuid && UUID_REGEX.test(resolvedUuid)) {
     try {
-      const { data: dbTxs } = await supabase.from("transactions").select("*").eq("user_id", resolvedUuid).order("created_at", { ascending: false }).limit(100);
-      if (dbTxs && Array.isArray(dbTxs) && dbTxs.length > 0) {
-        return dbTxs.map(t => ({
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("user_id", resolvedUuid)
+        .order("created_at", { ascending: false })
+        .limit(100);
+
+      if (!error && Array.isArray(data)) {
+        return data.map(t => ({
           id: t.id,
           user_id: t.user_id,
           email: cleanEmail,
           type: t.type,
           amount: parseFloat(t.amount || 0),
           status: t.status,
-          method: t.method,
-          tx_id: t.tx_id,
-          notes: t.notes,
+          method: t.method || "DirectPay",
+          tx_id: t.tx_id || String(t.id),
+          notes: t.notes || "",
           created_at: t.created_at
         }));
       }
@@ -611,4 +796,8 @@ export function getReferralStatsForUser(userId, email = "") {
     totalEarnings: parseFloat(totalEarnings.toFixed(2)),
     referrals: invitedList
   };
+}
+
+export function getAllTransactionsList() {
+  return memoryTransactions;
 }

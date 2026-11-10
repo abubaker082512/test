@@ -54,11 +54,12 @@
   "guest_player": {
     "id": "guest_player",
     "user_id": "guest_player",
-    "email": "",
-    "balance": 120,
+    "email": "guest@winxpro.com.pk",
+    "balance": 10000,
     "currency": "PKR",
-    "created_at": "2026-11-05T09:27:57.729Z",
-    "updated_at": "2026-11-05T09:27:57.782Z"
+    "isTrial": true,
+    "created_at": "2026-11-10T18:45:18.176Z",
+    "updated_at": "2026-11-10T18:45:18.178Z"
   },
   "test_player_winx": {
     "id": "test_player_winx",
@@ -73,25 +74,25 @@
     "id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "user_id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "email": "abtandco18@gmail.com",
-    "balance": 1021.9,
+    "balance": 1031.9,
     "currency": "PKR",
-    "updated_at": "2026-11-10T18:17:42.726+00:00"
+    "updated_at": "2026-11-10T18:45:40.41+00:00"
   },
   "abtandco18@gmail.com": {
     "id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "user_id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "email": "abtandco18@gmail.com",
-    "balance": 1021.9,
+    "balance": 1031.9,
     "currency": "PKR",
-    "updated_at": "2026-11-10T18:17:42.726+00:00"
+    "updated_at": "2026-11-10T18:45:40.41+00:00"
   },
   "abtandco18": {
     "id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "user_id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "email": "abtandco18@gmail.com",
-    "balance": 961.9,
+    "balance": 1031.9,
     "currency": "PKR",
-    "updated_at": "2026-11-10T18:17:42.465Z"
+    "updated_at": "2026-11-10T18:45:40.41+00:00"
   },
   "d3fd1e06-7a45-490a-8ce7-1a812e982b8d": {
     "id": "d3fd1e06-7a45-490a-8ce7-1a812e982b8d",
@@ -196,5 +197,61 @@
     "balance": 0,
     "currency": "PKR",
     "updated_at": "2026-11-10T17:16:49.962875+00:00"
+  },
+  "user_YWtodXdhdC5jb20ucGtAZ21h": {
+    "id": "d3fd1e06-7a45-490a-8ce7-1a812e982b8d",
+    "user_id": "d3fd1e06-7a45-490a-8ce7-1a812e982b8d",
+    "email": "akhuwat.com.pk@gmail.com",
+    "balance": 5000,
+    "currency": "PKR",
+    "updated_at": "2026-09-13T16:42:15.282919+00:00"
+  },
+  "user_YWtodXdhdGNvbXBrZ21haWxj": {
+    "id": "d3fd1e06-7a45-490a-8ce7-1a812e982b8d",
+    "user_id": "d3fd1e06-7a45-490a-8ce7-1a812e982b8d",
+    "email": "akhuwat.com.pk@gmail.com",
+    "balance": 5000,
+    "currency": "PKR",
+    "updated_at": "2026-09-13T16:42:15.282919+00:00"
+  },
+  "user_YWJ0YW5kY28xOEBnbWFpbC5j": {
+    "id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
+    "user_id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
+    "email": "abtandco18@gmail.com",
+    "balance": 1031.9,
+    "currency": "PKR",
+    "updated_at": "2026-11-10T18:45:40.41+00:00"
+  },
+  "user_YWJ0YW5kY28xOGdtYWlsY29t": {
+    "id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
+    "user_id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
+    "email": "abtandco18@gmail.com",
+    "balance": 1031.9,
+    "currency": "PKR",
+    "updated_at": "2026-11-10T18:45:40.41+00:00"
+  },
+  "user_ZmFidmlzYWNvbnN1bHRhbmN5": {
+    "id": "6b653721-01dd-4a1b-9fac-c179624227b6",
+    "user_id": "6b653721-01dd-4a1b-9fac-c179624227b6",
+    "email": "fabvisaconsultancy@gmail.com",
+    "balance": 0,
+    "currency": "PKR",
+    "updated_at": "2026-07-23T07:03:43.247979+00:00"
+  },
+  "user_YWtodXdhdGZvdW5kYXRpb24x": {
+    "id": "7a90c640-010a-4dd0-bc38-fda2f4cfbfd1",
+    "user_id": "7a90c640-010a-4dd0-bc38-fda2f4cfbfd1",
+    "email": "akhuwatfoundation1@gmail.com",
+    "balance": 0,
+    "currency": "PKR",
+    "updated_at": "2026-09-12T17:05:08.052948+00:00"
+  },
+  "user_amFqc2pzanNqc3NqanNqc2pz": {
+    "id": "ca7adc60-4f05-42fa-8029-6ebf04b84fa6",
+    "user_id": "ca7adc60-4f05-42fa-8029-6ebf04b84fa6",
+    "email": "jajsjsjsjssjjsjsjs@gmail.com",
+    "balance": 0,
+    "currency": "PKR",
+    "updated_at": "2026-09-13T16:38:22.684387+00:00"
   }
 }
