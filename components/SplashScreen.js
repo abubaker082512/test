@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+
 export default function SplashScreen() {
   const [visible, setVisible] = useState(true)
   const [fading, setFading] = useState(false)
@@ -18,8 +19,8 @@ export default function SplashScreen() {
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: '#0f0a1e',
-        backgroundImage: 'radial-gradient(circle at 50%40%, rgba(138, 43, 226, 0.25) 0%, rgba(15, 10, 30, 0.95) 70%)',
+        backgroundColor: '#070d0a',
+        backgroundImage: 'radial-gradient(circle at 50% 40%, rgba(0, 230, 91, 0.22) 0%, rgba(7, 13, 10, 0.98) 70%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -39,22 +40,22 @@ export default function SplashScreen() {
             height: 'auto',
             maxHeight: '180px',
             objectFit: 'contain',
-            filter: 'drop-shadow(0 0 25px rgba(255, 215, 0, 0.6))',
+            filter: 'drop-shadow(0 0 30px rgba(0, 230, 91, 0.5)) drop-shadow(0 0 15px rgba(255, 215, 0, 0.35))',
             marginBottom: '20px'
           }}
         />
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ffd700' }} />
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#a855f7' }} />
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ffd700' }} />
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#00e65b', boxShadow: '0 0 8px #00e65b' }} />
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#6dff38', boxShadow: '0 0 12px #6dff38' }} />
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#00e65b', boxShadow: '0 0 8px #00e65b' }} />
         </div>
         <span
           style={{
             marginTop: '16px',
             fontSize: '11px',
-            fontWeight: '700',
-            letterSpacing: '2px',
-            color: '#94a3b8',
+            fontWeight: '800',
+            letterSpacing: '2.5px',
+            color: '#a1a1aa',
             textTransform: 'uppercase'
           }}
         >
