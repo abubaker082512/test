@@ -4,7 +4,7 @@
 // Balances & amounts are integers in cents (minor units, e.g. Rs 100.00 -> 10000 cents)
 
 import crypto from 'crypto';
-import { getUserWallet, creditUserBalance, debitUserBalance, recordTransactionRecord } from '../../../utils/walletStore.js';
+import { getUserWallet, getLiveUserWallet, creditUserBalance, debitUserBalance, recordTransactionRecord } from '../../../utils/walletStore.js';
 
 const SALT_KEY = process.env.SOFTAGGREGATOR_SALT_KEY || '748b7a8c4aada521';
 
@@ -53,7 +53,7 @@ export default async function handler(req, res) {
   // Normalize username (SoftAggregator prefixes or passes user_username)
   // e.g. "c1000273_test_player_winx" or "test_player_winx" or user ID
   const cleanUsername = String(username || '').replace(/^c\d+_/, '');
-  const wallet = getUserWallet(cleanUsername, cleanUsername.includes('@') ? cleanUsername : '');
+  const wallet = await getLiveUserWallet(cleanUsername, cleanUsername.includes('@') ? cleanUsername : '');
 
   const currentBalPkr = parseFloat(wallet?.balance || 0);
   const currentBalCents = Math.round(currentBalPkr * 100);

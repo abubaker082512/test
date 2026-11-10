@@ -1,4 +1,4 @@
-import { getAllTransactionsList, getAllWalletsList, completeAndCreditTransaction, failTransaction } from '../../../utils/walletStore'
+import { getAllTransactionsList, getAllWalletsList, completeAndCreditTransaction, failTransaction, hydrateFromSupabase } from '../../../utils/walletStore'
 import { updateWalletBalance } from '../../../utils/firebaseDb'
 
 const DEFAULT_CLIENT_ID = process.env.DIRECTPAY_CLIENT_ID || 'pwa_ci_k1qlq54hv4gw5pr0khux'
@@ -67,7 +67,10 @@ export default async function handler(req, res) {
       }
     }
 
-    // 1. Get updated transactions & wallets from primary persistent store
+    // 1. Refresh live from Supabase PostgreSQL database
+    await hydrateFromSupabase(true)
+
+    // 2. Get updated transactions & wallets from primary persistent store
     const localTxs = getAllTransactionsList()
     const localWallets = getAllWalletsList()
 

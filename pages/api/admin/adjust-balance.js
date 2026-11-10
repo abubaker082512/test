@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     } else {
       const debitRes = debitUserBalance(user_id, Math.abs(adjAmount))
       if (!debitRes.success) {
-        return res.status(400).json({ error: `Cannot deduct Pi ${Math.abs(adjAmount)}. Current balance is only Pi ${currentWallet.balance.toFixed(2)}` })
+        return res.status(400).json({ error: `Cannot deduct Rs ${Math.abs(adjAmount)}. Current balance is only Rs ${currentWallet.balance.toFixed(2)}` })
       }
       updatedWallet = debitRes.wallet
     }
@@ -56,7 +56,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
-      message: `Balance adjusted successfully! New balance is Pi ${updatedWallet.balance.toFixed(2)}`,
+      message: `Balance adjusted successfully! New balance is Rs ${updatedWallet.balance.toFixed(2)}`,
       new_balance: updatedWallet.balance
     })
 
