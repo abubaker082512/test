@@ -35,7 +35,15 @@ export default function SideDrawer({ isOpen, onClose, balance = 0, onOpenAuth })
 
   const handleDownloadApp = () => {
     onClose()
-    router.push('/support#download')
+    try {
+      const a = document.createElement('a')
+      a.href = '/WinXPro-release.apk'
+      a.download = 'WinXPro-release.apk'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+    } catch (e) {}
+    router.push('/download')
   }
 
   const gameCategories = [

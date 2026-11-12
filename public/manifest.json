@@ -1,13 +1,13 @@
 {
-  "name": "WinX Pro - Live Casino & Slots",
+  "name": "WinX Pro - Live Casino & Slots Pakistan",
   "short_name": "WinX Pro",
-  "description": "WinX Pro - Premier Live Casino, Slots, Crash Games & Sports Betting Platform in Pakistan",
+  "description": "WinX Pro - Premier Live Casino, Slots, Spribe Aviator & Sports Betting Platform in Pakistan",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0f0a1e",
-  "theme_color": "#ffd700",
+  "background_color": "#0B0E14",
+  "theme_color": "#00E65B",
   "categories": [
     "games",
     "entertainment",
@@ -15,26 +15,27 @@
   ],
   "icons": [
     {
-      "src": "/winx-logo.png",
+      "src": "/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/winx-logo.png",
+      "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/logo.png",
-      "sizes": "192x192",
+      "src": "/app-icon.png",
+      "sizes": "512x512",
       "type": "image/png"
     },
     {
-      "src": "/logo.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "/winx-pro-3d-icon.jpg",
+      "sizes": "1024x1024",
+      "type": "image/jpeg",
+      "purpose": "any"
     }
   ],
   "shortcuts": [
@@ -45,7 +46,7 @@
       "url": "/casino",
       "icons": [
         {
-          "src": "/winx-logo.png",
+          "src": "/icons/icon-192.png",
           "sizes": "192x192"
         }
       ]
@@ -57,7 +58,7 @@
       "url": "/wallet",
       "icons": [
         {
-          "src": "/winx-logo.png",
+          "src": "/icons/icon-192.png",
           "sizes": "192x192"
         }
       ]

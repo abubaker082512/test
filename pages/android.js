@@ -3,6 +3,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import NavBar from '../components/NavBar'
 import BottomNav from '../components/BottomNav'
+import SEOMeta from '../components/SEOMeta'
 
 export default function DownloadApp() {
   const [downloading, setDownloading] = useState(false)
@@ -48,10 +49,13 @@ export default function DownloadApp() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#070a14', color: '#fff', display: 'flex', flexDirection: 'column' }}>
-      <Head>
-        <title>Download WinX Pro Android App &amp; iOS PWA | Official 2026</title>
-        <meta name="description" content="Download the official WinX Pro APK for Android and install on iOS. Instant PKR deposits, 11,200+ games, and exclusive PKR 8,888 welcome bonus." />
-      </Head>
+      <SEOMeta
+        title="Download WinX Pro APK (Official 2026) | Android Gaming & Betting App Pakistan"
+        description="Download the official WinX Pro APK v2.4.0 for Android. Instant Easypaisa & JazzCash deposits, 2-minute withdrawals, 11,200+ games & PKR 8,888 bonus."
+        canonicalUrl="https://winxpro.com.pk/download"
+        keywords="WinX Pro APK download, WinX Pro app download, online gaming app Pakistan, download casino APK Pakistan, Easypaisa gaming app"
+        ogImage="https://winxpro.com.pk/winx-pro-3d-icon.jpg"
+      />
 
       <NavBar />
 
@@ -80,7 +84,7 @@ export default function DownloadApp() {
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-            <img src="/winx-logo.png" alt="WinX Pro" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <img src="/winx-pro-3d-icon.jpg" alt="WinX Pro" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
 
           <div style={{ fontSize: '22px', fontWeight: 900, color: '#ffffff', letterSpacing: '0.3px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
@@ -104,11 +108,11 @@ export default function DownloadApp() {
               onClick={handleDownloadAPK}
               style={{
                 width: '100%',
-                padding: '15px 18px',
+                padding: '16px 18px',
                 borderRadius: '14px',
-                background: 'linear-gradient(135deg, #6dff38 0%, #34b31a 100%)',
+                background: 'linear-gradient(135deg, #00FF87 0%, #00E65B 100%)',
                 border: 'none',
-                color: '#07160a',
+                color: '#050a06',
                 fontSize: '15px',
                 fontWeight: 900,
                 cursor: 'pointer',
@@ -116,16 +120,16 @@ export default function DownloadApp() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '10px',
-                boxShadow: '0 8px 25px rgba(109, 255, 56, 0.45)',
+                boxShadow: '0 8px 25px rgba(0, 230, 91, 0.45)',
                 transition: 'all 0.2s ease'
               }}
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#07160a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#050a06" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                 <polyline points="7 10 12 15 17 10" />
                 <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
-              <span>{downloading ? 'Downloading WinX Pro APK (13.8 MB)...' : 'Download Android APK (13.8 MB)'}</span>
+              <span>{downloading ? 'Downloading WinX Pro APK (13.8 MB)...' : 'Install Web-Based Android APK (13.8 MB)'}</span>
             </button>
 
             {/* PWA / Web App Option */}

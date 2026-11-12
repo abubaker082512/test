@@ -54,6 +54,18 @@ export default function NavBar({ onOpenPromoModal }) {
     setTimeout(() => setRefreshing(false), 800)
   }
 
+  const handleInstallApp = () => {
+    try {
+      const link = document.createElement('a')
+      link.href = '/WinXPro-release.apk'
+      link.download = 'WinXPro-release.apk'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (e) {}
+    setIsInstallModalOpen(true)
+  }
+
   return (
     <>
       {/* Top Neon-Lime App Download Strip (matching bbrssms1.com Screenshot 4) */}
@@ -61,7 +73,7 @@ export default function NavBar({ onOpenPromoModal }) {
         <div className="bbr-top-install-bar">
           <div className="bbr-install-left">
             <div className="bbr-install-app-icon">
-              <img src="/logo.png" alt="WinX" />
+              <img src="/app-icon.png" alt="WinX Pro" style={{ borderRadius: '6px', objectFit: 'cover' }} />
             </div>
             <div className="bbr-install-copy">
               Download the app to win <strong>PKR 8888</strong>
@@ -72,7 +84,7 @@ export default function NavBar({ onOpenPromoModal }) {
             <button
               type="button"
               className="bbr-install-btn"
-              onClick={() => setIsInstallModalOpen(true)}
+              onClick={handleInstallApp}
             >
               ⬇ Install
             </button>

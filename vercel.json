@@ -2,6 +2,13 @@
   "version": 2,
   "routes": [
     {
+      "handle": "filesystem"
+    },
+    {
+      "src": "^/sitemap\\.xml$",
+      "dest": "/api/sitemap"
+    },
+    {
       "src": "^/sg/callback/?$",
       "dest": "/api/softaggregator/callback"
     },

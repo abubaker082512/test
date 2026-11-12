@@ -4,6 +4,7 @@ import NavBar from '../../components/NavBar'
 import BottomNav from '../../components/BottomNav'
 import { useAuth } from '../../context/AuthContext'
 import AuthModal from '../../components/AuthModal'
+import SEOMeta from '../../components/SEOMeta'
 
 const FEATURED_PROVIDERS = [
   { id: 'ALL', name: 'All Games', icon: '🔥', count: '11,200+ Games' },
@@ -76,6 +77,12 @@ export default function CasinoLobby() {
 
   return (
     <div className="app">
+      <SEOMeta
+        title="WinX Pro Slots & Live Casino Lobby | JILI, Spribe Aviator & PG Soft Pakistan"
+        description="Explore 11,200+ online slots and live dealer games in Pakistan. Play JILI Super Ace, Fortune Gems, Spribe Aviator, and Pragmatic Play with instant Easypaisa deposits."
+        canonicalUrl="https://winxpro.com.pk/casino"
+        keywords="online slots Pakistan, JILI slots Pakistan, Spribe Aviator Pakistan, Super Ace, Fortune Gems, live casino Pakistan, Easypaisa slots, JazzCash casino Pakistan"
+      />
       <NavBar />
 
       <div style={{ padding: '20px 16px', maxWidth: '1200px', margin: '0 auto' }}>

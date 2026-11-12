@@ -6,6 +6,7 @@ import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
 import AuthModal from '../components/AuthModal'
 import { americanToDecimal } from '../utils/betstackClient'
+import SEOMeta from '../components/SEOMeta'
 
 export default function Sportsbook() {
   const { user, isDemoMode, demoBalance, toggleDemoMode, spendDemoBalance, addDemoBalance } = useAuth()
@@ -281,9 +282,12 @@ export default function Sportsbook() {
 
   return (
     <div className="app">
-      <Head>
-        <title>Sportsbook - Live Betting Odds | WinxPro</title>
-      </Head>
+      <SEOMeta
+        title="PSL Cricket Betting & Live Sportsbook Pakistan | WinX Pro Official"
+        description="Bet on Pakistan Super League (PSL), ICC Cricket World Cup, Premier League & NBA with highest live odds. Instant PKR deposits via Easypaisa & JazzCash."
+        canonicalUrl="https://winxpro.com.pk/sports"
+        keywords="cricket betting Pakistan, PSL betting online, live cricket rates Pakistan, sports betting Easypaisa, online betting Pakistan PKR"
+      />
 
       <NavBar />
 

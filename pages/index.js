@@ -404,6 +404,47 @@ export default function Home() {
         </main>
       </div>
 
+      {/* Pakistan SEO Authority & Trust Section */}
+      <section className="seo-authority-section" style={{
+        margin: '24px 12px 16px',
+        padding: '20px 16px',
+        background: 'rgba(20, 26, 36, 0.7)',
+        borderRadius: '16px',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        fontSize: '12px',
+        color: '#94A3B8',
+        lineHeight: '1.6'
+      }}>
+        <h2 style={{ fontSize: '15px', color: '#FFF', fontWeight: 800, marginBottom: '8px' }}>
+          🇵🇰 WinX Pro Pakistan — Official Online Gaming &amp; Cricket Betting
+        </h2>
+        <p style={{ marginBottom: '10px' }}>
+          Welcome to <strong>WinX Pro (WINX.COM.PK)</strong>, Pakistan&apos;s premier platform for online slots, live casino tables, and PSL cricket betting. Enjoy 11,200+ certified titles including <em>Spribe Aviator, JILI Super Ace, Fortune Gems, Money Coming, PG Soft Mahjong Ways</em>, and Evolution Gaming live dealers.
+        </p>
+
+        <h3 style={{ fontSize: '13px', color: '#00E65B', fontWeight: 700, margin: '12px 0 6px' }}>
+          ⚡ Instant Easypaisa, JazzCash &amp; Bank Transfers
+        </h3>
+        <p style={{ marginBottom: '10px' }}>
+          Experience hassle-free PKR deposits and automated 2-minute withdrawals directly into your <strong>Easypaisa</strong>, <strong>JazzCash</strong>, or Pakistani bank account (Meezan, HBL, Allied, Alfalah). Enjoy zero processing fees, 24/7 dedicated Urdu &amp; English WhatsApp/Telegram live support, and exclusive daily cash bonuses.
+        </p>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
+          <Link href="/download" style={{ color: '#00FF87', textDecoration: 'none', background: 'rgba(0, 230, 91, 0.12)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
+            📲 Download Android APK
+          </Link>
+          <Link href="/offers" style={{ color: '#FFB800', textDecoration: 'none', background: 'rgba(255, 184, 0, 0.12)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
+            🎁 Claim 100% Bonus
+          </Link>
+          <Link href="/sports" style={{ color: '#38BDF8', textDecoration: 'none', background: 'rgba(56, 189, 248, 0.12)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
+            🏏 PSL &amp; Cricket Betting
+          </Link>
+          <Link href="/casino" style={{ color: '#F43F5E', textDecoration: 'none', background: 'rgba(244, 63, 94, 0.12)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
+            🎰 11,200+ Online Slots
+          </Link>
+        </div>
+      </section>
+
       {/* Rich Brand Footer matching bottom of Screenshot 4 */}
       <footer className="bbr-footer">
         <div className="bbr-footer-mascot-wrap">

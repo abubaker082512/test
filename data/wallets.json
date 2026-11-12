@@ -74,25 +74,25 @@
     "id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "user_id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "email": "abtandco18@gmail.com",
-    "balance": 1031.9,
+    "balance": 1007.9,
     "currency": "PKR",
-    "updated_at": "2026-11-10T18:45:40.41+00:00"
+    "updated_at": "2026-11-10T18:53:54.948+00:00"
   },
   "abtandco18@gmail.com": {
     "id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "user_id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "email": "abtandco18@gmail.com",
-    "balance": 1031.9,
+    "balance": 1007.9,
     "currency": "PKR",
-    "updated_at": "2026-11-10T18:45:40.41+00:00"
+    "updated_at": "2026-11-10T18:53:54.948+00:00"
   },
   "abtandco18": {
     "id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "user_id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "email": "abtandco18@gmail.com",
-    "balance": 1031.9,
+    "balance": 1007.9,
     "currency": "PKR",
-    "updated_at": "2026-11-10T18:45:40.41+00:00"
+    "updated_at": "2026-11-10T18:53:54.948+00:00"
   },
   "d3fd1e06-7a45-490a-8ce7-1a812e982b8d": {
     "id": "d3fd1e06-7a45-490a-8ce7-1a812e982b8d",
@@ -218,17 +218,17 @@
     "id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "user_id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "email": "abtandco18@gmail.com",
-    "balance": 1031.9,
+    "balance": 1007.9,
     "currency": "PKR",
-    "updated_at": "2026-11-10T18:45:40.41+00:00"
+    "updated_at": "2026-11-10T18:53:54.948+00:00"
   },
   "user_YWJ0YW5kY28xOGdtYWlsY29t": {
     "id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "user_id": "23b47415-9592-4a87-a5ef-3a537cc31b27",
     "email": "abtandco18@gmail.com",
-    "balance": 1031.9,
+    "balance": 1007.9,
     "currency": "PKR",
-    "updated_at": "2026-11-10T18:45:40.41+00:00"
+    "updated_at": "2026-11-10T18:53:54.948+00:00"
   },
   "user_ZmFidmlzYWNvbnN1bHRhbmN5": {
     "id": "6b653721-01dd-4a1b-9fac-c179624227b6",
@@ -237,6 +237,46 @@
     "balance": 0,
     "currency": "PKR",
     "updated_at": "2026-07-23T07:03:43.247979+00:00"
+  },
+  "d03f6413-ee76-4a69-ae58-7f83be6243b3": {
+    "id": "d03f6413-ee76-4a69-ae58-7f83be6243b3",
+    "user_id": "d03f6413-ee76-4a69-ae58-7f83be6243b3",
+    "email": "guest@winxpro.com.pk",
+    "balance": 0,
+    "currency": "PKR",
+    "updated_at": "2026-11-10T23:51:19.525442+00:00"
+  },
+  "guest@winxpro.com.pk": {
+    "id": "d03f6413-ee76-4a69-ae58-7f83be6243b3",
+    "user_id": "d03f6413-ee76-4a69-ae58-7f83be6243b3",
+    "email": "guest@winxpro.com.pk",
+    "balance": 0,
+    "currency": "PKR",
+    "updated_at": "2026-11-10T23:51:19.525442+00:00"
+  },
+  "guest": {
+    "id": "d03f6413-ee76-4a69-ae58-7f83be6243b3",
+    "user_id": "d03f6413-ee76-4a69-ae58-7f83be6243b3",
+    "email": "guest@winxpro.com.pk",
+    "balance": 0,
+    "currency": "PKR",
+    "updated_at": "2026-11-10T23:51:19.525442+00:00"
+  },
+  "user_Z3Vlc3RAd2lueHByby5jb20u": {
+    "id": "d03f6413-ee76-4a69-ae58-7f83be6243b3",
+    "user_id": "d03f6413-ee76-4a69-ae58-7f83be6243b3",
+    "email": "guest@winxpro.com.pk",
+    "balance": 0,
+    "currency": "PKR",
+    "updated_at": "2026-11-10T23:51:19.525442+00:00"
+  },
+  "user_Z3Vlc3R3aW54cHJvY29tcGs": {
+    "id": "d03f6413-ee76-4a69-ae58-7f83be6243b3",
+    "user_id": "d03f6413-ee76-4a69-ae58-7f83be6243b3",
+    "email": "guest@winxpro.com.pk",
+    "balance": 0,
+    "currency": "PKR",
+    "updated_at": "2026-11-10T23:51:19.525442+00:00"
   },
   "user_YWtodXdhdGZvdW5kYXRpb24x": {
     "id": "7a90c640-010a-4dd0-bc38-fda2f4cfbfd1",

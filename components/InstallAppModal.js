@@ -99,25 +99,25 @@ export default function InstallAppModal({ isOpen, onClose }) {
         {/* App Header Preview */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '18px' }}>
           <img
-            src="/winx-logo.png"
+            src="/app-icon.png"
             alt="WinX Pro"
             style={{
               width: '64px',
               height: '64px',
               borderRadius: '16px',
-              border: '1.5px solid #6dff38',
-              boxShadow: '0 4px 14px rgba(109, 255, 56, 0.3)',
+              border: '1.5px solid #00E65B',
+              boxShadow: '0 4px 14px rgba(0, 230, 91, 0.35)',
               background: '#070a14',
-              objectFit: 'contain'
+              objectFit: 'cover'
             }}
           />
           <div>
             <div style={{ fontSize: '18px', fontWeight: 900, color: '#ffffff', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span>WinX Pro Official</span>
-              <span style={{ color: '#38bdf8', fontSize: '14px' }}>✓</span>
+              <span style={{ color: '#00E65B', fontSize: '14px' }}>✓</span>
             </div>
-            <div style={{ fontSize: '11px', color: '#6dff38', fontWeight: 800, marginTop: '2px' }}>
-              ★ 4.9 • Official Pakistan Web App
+            <div style={{ fontSize: '11px', color: '#00FF87', fontWeight: 800, marginTop: '2px' }}>
+              ★ 4.9 • Official Pakistan Web-Based App
             </div>
             <div style={{ fontSize: '10.5px', color: '#94a3b8', marginTop: '2px' }}>
               Claim PKR 8,888 Welcome Rewards
@@ -172,27 +172,28 @@ export default function InstallAppModal({ isOpen, onClose }) {
           <a
             href="/WinXPro-release.apk"
             download="WinXPro-release.apk"
+            onClick={() => setInstallStatus('🚀 Downloading official Web-Based APK (13.8 MB)... Open file once downloaded to install!')}
             style={{
               textDecoration: 'none',
               width: '100%',
               boxSizing: 'border-box',
-              padding: '13px 14px',
+              padding: '14px 16px',
               borderRadius: '12px',
-              background: 'linear-gradient(135deg, #6dff38 0%, #3ebd1b 100%)',
+              background: 'linear-gradient(135deg, #00FF87 0%, #00E65B 100%)',
               border: 'none',
-              color: '#081a0b',
+              color: '#050a06',
               fontWeight: 900,
-              fontSize: '13.5px',
+              fontSize: '14px',
               cursor: 'pointer',
-              boxShadow: '0 6px 20px rgba(109, 255, 56, 0.45)',
+              boxShadow: '0 6px 20px rgba(0, 230, 91, 0.45)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px'
             }}
           >
-            <span>🤖</span>
-            <span>Download Android APK (13.8 MB)</span>
+            <span>⚡</span>
+            <span>Install Web-Based APK (13.8 MB)</span>
           </a>
 
           <button
@@ -203,8 +204,8 @@ export default function InstallAppModal({ isOpen, onClose }) {
               padding: '12px 14px',
               borderRadius: '12px',
               background: 'rgba(255, 255, 255, 0.08)',
-              border: '1.5px solid rgba(109, 255, 56, 0.5)',
-              color: '#6dff38',
+              border: '1.5px solid rgba(0, 230, 91, 0.5)',
+              color: '#00FF87',
               fontWeight: 800,
               fontSize: '13px',
               cursor: 'pointer',

@@ -4,6 +4,7 @@ import NavBar from '../components/NavBar'
 import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
 import AuthModal from '../components/AuthModal'
+import SEOMeta from '../components/SEOMeta'
 
 export default function InvitePage() {
   const { user } = useAuth()
@@ -101,10 +102,12 @@ export default function InvitePage() {
 
   return (
     <div className="app bbr-theme-app" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#070a14' }}>
-      <Head>
-        <title>VIP Referral Center &amp; Agent Rewards | WinX Pro</title>
-        <meta name="description" content="Earn Rs 100 cash + 5% lifetime betting commissions for every friend you refer to WinX Pro Pakistan." />
-      </Head>
+      <SEOMeta
+        title="WinX Pro Referral Program & Agent Rewards | Earn Daily Cash Pakistan"
+        description="Earn Rs 100 instant cash bonus + up to 5% lifetime commissions for every active player you refer to WinX Pro. Instant daily withdrawal to Easypaisa & JazzCash."
+        canonicalUrl="https://winxpro.com.pk/invite"
+        keywords="WinX Pro invite code, referral bonus Pakistan, earn money online Pakistan, casino agent program Pakistan, affiliate gaming Pakistan"
+      />
 
       <NavBar />
       

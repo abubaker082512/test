@@ -1,0 +1,30 @@
+# Robots.txt for WinX Pro Pakistan Official Platform
+User-agent: *
+Allow: /
+Allow: /casino
+Allow: /sports
+Allow: /offers
+Allow: /invite
+Allow: /signup
+Allow: /download
+Allow: /android
+
+# Disallow private user accounts and admin panels
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /api/*
+Disallow: /wallet
+Disallow: /records
+
+# Specific Search Engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Mobile
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Canonical Sitemap for Google Search Console & Bing Webmaster Tools
+Sitemap: https://winxpro.com.pk/sitemap.xml
