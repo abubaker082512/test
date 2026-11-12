@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>winXPro.com.pk — 25-Second Sleek Commercial Ad</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Noto+Nastaliq+Urdu:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #030406;
+      color: #FFF;
+      font-family: 'Outfit', -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 14px 60px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 26px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #FFF 30%, #FFD700 70%, #00FF87 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+      letter-spacing: 0.5px;
+    }
+    p.subtitle {
+      color: #94A3B8;
+      font-size: 13px;
+    }
+
+    /* Controls Bar */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    .btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn:hover { background: rgba(255, 255, 255, 0.15); }
+    .btn-gold {
+      background: linear-gradient(135deg, #FFE066 0%, #FFB800 50%, #E69500 100%);
+      color: #0A0800;
+      border: none;
+      box-shadow: 0 4px 18px rgba(255, 184, 0, 0.45);
+    }
+    .btn-record {
+      background: linear-gradient(135deg, #FF416C, #FF4B2B);
+      color: #FFF;
+      border: none;
+      box-shadow: 0 4px 15px rgba(255, 65, 108, 0.4);
+    }
+
+    /* 9:16 Vertical Video Frame (1080x1920 proportions) */
+    .video-viewport {
+      width: 380px;
+      height: 675px;
+      background: #05070A;
+      border-radius: 32px;
+      border: 2px solid rgba(255, 215, 0, 0.35);
+      box-shadow: 0 25px 90px rgba(0, 0, 0, 0.98), 0 0 40px rgba(255, 184, 0, 0.15);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Canvas for Golden Sparks and Confetti */
+    #particleCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    /* Top Timeline Progress Bar */
+    .progress-bar-wrap {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      right: 14px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      z-index: 100;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #FFD700, #00FF87);
+      box-shadow: 0 0 10px #FFD700;
+      transition: width 0.1s linear;
+    }
+
+    .time-badge {
+      position: absolute;
+      top: 22px;
+      right: 14px;
+      background: rgba(5, 7, 10, 0.85);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #FFD700;
+      z-index: 100;
+      border: 1px solid rgba(255, 215, 0, 0.4);
+    }
+
+    /* Permanent Brand Watermark */
+    .watermark-bar {
+      position: absolute;
+      top: 20px;
+      left: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 100;
+      background: rgba(5, 7, 10, 0.8);
+      backdrop-filter: blur(8px);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+    }
+    .watermark-bar img {
+      height: 20px;
+      width: auto;
+      object-fit: contain;
+    }
+    .watermark-bar span {
+      font-size: 11px;
+      font-weight: 900;
+      color: #FFD700;
+      letter-spacing: 0.5px;
+    }
+
+    /* Dynamic Urdu Voiceover Subtitle Box */
+    .voiceover-subtitle-box {
+      position: absolute;
+      bottom: 16px;
+      left: 12px;
+      right: 12px;
+      background: rgba(8, 11, 16, 0.94);
+      backdrop-filter: blur(14px);
+      border: 1.5px solid rgba(255, 215, 0, 0.45);
+      border-radius: 16px;
+      padding: 10px 14px;
+      text-align: center;
+      z-index: 100;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85);
+    }
+    .sub-urdu-text {
+      font-family: 'Noto Nastaliq Urdu', serif;
+      font-size: 15px;
+      color: #FFE066;
+      line-height: 1.8;
+      margin-bottom: 2px;
+      text-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+    }
+    .sub-roman-text {
+      font-size: 11px;
+      font-weight: 700;
+      color: #E2E8F0;
+      line-height: 1.4;
+    }
+
+    /* Scenes Base */
+    .scene {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 18px 85px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: scale(0.95);
+      text-align: center;
+      z-index: 10;
+    }
+    .scene.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
+    }
+
+    /* ========================================================
+       SCENE 1: (0:00 - 0:06) THE HOOK
+       Dramatic close-up of smartphone lighting up with golden sparks
+       ======================================================== */
+    .scene-1 {
+      background: radial-gradient(circle at 50% 40%, #171308 0%, #080703 60%, #030406 100%);
+    }
+    .phone-glow-mockup {
+      width: 250px;
+      height: 320px;
+      background: #0D1017;
+      border: 2px solid #FFD700;
+      border-radius: 28px;
+      box-shadow: 0 0 50px rgba(255, 215, 0, 0.35), inset 0 0 30px rgba(255, 215, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      margin-bottom: 16px;
+      animation: phonePulse 2s infinite alternate;
+    }
+    .screen-rays {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(255, 215, 0, 0.35) 0%, transparent 70%);
+      filter: blur(25px);
+    }
+    .fast-montage-badge {
+      background: linear-gradient(135deg, #FF3B30, #FF9500);
+      color: #fff;
+      font-weight: 900;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .montage-action-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: #FFF;
+      margin-bottom: 6px;
+    }
+    .action-icons-row {
+      display: flex;
+      gap: 12px;
+      font-size: 26px;
+      margin-top: 10px;
+    }
+    .hook-main-question {
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1.3;
+      background: linear-gradient(135deg, #FFF 40%, #FFD700 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* ========================================================
+       SCENE 2: (0:06 - 0:18) FEATURES & TRUST
+       Zoom into app interface with 3 glowing 3D feature cards
+       ======================================================== */
+    .scene-2 {
+      background: radial-gradient(circle at 50% 30%, #0C1E14 0%, #060E0A 60%, #030406 100%);
+    }
+    .trust-tag-gold {
+      background: rgba(255, 215, 0, 0.12);
+      border: 1px solid #FFD700;
+      color: #FFE066;
+      font-weight: 900;
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+    .scene-2-heading {
+      font-size: 24px;
+      font-weight: 900;
+      color: #FFF;
+      margin-bottom: 14px;
+    }
+    .scene-2-heading span { color: #00FF87; }
+    
+    .feature-card-3d {
+      width: 100%;
+      max-width: 320px;
+      background: rgba(13, 18, 25, 0.85);
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      transition: all 0.3s ease;
+    }
+    .feature-card-3d.highlight-gold {
+      border-color: #FFD700;
+      background: rgba(255, 215, 0, 0.08);
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+    }
+    .feature-card-3d.highlight-green {
+      border-color: #00FF87;
+      background: rgba(0, 230, 91, 0.08);
+      box-shadow: 0 0 20px rgba(0, 230, 91, 0.2);
+    }
+    .card-3d-icon {
+      font-size: 28px;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.06);
+    }
+    .card-3d-title {
+      font-size: 13px;
+      font-weight: 900;
+      color: #FFF;
+      margin-bottom: 2px;
+    }
+    .card-3d-sub {
+      font-size: 11px;
+      color: #94A3B8;
+    }
+
+    /* ========================================================
+       SCENE 3: (0:18 - 0:25) CALL TO ACTION & LOGO REVEAL
+       Gold confetti, trophy, metallic logo, Register Now button
+       ======================================================== */
+    .scene-3 {
+      background: radial-gradient(circle at center, #1B1506 0%, #0A0802 65%, #030406 100%);
+    }
+    .trophy-burst {
+      font-size: 56px;
+      margin-bottom: 8px;
+      animation: bounceTrophy 1.5s infinite ease-in-out;
+      filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.7));
+    }
+    .logo-metallic-gold {
+      width: 220px;
+      max-height: 80px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.5));
+      margin-bottom: 12px;
+    }
+    .cta-heading-gold {
+      font-size: 22px;
+      font-weight: 900;
+      color: #FFF;
+      margin-bottom: 4px;
+    }
+    .cta-heading-gold span { color: #FFD700; }
+    .cta-website-pill {
+      background: rgba(255, 215, 0, 0.12);
+      border: 1px solid #FFD700;
+      color: #FFE066;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    .btn-register-now {
+      background: linear-gradient(135deg, #FFE066 0%, #FFB800 50%, #FF9900 100%);
+      color: #0A0701;
+      font-weight: 900;
+      font-size: 17px;
+      padding: 16px 32px;
+      border-radius: 16px;
+      text-decoration: none;
+      box-shadow: 0 10px 35px rgba(255, 184, 0, 0.6);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      animation: pulseGoldBtn 1.2s infinite alternate;
+    }
+
+    @keyframes phonePulse {
+      from { transform: scale(1); box-shadow: 0 0 40px rgba(255, 215, 0, 0.25); }
+      to { transform: scale(1.02); box-shadow: 0 0 60px rgba(255, 215, 0, 0.45); }
+    }
+    @keyframes bounceTrophy {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-8px) scale(1.06); }
+    }
+    @keyframes pulseGoldBtn {
+      from { transform: scale(1); box-shadow: 0 8px 25px rgba(255, 184, 0, 0.4); }
+      to { transform: scale(1.05); box-shadow: 0 12px 35px rgba(255, 184, 0, 0.8); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🎬 winXPro.com.pk — 25s Sleek Commercial</h1>
+    <p class="subtitle">High-contrast luxury dark aesthetic with gold sparks, modern UI transitions &amp; confident Urdu voiceover.</p>
+  </header>
+
+  <div class="controls">
+    <button class="btn btn-gold" id="playBtn" onclick="togglePlay()">▶ Play 25s Commercial</button>
+    <button class="btn" onclick="restartVideo()">🔄 Replay from 0:00</button>
+    <button class="btn" id="voiceToggleBtn" onclick="toggleVoice()">🎙️ Urdu Voiceover: ON</button>
+    <button class="btn btn-record" id="recordBtn" onclick="toggleRecording()">🔴 Record Video (.webm)</button>
+  </div>
+
+  <div class="video-viewport" id="videoViewport">
+    <!-- Particle Canvas for Golden Sparks and Confetti -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- Top Progress Bar (0 to 25s) -->
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressBar"></div>
+    </div>
+    <div class="time-badge" id="timerBadge">00:00 / 00:25</div>
+
+    <!-- Permanent Watermark -->
+    <div class="watermark-bar">
+      <img src="/logo.png" alt="winXPro" />
+      <span>winXPro.com.pk</span>
+    </div>
+
+    <!-- ========================================================
+         SCENE 1: (0:00 - 0:06) THE HOOK
+         Dramatic phone screen lighting up with golden sparks
+         ======================================================== -->
+    <div class="scene scene-1" id="scene1">
+      <div class="phone-glow-mockup">
+        <div class="screen-rays"></div>
+        <div class="fast-montage-badge">🔥 LIVE GAMING &amp; SPORTS</div>
+        <div class="montage-action-title">SPRIBE AVIATOR &amp; PSL</div>
+        <div class="action-icons-row">
+          <span>✈️</span>
+          <span>🏏</span>
+          <span>🎰</span>
+          <span>🃏</span>
+        </div>
+        <div style="font-size: 11px; color: #FFD700; font-weight: 800; margin-top: 12px;">
+          ★ 11,200+ OFFICIAL GAMES
+        </div>
+      </div>
+      <div class="hook-main-question">
+        Real Entertainment.<br>Real Winning Thrill.
+      </div>
+    </div>
+
+    <!-- ========================================================
+         SCENE 2: (0:06 - 0:18) FEATURES & TRUST
+         Instant transactions, security shield & welcome gift box
+         ======================================================== -->
+    <div class="scene scene-2" id="scene2">
+      <div class="trust-tag-gold">⚡ 100% SECURE &amp; VERIFIED EXPERIENCE</div>
+      <div class="scene-2-heading">
+        Experience <span>winXPro.com.pk</span>
+      </div>
+
+      <!-- Feature 1: Instant Transactions -->
+      <div class="feature-card-3d highlight-green">
+        <div class="card-3d-icon">⚡</div>
+        <div>
+          <div class="card-3d-title">Instant Transactions (2 Minutes)</div>
+          <div class="card-3d-sub">Easypaisa &amp; JazzCash automatic payouts</div>
+        </div>
+      </div>
+
+      <!-- Feature 2: Security Shield -->
+      <div class="feature-card-3d">
+        <div class="card-3d-icon">🛡️</div>
+        <div>
+          <div class="card-3d-title">100% Mehfooz &amp; Licensed</div>
+          <div class="card-3d-sub">SSL encrypted wallet &amp; official game servers</div>
+        </div>
+      </div>
+
+      <!-- Feature 3: Welcome Bonus Gift Box -->
+      <div class="feature-card-3d highlight-gold">
+        <div class="card-3d-icon">🎁</div>
+        <div>
+          <div class="card-3d-title">Shandar Welcome Bonus</div>
+          <div class="card-3d-sub">100% First recharge bonus + free cash gifts</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         SCENE 3: (0:18 - 0:25) CALL TO ACTION
+         Gold confetti burst, metallic logo & Register Now button
+         ======================================================== -->
+    <div class="scene scene-3" id="scene3">
+      <div class="trophy-burst">🏆</div>
+      <img src="/logo.png" alt="winXPro.com.pk" class="logo-metallic-gold" />
+      <div class="cta-heading-gold">
+        CLAIM YOUR <span>BIG WIN</span> TODAY!
+      </div>
+      <div class="cta-website-pill">
+        🌐 winXPro.com.pk
+      </div>
+
+      <a href="https://winxpro.com.pk" target="_blank" class="btn-register-now">
+        <span>✨</span>
+        <span>REGISTER NOW</span>
+      </a>
+    </div>
+
+    <!-- Subtitle Bar (Urdu & Roman Urdu) -->
+    <div class="voiceover-subtitle-box">
+      <div class="sub-urdu-text" id="subUrdu">
+        کیا آپ ایک ایسے پلیٹ فارم کی تلاش میں ہیں، جہاں انٹرٹینمنٹ بھی ہو اور جیت کا اصلی مزہ بھی؟
+      </div>
+      <div class="sub-roman-text" id="subRoman">
+        "Kya aap ek aise platform ki talash mein hain, jahan entertainment bhi ho aur jeet ka asli maza bhi?"
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isPlaying = false;
+    let voiceEnabled = true;
+    let currentTime = 0; // seconds
+    const totalDuration = 25.0; // Exact 25.0s commercial
+    let loopTimer = null;
+    let audioCtx = null;
+
+    // Exact Scene-by-Scene Breakdown and Urdu Voiceovers
+    const SCENES_CONFIG = [
+      {
+        start: 0.0,
+        end: 6.0,
+        urdu: "کیا آپ ایک ایسے پلیٹ فارم کی تلاش میں ہیں، جہاں انٹرٹینمنٹ بھی ہو اور جیت کا اصلی مزہ بھی؟",
+        roman: "Kya aap ek aise platform ki talash mein hain, jahan entertainment bhi ho aur jeet ka asli maza bhi?",
+        speech: "کیا آپ ایک ایسے پلیٹ فارم کی تلاش میں ہیں، جہاں انٹرٹینمنٹ بھی ہو اور جیت کا اصلی مزہ بھی؟"
+      },
+      {
+        start: 6.0,
+        end: 18.0,
+        urdu: "اب انتظار ختم! winXPro.com.pk لایا ہے آپ کے لیے تیز ترین اور 100٪ محفوظ تجربہ — جہاں فوری ودڈراول اور شاندار ویلکم بونس آپ کے منتظر ہیں!",
+        roman: "Ab intezar khatam! winXPro.com.pk laya hai aap ke liye tez-tareen aur 100% mehfooz experience—jahan fori withdrawal aur shandar welcome bonus aap ke muntazir hain!",
+        speech: "اب انتظار ختم! ون ایکس پرو لایا ہے آپ کے لیے تیز ترین اور سو فیصد محفوظ تجربہ—جہاں فوری ودڈراول اور شاندار ویلکم بونس آپ کے منتظر ہیں!"
+      },
+      {
+        start: 18.0,
+        end: 25.0,
+        urdu: "موقع ہاتھ سے جانے نہ دیں! ابھی winXPro.com.pk پر جائیں، اپنا اکاؤنٹ بنائیں، اور آج ہی بڑی جیت اپنے نام کریں!",
+        roman: "Mauqa haath se jaane na dein! Abhi winXPro.com.pk par jayein, apna account banayein, aur aaj hi bari jeet apne naam karein!",
+        speech: "موقع ہاتھ سے جانے نہ دیں! ابھی ون ایکس پرو پر جائیں، اپنا اکاؤنٹ بنائیں، اور آج ہی بڑی جیت اپنے نام کریں!"
+      }
+    ];
+
+    // Web Speech API Voiceover Synthesizer (Energetic Male Voice)
+    function speakVoiceover(text) {
+      if (!voiceEnabled || !('speechSynthesis' in window)) return;
+      try {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = 1.05; // Upbeat confident tempo
+        utter.pitch = 0.95; // Male vocal tone
+
+        const voices = window.speechSynthesis.getVoices();
+        // Priority for male / Urdu / Hindi voice
+        const preferredVoice = voices.find(v => (v.lang.startsWith('ur') || v.lang.startsWith('hi')) && !v.name.toLowerCase().includes('female'))
+                            || voices.find(v => v.lang.startsWith('ur') || v.lang.startsWith('hi'))
+                            || voices[0];
+        if (preferredVoice) utter.voice = preferredVoice;
+
+        window.speechSynthesis.speak(utter);
+      } catch (e) {}
+    }
+
+    // Audio Engine: Electronic Music with Sub-Bass Drops
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    function playBassDrop() {
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(140, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(35, audioCtx.currentTime + 0.8);
+        gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.8);
+      } catch (e) {}
+    }
+
+    function playTone(freq, type, dur, gainVal = 0.12) {
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur);
+      } catch (e) {}
+    }
+
+    function playChime() {
+      playTone(880, 'triangle', 0.25, 0.15);
+      setTimeout(() => playTone(1174, 'triangle', 0.35, 0.2), 90);
+    }
+
+    function playFanfare() {
+      [587, 740, 880, 1174].forEach((f, idx) => {
+        setTimeout(() => playTone(f, 'square', 0.25, 0.12), idx * 80);
+      });
+    }
+
+    // ========================================================
+    // Golden Sparks & Confetti Particle System
+    // ========================================================
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function createSparks(count, isConfetti = false) {
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: isConfetti ? Math.random() * canvas.width : canvas.width / 2 + (Math.random() - 0.5) * 120,
+          y: isConfetti ? -10 : canvas.height * 0.45 + (Math.random() - 0.5) * 80,
+          vx: (Math.random() - 0.5) * (isConfetti ? 4 : 6),
+          vy: isConfetti ? Math.random() * 4 + 2 : (Math.random() - 0.5) * 6,
+          size: Math.random() * (isConfetti ? 6 : 3) + 1.5,
+          color: Math.random() > 0.3 ? '#FFD700' : (Math.random() > 0.5 ? '#FFF' : '#00FF87'),
+          life: isConfetti ? 180 : 70,
+          maxLife: isConfetti ? 180 : 70
+        });
+      }
+    }
+
+    function updateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life--;
+
+        const alpha = p.life / p.maxLife;
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (p.life <= 0) particles.splice(i, 1);
+      }
+      ctx.globalAlpha = 1.0;
+      requestAnimationFrame(updateParticles);
+    }
+    updateParticles();
+
+    // ========================================================
+    // Video State & Playback Controller
+    // ========================================================
+    function togglePlay() {
+      initAudio();
+      isPlaying = !isPlaying;
+      document.getElementById('playBtn').innerHTML = isPlaying ? '⏸ Pause' : '▶ Play 25s Commercial';
+      if (isPlaying) {
+        startTimer();
+      } else {
+        clearInterval(loopTimer);
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      }
+    }
+
+    function startTimer() {
+      clearInterval(loopTimer);
+      loopTimer = setInterval(() => {
+        currentTime += 0.1;
+        if (currentTime >= totalDuration) {
+          currentTime = totalDuration;
+          renderFrame();
+          togglePlay();
+          return;
+        }
+        renderFrame();
+      }, 100);
+    }
+
+    function restartVideo() {
+      currentTime = 0;
+      lastSceneIdx = -1;
+      particles = [];
+      renderFrame();
+      if (!isPlaying) togglePlay();
+    }
+
+    function toggleVoice() {
+      voiceEnabled = !voiceEnabled;
+      document.getElementById('voiceToggleBtn').innerHTML = voiceEnabled ? '🎙️ Urdu Voiceover: ON' : '🔇 Urdu Voiceover: OFF';
+      if (!voiceEnabled && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
+
+    let lastSceneIdx = -1;
+
+    function renderFrame() {
+      // Progress Bar
+      const pct = (currentTime / totalDuration) * 100;
+      document.getElementById('progressBar').style.width = pct + '%';
+
+      const sec = Math.floor(currentTime);
+      const dec = Math.floor((currentTime % 1) * 10);
+      document.getElementById('timerBadge').innerText = `00:${sec < 10 ? '0' + sec : sec}.${dec} / 00:25`;
+
+      // Determine active scene (0:00 - 0:06, 0:06 - 0:18, 0:18 - 0:25)
+      let activeIdx = 0;
+      if (currentTime < 6.0) activeIdx = 0;
+      else if (currentTime < 18.0) activeIdx = 1;
+      else activeIdx = 2;
+
+      const track = SCENES_CONFIG[activeIdx];
+      document.getElementById('subUrdu').innerText = track.urdu;
+      document.getElementById('subRoman').innerText = `"${track.roman}"`;
+
+      // Trigger scene transitions, audio drops & particles
+      if (activeIdx !== lastSceneIdx) {
+        lastSceneIdx = activeIdx;
+        speakVoiceover(track.speech);
+        playBassDrop();
+
+        if (activeIdx === 0) {
+          createSparks(35);
+        } else if (activeIdx === 1) {
+          playChime();
+          createSparks(25);
+        } else if (activeIdx === 2) {
+          playFanfare();
+          createSparks(80, true); // Burst gold confetti
+        }
+      }
+
+      // Continuously emit subtle sparks in scenes
+      if (Math.random() > 0.6) {
+        if (activeIdx === 0) createSparks(2);
+        if (activeIdx === 2) createSparks(3, true);
+      }
+
+      // Toggle active classes
+      for (let i = 1; i <= 3; i++) {
+        const sc = document.getElementById('scene' + i);
+        if (i === activeIdx + 1) sc.classList.add('active');
+        else sc.classList.remove('active');
+      }
+    }
+
+    // MediaRecorder Video Export (.webm)
+    let recorder = null;
+    let chunks = [];
+
+    async function toggleRecording() {
+      const btn = document.getElementById('recordBtn');
+      if (recorder && recorder.state === 'recording') {
+        recorder.stop();
+        btn.innerText = '🔴 Record Video (.webm)';
+        return;
+      }
+
+      const frame = document.getElementById('videoViewport');
+      restartVideo();
+
+      try {
+        const stream = frame.captureStream ? frame.captureStream(30) : null;
+        if (!stream) {
+          alert('Stream capture supported in Chrome/Edge. Playing commercial now!');
+          return;
+        }
+
+        chunks = [];
+        recorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
+        recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+        recorder.onstop = () => {
+          const blob = new Blob(chunks, { type: 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'winxpro-commercial-25s.webm';
+          a.click();
+        };
+
+        recorder.start();
+        btn.innerText = '⏹ Recording 25s Commercial... Stop & Save';
+      } catch (err) {
+        alert('Direct screen recording enabled. You can play and capture directly!');
+      }
+    }
+
+    // Load Speech Synthesis voices
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
+    }
+
+    // Initial Frame
+    renderFrame();
+  </script>
+</body>
+</html>
