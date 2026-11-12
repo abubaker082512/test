@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WinX Pro Pakistan — Official Ad Creative (1080x1080)</title>
+  <title>WinX Pro Pakistan — Official Advertising Assets Hub</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Noto+Nastaliq+Urdu:wght@700&display=swap" rel="stylesheet">
@@ -17,273 +17,176 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 30px 16px;
+      padding: 30px 16px 80px;
     }
-    .controls {
-      margin-bottom: 20px;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-    .btn {
-      background: linear-gradient(135deg, #00FF87, #00E65B);
-      color: #050a06;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-weight: 800;
-      font-size: 14px;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0, 230, 91, 0.4);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .btn:hover {
-      box-shadow: 0 6px 20px rgba(0, 230, 91, 0.6);
-      transform: translateY(-1px);
-    }
-
-    /* 1080x1080 Ad Canvas Container scaled to preview */
-    .ad-wrapper {
-      width: 540px;
-      height: 540px;
-      border-radius: 24px;
-      overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(0, 230, 91, 0.2);
-      border: 2px solid rgba(0, 230, 91, 0.4);
-      position: relative;
-      background: radial-gradient(circle at 50% 35%, #13241b 0%, #080d0a 50%, #040605 100%);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 30px 24px;
-    }
-
-    /* Ambient glow elements */
-    .glow-circle {
-      position: absolute;
-      width: 320px;
-      height: 320px;
-      background: radial-gradient(circle, rgba(0, 230, 91, 0.25) 0%, transparent 70%);
-      top: 20%;
-      left: 20%;
-      filter: blur(40px);
-      pointer-events: none;
-    }
-
-    /* Top Brand Bar */
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 2;
-    }
-    .brand-logo-wrap {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .brand-logo-wrap img {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      border: 1.5px solid #00E65B;
-      box-shadow: 0 0 15px rgba(0, 230, 91, 0.4);
-    }
-    .brand-title {
-      font-size: 20px;
+    h1 {
+      font-size: 28px;
       font-weight: 900;
-      letter-spacing: 1px;
-      color: #fff;
-    }
-    .brand-title span { color: #00E65B; }
-    .verified-badge {
-      background: rgba(0, 230, 91, 0.15);
-      border: 1px solid rgba(0, 230, 91, 0.4);
-      padding: 6px 12px;
-      border-radius: 9999px;
-      font-size: 11px;
-      font-weight: 800;
-      color: #00FF87;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    /* Main Hook & Hero */
-    .ad-body {
-      text-align: center;
-      z-index: 2;
-      margin: auto 0;
-    }
-    .bonus-tag {
-      display: inline-block;
-      background: linear-gradient(135deg, #FFE066, #FFB800);
-      color: #000;
-      font-weight: 900;
-      font-size: 13px;
-      padding: 4px 14px;
-      border-radius: 20px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 14px rgba(255, 184, 0, 0.4);
-    }
-    .main-heading {
-      font-size: 32px;
-      font-weight: 900;
-      line-height: 1.15;
       margin-bottom: 8px;
-      text-transform: uppercase;
-      background: linear-gradient(135deg, #FFFFFF 50%, #00FF87 100%);
+      text-align: center;
+      background: linear-gradient(135deg, #fff 40%, #00FF87 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    .urdu-subheading {
-      font-family: 'Noto Nastaliq Urdu', serif;
-      font-size: 20px;
-      line-height: 1.8;
-      color: #00E65B;
-      margin-bottom: 16px;
-      text-shadow: 0 2px 10px rgba(0, 230, 91, 0.4);
-    }
-
-    /* Feature Pills */
-    .feature-row {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .pill {
-      background: rgba(20, 26, 36, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 8px 14px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .pill.highlight {
-      border-color: rgba(0, 230, 91, 0.5);
-      background: rgba(0, 230, 91, 0.12);
-      color: #00FF87;
-    }
-
-    /* Bottom Action Area */
-    .bottom-bar {
-      z-index: 2;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    p.subtitle {
+      color: #94A3B8;
+      font-size: 14px;
+      margin-bottom: 24px;
       text-align: center;
+      max-width: 600px;
     }
-    .cta-banner-btn {
-      width: 100%;
-      background: linear-gradient(135deg, #00FF87 0%, #00E65B 100%);
-      color: #050a06;
+    .video-hero-btn {
+      background: linear-gradient(135deg, #ff416c, #ff4b2b);
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: 12px;
       font-weight: 900;
       font-size: 16px;
-      padding: 16px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 8px 25px rgba(255, 65, 108, 0.4);
+      margin-bottom: 30px;
+      transition: all 0.2s;
+    }
+    .video-hero-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px rgba(255, 65, 108, 0.6);
+    }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      width: 100%;
+      max-width: 1200px;
+    }
+    .card {
+      background: #0E131C;
+      border: 1.5px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.7);
+      transition: all 0.25s ease;
+    }
+    .card:hover {
+      border-color: rgba(0, 230, 91, 0.4);
+      box-shadow: 0 15px 45px rgba(0, 230, 91, 0.15);
+      transform: translateY(-2px);
+    }
+    .card-badge {
+      font-size: 11px;
+      font-weight: 800;
+      color: #00FF87;
+      background: rgba(0, 230, 91, 0.12);
+      padding: 4px 10px;
+      border-radius: 6px;
+      width: fit-content;
+      margin-bottom: 12px;
+    }
+    .img-preview {
+      width: 100%;
       border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #000;
+    }
+    .img-preview img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
+    .card-title {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .card-desc {
+      font-size: 13px;
+      color: #94A3B8;
+      line-height: 1.5;
+      margin-bottom: 16px;
+      flex-grow: 1;
+    }
+    .btn-download {
+      background: linear-gradient(135deg, #00FF87, #00E65B);
+      color: #050a06;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 900;
+      font-size: 13px;
       text-decoration: none;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      box-shadow: 0 8px 25px rgba(0, 230, 91, 0.5);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .payment-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      font-size: 11px;
-      color: #94A3B8;
-      font-weight: 600;
-    }
-    .payment-tag {
-      background: rgba(255, 255, 255, 0.06);
-      padding: 4px 10px;
-      border-radius: 6px;
-      color: #fff;
+      gap: 6px;
+      box-shadow: 0 4px 15px rgba(0, 230, 91, 0.35);
     }
   </style>
 </head>
 <body>
 
-  <div class="controls">
-    <a class="btn" href="/winx-pro-ad-banner.jpg" download="winx-pro-ad-banner.jpg">📥 Download 1080x1080 Ad Image</a>
-    <button class="btn" onclick="window.print()">🖨️ Save as PDF / Print</button>
-  </div>
+  <h1>🎨 WinX Pro Official Ad Creatives Hub</h1>
+  <p class="subtitle">Commercial advertising assets for Google Ads, Meta (Facebook &amp; Instagram), TikTok, and community broadcasting.</p>
 
-  <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; max-width: 1200px;">
-    <!-- AI Photorealistic Ad Poster -->
-    <div style="width: 540px; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(0, 230, 91, 0.25); border: 2px solid rgba(0, 230, 91, 0.4);">
-      <img src="/winx-pro-ad-banner.jpg" alt="WinX Pro Ad Poster" style="width: 100%; height: auto; display: block;" />
-    </div>
+  <a href="/video-ad.html" class="video-hero-btn">
+    <span>🎬</span>
+    <span>Launch 30-Second Video Ad Player &amp; Recorder</span>
+  </a>
 
-    <!-- HTML Live Responsive Banner -->
-    <div class="ad-wrapper" id="adCanvas">
-    <div class="glow-circle"></div>
-
-    <!-- Top Brand Bar -->
-    <div class="top-bar">
-      <div class="brand-logo-wrap">
-        <img src="/app-icon.png" alt="WinX Pro" />
-        <div class="brand-title">WIN<span>X</span> PRO</div>
+  <div class="gallery-grid">
+    <!-- Ad 1: Master Gaming Banner -->
+    <div class="card">
+      <div class="card-badge">FEED / GOOGLE DISPLAY (1:1)</div>
+      <div class="img-preview">
+        <img src="/winx-pro-ad-banner.jpg" alt="Master Gaming Banner" />
       </div>
-      <div class="verified-badge">
-        <span>🇵🇰</span>
-        <span>OFFICIAL PAKISTAN</span>
+      <div class="card-title">1. Master 3D Gaming Banner</div>
+      <div class="card-desc">
+        1080x1080 square creative featuring 3D smartphone running WinX Pro, flying gold coins, emerald casino chips, PKR 8,888 bonus badge, and 2-minute Easypaisa payout callout.
       </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="ad-body">
-      <div class="bonus-tag">🎁 PKR 8,888 WELCOME REWARDS</div>
-      <h1 class="main-heading">
-        2 MINUTE INSTANT PAYOUTS
-      </h1>
-      <div class="urdu-subheading">
-        جیتیں روزانہ نقد — پیسے پائیں ۲ منٹ میں!
-      </div>
-
-      <div class="feature-row">
-        <div class="pill highlight">
-          <span>⚡</span>
-          <span>Easypaisa &amp; JazzCash</span>
-        </div>
-        <div class="pill">
-          <span>✈️</span>
-          <span>Spribe Aviator</span>
-        </div>
-        <div class="pill">
-          <span>🎰</span>
-          <span>JILI Slots</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Bottom CTA Bar -->
-    <div class="bottom-bar">
-      <a href="/download" class="cta-banner-btn">
-        <span>📲</span>
-        <span>DOWNLOAD OFFICIAL APP &amp; CLAIM RS 100</span>
+      <a href="/winx-pro-ad-banner.jpg" download="winx-pro-ad-banner.jpg" class="btn-download">
+        <span>📥</span>
+        <span>Download 1080x1080 JPG</span>
       </a>
-      <div class="payment-row">
-        <span>Accepted:</span>
-        <span class="payment-tag">🟢 Easypaisa</span>
-        <span class="payment-tag">🔴 JazzCash</span>
-        <span class="payment-tag">🏦 Bank Transfer</span>
-      </div>
     </div>
-  </div>
+
+    <!-- Ad 2: Mobile Story & Reels -->
+    <div class="card">
+      <div class="card-badge">TIKTOK / REELS / STORIES (9:16)</div>
+      <div class="img-preview" style="max-height: 380px; overflow: hidden;">
+        <img src="/winx-pro-story-ad.jpg" alt="Mobile Story Ad" style="object-position: top;" />
+      </div>
+      <div class="card-title">2. Vertical Story / Reel Ad</div>
+      <div class="card-desc">
+        1080x1920 mobile full-screen layout tailored for TikTok, Instagram Stories, Facebook Reels, and YouTube Shorts. Highlights instant APK download &amp; Spribe Aviator 25x.
+      </div>
+      <a href="/winx-pro-story-ad.jpg" download="winx-pro-story-ad.jpg" class="btn-download">
+        <span>📥</span>
+        <span>Download 1080x1920 JPG</span>
+      </a>
+    </div>
+
+    <!-- Ad 3: PSL Cricket & Sports Betting -->
+    <div class="card">
+      <div class="card-badge">SPORTS &amp; PSL BETTING (1:1)</div>
+      <div class="img-preview">
+        <img src="/winx-pro-cricket-ad.jpg" alt="Cricket Betting Banner" />
+      </div>
+      <div class="card-title">3. PSL Cricket Live Betting Banner</div>
+      <div class="card-desc">
+        1080x1080 stadium floodlight graphic with flaming 3D cricket ball, live match odds interface, highest rates in Pakistan, and instant cashout badges.
+      </div>
+      <a href="/winx-pro-cricket-ad.jpg" download="winx-pro-cricket-ad.jpg" class="btn-download">
+        <span>📥</span>
+        <span>Download 1080x1080 JPG</span>
+      </a>
+    </div>
   </div>
 
 </body>
