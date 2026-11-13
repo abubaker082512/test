@@ -8,11 +8,11 @@ import BottomNav from '../components/BottomNav'
 
 // Recharge Methods with Official Brand Logos
 const RECHARGE_METHODS = [
-  { id: 'easypaisa', name: 'Easypaisa', icon: '/icons/easypaisa.webp', badge: 'DirectPay' },
+  { id: 'easypaisa', name: 'Easypaisa', icon: '/icons/easypaisa.webp', badge: 'QR & Direct' },
+  { id: 'qr', name: 'QR Pay (Easypaisa)', icon: '/icons/qr-pay.svg', badge: 'Scan & Pay' },
   { id: 'jazzcash', name: 'JazzCash', icon: '/icons/jazzcash.jpeg', badge: 'DirectPay' },
   { id: 'card', name: 'Cards (Visa/MC)', icon: '/icons/card.svg', badge: 'Instant' },
   { id: 'wallets', name: 'Bank Wallets', icon: '/icons/wallet.svg', badge: '1LINK' },
-  { id: 'qr', name: 'QR Pay', icon: '/icons/qr-pay.svg' },
   { id: 'usdt', name: 'USDT', badge: '+3%', icon: '/icons/usdt.png' },
   { id: 'jazzcash_qr', name: 'JAZZCASH_QR', icon: '/icons/jazzcash-qr.png' }
 ]
@@ -67,6 +67,10 @@ export default function WalletPage() {
   const [senderPhone, setSenderPhone] = useState('')
   const [tid, setTid] = useState('')
   const [cryptoTxid, setCryptoTxid] = useState('')
+  const [screenshotFile, setScreenshotFile] = useState(null)
+  const [screenshotPreview, setScreenshotPreview] = useState(null)
+  const [screenshotUrl, setScreenshotUrl] = useState('')
+  const [isUploadingScreenshot, setIsUploadingScreenshot] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [depositMsg, setDepositMsg] = useState(null)
 
@@ -89,8 +93,9 @@ export default function WalletPage() {
     max_withdraw: 50000,
     manual_jazzcash_title: 'WinX Pro Official',
     manual_jazzcash_no: '03112235935',
-    manual_easypaisa_title: 'WinX Pro Official',
-    manual_easypaisa_no: '03493530916',
+    manual_easypaisa_title: 'MHMDABWBKRBNTARQ',
+    manual_easypaisa_no: '*******4599',
+    manual_easypaisa_qr: '/easypaisa-qr.jpg',
     manual_crypto_network: 'USDT (TRC20)',
     manual_crypto_address: 'TP2B4tF9qK8jZ1sL5vN8mM9eR7wX4yP1aB'
   })
@@ -186,8 +191,9 @@ export default function WalletPage() {
           max_withdraw: data.max_withdraw || 50000,
           manual_jazzcash_title: data.manual_jazzcash_title || prev.manual_jazzcash_title,
           manual_jazzcash_no: data.manual_jazzcash_no || prev.manual_jazzcash_no,
-          manual_easypaisa_title: data.manual_easypaisa_title || prev.manual_easypaisa_title,
-          manual_easypaisa_no: data.manual_easypaisa_no || prev.manual_easypaisa_no,
+          manual_easypaisa_title: data.manual_easypaisa_title || prev.manual_easypaisa_title || 'MHMDABWBKRBNTARQ',
+          manual_easypaisa_no: data.manual_easypaisa_no || prev.manual_easypaisa_no || '*******4599',
+          manual_easypaisa_qr: data.manual_easypaisa_qr || prev.manual_easypaisa_qr || '/easypaisa-qr.jpg',
           manual_crypto_address: data.manual_crypto_address || prev.manual_crypto_address
         }))
       }
@@ -266,6 +272,65 @@ export default function WalletPage() {
   }
   const calculatedTotal = numAmount * (1 + bonusRate)
 
+  // Automatic channel routing: if QR method chosen, ensure manual transfer/scan channel is active
+  useEffect(() => {
+    if (rechargeMethod === 'qr') {
+      setRechargeChannel('transfer')
+    }
+  }, [rechargeMethod])
+
+  const handleScreenshotChange = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setScreenshotFile(file)
+    setDepositMsg(null)
+
+    // Local instant preview
+    const previewReader = new FileReader()
+    previewReader.onload = (uploadEvent) => {
+      setScreenshotPreview(uploadEvent.target.result)
+    }
+    previewReader.readAsDataURL(file)
+
+    // Upload to server
+    setIsUploadingScreenshot(true)
+    try {
+      const reader = new FileReader()
+      reader.onload = async () => {
+        const base64Data = reader.result
+        const res = await fetch('/api/wallet/upload-receipt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: base64Data,
+            filename: file.name
+          })
+        })
+        const data = await res.json()
+        if (data.success && data.url) {
+          setScreenshotUrl(data.url)
+        } else {
+          setScreenshotUrl(base64Data)
+        }
+        setIsUploadingScreenshot(false)
+      }
+      reader.readAsDataURL(file)
+    } catch (err) {
+      console.error('Screenshot upload error:', err)
+      setIsUploadingScreenshot(false)
+    }
+  }
+
+  const handleDownloadQr = () => {
+    const a = document.createElement('a')
+    a.href = isEasypaisaOrQr ? '/easypaisa-qr.jpg' : activeQrImage
+    a.download = 'easypaisa-qr-winxpro.jpg'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+  }
+
   // Handle Deposit Initiation (DirectPay & Manual)
   const handleInitiateDeposit = async () => {
     if (!user) {
@@ -278,8 +343,8 @@ export default function WalletPage() {
       return
     }
 
-    // DirectPay flow for Easypaisa, JazzCash, Card, and Bank Wallets
-    const isDirectPay = (rechargeChannel === 'directpay' || rechargeMethod === 'card' || rechargeMethod === 'wallets') && rechargeMethod !== 'usdt'
+    // DirectPay flow for JazzCash, Card, Bank Wallets, or if explicitly chosen
+    const isDirectPay = (rechargeChannel === 'directpay' && rechargeMethod !== 'qr' && rechargeMethod !== 'usdt') || rechargeMethod === 'card' || rechargeMethod === 'wallets'
 
     if (isDirectPay) {
       setDirectPayLoading(true)
@@ -335,8 +400,8 @@ export default function WalletPage() {
         return
       }
     } else {
-      if (!tid || tid.trim().length < 6) {
-        setDepositMsg({ type: 'error', text: 'Please enter the 11-12 digit Transaction ID (TID) from your payment receipt.' })
+      if (!tid && !screenshotUrl) {
+        setDepositMsg({ type: 'error', text: 'Please enter your Transaction ID (TID) or upload your payment receipt screenshot.' })
         return
       }
     }
@@ -347,6 +412,7 @@ export default function WalletPage() {
     const activeUserId = user.id || user.uid || 'guest'
     const activeEmail = user.email || `${activeUserId}@winxpro.com`
     const isCrypto = rechargeMethod === 'usdt'
+    const isEasypaisaOrQrMethod = rechargeMethod === 'easypaisa' || rechargeMethod === 'qr'
 
     try {
       const payload = isCrypto ? {
@@ -362,10 +428,13 @@ export default function WalletPage() {
         email: activeEmail,
         amount: numAmount,
         currency: 'PKR',
-        method: rechargeMethod.toUpperCase(),
+        method: isEasypaisaOrQrMethod ? 'EASYPAISA QR' : rechargeMethod.toUpperCase(),
+        channel: isEasypaisaOrQrMethod ? 'Easypaisa QR' : rechargeChannel,
         sender_phone: senderPhone || user.phone || '03xxxxxxxxx',
         transaction_id: tid.trim(),
-        notes: `${rechargeMethod.toUpperCase()} | Channel: ${rechargeChannel} | TID: ${tid.trim()}`
+        tid: tid.trim(),
+        screenshot_url: screenshotUrl || '',
+        notes: `${rechargeMethod.toUpperCase()} | Channel: ${rechargeChannel} | TID: ${tid.trim() || 'N/A'}${screenshotUrl ? ' | 📷 Receipt Attached' : ''}`
       }
 
       const res = await fetch('/api/wallet/deposit', {
@@ -378,15 +447,27 @@ export default function WalletPage() {
       if (data.success) {
         setDepositMsg({
           type: 'success',
-          text: `✅ Deposit of Rs ${numAmount.toLocaleString()} submitted! Verification is instant.`
+          text: `✅ Deposit of Rs ${numAmount.toLocaleString()} submitted! Verification is in progress.`
         })
         setTid('')
         setCryptoTxid('')
+        setScreenshotFile(null)
+        setScreenshotPreview(null)
+        setScreenshotUrl('')
         fetchData()
         window.dispatchEvent(new Event('wallet-updated'))
         setTimeout(() => {
           setShowPaymentModal(false)
         }, 2200)
+      } else {
+        setDepositMsg({ type: 'error', text: data.error || 'Failed to submit deposit. Please check your TID or screenshot.' })
+      }
+    } catch (err) {
+      setDepositMsg({ type: 'error', text: err.message || 'Network error occurred.' })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
       } else {
         setDepositMsg({ type: 'error', text: data.error || 'Failed to submit deposit. Please check your TID.' })
       }
@@ -473,16 +554,18 @@ export default function WalletPage() {
   }
 
   // Active Admin Details
-  const activeAdminNo = rechargeMethod === 'easypaisa'
-    ? rates.manual_easypaisa_no
+  const isEasypaisaOrQr = rechargeMethod === 'easypaisa' || rechargeMethod === 'qr'
+  const activeAdminNo = isEasypaisaOrQr
+    ? (rates.manual_easypaisa_no || '*******4599')
     : rates.manual_jazzcash_no
-  const activeAdminTitle = rechargeMethod === 'easypaisa'
-    ? rates.manual_easypaisa_title
+  const activeAdminTitle = isEasypaisaOrQr
+    ? (rates.manual_easypaisa_title || 'MHMDABWBKRBNTARQ')
     : rates.manual_jazzcash_title
 
-  // Dynamic QR Image URL for payment
-  const qrDataText = encodeURIComponent(`pkr:${activeAdminNo}?amount=${numAmount}&title=${activeAdminTitle}`)
-  const dynamicQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${qrDataText}&color=081a0b`
+  // Active QR image: Use the official Easypaisa QR image for Easypaisa & QR Pay
+  const activeQrImage = isEasypaisaOrQr
+    ? (rates.manual_easypaisa_qr || '/easypaisa-qr.jpg')
+    : `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(`pkr:${activeAdminNo}?amount=${numAmount}&title=${activeAdminTitle}`)}&color=081a0b`
 
   return (
     <div className="app bbr-deposit-page">
@@ -1490,7 +1573,7 @@ export default function WalletPage() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
               <div style={{ fontSize: '16px', fontWeight: 900, color: '#ffffff' }}>
-                {rechargeMethod === 'usdt' ? 'USDT TRC20 Deposit' : 'QR Payment Confirmation'}
+                {rechargeMethod === 'usdt' ? 'USDT TRC20 Deposit' : isEasypaisaOrQr ? '📱 Easypaisa QR Payment' : 'QR Payment Confirmation'}
               </div>
               <button
                 type="button"
@@ -1521,19 +1604,68 @@ export default function WalletPage() {
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '8px'
+                  gap: '8px',
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.35)'
                 }}>
                   <img
-                    src={dynamicQrCodeUrl}
+                    src={activeQrImage}
                     alt="Payment QR"
-                    style={{ width: '180px', height: '180px', borderRadius: '10px' }}
+                    style={{
+                      width: '220px',
+                      maxWidth: '100%',
+                      height: 'auto',
+                      maxHeight: isEasypaisaOrQr ? '260px' : '220px',
+                      objectFit: 'contain',
+                      borderRadius: '10px'
+                    }}
                   />
-                  <div style={{ fontSize: '12px', fontWeight: 900, color: '#081a0b', textAlign: 'center' }}>
-                    Scan &amp; Pay: Rs {numAmount.toLocaleString()}
+                  {isEasypaisaOrQr && (
+                    <button
+                      type="button"
+                      onClick={handleDownloadQr}
+                      style={{
+                        background: '#00e65b',
+                        border: 'none',
+                        color: '#081a0b',
+                        borderRadius: '8px',
+                        padding: '6px 14px',
+                        fontSize: '11px',
+                        fontWeight: 900,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        marginTop: '2px'
+                      }}
+                    >
+                      <span>⬇️</span> Save QR to Gallery
+                    </button>
+                  )}
+                  <div style={{ fontSize: '13px', fontWeight: 900, color: '#081a0b', textAlign: 'center' }}>
+                    Scan &amp; Pay: <span style={{ color: '#00a33c' }}>Rs {numAmount.toLocaleString()}</span>
                   </div>
-                  <div style={{ fontSize: '10.5px', color: '#55665b' }}>
-                    Receiver: {activeAdminTitle} ({activeAdminNo})
+                  <div style={{ fontSize: '11px', color: '#475569', fontWeight: 700, textAlign: 'center' }}>
+                    Receiver: <strong>{activeAdminTitle}</strong> ({activeAdminNo})
                   </div>
+                </div>
+
+                {/* Step-by-Step Instructions */}
+                <div style={{
+                  background: 'rgba(0, 230, 91, 0.08)',
+                  border: '1px solid rgba(0, 230, 91, 0.25)',
+                  borderRadius: '12px',
+                  padding: '10px 12px',
+                  fontSize: '11.5px',
+                  color: '#c4d7ca',
+                  lineHeight: '1.5'
+                }}>
+                  <div style={{ fontWeight: 900, color: '#6dff38', marginBottom: '4px' }}>
+                    📱 Quick Payment Steps:
+                  </div>
+                  <div>1. Open your <strong>Easypaisa App</strong> &amp; tap <strong>Scan QR</strong></div>
+                  <div>2. Scan this QR code (or choose from gallery)</div>
+                  <div>3. Send <strong>Rs {numAmount.toLocaleString()}</strong> to <strong>{activeAdminTitle}</strong></div>
+                  <div>4. Take a screenshot of the payment receipt &amp; upload below</div>
                 </div>
 
                 {/* Account Details with Copy Buttons */}
@@ -1570,8 +1702,123 @@ export default function WalletPage() {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '11px', color: '#9bb0a2' }}>Account Title:</span>
-                    <span style={{ fontSize: '12px', fontWeight: 800, color: '#ffffff' }}>{activeAdminTitle}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 800, color: '#ffffff' }}>{activeAdminTitle}</span>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(activeAdminTitle, 'title')}
+                        style={{
+                          background: 'rgba(255,255,255,0.1)',
+                          border: 'none',
+                          color: '#ffffff',
+                          fontSize: '10px',
+                          fontWeight: 800,
+                          borderRadius: '6px',
+                          padding: '2px 8px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {copiedField === 'title' ? 'Copied!' : 'Copy'}
+                      </button>
+                    </div>
                   </div>
+                </div>
+
+                {/* Screenshot Upload Area */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 900, color: '#6dff38' }}>
+                      📷 Payment Receipt Screenshot *
+                    </label>
+                    {screenshotUrl && (
+                      <span style={{ fontSize: '10.5px', color: '#6dff38', fontWeight: 800 }}>
+                        ✓ Attached
+                      </span>
+                    )}
+                  </div>
+
+                  {!screenshotPreview ? (
+                    <label
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '2px dashed rgba(109, 255, 56, 0.45)',
+                        borderRadius: '12px',
+                        padding: '18px 14px',
+                        background: 'rgba(0, 0, 0, 0.3)',
+                        cursor: 'pointer',
+                        textAlign: 'center'
+                      }}
+                    >
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleScreenshotChange}
+                        style={{ display: 'none' }}
+                      />
+                      <div style={{ fontSize: '26px', marginBottom: '4px' }}>📸</div>
+                      <div style={{ fontSize: '13px', fontWeight: 900, color: '#ffffff' }}>
+                        {isUploadingScreenshot ? 'Uploading Screenshot...' : 'Tap to Upload Payment Receipt'}
+                      </div>
+                      <div style={{ fontSize: '10.5px', color: '#9bb0a2', marginTop: '2px' }}>
+                        PNG, JPG, JPEG, WEBP accepted
+                      </div>
+                    </label>
+                  ) : (
+                    <div style={{
+                      background: '#0a140d',
+                      border: '1.5px solid #00e65b',
+                      borderRadius: '12px',
+                      padding: '10px 12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px'
+                    }}>
+                      <img
+                        src={screenshotPreview}
+                        alt="Receipt Preview"
+                        style={{
+                          width: '60px',
+                          height: '60px',
+                          objectFit: 'cover',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(255,255,255,0.1)'
+                        }}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '12px', fontWeight: 800, color: '#ffffff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {screenshotFile?.name || 'payment_receipt.jpg'}
+                        </div>
+                        <div style={{ fontSize: '10.5px', color: isUploadingScreenshot ? '#ffd54f' : '#6dff38', marginTop: '2px' }}>
+                          {isUploadingScreenshot ? '⏳ Uploading...' : '✅ Receipt Screenshot Attached'}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setScreenshotPreview(null)
+                          setScreenshotUrl('')
+                          setScreenshotFile(null)
+                        }}
+                        style={{
+                          background: 'rgba(255, 51, 102, 0.2)',
+                          border: '1px solid #ff3366',
+                          color: '#ff3366',
+                          width: '26px',
+                          height: '26px',
+                          borderRadius: '50%',
+                          cursor: 'pointer',
+                          fontSize: '11px',
+                          fontWeight: 900
+                        }}
+                        title="Remove Screenshot"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Form Inputs: Sender Mobile & TID */}
@@ -1600,14 +1847,13 @@ export default function WalletPage() {
 
                   <div>
                     <label style={{ fontSize: '11px', fontWeight: 800, color: '#6dff38', display: 'block', marginBottom: '4px' }}>
-                      Transaction ID (TID / TRX ID) *
+                      Transaction ID (TID / TRX ID) {screenshotUrl ? '(Optional)' : '*'}
                     </label>
                     <input
                       type="text"
                       placeholder="e.g. 028472918349 (from SMS receipt)"
                       value={tid}
                       onChange={e => setTid(e.target.value)}
-                      required
                       style={{
                         width: '100%',
                         padding: '10px 12px',

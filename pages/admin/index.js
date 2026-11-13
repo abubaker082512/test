@@ -1377,6 +1377,48 @@ export default function AdminPanel() {
                             </div>
                           )}
 
+                          {(tx.screenshot_url || tx.metadata?.screenshot_url) && (
+                            <div style={{ marginTop: '10px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                                <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#00ff88' }}>
+                                  📸 Payment Receipt Screenshot:
+                                </span>
+                                <a
+                                  href={tx.screenshot_url || tx.metadata?.screenshot_url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  style={{
+                                    fontSize: '11px',
+                                    color: '#00e5ff',
+                                    textDecoration: 'underline',
+                                    fontWeight: 'bold'
+                                  }}
+                                >
+                                  Open Full Size ↗
+                                </a>
+                              </div>
+                              <a
+                                href={tx.screenshot_url || tx.metadata?.screenshot_url}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                <img
+                                  src={tx.screenshot_url || tx.metadata?.screenshot_url}
+                                  alt="Receipt Screenshot"
+                                  style={{
+                                    maxWidth: '160px',
+                                    maxHeight: '160px',
+                                    objectFit: 'cover',
+                                    borderRadius: '8px',
+                                    border: '1.5px solid rgba(0, 255, 136, 0.4)',
+                                    cursor: 'pointer',
+                                    display: 'block'
+                                  }}
+                                />
+                              </a>
+                            </div>
+                          )}
+
                           <div style={{ fontSize: '11px', color: '#666', marginTop: '4px' }}>
                             📅 {new Date(tx.created_at).toLocaleString()}
                           </div>

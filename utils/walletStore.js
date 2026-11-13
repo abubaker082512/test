@@ -587,6 +587,7 @@ export function recordTransactionRecord(txData) {
     method: txData.method || "DirectPay",
     tx_id: txData.tx_id || id,
     notes: txData.notes || txData.description || "",
+    screenshot_url: txData.screenshot_url || txData.metadata?.screenshot_url || "",
     metadata: txData.metadata || {},
     created_at: txData.created_at || new Date().toISOString(),
     updated_at: new Date().toISOString()

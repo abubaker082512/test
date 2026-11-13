@@ -1,8 +1,8 @@
 {
-  "pkr_rate": 1.0,
-  "usd_rate": 280.0,
-  "payin_pkr_rate": 1.0,
-  "payout_pkr_rate": 1.0,
+  "pkr_rate": 1,
+  "usd_rate": 280,
+  "payin_pkr_rate": 1,
+  "payout_pkr_rate": 1,
   "directpay_client_id": "pwa_ci_k1qlq54hv4gw5pr0khux",
   "directpay_client_secret": "pwa_secret_zp5rai8z02zr3o5sebm1co6uxci58uca",
   "directpay_enabled": true,
@@ -15,5 +15,8 @@
   "easypaisa_hash_key": "1234567890123456",
   "easypaisa_enabled": true,
   "easypaisa_mode": "directpay",
-  "card_mode": "directpay"
+  "card_mode": "directpay",
+  "manual_easypaisa_title": "MHMDABWBKRBNTARQ",
+  "manual_easypaisa_no": "*******4599",
+  "manual_easypaisa_qr": "/easypaisa-qr.jpg"
 }

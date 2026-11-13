@@ -1,6 +1,6 @@
-import { recordTransactionRecord, getAllTransactionsList } from '../../../utils/walletStore'
-import { addTransaction } from '../../../utils/firebaseDb'
-import { getPersistedSettings } from '../../../utils/settingsStore'
+import { recordTransactionRecord, getAllTransactionsList } from '../../../utils/walletStore.js'
+import { addTransaction } from '../../../utils/firebaseDb.js'
+import { getPersistedSettings } from '../../../utils/settingsStore.js'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
@@ -35,24 +35,26 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: `Maximum deposit amount is Rs ${maxDeposit.toLocaleString()}` })
   }
 
-  const cleanTid = String(tid || '').trim()
-  if (!cleanTid) {
-    return res.status(400).json({ error: 'Transaction ID (TID / TRX ID) is required.' })
+  const cleanTid = String(tid || '').trim() || (screenshot_url ? `SS-${Date.now().toString(36).toUpperCase()}` : '')
+  if (!cleanTid && !screenshot_url) {
+    return res.status(400).json({ error: 'Please enter your Transaction ID (TID) or upload your payment receipt screenshot.' })
   }
 
-  // Prevent duplicate TID submission
-  const allTxs = getAllTransactionsList()
-  const duplicate = allTxs.find(t => 
-    (t.metadata?.tid && String(t.metadata.tid).trim().toLowerCase() === cleanTid.toLowerCase()) ||
-    (t.tx_id && String(t.tx_id).trim().toLowerCase() === cleanTid.toLowerCase())
-  )
-  if (duplicate) {
-    return res.status(400).json({
-      error: `Transaction ID '${cleanTid}' has already been submitted (${duplicate.status}). If you need help, please contact live support.`
-    })
+  // Prevent duplicate TID submission (if real TID provided)
+  if (cleanTid && !cleanTid.startsWith('SS-')) {
+    const allTxs = getAllTransactionsList()
+    const duplicate = allTxs.find(t => 
+      (t.metadata?.tid && String(t.metadata.tid).trim().toLowerCase() === cleanTid.toLowerCase()) ||
+      (t.tx_id && String(t.tx_id).trim().toLowerCase() === cleanTid.toLowerCase())
+    )
+    if (duplicate) {
+      return res.status(400).json({
+        error: `Transaction ID '${cleanTid}' has already been submitted (${duplicate.status}). If you need help, please contact live support.`
+      })
+    }
   }
 
-  const resolvedChannel = channel || method || 'JazzCash'
+  const resolvedChannel = channel || method || 'Easypaisa'
   const internalTxId = `DEP-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`
   const numBonus = parseFloat(bonus_amount) || 0
 
@@ -76,7 +78,8 @@ export default async function handler(req, res) {
     status: 'pending',
     method: resolvedChannel,
     tx_id: internalTxId,
-    notes: `Manual Deposit via ${resolvedChannel} | Sender: ${sender_phone || 'N/A'} | TID: ${cleanTid}${numBonus > 0 ? ` (+Rs ${numBonus} bonus)` : ''}`,
+    screenshot_url: screenshot_url || '',
+    notes: `Deposit via ${resolvedChannel} | Sender: ${sender_phone || 'N/A'} | TID: ${cleanTid}${numBonus > 0 ? ` (+Rs ${numBonus} bonus)` : ''}${screenshot_url ? ' | 📷 Receipt Attached' : ''}`,
     metadata
   })
 

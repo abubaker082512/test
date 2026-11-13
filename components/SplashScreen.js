@@ -8,7 +8,7 @@ export default function SplashScreen() {
     const timer = setTimeout(() => {
       setFading(true)
       setTimeout(() => setVisible(false), 500)
-    }, 1200)
+    }, 1400)
     return () => clearTimeout(timer)
   }, [])
 
@@ -19,8 +19,8 @@ export default function SplashScreen() {
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: '#070d0a',
-        backgroundImage: 'radial-gradient(circle at 50% 40%, rgba(0, 230, 91, 0.22) 0%, rgba(7, 13, 10, 0.98) 70%)',
+        backgroundColor: '#050806',
+        backgroundImage: 'radial-gradient(circle at 50% 48%, rgba(0, 230, 91, 0.16) 0%, rgba(5, 8, 6, 0.98) 65%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -36,32 +36,45 @@ export default function SplashScreen() {
           src="/winx-logo.png"
           alt="WinX Pro"
           style={{
-            width: '180px',
+            width: '210px',
+            maxWidth: '70vw',
             height: 'auto',
-            maxHeight: '180px',
             objectFit: 'contain',
-            filter: 'drop-shadow(0 0 30px rgba(0, 230, 91, 0.5)) drop-shadow(0 0 15px rgba(255, 215, 0, 0.35))',
-            marginBottom: '20px'
+            filter: 'drop-shadow(0 0 35px rgba(0, 230, 91, 0.45)) drop-shadow(0 0 15px rgba(255, 215, 0, 0.3))',
+            marginBottom: '18px'
           }}
         />
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#00e65b', boxShadow: '0 0 8px #00e65b' }} />
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#6dff38', boxShadow: '0 0 12px #6dff38' }} />
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#00e65b', boxShadow: '0 0 8px #00e65b' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+          <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#00e65b', boxShadow: '0 0 10px #00e65b', animation: 'splashPulse 1.2s infinite ease-in-out', animationDelay: '0s' }} />
+          <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#00e65b', boxShadow: '0 0 10px #00e65b', animation: 'splashPulse 1.2s infinite ease-in-out', animationDelay: '0.2s' }} />
+          <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#00e65b', boxShadow: '0 0 10px #00e65b', animation: 'splashPulse 1.2s infinite ease-in-out', animationDelay: '0.4s' }} />
         </div>
         <span
           style={{
-            marginTop: '16px',
-            fontSize: '11px',
+            marginTop: '14px',
+            fontSize: '9.5px',
             fontWeight: '800',
-            letterSpacing: '2.5px',
-            color: '#a1a1aa',
+            letterSpacing: '3px',
+            color: '#657a6e',
             textTransform: 'uppercase'
           }}
         >
           Loading WinX Pro...
         </span>
       </div>
+      <style jsx>{`
+        @keyframes splashPulse {
+          0%, 80%, 100% {
+            opacity: 0.25;
+            transform: scale(0.8);
+          }
+          40% {
+            opacity: 1;
+            transform: scale(1.25);
+            box-shadow: 0 0 14px #00e65b, 0 0 4px #fff;
+          }
+        }
+      `}</style>
     </div>
   )
 }
