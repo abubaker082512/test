@@ -1096,20 +1096,21 @@ body:has(.admin-full-screen) #__next {
   flex: 1;
 }
 .bbr-install-app-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
-  background: #0d1f14;
-  border: 1.5px solid #ffd700;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #06120b;
+  border: 1.5px solid #00e65b;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   overflow: hidden;
+  box-shadow: 0 0 8px rgba(0, 230, 91, 0.4);
 }
 .bbr-install-app-icon img {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   object-fit: contain;
 }
 .bbr-install-copy {

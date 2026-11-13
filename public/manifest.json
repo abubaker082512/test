@@ -32,9 +32,9 @@
       "type": "image/png"
     },
     {
-      "src": "/winx-pro-3d-icon.jpg",
-      "sizes": "1024x1024",
-      "type": "image/jpeg",
+      "src": "/app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any"
     }
   ],

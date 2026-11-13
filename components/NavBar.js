@@ -73,7 +73,7 @@ export default function NavBar({ onOpenPromoModal }) {
         <div className="bbr-top-install-bar">
           <div className="bbr-install-left">
             <div className="bbr-install-app-icon">
-              <img src="/app-icon.png" alt="WinX Pro" style={{ borderRadius: '6px', objectFit: 'cover' }} />
+              <img src="/app-icon.png" alt="WinX Pro" />
             </div>
             <div className="bbr-install-copy">
               Download the app to win <strong>PKR 8888</strong>
