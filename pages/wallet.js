@@ -468,15 +468,6 @@ export default function WalletPage() {
       setIsSubmitting(false)
     }
   }
-      } else {
-        setDepositMsg({ type: 'error', text: data.error || 'Failed to submit deposit. Please check your TID.' })
-      }
-    } catch (err) {
-      setDepositMsg({ type: 'error', text: err.message || 'Network error occurred.' })
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
 
   // Handle Withdrawal Request with Immediate Balance Deduction
   const handleWithdraw = async (e) => {
