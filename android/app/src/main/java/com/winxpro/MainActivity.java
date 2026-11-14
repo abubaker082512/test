@@ -65,6 +65,10 @@ public class MainActivity extends AppCompatActivity {
         settings.setSupportMultipleWindows(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
 
+        // Custom User Agent identifier so web app detects native app & adjusts viewport/hides install banners
+        String defaultUa = settings.getUserAgentString();
+        settings.setUserAgentString(defaultUa + " WinXProApp/1.0.3 (Android; Mobile; WinXProAPK)");
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             settings.setMediaPlaybackRequiresUserGesture(false);
         }
@@ -106,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     CookieManager.getInstance().flush();
                 }
+                view.evaluateJavascript("window.isWinXProApp = true; document.documentElement.classList.add('winxpro-app'); if (typeof window.__onWinXProAppReady === 'function') { try { window.__onWinXProAppReady(); } catch(e){} }", null);
             }
         });
 

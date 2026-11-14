@@ -15,6 +15,27 @@ export default function NavBar({ onOpenPromoModal }) {
   const [showMenu, setShowMenu] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [showAppBar, setShowAppBar] = useState(true)
+  const [isInsideApp, setIsInsideApp] = useState(false)
+
+  // Detect whether running inside the native Android APK WebView or Standalone PWA
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const detectApp = () => {
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+        const ua = window.navigator.userAgent || ''
+        const isNative = !!window.isWinXProApp || /WinXProApp|wv|Android.*Version\/[0-9.]+/i.test(ua)
+        if (isStandalone || isNative) {
+          setIsInsideApp(true)
+          setShowAppBar(false)
+        }
+      }
+      detectApp()
+      window.__onWinXProAppReady = () => {
+        setIsInsideApp(true)
+        setShowAppBar(false)
+      }
+    }
+  }, [])
 
   const fetchBalance = async () => {
     if (!user) return
@@ -55,21 +76,13 @@ export default function NavBar({ onOpenPromoModal }) {
   }
 
   const handleInstallApp = () => {
-    try {
-      const link = document.createElement('a')
-      link.href = '/WinXPro-release.apk'
-      link.download = 'WinXPro-release.apk'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-    } catch (e) {}
     setIsInstallModalOpen(true)
   }
 
   return (
     <>
-      {/* Top Neon-Lime App Download Strip (matching bbrssms1.com Screenshot 4) */}
-      {showAppBar && (
+      {/* Top Neon-Lime App Download Strip (hidden inside native app & standalone PWA) */}
+      {showAppBar && !isInsideApp && (
         <div className="bbr-top-install-bar">
           <div className="bbr-install-left">
             <div className="bbr-install-app-icon">
@@ -131,6 +144,7 @@ export default function NavBar({ onOpenPromoModal }) {
             <img 
               src="/logo.png" 
               alt="WinX Pro" 
+              className="navbar-brand-logo"
               style={{ 
                 height: '38px', 
                 width: 'auto', 
@@ -145,6 +159,7 @@ export default function NavBar({ onOpenPromoModal }) {
           {onOpenPromoModal && (
             <button
               type="button"
+              className="navbar-promo-gift-btn"
               onClick={onOpenPromoModal}
               title="Promotions & QR Tutorial"
               style={{
