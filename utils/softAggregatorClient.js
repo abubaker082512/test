@@ -10,7 +10,10 @@ let gamesCache = null;
 let gamesCacheTime = 0;
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
-export async function callSoftAggregator(method, params = {}) {
+// In-memory cache of already-created players to eliminate redundant roundtrips
+const createdPlayersCache = new Set();
+
+export async function callSoftAggregator(method, params = {}, timeoutMs = 35000) {
   const payload = {
     api_login: API_LOGIN,
     api_password: API_PASSWORD,
@@ -19,7 +22,7 @@ export async function callSoftAggregator(method, params = {}) {
   };
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 12000);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const res = await fetch(API_URL, {
@@ -45,12 +48,12 @@ export async function callSoftAggregator(method, params = {}) {
 
 // 1. Get Currencies
 export async function getCurrencies() {
-  return callSoftAggregator('getCurrencies');
+  return callSoftAggregator('getCurrencies', {}, 15000);
 }
 
 // 2. Get Providers
 export async function getProviderList() {
-  return callSoftAggregator('getProviderList');
+  return callSoftAggregator('getProviderList', {}, 20000);
 }
 
 // 3. Get Game List with In-Memory Caching
@@ -60,7 +63,7 @@ export async function getGameList(forceRefresh = false) {
     return { error: 0, response: gamesCache };
   }
 
-  const res = await callSoftAggregator('getGameList');
+  const res = await callSoftAggregator('getGameList', {}, 30000);
   if (res && res.error === 0 && Array.isArray(res.response)) {
     gamesCache = res.response;
     gamesCacheTime = now;
@@ -74,20 +77,28 @@ export async function getGameList(forceRefresh = false) {
   return res;
 }
 
-// 4. Create / Ensure Player
+// 4. Create / Ensure Player (cached in-memory to prevent slow double requests)
 export async function createPlayer(username, password, currency = DEFAULT_CURRENCY) {
-  // Normalize username for aggregator
   const cleanUser = String(username || 'guest_player').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 32);
   const cleanPass = String(password || 'winx_secret_123').slice(0, 32);
 
-  return callSoftAggregator('createPlayer', {
+  if (createdPlayersCache.has(cleanUser)) {
+    return { error: 0, response: { username: cleanUser, cached: true } };
+  }
+
+  const res = await callSoftAggregator('createPlayer', {
     user_username: cleanUser,
     user_password: cleanPass,
     currency
-  });
+  }, 20000);
+
+  if (res && res.error === 0) {
+    createdPlayersCache.add(cleanUser);
+  }
+  return res;
 }
 
-// 5. Launch Real-Money Game
+// 5. Launch Real-Money Game with Auto-Retry & Extended Provider Handshake Timeout
 export async function launchGame({
   username,
   password,
@@ -100,10 +111,11 @@ export async function launchGame({
   const cleanUser = String(username || 'guest_player').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 32);
   const cleanPass = String(password || 'winx_secret_123').slice(0, 32);
 
-  // First ensure player is created
+  // 1. Ensure player exists on SoftAggregator (instant if cached)
   await createPlayer(cleanUser, cleanPass, currency);
 
-  return callSoftAggregator('getGame', {
+  // 2. Initial attempt: Request session with 35s timeout
+  let res = await callSoftAggregator('getGame', {
     user_username: cleanUser,
     user_password: cleanPass,
     gameid,
@@ -111,7 +123,36 @@ export async function launchGame({
     lang,
     homeurl,
     device
-  });
+  }, 35000);
+
+  // 3. Fallback attempt 1: If failed with device: mobile, retry with default device
+  if (res && (res.error !== 0 || !res.response)) {
+    console.warn(`[SoftAggregator] getGame initial attempt failed for ${gameid} (${res.message || 'error'}), retrying without device param...`);
+    res = await callSoftAggregator('getGame', {
+      user_username: cleanUser,
+      user_password: cleanPass,
+      gameid,
+      currency,
+      lang,
+      homeurl
+    }, 35000);
+  }
+
+  // 4. Fallback attempt 2: If user was not found on remote cluster, re-create player and retry
+  if (res && res.error !== 0 && String(res.message || '').toLowerCase().includes('user')) {
+    createdPlayersCache.delete(cleanUser);
+    await createPlayer(cleanUser, cleanPass, currency);
+    res = await callSoftAggregator('getGame', {
+      user_username: cleanUser,
+      user_password: cleanPass,
+      gameid,
+      currency,
+      lang,
+      homeurl
+    }, 35000);
+  }
+
+  return res;
 }
 
 // 6. Launch Demo Game
@@ -122,7 +163,7 @@ export async function launchDemoGame({
   return callSoftAggregator('getGameDemo', {
     gameid,
     homeurl
-  });
+  }, 30000);
 }
 
 // 7. Get Player Round History
@@ -132,5 +173,5 @@ export async function getPlayerHistory(username, offset = 0, limit = 50) {
     user_username: cleanUser,
     offset,
     limit
-  });
+  }, 20000);
 }

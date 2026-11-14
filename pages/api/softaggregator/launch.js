@@ -4,6 +4,17 @@
 import { launchGame, launchDemoGame } from '../../../utils/softAggregatorClient.js';
 import { registerPlayerUsername, getLiveUserWallet } from '../../../utils/walletStore.js';
 
+export const config = {
+  maxDuration: 60,
+};
+
+// Known reliable companion fallbacks if a specific version is under maintenance by upstream provider
+const COMPANION_FALLBACKS = {
+  'x50a0b59eee3ad61': 'xe1c00f1b46ebc87', // Super Ace Deluxe -> Super Ace Original
+  'x7ac8b6d24d040b5': 'x4220b3aa086524a', // Fortune Gems 3 -> Fortune Gems Original
+  'x81efe399c900eeb': 'xe92c6d594da6a33', // Mahjong Ways 2 -> Mahjong Ways Original
+};
+
 function extractLaunchUrl(response) {
   if (!response) return null;
   if (typeof response === 'string' && response.startsWith('http')) return response;
@@ -55,8 +66,10 @@ export default async function handler(req, res) {
   if (user_id) registerPlayerUsername(user_id, user_id, email);
   registerPlayerUsername('c1000273_' + username, user_id, email);
 
-  // Warm up live wallet from Supabase
-  await getLiveUserWallet(user_id || username, email || '');
+  // Warm up live wallet from Supabase asynchronously
+  try {
+    getLiveUserWallet(user_id || username, email || '').catch(() => {});
+  } catch (e) {}
 
   const host = req.headers.host || 'winxpro.com.pk';
   const protocol = req.headers['x-forwarded-proto'] || 'https';
@@ -73,10 +86,11 @@ export default async function handler(req, res) {
           mode: 'demo'
         });
       }
+      // If demo mode failed, continue down to real-money launch as fallback
     }
 
     // Launch real-money game
-    const launchRes = await launchGame({
+    let launchRes = await launchGame({
       username,
       password: 'winx_secret_player_123',
       gameid,
@@ -86,7 +100,7 @@ export default async function handler(req, res) {
       device
     });
 
-    const realUrl = extractLaunchUrl(launchRes?.response);
+    let realUrl = extractLaunchUrl(launchRes?.response);
     if (launchRes && launchRes.error === 0 && realUrl) {
       return res.status(200).json({
         success: true,
@@ -94,6 +108,31 @@ export default async function handler(req, res) {
         username,
         mode: 'real'
       });
+    }
+
+    // If primary game ID failed and we have a companion fallback (e.g. Super Ace Deluxe -> Super Ace)
+    if (COMPANION_FALLBACKS[gameid]) {
+      const fallbackId = COMPANION_FALLBACKS[gameid];
+      console.warn(`[SoftAggregator] Primary game ${gameid} failed, attempting companion fallback ${fallbackId}...`);
+      const fallbackRes = await launchGame({
+        username,
+        password: 'winx_secret_player_123',
+        gameid: fallbackId,
+        currency: 'PKR',
+        lang,
+        homeurl,
+        device
+      });
+      const fallbackUrl = extractLaunchUrl(fallbackRes?.response);
+      if (fallbackRes && fallbackRes.error === 0 && fallbackUrl) {
+        return res.status(200).json({
+          success: true,
+          launch_url: fallbackUrl,
+          username,
+          mode: 'real',
+          fallback: true
+        });
+      }
     }
 
     return res.status(200).json({

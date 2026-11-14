@@ -17,10 +17,10 @@ const SLUG_ALIASES = {
   'diamond-poker20': 'xddb07a7a584679c',
   'aviator': 'x887bde40b16350c',
   'super-ace': 'xe1c00f1b46ebc87',
-  'super-ace-deluxe': 'x50a0b59eee3ad61',
+  'super-ace-deluxe': 'xe1c00f1b46ebc87',
   'fortune-gems': 'x4220b3aa086524a',
   'fortune-gems-2': 'x6ae59fc87ac977e',
-  'fortune-gems-3': 'x7ac8b6d24d040b5',
+  'fortune-gems-3': 'x6ae59fc87ac977e',
   'mahjong-ways': 'xe92c6d594da6a33',
   'mahjong-ways-2': 'x81efe399c900eeb',
   'gates-of-olympus': 'xddb07a7a584679c',
@@ -109,7 +109,7 @@ export default function PlayGame() {
   }, [resolvedTargetId])
 
   // Direct Launch via SoftAggregator API
-  const launchSoftAggregatorGame = async () => {
+  const launchSoftAggregatorGame = async (forceDemo = false) => {
     if (!resolvedTargetId) return
     setLaunchLoading(true)
     setLaunchError(null)
@@ -120,6 +120,9 @@ export default function PlayGame() {
       .replace(/[^a-zA-Z0-9_-]/g, '')
       .slice(0, 24) || 'player'
 
+    const controller = new AbortController()
+    const abortTimeout = setTimeout(() => controller.abort(), 45000)
+
     try {
       const res = await fetch('/api/softaggregator/launch', {
         method: 'POST',
@@ -128,10 +131,12 @@ export default function PlayGame() {
           gameid: resolvedTargetId,
           user_id: user ? (user.id || user.uid || cleanUser) : 'guest_player',
           email: user?.email || '',
-          demo: isDemoMode,
+          demo: forceDemo ? true : isDemoMode,
           device: 'mobile'
-        })
+        }),
+        signal: controller.signal
       })
+      clearTimeout(abortTimeout)
 
       const json = await res.json()
 
@@ -148,11 +153,12 @@ export default function PlayGame() {
         setLaunchUrl(finalUrl)
         setLaunchLoading(false)
       } else {
-        setLaunchError(json.error || json.details?.message || 'Unable to launch game session.')
+        setLaunchError(json.error || json.details?.message || 'Unable to connect to game provider. Please tap Retry.')
         setLaunchLoading(false)
       }
     } catch (err) {
-      setLaunchError(err.message || 'Network error connecting to game server.')
+      clearTimeout(abortTimeout)
+      setLaunchError(err.name === 'AbortError' ? 'Connecting took longer than expected. Please tap Retry Launch.' : (err.message || 'Network error connecting to game server.'))
       setLaunchLoading(false)
     }
   }
@@ -444,22 +450,39 @@ export default function PlayGame() {
             >
               {launchError}
             </div>
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '10px' }}>
               <button
                 type="button"
-                onClick={launchSoftAggregatorGame}
+                onClick={() => launchSoftAggregatorGame(false)}
                 style={{
                   background: 'linear-gradient(135deg, #00ff88, #00bb66)',
                   color: '#000',
                   border: 'none',
-                  padding: '9px 18px',
-                  borderRadius: '8px',
+                  padding: '10px 18px',
+                  borderRadius: '10px',
                   fontWeight: 900,
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(0, 255, 136, 0.35)'
+                }}
+              >
+                🔄 Retry Launch
+              </button>
+              <button
+                type="button"
+                onClick={() => launchSoftAggregatorGame(true)}
+                style={{
+                  background: 'rgba(0, 255, 136, 0.12)',
+                  color: '#00ff88',
+                  border: '1.5px solid rgba(0, 255, 136, 0.4)',
+                  padding: '10px 16px',
+                  borderRadius: '10px',
+                  fontWeight: 800,
                   fontSize: '12.5px',
                   cursor: 'pointer'
                 }}
               >
-                🔄 Retry Launch
+                🎮 Practice Mode
               </button>
               <Link href="/">
                 <button
@@ -468,8 +491,8 @@ export default function PlayGame() {
                     background: 'rgba(255, 255, 255, 0.08)',
                     color: '#fff',
                     border: '1px solid rgba(255, 255, 255, 0.15)',
-                    padding: '9px 18px',
-                    borderRadius: '8px',
+                    padding: '10px 16px',
+                    borderRadius: '10px',
                     fontWeight: 800,
                     fontSize: '12.5px',
                     cursor: 'pointer'
