@@ -608,7 +608,7 @@ export default function Support() {
                 { label: '💳 Deposit Help', query: 'I need assistance regarding my deposit / recharge.' },
                 { label: '🏧 Withdrawal Status', query: 'Please check the status of my withdrawal request.' },
                 { label: '🎁 VIP Bonus Details', query: 'How do I claim my VIP bonus or daily check-in reward?' },
-                { label: '🎰 Game Issue', query: 'I need help with a casino/slots game.' }
+                { label: '🎰 Game Issue', query: 'I need help with a game session.' }
               ].map((chip, idx) => (
                 <button
                   key={idx}

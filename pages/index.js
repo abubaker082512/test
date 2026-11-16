@@ -52,7 +52,7 @@ const PROVIDERS_CONFIG = [
   },
   {
     id: 'pragmaticplay',
-    label: 'PP Slots',
+    label: 'Pragmatic',
     icon: '⚡',
     sectionId: 'sec-pragmaticplay',
     name: 'Pragmatic Play',
@@ -229,7 +229,7 @@ export default function Home() {
             </div>
           </div>
           <div className="bbr-hero-char-wrap">
-            <img src="/banners/down_banner.png" alt="Casino Mascot" className="bbr-hero-char-img" />
+            <img src="/banners/down_banner.png" alt="Gaming Mascot" className="bbr-hero-char-img" />
           </div>
         </div>
         <div className="bbr-hero-tiers-grid">
@@ -393,7 +393,7 @@ export default function Home() {
                       title={game.name}
                       provider={game.provider_name || prov.label}
                       imageUrl={game.image_portrait || game.image || game.image_square}
-                      category={game.game_type || 'Slots'}
+                      category={game.game_type || 'Games'}
                       featuredBento={prov.id !== 'hots' && gIdx === 0}
                     />
                   ))}
@@ -416,10 +416,10 @@ export default function Home() {
         lineHeight: '1.6'
       }}>
         <h2 style={{ fontSize: '15px', color: '#FFF', fontWeight: 800, marginBottom: '8px' }}>
-          🇵🇰 WinX Pro Pakistan — Official Online Gaming &amp; Cricket Betting
+          🇵🇰 WinX Pro Pakistan — Official Online Gaming &amp; Sports Entertainment
         </h2>
         <p style={{ marginBottom: '10px' }}>
-          Welcome to <strong>WinX Pro (WINX.COM.PK)</strong>, Pakistan&apos;s premier platform for online slots, live casino tables, and PSL cricket betting. Enjoy 11,200+ certified titles including <em>Spribe Aviator, JILI Super Ace, Fortune Gems, Money Coming, PG Soft Mahjong Ways</em>, and Evolution Gaming live dealers.
+          Welcome to <strong>WinX Pro (WINX.COM.PK)</strong>, Pakistan&apos;s premier platform for online gaming, arcade titles, and PSL sports entertainment. Enjoy 11,200+ certified titles including <em>Spribe Aviator, JILI Super Ace, Fortune Gems, Money Coming, PG Soft Mahjong Ways</em>, and live interactive games.
         </p>
 
         <h3 style={{ fontSize: '13px', color: '#00E65B', fontWeight: 700, margin: '12px 0 6px' }}>
@@ -437,10 +437,10 @@ export default function Home() {
             🎁 Claim 100% Bonus
           </Link>
           <Link href="/sports" style={{ color: '#38BDF8', textDecoration: 'none', background: 'rgba(56, 189, 248, 0.12)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
-            🏏 PSL &amp; Cricket Betting
+            🏏 PSL &amp; Sports Arena
           </Link>
-          <Link href="/casino" style={{ color: '#F43F5E', textDecoration: 'none', background: 'rgba(244, 63, 94, 0.12)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
-            🎰 11,200+ Online Slots
+          <Link href="/sports" style={{ color: '#F43F5E', textDecoration: 'none', background: 'rgba(244, 63, 94, 0.12)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
+            🎮 11,200+ Online Games
           </Link>
         </div>
       </section>
@@ -448,7 +448,7 @@ export default function Home() {
       {/* Rich Brand Footer matching bottom of Screenshot 4 */}
       <footer className="bbr-footer">
         <div className="bbr-footer-mascot-wrap">
-          <img src="/banners/pdd_banner.png" alt="WINX Casino" className="bbr-footer-mascot" />
+          <img src="/banners/pdd_banner.png" alt="WINX Gaming" className="bbr-footer-mascot" />
           <div className="bbr-footer-brand">WINX.COM</div>
         </div>
 
@@ -461,12 +461,12 @@ export default function Home() {
 
         <div className="bbr-footer-copy">
           <p>
-            <strong>WINX.COM</strong> is one of the best and most popular online slot websites in Pakistan powered by official SoftAggregator game servers. Over 11,200 authentic titles including JILI, PG Soft, Spribe Aviator, Pragmatic Play, Hacksaw, Nolimit City, and live tables. Real-time PKR balances synchronized seamlessly.
+            <strong>WINX.COM</strong> is one of the best and most popular online gaming websites in Pakistan powered by official SoftAggregator game servers. Over 11,200 authentic titles including JILI, PG Soft, Spribe Aviator, Pragmatic Play, Hacksaw, Nolimit City, and live interactive titles. Real-time PKR balances synchronized seamlessly.
           </p>
           <ul>
             <li>1. This product is for users aged 18 and above only.</li>
             <li>2. This game contains in-app purchases.</li>
-            <li>3. Winning in social casino games does not guarantee future success in real-money betting and related games.</li>
+            <li>3. Play responsibly. All entertainment titles are intended for amusement and skill demonstration.</li>
           </ul>
           <div className="bbr-copyright">Copyright © 2026 WINX Reserved</div>
         </div>

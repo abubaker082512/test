@@ -14,7 +14,7 @@ This document captures key findings from preliminary research on building a WinX
 - Implication: plan a robust Jili adapter layer with idempotent operations, proper error handling, and observability around latency and reconciliation.
 
 ## 3) Compliance & regulatory considerations (high level)
-- Online gambling platforms require licensing, KYC/AML controls, geolocation, and responsible gaming tooling.
+- Online gaming platforms require licensing, KYC/AML controls, geolocation, and responsible gaming tooling.
 - Data privacy (GDPR/local laws), secure payments (PCI scope considerations), and periodic regulatory reporting are essential.
 - Implementation should separate regulatory requirements by jurisdiction and support regional configurations.
 

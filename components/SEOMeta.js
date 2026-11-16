@@ -2,9 +2,9 @@ import React from 'react'
 import Head from 'next/head'
 
 export default function SEOMeta({
-  title = 'WinX Pro Pakistan | #1 Online Slots, Live Casino & Sports Betting (Easypaisa & JazzCash)',
-  description = 'WinX Pro Pakistan - Official online gaming, live casino, Spribe Aviator, JILI slots & cricket betting. Instant Easypaisa & JazzCash deposits & 2-minute withdrawals. Sign up now for 100% welcome bonus!',
-  keywords = 'WinX Pro, WinX Pro Pakistan, WinX Pro login, WinX Pro APK download, online gaming Pakistan, Easypaisa casino Pakistan, JazzCash slots, Spribe Aviator Pakistan, JILI games, Super Ace Pakistan, PSL cricket betting, live dealer casino Pakistan, 10Win alternative Pakistan',
+  title = 'WinX Pro Pakistan | Premier Online Gaming & Sports Entertainment (Easypaisa & JazzCash)',
+  description = 'WinX Pro Pakistan - Official online gaming, Spribe Aviator, arcade games & live sports entertainment. Instant Easypaisa & JazzCash deposits & fast 2-minute withdrawals. Sign up now for welcome rewards!',
+  keywords = 'WinX Pro, WinX Pro Pakistan, WinX Pro login, WinX Pro APK download, online gaming Pakistan, Easypaisa gaming, JazzCash games, Spribe Aviator Pakistan, JILI games, Super Ace Pakistan, PSL cricket, arcade gaming Pakistan',
   canonicalUrl = 'https://winxpro.com.pk/',
   ogImage = 'https://winxpro.com.pk/winx-pro-3d-icon.jpg',
   pageType = 'website'
@@ -19,7 +19,7 @@ export default function SEOMeta({
     alternateName: ['WinXPro', 'WinX Pro Official', 'WinX Pakistan', 'WinX Gaming'],
     url: siteUrl,
     logo: `${siteUrl}/logo.svg`,
-    description: 'Premier online gaming, live casino, slots & sports betting platform in Pakistan.',
+    description: 'Premier online gaming and sports entertainment platform in Pakistan.',
     sameAs: [
       'https://t.me/winxpro_official',
       'https://chat.whatsapp.com/winxpro',
@@ -44,7 +44,7 @@ export default function SEOMeta({
     url: siteUrl,
     potentialAction: {
       '@type': 'SearchAction',
-      target: `${siteUrl}/casino?q={search_term_string}`,
+      target: `${siteUrl}/?q={search_term_string}`,
       'query-input': 'required name=search_term_string'
     }
   }
@@ -82,7 +82,7 @@ export default function SEOMeta({
         name: 'What is WinX Pro Pakistan?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'WinX Pro is Pakistan\'s leading online gaming and sports entertainment platform offering 11,200+ games including Spribe Aviator, JILI slots, PG Soft, Live Evolution Casino, and cricket betting on PSL and international matches.'
+          text: 'WinX Pro is Pakistan\'s leading online gaming and sports entertainment platform offering 11,200+ titles including Spribe Aviator, JILI games, PG Soft, and live sports coverage on PSL and international matches.'
         }
       },
       {

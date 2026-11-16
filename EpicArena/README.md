@@ -9,7 +9,7 @@ EpicArena is a modern, standalone Flutter mobile gaming platform engineered with
 ## 🌟 Key Features
 
 1. **Clean Gaming Branding**:
-   - Zero betting/gambling wording in all UI components, manifests, and assets.
+   - Zero betting/gaming wording in all UI components, manifests, and assets.
    - Esport & Arcade terminology: *Arena Coins, Star Gems, Match Entry, Victory Trophies, Global Leaderboards, Token Vault*.
 
 2. **Dynamic Dual-Mode System**:

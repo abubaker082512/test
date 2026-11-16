@@ -106,7 +106,7 @@ export default function InvitePage() {
         title="WinX Pro Referral Program & Agent Rewards | Earn Daily Cash Pakistan"
         description="Earn Rs 100 instant cash bonus + up to 5% lifetime commissions for every active player you refer to WinX Pro. Instant daily withdrawal to Easypaisa & JazzCash."
         canonicalUrl="https://winxpro.com.pk/invite"
-        keywords="WinX Pro invite code, referral bonus Pakistan, earn money online Pakistan, casino agent program Pakistan, affiliate gaming Pakistan"
+        keywords="WinX Pro invite code, referral bonus Pakistan, earn money online Pakistan, gaming partner program Pakistan, affiliate gaming Pakistan"
       />
 
       <NavBar />
@@ -477,7 +477,7 @@ export default function InvitePage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#09120c', padding: '10px 12px', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
                   <div>
                     <div style={{ fontSize: '12px', fontWeight: 800, color: '#ffffff' }}>Level 1: Direct Friends</div>
-                    <div style={{ fontSize: '10px', color: '#94a3b8' }}>Instant signup reward + betting rebate</div>
+                    <div style={{ fontSize: '10px', color: '#94a3b8' }}>Instant signup reward + turnover rebate</div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '12.5px', fontWeight: 900, color: '#6dff38' }}>+Rs 100.00</div>

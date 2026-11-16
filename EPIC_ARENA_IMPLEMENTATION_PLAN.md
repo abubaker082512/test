@@ -7,8 +7,8 @@
 **EpicArena** (`com.epicarena`) is a standalone, next-generation **Flutter Android Gaming App** designed from the ground up as a unified, high-performance gaming platform.
 
 ### Core Strategic Mandates:
-1. **Zero Betting / Gambling Terminology**:
-   - Total elimination of all gambling, casino, and betting wording across the app UI, codebase, asset labels, strings, network payload identifiers, and store metadata.
+1. **Zero Wagering Terminology**:
+   - Total elimination of all casino and betting wording across the app UI, codebase, asset labels, strings, network payload identifiers, and store metadata.
    - Clean, esports-first terminology (*Arena Coins, Token Vault, Match Entry, Prize Rooms, Victory Points, Leaderboards, Pro Tournaments*).
 2. **Dynamic Dual-Mode Architecture (Remote Cloaking Engine)**:
    - **Mode 1: Casual Gaming Mode (Default / Safe Store Mode)**:

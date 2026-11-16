@@ -50,10 +50,10 @@ export default function DownloadApp() {
   return (
     <div style={{ minHeight: '100vh', background: '#070a14', color: '#fff', display: 'flex', flexDirection: 'column' }}>
       <SEOMeta
-        title="Download WinX Pro APK (Official 2026) | Android Gaming & Betting App Pakistan"
+        title="Download WinX Pro APK (Official 2026) | Android Gaming & Entertainment App Pakistan"
         description="Download the official WinX Pro APK v2.4.0 for Android. Instant Easypaisa & JazzCash deposits, 2-minute withdrawals, 11,200+ games & PKR 8,888 bonus."
         canonicalUrl="https://winxpro.com.pk/download"
-        keywords="WinX Pro APK download, WinX Pro app download, online gaming app Pakistan, download casino APK Pakistan, Easypaisa gaming app"
+        keywords="WinX Pro APK download, WinX Pro app download, online gaming app Pakistan, Easypaisa gaming app"
         ogImage="https://winxpro.com.pk/winx-pro-3d-icon.jpg"
       />
 
@@ -163,7 +163,7 @@ export default function DownloadApp() {
           <div style={{ background: '#0e1713', border: '1px solid rgba(109, 255, 56, 0.15)', borderRadius: '16px', padding: '14px 12px', textAlign: 'center' }}>
             <div style={{ fontSize: '24px', marginBottom: '4px' }}>⚡</div>
             <div style={{ fontSize: '13px', fontWeight: 900, color: '#fff' }}>0ms Latency</div>
-            <div style={{ fontSize: '10.5px', color: '#94a3b8', marginTop: '2px' }}>High-frequency betting engine</div>
+            <div style={{ fontSize: '10.5px', color: '#94a3b8', marginTop: '2px' }}>High-frequency gaming engine</div>
           </div>
 
           <div style={{ background: '#0e1713', border: '1px solid rgba(109, 255, 56, 0.15)', borderRadius: '16px', padding: '14px 12px', textAlign: 'center' }}>

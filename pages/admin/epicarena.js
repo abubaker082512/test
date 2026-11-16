@@ -181,7 +181,7 @@ export default function EpicArenaAdmin() {
               <h3 style={styles.modeCardTitle}>Casual Gaming Mode</h3>
               <p style={styles.modeCardText}>
                 Serves 1,000+ HTML5 casual, arcade, puzzle, racing, and skill games (GamePix / Famobi). 
-                Zero real-money gambling triggers exposed.
+                Zero real-money wagering triggers exposed.
               </p>
               <div style={styles.activeCheck}>
                 {!isPro ? '✓ ACTIVE' : 'Click to Activate'}

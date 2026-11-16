@@ -17,12 +17,12 @@ Note: The target jurisdiction(s) and regulatory licenses must be defined early. 
   - Casino & games lobby: catalog of casino games (via Jili API) with launching/embedding in the client, session management, and win/loss reporting.
   - Promotions: welcome bonuses, ongoing promos, wagering requirements handling, and loyalty tiers.
   - Admin portal: user management, risk controls, event/odds management, game catalog, promotions, reports, and monitoring.
-- Out of scope (for MVP): social features beyond chats/notifications, fantasy sports, and non‑gambling affiliate programs.
+- Out of scope (for MVP): social features beyond chats/notifications, fantasy sports, and non‑gaming affiliate programs.
 
 ## 3. Target Markets & Compliance (Regulatory Considerations)
-- Determine licensed jurisdictions (e.g., Curacao, Malta, UK‑Gambling Commission, etc.).
+- Determine licensed jurisdictions (e.g., Curacao, Malta, UK‑gaming Commission, etc.).
 - Apply KYC (Know Your Customer) and AML (Anti‑Money Laundering) controls at onboarding and at large/risk events.
-- Age verification to ensure players are of legal gambling age.
+- Age verification to ensure players are of legal gaming age.
 - Responsible gaming: account limits, cooling‑off and self‑exclusion tools, and activity monitoring.
 - Data privacy: comply with GDPR/analogous regimes; data minimization and data localization where required.
 - Geolocation checks to enforce geographic restrictions.

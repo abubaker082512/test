@@ -183,7 +183,7 @@ export default function PlayGame() {
     } catch (e) {}
   }
 
-  const gameTitle = gameMeta?.name || 'Live Casino Game'
+  const gameTitle = gameMeta?.name || 'Live Gaming Title'
   const providerName = gameMeta?.provider_name || 'SoftAggregator'
 
   return (

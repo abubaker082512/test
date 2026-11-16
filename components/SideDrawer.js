@@ -22,7 +22,7 @@ export default function SideDrawer({ isOpen, onClose, balance = 0, onOpenAuth })
     const link = typeof window !== 'undefined' ? `${window.location.origin}/signup?ref=${user?.email || ''}` : 'https://www.winxpro.com.pk'
     if (navigator.share) {
       navigator.share({
-        title: 'WinX Pro - Pakistan\'s #1 Casino & Sports Gaming',
+        title: 'WinX Pro - Pakistan\'s #1 Gaming & Sports Entertainment',
         text: 'Join WinX Pro and claim Rs 100 welcome bonus + Rs 600 referral reward!',
         url: link
       }).catch(() => {})

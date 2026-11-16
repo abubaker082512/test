@@ -99,7 +99,7 @@ export default function SignupPage() {
     <div className="app" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Head>
         <title>{isLoginTab ? 'Login' : 'Sign Up & Get Rs 100 Bonus'} | WinX Pro</title>
-        <meta name="description" content="Sign up at WinX Pro for a free Rs 100 welcome bonus and Rs 600 referral rewards on live casino, slots and sports betting." />
+        <meta name="description" content="Sign up at WinX Pro for a free Rs 100 welcome bonus and Rs 600 referral rewards on live gaming, arcade titles and sports entertainment." />
       </Head>
 
       <NavBar />

@@ -111,7 +111,7 @@ const PADDY_FALLBACK_CATALOG = [
 export class PaddyPowerClient {
   constructor({
     key = process.env.PADDYPOWER_API_KEY || process.env.RAPIDAPI_KEY || '4115650052msh171d5211032faf5p1ea26djsn10dd83e0b391',
-    host = process.env.PADDYPOWER_API_HOST || 'paddy-power-gambling-games.p.rapidapi.com',
+    host = process.env.PADDYPOWER_API_HOST || 'paddy-power-games.p.rapidapi.com',
     timeout = 5000,
     cacheTtlMs = 60 * 1000
   } = {}) {
