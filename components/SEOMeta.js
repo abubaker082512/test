@@ -111,10 +111,10 @@ export default function SEOMeta({
       },
       {
         '@type': 'Question',
-        name: 'Is there a welcome bonus for new players in Pakistan?',
+        name: 'Is there a welcome bonus for new members in Pakistan?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Yes! New members in Pakistan receive an instant welcome bonus on their 1st, 2nd, 3rd, and 4th deposits, plus daily VIP rebate rewards and referral cash.'
+          text: 'Yes! New members in Pakistan receive an instant welcome bonus on their 1st, 2nd, 3rd, and 4th deposits, plus daily VIP rebate rewards and referral rewards.'
         }
       }
     ]

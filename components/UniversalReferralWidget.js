@@ -62,10 +62,10 @@ export default function UniversalReferralWidget() {
             <span style={{ fontSize: '20px' }}>{user ? '💸' : '🎁'}</span>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontSize: '11px', fontWeight: 900, color: '#fff', lineHeight: 1.1 }}>
-                {user ? 'Invite & Earn' : 'Sign Up Bonus'}
+                {user ? 'VIP Club' : 'Member Perks'}
               </span>
               <span style={{ fontSize: '10px', fontWeight: 800, color: user ? '#ffd700' : '#000', background: user ? 'rgba(0,0,0,0.4)' : '#00e676', padding: '1px 4px', borderRadius: '4px', width: 'fit-content' }}>
-                {user ? 'Rs 600 Cash' : 'Free Rs 100'}
+                {user ? 'Special Rewards' : 'Welcome Access'}
               </span>
             </div>
 

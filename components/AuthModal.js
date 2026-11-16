@@ -218,7 +218,7 @@ export default function AuthModal({ isOpen, onClose }) {
                 boxShadow: '0 2px 6px rgba(0, 230, 91, 0.4)',
                 zIndex: 10
               }}>
-                +Rs 8888
+                VIP +35%
               </span>
 
               <button

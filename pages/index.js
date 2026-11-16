@@ -55,7 +55,7 @@ const PROVIDERS_CONFIG = [
     label: 'Pragmatic',
     icon: '⚡',
     sectionId: 'sec-pragmaticplay',
-    name: 'Pragmatic Play',
+    name: 'Pragmatic Games',
     logo: 'https://cdn.imagesai.org/p/pragmaticplay.png?v=20261014-1',
     badgeColor: '#eab308',
     games: (softCatalog?.pragmaticplay || []).slice(0, 36)
@@ -82,10 +82,10 @@ const PROVIDERS_CONFIG = [
   },
   {
     id: 'playngo',
-    label: "Play'n GO",
+    label: "PNG",
     icon: '👑',
     sectionId: 'sec-playngo',
-    name: "Play'n GO",
+    name: "PNG Games",
     logo: 'https://cdn.imagesai.org/p/playngo.png?v=20261014-1',
     badgeColor: '#8b5cf6',
     games: (softCatalog?.playngo || []).slice(0, 30)
@@ -222,7 +222,7 @@ export default function Home() {
             <span className="bbr-hero-badge">👑 WINX VIP RECHARGE</span>
             <div className="bbr-hero-headline">
               RECHARGE 100<br />
-              <span style={{ color: '#6dff38' }}>GRAB RS 100</span>
+              <span style={{ color: '#6dff38' }}>GET RS 100</span>
             </div>
             <div className="bbr-hero-sub">
               ⚡ Instant QR &amp; USDT Deposit Bonus
@@ -296,7 +296,7 @@ export default function Home() {
         <span className="bbr-marquee-speaker">🔊</span>
         <div className="bbr-marquee-track-wrap">
           <span className="bbr-marquee-scroll">
-            Welcome to WINX Official! 11,200+ Games live from SoftAggregator • JazzCash &amp; Easypaisa QR instant top-up is live • USDT-TRC20 deposits get +3% instant bonus • Invite friends to claim Rs 1,500 + 800 + 2,000 immediately!
+            Welcome to WINX Official! 11,200+ Games live from SoftAggregator • JazzCash &amp; Easypaisa QR instant top-up is live • USDT-TRC20 deposits get +3% instant bonus • Invite friends for community rewards and VIP benefits!
           </span>
         </div>
       </div>
@@ -426,7 +426,7 @@ export default function Home() {
           ⚡ Instant Easypaisa, JazzCash &amp; Bank Transfers
         </h3>
         <p style={{ marginBottom: '10px' }}>
-          Experience hassle-free PKR deposits and automated 2-minute withdrawals directly into your <strong>Easypaisa</strong>, <strong>JazzCash</strong>, or Pakistani bank account (Meezan, HBL, Allied, Alfalah). Enjoy zero processing fees, 24/7 dedicated Urdu &amp; English WhatsApp/Telegram live support, and exclusive daily cash bonuses.
+          Experience hassle-free PKR deposits and automated 2-minute withdrawals directly into your <strong>Easypaisa</strong>, <strong>JazzCash</strong>, or Pakistani bank account (Meezan, HBL, Allied, Alfalah). Enjoy zero processing fees, 24/7 dedicated Urdu &amp; English WhatsApp/Telegram live support, and exclusive daily member rewards.
         </p>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
@@ -434,7 +434,7 @@ export default function Home() {
             📲 Download Android APK
           </Link>
           <Link href="/offers" style={{ color: '#FFB800', textDecoration: 'none', background: 'rgba(255, 184, 0, 0.12)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
-            🎁 Claim 100% Bonus
+            🎁 Member Rewards
           </Link>
           <Link href="/sports" style={{ color: '#38BDF8', textDecoration: 'none', background: 'rgba(56, 189, 248, 0.12)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
             🏏 PSL &amp; Sports Arena
@@ -461,12 +461,12 @@ export default function Home() {
 
         <div className="bbr-footer-copy">
           <p>
-            <strong>WINX.COM</strong> is one of the best and most popular online gaming websites in Pakistan powered by official SoftAggregator game servers. Over 11,200 authentic titles including JILI, PG Soft, Spribe Aviator, Pragmatic Play, Hacksaw, Nolimit City, and live interactive titles. Real-time PKR balances synchronized seamlessly.
+            <strong>WINX.COM</strong> is one of the best and most popular online gaming websites in Pakistan powered by official SoftAggregator game servers. Over 11,200 authentic titles including JILI, PG Soft, Spribe Aviator, Pragmatic, Hacksaw, Nolimit City, and live interactive titles. Real-time PKR balances synchronized seamlessly.
           </p>
           <ul>
             <li>1. This product is for users aged 18 and above only.</li>
             <li>2. This game contains in-app purchases.</li>
-            <li>3. Play responsibly. All entertainment titles are intended for amusement and skill demonstration.</li>
+            <li>3. Enjoy responsibly. All entertainment titles are intended for amusement and skill demonstration.</li>
           </ul>
           <div className="bbr-copyright">Copyright © 2026 WINX Reserved</div>
         </div>
