@@ -163,8 +163,8 @@ export async function hydrateFromSupabase(force = false) {
 
   inFlightHydration = (async () => {
     try {
-      // 1. Fetch all users from Supabase Auth
-      const { data: uData } = await supabase.auth.admin.listUsers();
+      // 1. Fetch all users from Supabase Auth (up to 1000)
+      const { data: uData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
       if (uData && Array.isArray(uData.users)) {
         for (const u of uData.users) {
           if (u.id && u.email) {
@@ -182,9 +182,12 @@ export async function hydrateFromSupabase(force = false) {
         }
       }
 
-      // 2. Fetch all wallets from Supabase
+      // 2. Fetch all wallets from Supabase (authoritative source of truth)
       const { data: wData } = await supabase.from("wallets").select("*");
       if (wData && Array.isArray(wData)) {
+        const authoritativeEmails = new Set();
+        const authoritativeUids = new Set();
+
         for (const w of wData) {
           const uid = w.user_id;
           const email = Object.keys(memoryUserUuidMap).find(k => k.includes("@") && memoryUserUuidMap[k] === uid) || "";
@@ -194,11 +197,14 @@ export async function hydrateFromSupabase(force = false) {
             email,
             balance: parseFloat(w.balance || 0),
             currency: "PKR",
+            isAuthoritative: true,
             updated_at: w.updated_at || new Date().toISOString()
           };
 
+          authoritativeUids.add(uid);
           memoryWallets[uid] = walletObj;
           if (email) {
+            authoritativeEmails.add(email);
             memoryWallets[email] = walletObj;
             const prefix = email.split("@")[0];
             memoryWallets[prefix] = walletObj;
@@ -208,15 +214,40 @@ export async function hydrateFromSupabase(force = false) {
             memoryWallets[safeId2] = walletObj;
           }
         }
+
+        // Purge any stale non-UUID cached wallet entries whose email already has an authoritative Supabase wallet
+        for (const [k, v] of Object.entries(memoryWallets)) {
+          if (v && !v.isAuthoritative) {
+            const vEmail = (v.email || "").toLowerCase().trim();
+            if ((vEmail && authoritativeEmails.has(vEmail)) || authoritativeUids.has(v.user_id)) {
+              const targetUid = vEmail ? memoryUserUuidMap[vEmail] : v.user_id;
+              if (targetUid && memoryWallets[targetUid]) {
+                memoryWallets[k] = memoryWallets[targetUid];
+              }
+            }
+          }
+        }
       }
 
-      // 3. Fetch recent transactions from Supabase
-      const { data: tData } = await supabase.from("transactions").select("*").order("created_at", { ascending: false }).limit(200);
+      // 3. Fetch recent transactions from Supabase (authoritative source of truth)
+      const { data: tData } = await supabase.from("transactions").select("*").order("created_at", { ascending: false }).limit(300);
       if (tData && Array.isArray(tData)) {
+        // Index any local metadata/screenshots by tx_id before merging
+        const localMetaByTxId = new Map();
+        for (const lt of memoryTransactions) {
+          if (lt.tx_id) localMetaByTxId.set(String(lt.tx_id), lt);
+          if (lt.id) localMetaByTxId.set(String(lt.id), lt);
+        }
+
         const mergedMap = new Map();
+        const seenTxIds = new Set();
+
         for (const t of tData) {
           const email = Object.keys(memoryUserUuidMap).find(k => k.includes("@") && memoryUserUuidMap[k] === t.user_id) || "";
-          mergedMap.set(String(t.id), {
+          const txKey = t.tx_id ? String(t.tx_id) : String(t.id);
+          const localMatch = localMetaByTxId.get(txKey) || localMetaByTxId.get(String(t.id));
+
+          const hydratedTx = {
             id: t.id,
             user_id: t.user_id,
             email,
@@ -224,15 +255,24 @@ export async function hydrateFromSupabase(force = false) {
             amount: parseFloat(t.amount || 0),
             status: t.status || "completed",
             method: t.method || "",
-            tx_id: t.tx_id || String(t.id),
+            tx_id: txKey,
             notes: t.notes || "",
+            screenshot_url: t.screenshot_url || localMatch?.screenshot_url || localMatch?.metadata?.screenshot_url || "",
+            metadata: t.metadata || localMatch?.metadata || {},
             created_at: t.created_at
-          });
+          };
+
+          mergedMap.set(String(t.id), hydratedTx);
+          seenTxIds.add(txKey);
+          seenTxIds.add(String(t.id));
         }
 
         for (const lt of memoryTransactions) {
-          if (lt.id && !mergedMap.has(String(lt.id))) {
-            mergedMap.set(String(lt.id), lt);
+          const ltId = lt.id ? String(lt.id) : "";
+          const ltTxId = lt.tx_id ? String(lt.tx_id) : "";
+          if (ltId && !mergedMap.has(ltId) && !seenTxIds.has(ltId) && (!ltTxId || !seenTxIds.has(ltTxId))) {
+            mergedMap.set(ltId, lt);
+            if (ltTxId) seenTxIds.add(ltTxId);
           }
         }
 
@@ -385,11 +425,13 @@ export async function getLiveUserWallet(userId, email = "") {
   // If new user not in mapping yet, query/create in Supabase
   if (!resolvedUuid && cleanEmail) {
     try {
-      const { data: uList } = await supabase.auth.admin.listUsers();
+      const { data: uList } = await supabase.auth.admin.listUsers({ perPage: 1000 });
       const found = uList?.users?.find(u => u.email && u.email.toLowerCase() === cleanEmail);
       if (found) {
         resolvedUuid = found.id;
         memoryUserUuidMap[cleanEmail] = found.id;
+        memoryUserUuidMap[cleanId] = found.id;
+        memoryUserUuidMap[computeSafeId(cleanEmail)] = found.id;
       } else {
         const { data: createdUser } = await supabase.auth.admin.createUser({
           email: cleanEmail,
@@ -399,12 +441,14 @@ export async function getLiveUserWallet(userId, email = "") {
         if (createdUser?.user) {
           resolvedUuid = createdUser.user.id;
           memoryUserUuidMap[cleanEmail] = resolvedUuid;
+          if (cleanId) memoryUserUuidMap[cleanId] = resolvedUuid;
+          memoryUserUuidMap[computeSafeId(cleanEmail)] = resolvedUuid;
         }
       }
     } catch (e) {}
   }
 
-  if (resolvedUuid) {
+  if (resolvedUuid && UUID_REGEX.test(resolvedUuid)) {
     try {
       const { data: wRow } = await supabase.from("wallets").select("*").eq("user_id", resolvedUuid).maybeSingle();
       if (wRow) {
@@ -414,7 +458,33 @@ export async function getLiveUserWallet(userId, email = "") {
           email: cleanEmail,
           balance: parseFloat(wRow.balance || 0),
           currency: "PKR",
+          isAuthoritative: true,
           updated_at: wRow.updated_at || new Date().toISOString()
+        };
+        memoryWallets[resolvedUuid] = walletObj;
+        if (cleanEmail) memoryWallets[cleanEmail] = walletObj;
+        if (cleanId) memoryWallets[cleanId] = walletObj;
+        persistLocalData();
+        return walletObj;
+      } else {
+        // Authoritatively initialize missing wallet row in Supabase
+        const nowIso = new Date().toISOString();
+        await supabase.from("wallets").upsert({
+          user_id: resolvedUuid,
+          balance: 0,
+          currency: "PKR",
+          updated_at: nowIso
+        }, { onConflict: "user_id", ignoreDuplicates: true });
+
+        const walletObj = {
+          id: resolvedUuid,
+          user_id: resolvedUuid,
+          email: cleanEmail,
+          balance: 0,
+          currency: "PKR",
+          isAuthoritative: true,
+          created_at: nowIso,
+          updated_at: nowIso
         };
         memoryWallets[resolvedUuid] = walletObj;
         if (cleanEmail) memoryWallets[cleanEmail] = walletObj;
@@ -426,6 +496,133 @@ export async function getLiveUserWallet(userId, email = "") {
   }
 
   return getUserWallet(userId, cleanEmail);
+}
+
+// Authoritative async helper to ensure user + wallet row exist in Supabase
+export async function ensureLiveUserWallet(userId, email = "") {
+  return getLiveUserWallet(userId, email);
+}
+
+// Awaited wallet balance upsert in Supabase (guarantees persistence on Vercel serverless)
+export async function commitWalletBalanceToSupabase(userIdOrUuid, balance, email = "") {
+  const cleanEmail = (email || "").toLowerCase().trim();
+  const resolvedUuid = UUID_REGEX.test(String(userIdOrUuid || ""))
+    ? String(userIdOrUuid)
+    : resolveUserUuid(userIdOrUuid, cleanEmail);
+
+  const safeBalance = parseFloat((parseFloat(balance) || 0).toFixed(2));
+  const nowIso = new Date().toISOString();
+
+  if (resolvedUuid && UUID_REGEX.test(resolvedUuid)) {
+    try {
+      const { error } = await supabase.from("wallets").upsert({
+        user_id: resolvedUuid,
+        balance: safeBalance,
+        currency: "PKR",
+        updated_at: nowIso
+      }, { onConflict: "user_id" });
+      if (error) {
+        console.error("Supabase wallet upsert error:", error.message);
+        return { success: false, error: error.message };
+      }
+      // Keep local cache in exact sync
+      const walletObj = {
+        id: resolvedUuid,
+        user_id: resolvedUuid,
+        email: cleanEmail || memoryWallets[resolvedUuid]?.email || "",
+        balance: safeBalance,
+        currency: "PKR",
+        isAuthoritative: true,
+        updated_at: nowIso
+      };
+      memoryWallets[resolvedUuid] = walletObj;
+      if (walletObj.email) {
+        memoryWallets[walletObj.email] = walletObj;
+        memoryWallets[computeSafeId(walletObj.email)] = walletObj;
+      }
+      if (userIdOrUuid) memoryWallets[String(userIdOrUuid)] = walletObj;
+      persistLocalData();
+      return { success: true, wallet: walletObj };
+    } catch (err) {
+      console.error("Supabase wallet upsert exception:", err.message);
+      return { success: false, error: err.message };
+    }
+  }
+  return { success: false, error: "No valid Supabase UUID resolved" };
+}
+
+// Awaited transaction insert in Supabase (guarantees pending deposits/withdrawals survive serverless cold starts)
+export async function commitTransactionToSupabase(record) {
+  if (!record) return { success: false };
+  const cleanEmail = (record.email || "").toLowerCase().trim();
+  const resolvedUuid = UUID_REGEX.test(String(record.user_id || ""))
+    ? String(record.user_id)
+    : resolveUserUuid(record.user_id, cleanEmail);
+
+  if (resolvedUuid && UUID_REGEX.test(resolvedUuid)) {
+    try {
+      const { data, error } = await supabase.from("transactions").insert({
+        user_id: resolvedUuid,
+        type: record.type || "deposit",
+        amount: parseFloat(record.amount) || 0,
+        status: record.status || "pending",
+        method: record.method || "",
+        tx_id: record.tx_id || record.id,
+        notes: record.notes || "",
+        created_at: record.created_at || new Date().toISOString()
+      }).select().maybeSingle();
+
+      if (error) {
+        console.error("Supabase commitTransaction error:", error.message);
+        return { success: false, error: error.message };
+      }
+      return { success: true, data };
+    } catch (err) {
+      console.error("Supabase commitTransaction exception:", err.message);
+      return { success: false, error: err.message };
+    }
+  }
+  return { success: false, error: "No valid Supabase UUID resolved" };
+}
+
+// Awaited transaction status update in Supabase (prevents approved/rejected transactions from reverting to pending)
+export async function commitTransactionStatusToSupabase(txId, status, notes = "", dbRowId = null) {
+  const cleanTxId = String(txId || "").trim();
+  const updatePayload = { status };
+  if (notes) updatePayload.notes = notes;
+
+  try {
+    // 1. Try updating by tx_id first
+    if (cleanTxId) {
+      const { data: byTxId, error: err1 } = await supabase
+        .from("transactions")
+        .update(updatePayload)
+        .eq("tx_id", cleanTxId)
+        .select();
+
+      if (!err1 && Array.isArray(byTxId) && byTxId.length > 0) {
+        return { success: true, updated: byTxId.length };
+      }
+    }
+
+    // 2. Fallback: update by primary key id if provided
+    if (dbRowId !== null && dbRowId !== undefined) {
+      const { data: byId, error: err2 } = await supabase
+        .from("transactions")
+        .update(updatePayload)
+        .eq("id", dbRowId)
+        .select();
+
+      if (!err2 && Array.isArray(byId) && byId.length > 0) {
+        return { success: true, updated: byId.length };
+      }
+    }
+
+    return { success: false, updated: 0 };
+  } catch (err) {
+    console.error("Supabase commitTransactionStatus error:", err.message);
+    return { success: false, error: err.message };
+  }
 }
 
 export function creditUserBalance(userId, amount, email = "", notes = "") {
@@ -606,8 +803,8 @@ export function recordTransactionRecord(txData) {
 
   persistLocalData();
 
-  // Commit permanently to Supabase transactions table
-  if (resolvedUuid && UUID_REGEX.test(resolvedUuid)) {
+  // Commit permanently to Supabase transactions table (unless caller awaits commitTransactionToSupabase)
+  if (!txData.skipAsyncSupabase && resolvedUuid && UUID_REGEX.test(resolvedUuid)) {
     supabase.from("transactions").insert({
       user_id: resolvedUuid,
       type: record.type,
@@ -718,8 +915,17 @@ export function findTransaction(txnId) {
 
 export function completeAndCreditTransaction(txnId, fallbackData = {}) {
   let tx = findTransaction(txnId);
+
+  // Idempotency guard: never double-credit an already completed transaction
+  if (tx && tx.status === "completed") {
+    const existingWallet = getUserWallet(tx.user_id, tx.email);
+    return { success: false, alreadyCompleted: true, error: "Transaction already completed", transaction: tx, wallet: existingWallet };
+  }
+
   let amount = 0;
-  if (tx && typeof tx.amount === "number" && tx.amount > 0) {
+  if (fallbackData.totalCredit && parseFloat(fallbackData.totalCredit) > 0) {
+    amount = parseFloat(fallbackData.totalCredit);
+  } else if (tx && typeof tx.amount === "number" && tx.amount > 0) {
     amount = tx.amount;
   } else if (fallbackData.amountInPKR && parseFloat(fallbackData.amountInPKR) > 0) {
     amount = parseFloat(fallbackData.amountInPKR);
@@ -746,16 +952,20 @@ export function completeAndCreditTransaction(txnId, fallbackData = {}) {
       method: fallbackData.method || "DirectPay",
       tx_id: txnId,
       notes: fallbackData.notes || `Payment Verified: ${amount.toFixed(2)}`,
-      metadata: fallbackData.metadata || { clientTransactionId: txnId }
+      metadata: fallbackData.metadata || { clientTransactionId: txnId },
+      skipAsyncSupabase: Boolean(fallbackData.skipAsyncSupabase)
     });
   } else {
     tx.status = "completed";
     tx.updated_at = new Date().toISOString();
-    tx.amount = amount;
+    if (fallbackData.notes) tx.notes = fallbackData.notes;
     persistLocalData();
+    if (!fallbackData.skipAsyncSupabase) {
+      commitTransactionStatusToSupabase(tx.tx_id || txnId, "completed", tx.notes, tx.id).catch(() => {});
+    }
   }
 
-  const creditedWallet = creditUserBalance(userId, tx.amount, email, `Payment completed: ${txnId}`);
+  const creditedWallet = creditUserBalance(userId, amount, email, `Payment completed: ${txnId}`);
   return { success: true, transaction: tx, wallet: creditedWallet };
 }
 

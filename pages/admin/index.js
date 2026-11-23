@@ -287,7 +287,11 @@ export default function AdminPanel() {
 
   const fetchLiveAnalytics = async () => {
     try {
-      const res = await fetch('/api/admin/live-analytics')
+      const res = await fetch('/api/admin/live-analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: ADMIN_PASSWORD })
+      })
       const data = await res.json()
       if (data.success) setRiskAnalytics(data)
     } catch (err) {

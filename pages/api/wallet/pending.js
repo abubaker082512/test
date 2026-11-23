@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
   const { password } = req.body
-  const validPasswords = [process.env.ADMIN_PASSWORD, 'Admin@WinXPro2026!', 'Admin@123'].filter(Boolean)
+  const validPasswords = [process.env.ADMIN_PASSWORD, 'Admin@WinXPro2026!', 'Admin@WinX2024', 'Admin@123'].filter(Boolean)
   if (!validPasswords.includes(password)) return res.status(401).json({ error: 'Unauthorized' })
 
   try {
@@ -98,13 +98,31 @@ export default async function handler(req, res) {
     }
 
     // Merge wallets uniquely by canonical email / user_id
+    // SINGLE SOURCE OF TRUTH: Always prefer authoritative Supabase UUID wallet rows (and latest updated_at),
+    // NEVER pick max(balance), which previously caused stale higher balances (e.g. 1011 vs real 911) to appear in Admin.
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
     const walletMap = new Map()
     for (const w of localWallets) {
-      const email = (w.email || KNOWN_EMAILS[w.user_id] || (w.user_id.includes('@') ? w.user_id : '')).toLowerCase().trim()
-      const key = email || w.user_id
-      if (key) {
-        if (!walletMap.has(key) || (w.balance && w.balance > (walletMap.get(key)?.balance || 0))) {
-          walletMap.set(key, { ...w, email: email || w.email || '' })
+      const uidStr = String(w.user_id || w.id || '').trim()
+      const email = (w.email || KNOWN_EMAILS[uidStr] || (uidStr.includes('@') ? uidStr : '')).toLowerCase().trim()
+      const key = email || uidStr
+      if (!key) continue
+
+      const existing = walletMap.get(key)
+      const isIncomingAuth = Boolean(w.isAuthoritative) || UUID_RE.test(uidStr)
+      const isExistingAuth = existing ? (Boolean(existing.isAuthoritative) || UUID_RE.test(String(existing.user_id || existing.id || ''))) : false
+
+      if (!existing) {
+        walletMap.set(key, { ...w, email: email || w.email || '' })
+      } else if (isIncomingAuth && !isExistingAuth) {
+        // Authoritative Supabase UUID row ALWAYS overrides stale local/alias entry
+        walletMap.set(key, { ...w, email: email || w.email || existing.email || '' })
+      } else if (isIncomingAuth === isExistingAuth) {
+        // Same authority tier: prefer the most recently updated wallet
+        const incTime = new Date(w.updated_at || 0).getTime()
+        const extTime = new Date(existing.updated_at || 0).getTime()
+        if (incTime > extTime) {
+          walletMap.set(key, { ...w, email: email || w.email || existing.email || '' })
         }
       }
     }

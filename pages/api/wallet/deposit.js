@@ -1,4 +1,9 @@
-import { recordTransactionRecord, getAllTransactionsList } from '../../../utils/walletStore.js'
+import {
+  recordTransactionRecord,
+  getAllTransactionsList,
+  ensureLiveUserWallet,
+  commitTransactionToSupabase
+} from '../../../utils/walletStore.js'
 import { addTransaction } from '../../../utils/firebaseDb.js'
 import { getPersistedSettings } from '../../../utils/settingsStore.js'
 
@@ -68,20 +73,31 @@ export default async function handler(req, res) {
     submitted_at: new Date().toISOString()
   }
 
-  // Record pending deposit
+  // Ensure user & wallet exist authoritatively in Supabase (fixes brand-new users not appearing in Admin)
+  const liveWallet = await ensureLiveUserWallet(user_id, email || '')
+  const authoritativeUserId = liveWallet?.user_id || user_id
+
+  const receiptTag = screenshot_url
+    ? (screenshot_url.startsWith('http') || screenshot_url.startsWith('/') ? ` | 📷 Receipt: ${screenshot_url}` : ' | 📷 Receipt Attached')
+    : ''
+
+  // Record pending deposit in local cache + synchronously await Supabase commit
   const tx = recordTransactionRecord({
     id: internalTxId,
-    user_id,
-    email: email || '',
+    user_id: authoritativeUserId,
+    email: (email || liveWallet?.email || '').toLowerCase().trim(),
     type: 'deposit',
     amount: numAmount,
     status: 'pending',
     method: resolvedChannel,
     tx_id: internalTxId,
     screenshot_url: screenshot_url || '',
-    notes: `Deposit via ${resolvedChannel} | Sender: ${sender_phone || 'N/A'} | TID: ${cleanTid}${numBonus > 0 ? ` (+Rs ${numBonus} bonus)` : ''}${screenshot_url ? ' | 📷 Receipt Attached' : ''}`,
-    metadata
+    notes: `Deposit via ${resolvedChannel} | Sender: ${sender_phone || 'N/A'} | TID: ${cleanTid}${numBonus > 0 ? ` (+Rs ${numBonus} bonus)` : ''}${receiptTag}`,
+    metadata,
+    skipAsyncSupabase: true
   })
+
+  await commitTransactionToSupabase(tx)
 
   // Sync to Firestore if available
   try {

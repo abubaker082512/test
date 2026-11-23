@@ -1,4 +1,9 @@
-import { debitUserBalance, recordTransactionRecord, getUserWallet } from '../../../utils/walletStore'
+import {
+  ensureLiveUserWallet,
+  atomicDebitBalance,
+  recordTransactionRecord,
+  commitTransactionToSupabase
+} from '../../../utils/walletStore'
 import { updateWalletBalance, addTransaction } from '../../../utils/firebaseDb'
 
 export default async function handler(req, res) {
@@ -36,17 +41,23 @@ export default async function handler(req, res) {
   const effectiveUserId = user_id || email || 'player'
 
   try {
-    // 2. Real Wallet Debit
-    const debitRes = debitUserBalance(effectiveUserId, numStake)
+    // 2. Authoritative live wallet & atomic Supabase debit
+    const liveWallet = await ensureLiveUserWallet(effectiveUserId, email || '')
+    const authoritativeUserId = liveWallet?.user_id || effectiveUserId
+    const authoritativeEmail = (email || liveWallet?.email || '').toLowerCase().trim()
+
+    const debitRes = await atomicDebitBalance(authoritativeUserId, numStake, authoritativeEmail)
     if (!debitRes.success) {
       const currentBal = debitRes.wallet ? debitRes.wallet.balance : 0
-      return res.status(400).json({ error: `Insufficient balance! You have Pi ${currentBal.toFixed(2)}, stake is Pi ${numStake.toFixed(2)}.` })
+      return res.status(400).json({ error: `Insufficient balance! You have Rs ${currentBal.toFixed(2)}, stake is Rs ${numStake.toFixed(2)}.` })
     }
 
-    // 3. Record transaction
-    recordTransactionRecord({
-      user_id: effectiveUserId,
-      email: email || '',
+    // 3. Record transaction and await Supabase commit
+    const betTx = recordTransactionRecord({
+      id: betId,
+      tx_id: betId,
+      user_id: authoritativeUserId,
+      email: authoritativeEmail,
       type: 'bet',
       amount: numStake,
       status: 'completed',
@@ -61,8 +72,11 @@ export default async function handler(req, res) {
         odds,
         potential_payout,
         market_type
-      }
+      },
+      skipAsyncSupabase: true
     })
+
+    await commitTransactionToSupabase(betTx)
 
     // Firestore sync
     try {
