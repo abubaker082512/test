@@ -1,4 +1,5 @@
 import { getChatThread, saveChatMessage, syncClientMessages, markThreadAsRead } from '../../../utils/chatStore'
+import { sendSupportEmailNotification } from '../../../utils/emailNotifier'
 
 export const config = {
   api: {
@@ -40,6 +41,21 @@ export default async function handler(req, res) {
       audio,
       audio_duration
     })
+
+    // Immediately notify admin email (gamenext9999@gmail.com) without ever blocking chat delivery
+    try {
+      await sendSupportEmailNotification({
+        userKey: user_key,
+        email: email || user_key,
+        name: name || user_key,
+        text: text || '',
+        hasImage: Boolean(image),
+        hasAudio: Boolean(audio),
+        timestamp: result?.message?.timestamp || new Date().toISOString()
+      })
+    } catch (emailErr) {
+      console.warn('[SupportAPI] Email alert failed silently:', emailErr.message)
+    }
 
     return res.status(200).json({ success: true, message: result.message, messages: result.thread.messages })
   }
