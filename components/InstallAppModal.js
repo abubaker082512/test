@@ -139,7 +139,7 @@ export default function InstallAppModal({ isOpen, onClose }) {
               ★ 4.9 • Official Pakistan Gaming App
             </div>
             <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
-              Official Pakistan Digital Entertainment App
+              Win PKR 8,888 Welcome Rewards
             </div>
           </div>
         </div>
@@ -258,7 +258,7 @@ export default function InstallAppModal({ isOpen, onClose }) {
               color: '#e2e8f0',
               lineHeight: 1.5
             }}>
-              Add WinX Pro directly to your Home Screen without downloading any APK files. Runs instantly in full screen!
+              Add WinX Pro directly to your Home Screen without downloading any APK files. Plays instantly in full screen!
             </div>
 
             <button
@@ -300,7 +300,7 @@ export default function InstallAppModal({ isOpen, onClose }) {
                 <>
                   1. Tap the <strong>Share</strong> button <span style={{ color: '#38bdf8' }}>⎋</span> at the bottom of Safari.<br />
                   2. Scroll down and tap <strong>Add to Home Screen</strong> <span style={{ color: '#00E65B' }}>⊞</span>.<br />
-                  3. Tap <strong>Add</strong> in the top right to start.
+                  3. Tap <strong>Add</strong> in the top right to start playing.
                 </>
               ) : (
                 <>

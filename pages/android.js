@@ -50,10 +50,10 @@ export default function DownloadApp() {
   return (
     <div style={{ minHeight: '100vh', background: '#070a14', color: '#fff', display: 'flex', flexDirection: 'column' }}>
       <SEOMeta
-        title="Download WinX Pro APK (Official 2026) | Android Gaming & Entertainment App Pakistan"
-        description="Download the official WinX Pro APK v2.4.0 for Android. Instant Easypaisa & JazzCash deposits, 2-minute withdrawals, 11,200+ games & PKR 8,888 bonus."
+        title="Download WinX Pro APK (Official 2026) | Pakistan #1 Real Money Casino & Sports Betting App"
+        description="Download the official WinX Pro APK v2.4.0 for Android in Pakistan. Play 11,200+ real money slots, Spribe Aviator & PSL cricket betting. Instant Easypaisa & JazzCash deposits, 2-minute withdrawals & PKR 8,888 bonus."
         canonicalUrl="https://winxpro.com.pk/download"
-        keywords="WinX Pro APK download, WinX Pro app download, online gaming app Pakistan, Easypaisa gaming app"
+        keywords="WinX Pro APK download, WinX Pro app download, Pakistan casino app download, android betting app Pakistan, online casino apk Pakistan, real money casino app, Easypaisa casino app, JazzCash betting app, Aviator apk download Pakistan, JILI slots apk, 10Win apk download alternative"
         ogImage="https://winxpro.com.pk/winx-pro-3d-icon.jpg"
       />
 

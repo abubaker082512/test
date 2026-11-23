@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
+import Head from 'next/head'
 import { useAuth } from '../../context/AuthContext'
 import AuthModal from '../../components/AuthModal'
 import softCatalog from '../../data/softaggregator_catalog.json'
@@ -183,7 +184,7 @@ export default function PlayGame() {
     } catch (e) {}
   }
 
-  const gameTitle = gameMeta?.name || 'Live Gaming Title'
+  const gameTitle = gameMeta?.name || 'Live Casino Game'
   const providerName = gameMeta?.provider_name || 'SoftAggregator'
 
   return (
@@ -201,6 +202,12 @@ export default function PlayGame() {
         overflow: 'hidden'
       }}
     >
+      <Head>
+        <title>{`Play ${gameTitle} Online in Pakistan | Real Money Casino - WinX Pro`}</title>
+        <meta name="description" content={`Play ${gameTitle} (${providerName}) online for real money in Pakistan on WinX Pro. Instant Easypaisa & JazzCash deposit, 2-minute fast withdrawals.`} />
+        <meta name="keywords" content={`${gameTitle}, ${gameTitle} Pakistan, play ${gameTitle} real money, ${providerName} slots Pakistan, online casino Pakistan, Easypaisa casino`} />
+      </Head>
+
       {/* Top Header Bar */}
       <header
         style={{

@@ -52,10 +52,10 @@ const PROVIDERS_CONFIG = [
   },
   {
     id: 'pragmaticplay',
-    label: 'Pragmatic',
+    label: 'PP Slots',
     icon: '⚡',
     sectionId: 'sec-pragmaticplay',
-    name: 'Pragmatic Games',
+    name: 'Pragmatic Play',
     logo: 'https://cdn.imagesai.org/p/pragmaticplay.png?v=20261014-1',
     badgeColor: '#eab308',
     games: (softCatalog?.pragmaticplay || []).slice(0, 36)
@@ -82,10 +82,10 @@ const PROVIDERS_CONFIG = [
   },
   {
     id: 'playngo',
-    label: "PNG",
+    label: "Play'n GO",
     icon: '👑',
     sectionId: 'sec-playngo',
-    name: "PNG Games",
+    name: "Play'n GO",
     logo: 'https://cdn.imagesai.org/p/playngo.png?v=20261014-1',
     badgeColor: '#8b5cf6',
     games: (softCatalog?.playngo || []).slice(0, 30)
@@ -222,7 +222,7 @@ export default function Home() {
             <span className="bbr-hero-badge">👑 WINX VIP RECHARGE</span>
             <div className="bbr-hero-headline">
               RECHARGE 100<br />
-              <span style={{ color: '#6dff38' }}>GET RS 100</span>
+              <span style={{ color: '#6dff38' }}>GRAB RS 100</span>
             </div>
             <div className="bbr-hero-sub">
               ⚡ Instant QR &amp; USDT Deposit Bonus
@@ -296,7 +296,7 @@ export default function Home() {
         <span className="bbr-marquee-speaker">🔊</span>
         <div className="bbr-marquee-track-wrap">
           <span className="bbr-marquee-scroll">
-            Welcome to WINX Official! 11,200+ Games live from SoftAggregator • JazzCash &amp; Easypaisa QR instant top-up is live • USDT-TRC20 deposits get +3% instant bonus • Invite friends for community rewards and VIP benefits!
+            Welcome to WINX Official! 11,200+ Games live from SoftAggregator • JazzCash &amp; Easypaisa QR instant top-up is live • USDT-TRC20 deposits get +3% instant bonus • Invite friends to claim Rs 1,500 + 800 + 2,000 immediately!
           </span>
         </div>
       </div>
@@ -393,7 +393,7 @@ export default function Home() {
                       title={game.name}
                       provider={game.provider_name || prov.label}
                       imageUrl={game.image_portrait || game.image || game.image_square}
-                      category={game.game_type || 'Games'}
+                      category={game.game_type || 'Slots'}
                       featuredBento={prov.id !== 'hots' && gIdx === 0}
                     />
                   ))}
@@ -407,40 +407,60 @@ export default function Home() {
       {/* Pakistan SEO Authority & Trust Section */}
       <section className="seo-authority-section" style={{
         margin: '24px 12px 16px',
-        padding: '20px 16px',
-        background: 'rgba(20, 26, 36, 0.7)',
+        padding: '22px 18px',
+        background: 'rgba(20, 26, 36, 0.85)',
         borderRadius: '16px',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
+        border: '1px solid rgba(0, 230, 91, 0.2)',
         fontSize: '12px',
         color: '#94A3B8',
-        lineHeight: '1.6'
+        lineHeight: '1.7'
       }}>
-        <h2 style={{ fontSize: '15px', color: '#FFF', fontWeight: 800, marginBottom: '8px' }}>
-          🇵🇰 WinX Pro Pakistan — Official Online Gaming &amp; Sports Entertainment
+        <h2 style={{ fontSize: '16px', color: '#FFF', fontWeight: 800, marginBottom: '10px' }}>
+          🇵🇰 WinX Pro Pakistan — #1 Online Casino, Real Money Slots &amp; Sports Betting
         </h2>
-        <p style={{ marginBottom: '10px' }}>
-          Welcome to <strong>WinX Pro (WINX.COM.PK)</strong>, Pakistan&apos;s premier platform for online gaming, arcade titles, and PSL sports entertainment. Enjoy 11,200+ certified titles including <em>Spribe Aviator, JILI Super Ace, Fortune Gems, Money Coming, PG Soft Mahjong Ways</em>, and live interactive games.
+        <p style={{ marginBottom: '12px' }}>
+          Welcome to <strong>WinX Pro (winxpro.com.pk)</strong>, Pakistan&apos;s most trusted online casino, real money slots, live dealer tables, and PSL cricket betting platform. Enjoy over 11,200+ certified titles including <em>Spribe Aviator, JILI Super Ace, Fortune Gems 2 &amp; 3, Money Coming, Boxing King, Golden Empire, PG Soft Mahjong Ways 2, Fortune Rabbit</em>, and live interactive casino games with real-time PKR balance sync.
         </p>
 
-        <h3 style={{ fontSize: '13px', color: '#00E65B', fontWeight: 700, margin: '12px 0 6px' }}>
-          ⚡ Instant Easypaisa, JazzCash &amp; Bank Transfers
+        <h3 style={{ fontSize: '14px', color: '#00E65B', fontWeight: 700, margin: '14px 0 6px' }}>
+          🎰 11,200+ Real Money Slots &amp; Spribe Aviator Crash Game
         </h3>
         <p style={{ marginBottom: '10px' }}>
-          Experience hassle-free PKR deposits and automated 2-minute withdrawals directly into your <strong>Easypaisa</strong>, <strong>JazzCash</strong>, or Pakistani bank account (Meezan, HBL, Allied, Alfalah). Enjoy zero processing fees, 24/7 dedicated Urdu &amp; English WhatsApp/Telegram live support, and exclusive daily member rewards.
+          Play top-rated online slots in Pakistan with high RTP payouts and mega jackpots. Experience the thrill of <strong>Spribe Aviator</strong> with live multiplayer multipliers, instant auto-cashout, and double bet strategies. Discover certified casino games from world-leading providers including JILI Gaming, PG Soft, Pragmatic Play, Spribe, Hacksaw Gaming, and Evolution Live Casino.
         </p>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
-          <Link href="/download" style={{ color: '#00FF87', textDecoration: 'none', background: 'rgba(0, 230, 91, 0.12)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
-            📲 Download Android APK
+        <h3 style={{ fontSize: '14px', color: '#00E65B', fontWeight: 700, margin: '14px 0 6px' }}>
+          🏏 PSL Cricket Betting &amp; Live In-Play Sportsbook
+        </h3>
+        <p style={{ marginBottom: '10px' }}>
+          Bet on Pakistan Super League (PSL), IPL, ICC Men&apos;s T20 World Cup, Champions Trophy, and international cricket fixtures with the highest live match odds. WinX Pro Sportsbook delivers in-play match winner rates, ball-by-ball updates, top batsman, over runs, and competitive betting lines with instant payout settlements.
+        </p>
+
+        <h3 style={{ fontSize: '14px', color: '#00E65B', fontWeight: 700, margin: '14px 0 6px' }}>
+          ⚡ Instant Easypaisa, JazzCash &amp; Bank Transfers (2-Minute Payouts)
+        </h3>
+        <p style={{ marginBottom: '12px' }}>
+          Experience hassle-free Pakistani Rupee (PKR) deposits and automated 2-minute withdrawals directly into your <strong>Easypaisa</strong>, <strong>JazzCash</strong>, or Pakistani bank account (Meezan, HBL, Allied, Alfalah, UBL). Enjoy zero deposit fees, 24/7 dedicated Urdu &amp; English WhatsApp/Telegram live customer support, and instant VIP cashback rewards.
+        </p>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '14px' }}>
+          <Link href="/download" style={{ color: '#00FF87', textDecoration: 'none', background: 'rgba(0, 230, 91, 0.15)', border: '1px solid rgba(0, 230, 91, 0.3)', padding: '5px 12px', borderRadius: '8px', fontSize: '11.5px', fontWeight: 700 }}>
+            📲 Download WinX Pro APK
           </Link>
-          <Link href="/offers" style={{ color: '#FFB800', textDecoration: 'none', background: 'rgba(255, 184, 0, 0.12)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
-            🎁 Member Rewards
+          <Link href="/casino" style={{ color: '#F43F5E', textDecoration: 'none', background: 'rgba(244, 63, 94, 0.15)', border: '1px solid rgba(244, 63, 94, 0.3)', padding: '5px 12px', borderRadius: '8px', fontSize: '11.5px', fontWeight: 700 }}>
+            🎰 11,200+ Online Slots
           </Link>
-          <Link href="/sports" style={{ color: '#38BDF8', textDecoration: 'none', background: 'rgba(56, 189, 248, 0.12)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
-            🏏 PSL &amp; Sports Arena
+          <Link href="/sports" style={{ color: '#38BDF8', textDecoration: 'none', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', padding: '5px 12px', borderRadius: '8px', fontSize: '11.5px', fontWeight: 700 }}>
+            🏏 PSL Cricket Betting
           </Link>
-          <Link href="/sports" style={{ color: '#F43F5E', textDecoration: 'none', background: 'rgba(244, 63, 94, 0.12)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
-            🎮 11,200+ Online Games
+          <Link href="/offers" style={{ color: '#FFB800', textDecoration: 'none', background: 'rgba(255, 184, 0, 0.15)', border: '1px solid rgba(255, 184, 0, 0.3)', padding: '5px 12px', borderRadius: '8px', fontSize: '11.5px', fontWeight: 700 }}>
+            🎁 Claim 100% Welcome Bonus
+          </Link>
+          <Link href="/wallet" style={{ color: '#A855F7', textDecoration: 'none', background: 'rgba(168, 85, 247, 0.15)', border: '1px solid rgba(168, 85, 247, 0.3)', padding: '5px 12px', borderRadius: '8px', fontSize: '11.5px', fontWeight: 700 }}>
+            💳 Easypaisa &amp; JazzCash Deposit
+          </Link>
+          <Link href="/invite" style={{ color: '#10B981', textDecoration: 'none', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '5px 12px', borderRadius: '8px', fontSize: '11.5px', fontWeight: 700 }}>
+            👥 Rs 2,800 Agent Referral
           </Link>
         </div>
       </section>
@@ -448,7 +468,7 @@ export default function Home() {
       {/* Rich Brand Footer matching bottom of Screenshot 4 */}
       <footer className="bbr-footer">
         <div className="bbr-footer-mascot-wrap">
-          <img src="/banners/pdd_banner.png" alt="WINX Gaming" className="bbr-footer-mascot" />
+          <img src="/banners/pdd_banner.png" alt="WINX Casino" className="bbr-footer-mascot" />
           <div className="bbr-footer-brand">WINX.COM</div>
         </div>
 
@@ -461,12 +481,12 @@ export default function Home() {
 
         <div className="bbr-footer-copy">
           <p>
-            <strong>WINX.COM</strong> is one of the best and most popular online gaming websites in Pakistan powered by official SoftAggregator game servers. Over 11,200 authentic titles including JILI, PG Soft, Spribe Aviator, Pragmatic, Hacksaw, Nolimit City, and live interactive titles. Real-time PKR balances synchronized seamlessly.
+            <strong>WINX.COM</strong> is one of the best and most popular online casino &amp; slot websites in Pakistan powered by official SoftAggregator game servers. Over 11,200 authentic titles including JILI, PG Soft, Spribe Aviator, Pragmatic Play, Hacksaw, Nolimit City, and live dealer tables. Real-time PKR balances synchronized seamlessly.
           </p>
           <ul>
             <li>1. This product is for users aged 18 and above only.</li>
             <li>2. This game contains in-app purchases.</li>
-            <li>3. Enjoy responsibly. All entertainment titles are intended for amusement and skill demonstration.</li>
+            <li>3. Winning in social casino games does not guarantee future success in real-money betting and related games.</li>
           </ul>
           <div className="bbr-copyright">Copyright © 2026 WINX Reserved</div>
         </div>

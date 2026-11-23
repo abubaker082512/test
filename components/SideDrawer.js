@@ -50,7 +50,7 @@ export default function SideDrawer({ isOpen, onClose, balance = 0, onOpenAuth })
     { id: 'hot', name: 'Hot', icon: '🔥', href: '/' },
     { id: 'our-games', name: 'Our Games', icon: '👑', href: '/?tab=our-games' },
     { id: 'free', name: 'Free Games', icon: '🎁', href: '/?tab=free' },
-    { id: 'slot', name: 'Arcade', icon: '🎰', href: '/casino?tab=slots' },
+    { id: 'slot', name: 'Slot', icon: '🎰', href: '/casino?tab=slots' },
     { id: 'redeem', name: 'Redeem bonus', icon: '🎁', href: '/offers' },
     { id: 'mini', name: 'Mini Games', icon: '💠', href: '/?tab=mini' },
     { id: 'cards', name: 'Cards', icon: '🃏', href: '/?tab=cards' },
@@ -65,7 +65,7 @@ export default function SideDrawer({ isOpen, onClose, balance = 0, onOpenAuth })
   const offerCenter = [
     { title: 'Event', sub: 'Lucky Wheel', icon: '🎡', bg: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', href: '/offers' },
     { title: 'Mission', sub: 'Daily Tasks', icon: '📅', bg: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', href: '/offers' },
-    { title: 'Rebate', sub: 'Turnover Perks', icon: '🪙', bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', href: '/offers' },
+    { title: 'Rebate', sub: 'Instant Cash', icon: '🪙', bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', href: '/offers' },
     { title: 'Interest', sub: 'Piggy Bank', icon: '🐷', bg: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)', href: '/offers' },
     { title: 'VIP', sub: 'Gold Crown', icon: '👑', bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)', href: '/profile' },
     { title: 'Fund 50%', sub: 'Deposit Boost', icon: '👛', bg: 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)', href: '/wallet' },
@@ -334,7 +334,7 @@ export default function SideDrawer({ isOpen, onClose, balance = 0, onOpenAuth })
               onClick={() => handleNav('/profile')}
               style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', borderBottom: '1px solid #242428', fontSize: '12px', fontWeight: 700 }}
             >
-              <span>📑</span> Activity record
+              <span>📑</span> Bet record
             </div>
             <div
               onClick={handleShare}

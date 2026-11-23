@@ -89,7 +89,7 @@ export default function NavBar({ onOpenPromoModal }) {
               <img src="/app-icon.png" alt="WinX Pro" />
             </div>
             <div className="bbr-install-copy">
-              Download official app for <strong>VIP Access</strong>
+              Download the app to win <strong>PKR 8888</strong>
             </div>
             <span className="bbr-install-gift" onClick={() => onOpenPromoModal && onOpenPromoModal()}>🎁</span>
           </div>
@@ -259,7 +259,7 @@ export default function NavBar({ onOpenPromoModal }) {
                       boxShadow: '0 10px 28px rgba(0,0,0,0.75)'
                     }}>
                       <div style={{ padding: '10px 14px', fontSize: '11px', color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {user.email || 'Member'}
+                        {user.email || 'Player'}
                       </div>
                       <div 
                         onClick={() => { toggleDemoMode(!isDemoMode); setShowMenu(false) }}
@@ -274,7 +274,7 @@ export default function NavBar({ onOpenPromoModal }) {
                       </Link>
                       <Link href="/invite" style={{ textDecoration: 'none' }}>
                         <div onClick={() => setShowMenu(false)} style={{ padding: '10px 14px', cursor: 'pointer', color: '#6dff38', fontSize: '13px' }}>
-                          👥 Invite &amp; Connect (VIP Rewards)
+                          💸 Invite & Earn (Rs 2,800)
                         </div>
                       </Link>
                       <Link href="/profile" style={{ textDecoration: 'none' }}>

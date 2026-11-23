@@ -283,10 +283,10 @@ export default function Sportsbook() {
   return (
     <div className="app">
       <SEOMeta
-        title="PSL Cricket Live Match Odds & Sports Arena Pakistan | WinX Pro Official"
-        description="Follow Pakistan Super League (PSL), ICC Cricket World Cup, Premier League & NBA with live sports updates. Instant PKR deposits via Easypaisa & JazzCash."
+        title="PSL Cricket Betting & Live Sportsbook Pakistan | Best Match Odds - WinX Pro"
+        description="Bet on Pakistan Super League (PSL), ICC Cricket World Cup, IPL, Premier League & NBA with real money match odds. Instant PKR deposits via Easypaisa & JazzCash, 2-minute fast withdrawals."
         canonicalUrl="https://winxpro.com.pk/sports"
-        keywords="cricket rates Pakistan, PSL match updates online, live cricket scores Pakistan, sports arena Easypaisa, sports games Pakistan PKR"
+        keywords="cricket betting Pakistan, PSL betting app, PSL cricket betting online, live cricket betting Pakistan, IPL betting Pakistan, T20 World Cup betting, ICC Champions Trophy betting, Pakistan sports betting app, online football betting Pakistan, live cricket match odds Pakistan, best bookmaker Pakistan, Easypaisa betting, JazzCash sports betting"
       />
 
       <NavBar />

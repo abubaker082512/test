@@ -98,8 +98,9 @@ export default function SignupPage() {
   return (
     <div className="app" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Head>
-        <title>{isLoginTab ? 'Login' : 'Sign Up & Get Rs 100 Bonus'} | WinX Pro</title>
-        <meta name="description" content="Sign up at WinX Pro for a free Rs 100 welcome bonus and Rs 600 referral rewards on live gaming, arcade titles and sports entertainment." />
+        <title>{isLoginTab ? 'Login to WinX Pro Pakistan' : 'Sign Up & Get Rs 8,888 Welcome Bonus | WinX Pro Pakistan'}</title>
+        <meta name="description" content="Sign up at WinX Pro for a free welcome bonus, instant Easypaisa and JazzCash deposits, and access to 11,200+ real money slots, Spribe Aviator, and PSL cricket betting." />
+        <meta name="keywords" content="WinX Pro register, WinX Pro login, WinX Pro Pakistan signup, online casino register Pakistan, real money casino signup PKR" />
       </Head>
 
       <NavBar />

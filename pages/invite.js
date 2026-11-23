@@ -104,9 +104,9 @@ export default function InvitePage() {
     <div className="app bbr-theme-app" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#070a14' }}>
       <SEOMeta
         title="WinX Pro Referral Program & Agent Rewards | Earn Daily Cash Pakistan"
-        description="Earn Rs 100 instant cash bonus + up to 5% lifetime commissions for every active player you refer to WinX Pro. Instant daily withdrawal to Easypaisa & JazzCash."
+        description="Earn Rs 100 instant cash bonus + up to 5% lifetime betting rebate commissions for every active player you refer to WinX Pro. Instant daily withdrawal to Easypaisa & JazzCash."
         canonicalUrl="https://winxpro.com.pk/invite"
-        keywords="WinX Pro invite code, referral bonus Pakistan, earn money online Pakistan, gaming partner program Pakistan, affiliate gaming Pakistan"
+        keywords="WinX Pro invite code, referral bonus Pakistan, earn money online Pakistan, casino agent program Pakistan, affiliate casino Pakistan, betting rebate Pakistan, online earning app Pakistan"
       />
 
       <NavBar />

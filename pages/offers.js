@@ -105,10 +105,10 @@ export default function Offers() {
   return (
     <div className="app">
       <SEOMeta
-        title="WinX Pro Promotions & VIP Welcome Bonuses | Pakistan Easypaisa Rewards"
-        description="Claim up to Rs 8,888 free bonus on your first recharge. Daily sign-in rewards, VIP cashback rebates, and exclusive deposit promo codes on WinX Pro Pakistan."
+        title="WinX Pro Promotions & VIP Welcome Bonuses | Online Casino Pakistan"
+        description="Claim up to Rs 8,888 welcome bonus on your first recharge. Daily sign-in rewards, VIP casino cashback rebates, and exclusive deposit promo codes on WinX Pro Pakistan."
         canonicalUrl="https://winxpro.com.pk/offers"
-        keywords="WinX Pro bonus, gaming bonus Pakistan, free signup bonus Pakistan, recharge bonus Easypaisa, WinX Pro promo code"
+        keywords="WinX Pro bonus, casino bonus Pakistan, free signup bonus Pakistan, recharge bonus Easypaisa, WinX Pro promo code, 100% deposit bonus Pakistan, free spins Pakistan, casino cashback Pakistan"
       />
       {/* Top Header matching Screenshot 2 */}
       <div style={{

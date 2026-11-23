@@ -1,7 +1,7 @@
 {
-  "name": "WinX Pro - Premier Online Gaming Pakistan",
+  "name": "WinX Pro - Live Casino & Slots Pakistan",
   "short_name": "WinX Pro",
-  "description": "WinX Pro - Premier Online Gaming, Spribe Aviator & Sports Entertainment Platform in Pakistan",
+  "description": "WinX Pro - Premier Live Casino, Slots, Spribe Aviator & Sports Betting Platform in Pakistan",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -9,6 +9,7 @@
   "background_color": "#0B0E14",
   "theme_color": "#00E65B",
   "categories": [
+    "casino",
     "games",
     "entertainment",
     "sports"
@@ -40,10 +41,22 @@
   ],
   "shortcuts": [
     {
-      "name": "Explore Games",
-      "short_name": "Games",
-      "description": "Open WinX Pro Games Lobby",
-      "url": "/",
+      "name": "Play Slots",
+      "short_name": "Slots",
+      "description": "Open WinX Pro Slots Lobby",
+      "url": "/casino",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Cricket & Sports",
+      "short_name": "Sports",
+      "description": "PSL Cricket Betting & Live Odds",
+      "url": "/sports",
       "icons": [
         {
           "src": "/icons/icon-192.png",
