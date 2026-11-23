@@ -831,10 +831,6 @@ export default function AdminPanel() {
             {loginLoading ? 'Logging in...' : 'Login'}
           </button>
         </form>
-        <div style={{ marginTop: '16px', padding: '12px', background: '#00ff8811', borderRadius: '8px', fontSize: '12px', color: 'var(--muted)' }}>
-          <strong style={{ color: 'var(--accent)' }}>Default Credentials</strong><br/>
-          Username: <strong>admin</strong> | Password: <strong>Admin@WinX2024</strong>
-        </div>
       </div>
     </div>
   )
