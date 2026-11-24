@@ -18,16 +18,31 @@ const SLUG_ALIASES = {
   'diamond-poker20': 'xddb07a7a584679c',
   'aviator': 'x887bde40b16350c',
   'super-ace': 'xe1c00f1b46ebc87',
-  'super-ace-deluxe': 'xe1c00f1b46ebc87',
+  'super-ace-deluxe': 'x50a0b59eee3ad61',
   'fortune-gems': 'x4220b3aa086524a',
   'fortune-gems-2': 'x6ae59fc87ac977e',
-  'fortune-gems-3': 'x6ae59fc87ac977e',
-  'mahjong-ways': 'xe92c6d594da6a33',
-  'mahjong-ways-2': 'x81efe399c900eeb',
+  'fortune-gems-3': 'x7ac8b6d24d040b5',
+  'mahjong-ways': 'x49738770faf5870',
+  'mahjong-ways-2': 'xa2e772d2ad793a5',
   'gates-of-olympus': 'xddb07a7a584679c',
-  'fortune-tiger': 'x0677695eabcfb08',
-  'fortune-rabbit': 'x252cc9f28ea457d',
-  'fortune-ox': 'xbe185ba1c2b21af'
+  'fortune-tiger': 'xef166e4c99ac6d9',
+  'fortune-rabbit': 'xb5b2c3b2df777fe',
+  'fortune-ox': 'x43171e30b575317'
+}
+
+// Generate a unique persistent guest username per browser visitor so launches NEVER collide on a shared 'guest_player'
+function getUniqueGuestId() {
+  if (typeof window === 'undefined') return 'guest_' + Math.random().toString(36).substring(2, 10)
+  try {
+    let gid = localStorage.getItem('winxpro_guest_id')
+    if (!gid || gid === 'guest_player' || !gid.startsWith('guest_')) {
+      gid = 'guest_' + Math.random().toString(36).substring(2, 10)
+      localStorage.setItem('winxpro_guest_id', gid)
+    }
+    return gid
+  } catch (e) {
+    return 'guest_' + Math.random().toString(36).substring(2, 10)
+  }
 }
 
 export default function PlayGame() {
@@ -43,9 +58,10 @@ export default function PlayGame() {
   const [launchError, setLaunchError] = useState(null)
   const [gameMeta, setGameMeta] = useState(null)
 
+  const guestId = getUniqueGuestId()
   const activeUser = user || {
-    id: 'guest_player',
-    uid: 'guest_player',
+    id: guestId,
+    uid: guestId,
     email: '',
     displayName: 'Player'
   }
@@ -57,7 +73,7 @@ export default function PlayGame() {
 
   // Fetch real wallet balance
   const fetchWallet = async () => {
-    const uid = user ? (user.id || user.uid || '') : 'guest_player'
+    const uid = user ? (user.id || user.uid || '') : guestId
     const email = user ? (user.email || '') : ''
     try {
       const res = await fetch(`/api/wallet/get-balance?user_id=${encodeURIComponent(uid)}&email=${encodeURIComponent(email)}`)
@@ -115,11 +131,11 @@ export default function PlayGame() {
     setLaunchLoading(true)
     setLaunchError(null)
 
-    const rawId = user ? (user.id || user.uid || user.email || 'player') : 'guest_player'
+    const rawId = user ? (user.id || user.uid || user.email || guestId) : guestId
     const cleanUser = String(rawId)
       .split('@')[0]
       .replace(/[^a-zA-Z0-9_-]/g, '')
-      .slice(0, 24) || 'player'
+      .slice(0, 24) || guestId
 
     const controller = new AbortController()
     const abortTimeout = setTimeout(() => controller.abort(), 45000)
@@ -130,9 +146,9 @@ export default function PlayGame() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           gameid: resolvedTargetId,
-          user_id: user ? (user.id || user.uid || cleanUser) : 'guest_player',
+          user_id: user ? (user.id || user.uid || cleanUser) : guestId,
           email: user?.email || '',
-          demo: forceDemo ? true : isDemoMode,
+          demo: forceDemo ? true : (isDemoMode || !user),
           device: 'mobile'
         }),
         signal: controller.signal

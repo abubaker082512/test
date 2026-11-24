@@ -2359,7 +2359,7 @@ export default function AdminPanel() {
                   1. Your Wallet Callback URL
                 </div>
                 <div style={{ fontSize: '13px', fontWeight: 900, color: '#fff', marginTop: '6px', fontFamily: 'monospace', wordBreak: 'break-all' }}>
-                  https://winxpro.com.pk/sg/callback
+                  https://www.winxpro.com.pk/sg/callback
                 </div>
                 <p style={{ fontSize: '12px', color: '#94a3b8', margin: '8px 0 12px', lineHeight: 1.4 }}>
                   In your SoftAggregator portal (<code>softaggregator.com/backend/</code>), paste this exact URL into the <strong>Your wallet callback URL</strong> field and click Save.

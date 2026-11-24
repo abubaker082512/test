@@ -1,6 +1,7 @@
 // API Endpoint: /api/softaggregator/launch
 // Launches a real-money or demo game on SoftAggregator and returns the session iframe URL
 
+import crypto from 'crypto';
 import { launchGame, launchDemoGame } from '../../../utils/softAggregatorClient.js';
 import { registerPlayerUsername, getLiveUserWallet } from '../../../utils/walletStore.js';
 
@@ -8,11 +9,11 @@ export const config = {
   maxDuration: 60,
 };
 
-// Known reliable companion fallbacks if a specific version is under maintenance by upstream provider
+// Known reliable companion fallbacks (all verified active hashes from live getGameList)
 const COMPANION_FALLBACKS = {
   'x50a0b59eee3ad61': 'xe1c00f1b46ebc87', // Super Ace Deluxe -> Super Ace Original
   'x7ac8b6d24d040b5': 'x4220b3aa086524a', // Fortune Gems 3 -> Fortune Gems Original
-  'x81efe399c900eeb': 'xe92c6d594da6a33', // Mahjong Ways 2 -> Mahjong Ways Original
+  'xa2e772d2ad793a5': 'x49738770faf5870', // Mahjong Ways 2 -> Mahjong Ways Original
 };
 
 function extractLaunchUrl(response) {
@@ -50,20 +51,22 @@ export default async function handler(req, res) {
     return res.status(400).json({ success: false, error: 'gameid is required' });
   }
 
-  // 1. Determine clean alphanumeric username for SoftAggregator
+  // 1. Determine unique clean alphanumeric username per real player (NEVER share a single 'guest_player' across users,
+  //    which hits SoftAggregator's 120 launches/hour per-player cap)
   let username = '';
+  const rawUserId = String(user_id || '').trim();
   if (email && email.includes('@')) {
     username = email.split('@')[0].replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 24);
-  } else if (user_id && !String(user_id).startsWith('user_')) {
-    username = String(user_id).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 24);
+  } else if (rawUserId && rawUserId !== 'guest_player') {
+    username = rawUserId.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 24);
   }
-  if (!username) {
-    username = 'guest_player';
+  if (!username || username === 'guest_player') {
+    username = 'guest_' + crypto.randomBytes(4).toString('hex');
   }
 
   // 2. Pre-register all username variants in walletStore so SoftAggregator callbacks instantly return full balance
   registerPlayerUsername(username, user_id, email);
-  if (user_id) registerPlayerUsername(user_id, user_id, email);
+  if (user_id && user_id !== 'guest_player') registerPlayerUsername(user_id, user_id, email);
   registerPlayerUsername('c1000273_' + username, user_id, email);
 
   // Warm up live wallet from Supabase asynchronously
@@ -71,7 +74,8 @@ export default async function handler(req, res) {
     getLiveUserWallet(user_id || username, email || '').catch(() => {});
   } catch (e) {}
 
-  const host = req.headers.host || 'winxpro.com.pk';
+  const rawHost = req.headers.host || 'www.winxpro.com.pk';
+  const host = rawHost === 'winxpro.com.pk' ? 'www.winxpro.com.pk' : rawHost;
   const protocol = req.headers['x-forwarded-proto'] || 'https';
   const homeurl = `${protocol}://${host}`;
 

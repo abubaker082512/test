@@ -8,7 +8,7 @@ const DEFAULT_CURRENCY = process.env.SOFTAGGREGATOR_DEFAULT_CURRENCY || 'PKR';
 
 let gamesCache = null;
 let gamesCacheTime = 0;
-const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours (daily refresh per SoftAggregator recommendation)
 
 // In-memory cache of already-created players to eliminate redundant roundtrips
 const createdPlayersCache = new Set();
@@ -79,7 +79,9 @@ export async function getGameList(forceRefresh = false) {
 
 // 4. Create / Ensure Player (cached in-memory to prevent slow double requests)
 export async function createPlayer(username, password, currency = DEFAULT_CURRENCY) {
-  const cleanUser = String(username || 'guest_player').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 32);
+  const fallbackUser = 'guest_' + Math.random().toString(36).substring(2, 10);
+  const rawUser = (!username || username === 'guest_player') ? fallbackUser : username;
+  const cleanUser = String(rawUser).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 32) || fallbackUser;
   const cleanPass = String(password || 'winx_secret_123').slice(0, 32);
 
   if (createdPlayersCache.has(cleanUser)) {
@@ -105,10 +107,12 @@ export async function launchGame({
   gameid,
   currency = DEFAULT_CURRENCY,
   lang = 'en',
-  homeurl = 'https://winxpro.com.pk',
+  homeurl = 'https://www.winxpro.com.pk',
   device = 'mobile'
 }) {
-  const cleanUser = String(username || 'guest_player').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 32);
+  const fallbackUser = 'guest_' + Math.random().toString(36).substring(2, 10);
+  const rawUser = (!username || username === 'guest_player') ? fallbackUser : username;
+  const cleanUser = String(rawUser).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 32) || fallbackUser;
   const cleanPass = String(password || 'winx_secret_123').slice(0, 32);
 
   // 1. Ensure player exists on SoftAggregator (instant if cached)
@@ -158,7 +162,7 @@ export async function launchGame({
 // 6. Launch Demo Game
 export async function launchDemoGame({
   gameid,
-  homeurl = 'https://winxpro.com.pk'
+  homeurl = 'https://www.winxpro.com.pk'
 }) {
   return callSoftAggregator('getGameDemo', {
     gameid,
